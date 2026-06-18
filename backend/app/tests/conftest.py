@@ -1,7 +1,5 @@
 """
-Pytest configuration and shared fixtures.
-
-Full test suite implemented in Sprint 2.
+Pytest configuration and shared fixtures — Sprint 2.
 """
 
 import pytest

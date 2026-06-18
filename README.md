@@ -1,6 +1,7 @@
 # Polymarket Quant Bot
 
-Production-grade quantitative trading infrastructure for Polymarket prediction markets, with data feeds from Binance (Spot & Futures) and Chainlink price oracles.
+Production-grade quantitative trading infrastructure for Polymarket prediction markets,
+with data feeds from Binance Spot and Chainlink price oracles.
 
 ---
 
@@ -9,53 +10,114 @@ Production-grade quantitative trading infrastructure for Polymarket prediction m
 ```
 polymarket-quant-bot/
 │
-├── backend/                        # FastAPI Python backend
+├── backend/
 │   ├── app/
 │   │   ├── api/
 │   │   │   └── v1/
-│   │   │       ├── __init__.py     # API router registry
-│   │   │       └── health.py       # GET /api/v1/health
-│   │   ├── collector/              # Data ingestion modules (Sprint 2)
+│   │   │       ├── __init__.py          # Router registry
+│   │   │       ├── health.py            # GET /api/v1/health (+ /detailed)
+│   │   │       └── markets.py           # GET /api/v1/markets/*
+│   │   ├── collector/
 │   │   │   ├── __init__.py
-│   │   │   ├── binance_spot.py     # Binance Spot WebSocket collector
-│   │   │   ├── binance_futures.py  # Binance Futures collector
-│   │   │   ├── polymarket.py       # Polymarket CLOB collector
-│   │   │   └── chainlink.py        # Chainlink oracle collector
+│   │   │   ├── binance_spot.py          # Binance Spot ticker collector
+│   │   │   ├── binance_futures.py       # Placeholder (Sprint 3)
+│   │   │   ├── polymarket.py            # Polymarket CLOB market collector
+│   │   │   ├── chainlink.py             # Placeholder (Sprint 3)
+│   │   │   └── scheduler.py            # Async 5-second collection loop
 │   │   ├── core/
-│   │   │   ├── database.py         # SQLAlchemy async engine + session
-│   │   │   ├── logging.py          # Structured JSON logging (structlog)
-│   │   │   └── redis.py            # Async Redis connection pool
-│   │   ├── models/                 # SQLAlchemy ORM models (Sprint 2)
-│   │   ├── services/               # Business logic layer (Sprint 2)
+│   │   │   ├── database.py              # SQLAlchemy async engine (lazy init)
+│   │   │   ├── logging.py              # structlog JSON logging
+│   │   │   └── redis.py                # Async Redis connection pool
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   ├── market.py               # Market ORM model
+│   │   │   └── market_snapshot.py      # MarketSnapshot ORM model
+│   │   ├── services/
+│   │   │   └── market_repository.py    # DB persistence layer
 │   │   ├── config/
-│   │   │   └── settings.py         # Pydantic Settings management
+│   │   │   └── settings.py             # Pydantic Settings management
 │   │   ├── tests/
-│   │   │   ├── conftest.py         # Pytest fixtures
-│   │   │   └── test_health.py      # Health endpoint tests
-│   │   └── main.py                 # FastAPI application factory
+│   │   │   ├── conftest.py
+│   │   │   ├── test_health.py          # Health endpoint tests
+│   │   │   ├── test_binance_collector.py # Binance collector unit tests
+│   │   │   └── test_market_repository.py # Repository integration tests
+│   │   └── main.py                     # FastAPI factory + lifespan + scheduler
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── requirements-dev.txt
 │   ├── pytest.ini
 │   └── pyproject.toml
 │
-├── frontend/                       # Frontend (Sprint 3+)
+├── frontend/                            # Sprint 3+
 │
 ├── database/
 │   ├── init/
-│   │   └── 01_extensions.sql       # PostgreSQL extensions
-│   └── migrations/                 # Alembic migrations (Sprint 2)
+│   │   └── 01_extensions.sql           # PostgreSQL extensions
+│   └── migrations/                     # Alembic migrations (Sprint 3)
 │
 ├── deployment/
-│   └── docker-compose.prod.yml     # Production Docker overrides
+│   └── docker-compose.prod.yml         # Production Docker overrides
 │
 ├── docs/
-│   └── architecture.md             # System architecture diagrams
+│   └── architecture.md                 # System architecture
 │
-├── docker-compose.yml              # Development Docker Compose
-├── .env.example                    # Environment variable template
+├── docker-compose.yml                  # Development Docker Compose
+├── .env.example                        # Environment variable template
 ├── .gitignore
 └── README.md
+```
+
+---
+
+## Sprint 2 Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                     FastAPI Application                          │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                  CollectorScheduler (every 5 s)          │    │
+│  │                                                         │    │
+│  │   BinanceSpotCollector ──► BinanceSpotData[]            │    │
+│  │          │                                              │    │
+│  │   PolymarketCollector  ──► PolymarketMarketData[]       │    │
+│  │          │                                              │    │
+│  │   market_repository    ──► PostgreSQL                   │    │
+│  │     save_market()           markets table               │    │
+│  │     save_snapshot()         market_snapshots table      │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  REST API                                                        │
+│    GET /api/v1/health           Basic health + uptime            │
+│    GET /api/v1/health/detailed  DB + Redis status                │
+│    GET /api/v1/markets          All markets                      │
+│    GET /api/v1/markets/active   Active markets                   │
+│    GET /api/v1/markets/latest   Latest snapshots                 │
+└──────────────────────────────────────────────────────────────────┘
+        │                              │
+   PostgreSQL :5432              Redis :6379
+   markets                       (Sprint 3+)
+   market_snapshots
+```
+
+### Data Flow
+
+```
+Every 5 seconds:
+
+1. Binance Spot API
+   GET /api/v3/ticker/24hr?symbols=[BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT]
+   → last_price, bid, ask, volume
+
+2. Polymarket CLOB API
+   GET /markets (paginated)
+   → filter: asset ∈ {BTC, ETH, SOL, XRP}
+   → filter: timeframe ∈ {5m, 15m, 1H}
+   → yes_price, no_price, liquidity, volume
+
+3. Merge & Persist
+   save_market()    → upsert to markets table
+   save_snapshot()  → append to market_snapshots
 ```
 
 ---
@@ -71,6 +133,7 @@ polymarket-quant-bot/
 | Containers  | Docker + Docker Compose           |
 | Logging     | structlog (JSON)                  |
 | Config      | pydantic-settings                 |
+| Testing     | pytest + anyio + aiosqlite        |
 
 ---
 
@@ -80,7 +143,6 @@ polymarket-quant-bot/
 
 ```bash
 cp .env.example .env
-# Edit .env with your values if needed
 ```
 
 ### 2. Start all services with Docker
@@ -94,35 +156,70 @@ The API will be available at **http://localhost:8000**.
 ### 3. Verify it's running
 
 ```bash
+# Basic health
 curl http://localhost:8000/api/v1/health
-# {"status":"healthy"}
+
+# Detailed health (DB + Redis)
+curl http://localhost:8000/api/v1/health/detailed
+
+# Active markets (populated after first collector tick)
+curl http://localhost:8000/api/v1/markets/active
+
+# Latest snapshots
+curl http://localhost:8000/api/v1/markets/latest
 ```
 
 ---
 
-## API Endpoints
+## API Reference
 
-| Method | Path                    | Description                              |
-|--------|-------------------------|------------------------------------------|
-| GET    | `/api/v1/health`        | Basic health check                       |
-| GET    | `/api/v1/health/detailed` | Health with DB + Redis status          |
-| GET    | `/api/docs`             | Swagger UI (dev only)                    |
-| GET    | `/api/redoc`            | ReDoc UI (dev only)                      |
+| Method | Path                      | Description                                |
+|--------|---------------------------|--------------------------------------------|
+| GET    | `/api/v1/health`          | Basic health check — status, version, uptime |
+| GET    | `/api/v1/health/detailed` | Health with DB + Redis status              |
+| GET    | `/api/v1/markets`         | All markets (all statuses)                 |
+| GET    | `/api/v1/markets/active`  | Active markets only                        |
+| GET    | `/api/v1/markets/latest`  | Latest snapshots (default: 50)             |
+| GET    | `/api/docs`               | Swagger UI                                 |
+| GET    | `/api/redoc`              | ReDoc UI                                   |
 
-### Health response
-
-```json
-{ "status": "healthy" }
-```
-
-### Detailed health response
+### Health response (Sprint 2)
 
 ```json
 {
   "status": "healthy",
-  "database": "healthy",
-  "redis": "healthy",
-  "version": "0.1.0"
+  "version": "0.2.0",
+  "uptime_seconds": 142.5
+}
+```
+
+### Market response
+
+```json
+{
+  "id": 1,
+  "asset": "BTC",
+  "timeframe": "5m",
+  "polymarket_market_id": "0xabc...",
+  "title": "Will BTC be above $70k in 5m?",
+  "start_time": "2026-06-18T05:00:00Z",
+  "end_time": "2026-06-18T06:00:00Z",
+  "status": "active"
+}
+```
+
+### Snapshot response
+
+```json
+{
+  "id": 1,
+  "market_id": 1,
+  "timestamp": "2026-06-18T05:00:05Z",
+  "yes_price": 0.72,
+  "no_price": 0.28,
+  "liquidity": 48000.0,
+  "volume": 12300.0,
+  "binance_price": 65432.10
 }
 ```
 
@@ -130,118 +227,71 @@ curl http://localhost:8000/api/v1/health
 
 ## Docker Commands
 
-### Start services (development — with hot reload)
-
 ```bash
+# Start (development — hot reload)
 docker-compose up --build
-```
 
-### Start services in background
-
-```bash
+# Start in background
 docker-compose up -d --build
-```
 
-### Stop services
-
-```bash
+# Stop
 docker-compose down
-```
 
-### Stop services and remove volumes (full reset)
-
-```bash
+# Full reset (removes volumes)
 docker-compose down -v
-```
 
-### View logs
-
-```bash
-# All services
+# Logs
 docker-compose logs -f
-
-# Single service
 docker-compose logs -f backend
-docker-compose logs -f postgres
-docker-compose logs -f redis
-```
 
-### Rebuild only the backend
-
-```bash
-docker-compose up --build backend
-```
-
-### Production deployment
-
-```bash
-docker-compose -f docker-compose.yml -f deployment/docker-compose.prod.yml up -d
-```
-
-### Shell access
-
-```bash
-# Backend container
+# Shell access
 docker-compose exec backend bash
-
-# PostgreSQL REPL
 docker-compose exec postgres psql -U postgres -d polymarket
-
-# Redis CLI
 docker-compose exec redis redis-cli
+
+# Production
+docker-compose -f docker-compose.yml -f deployment/docker-compose.prod.yml up -d
 ```
 
 ---
 
-## Local Development (without Docker)
-
-### Prerequisites
-
-- Python 3.12
-- PostgreSQL 16 running locally
-- Redis 7 running locally
-
-### Install dependencies
+## Running Tests
 
 ```bash
 cd backend
 pip install -r requirements-dev.txt
-```
-
-### Run the API
-
-```bash
-cd backend
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### Run tests
-
-```bash
-cd backend
 pytest
 ```
+
+Expected output: **15 passed**
+
+Test coverage:
+- `test_health.py`         — health endpoint schema + status codes
+- `test_binance_collector.py` — collector parsing with mock HTTP transport
+- `test_market_repository.py` — save/update/query against in-memory SQLite
 
 ---
 
 ## Environment Variables
 
-| Variable          | Default                                              | Description                    |
-|-------------------|------------------------------------------------------|--------------------------------|
-| `DATABASE_URL`    | `postgresql+asyncpg://postgres:postgres@localhost:5432/polymarket` | PostgreSQL DSN |
-| `REDIS_URL`       | `redis://localhost:6379/0`                           | Redis DSN                      |
-| `APP_ENV`         | `development`                                        | Environment name               |
-| `LOG_LEVEL`       | `INFO`                                               | Log verbosity                  |
-| `LOG_FORMAT`      | `json`                                               | `json` or `console`            |
-| `DEBUG`           | `false`                                              | Enable SQLAlchemy echo         |
+| Variable                    | Default                   | Description                        |
+|-----------------------------|---------------------------|------------------------------------|
+| `DATABASE_URL`              | `postgresql+asyncpg://...`| PostgreSQL DSN (asyncpg driver)    |
+| `REDIS_URL`                 | `redis://localhost:6379/0`| Redis DSN                          |
+| `APP_ENV`                   | `development`             | Environment name                   |
+| `LOG_LEVEL`                 | `INFO`                    | Log verbosity                      |
+| `LOG_FORMAT`                | `json`                    | `json` or `console`                |
+| `DEBUG`                     | `false`                   | SQLAlchemy echo                    |
+| `COLLECTOR_INTERVAL_SECONDS`| `5`                       | Data collection frequency          |
+| `COLLECTOR_ENABLED`         | `true`                    | Enable/disable background scheduler|
 
 ---
 
 ## Sprint Roadmap
 
-| Sprint | Status      | Scope                                                     |
-|--------|-------------|-----------------------------------------------------------|
-| 1      | ✅ Complete | Infrastructure, Docker, FastAPI, DB/Redis connections     |
-| 2      | Planned     | Data collectors (Binance Spot/Futures, Polymarket, Chainlink) |
-| 3      | Planned     | ORM models, data normalisation, persistence               |
-| 4      | Planned     | Analysis services                                         |
+| Sprint | Status      | Scope                                                      |
+|--------|-------------|------------------------------------------------------------|
+| 1      | ✅ Complete | Infrastructure, Docker, FastAPI, DB/Redis connections      |
+| 2      | ✅ Complete | Binance + Polymarket collectors, ORM models, scheduler, API |
+| 3      | Planned     | Binance Futures + Chainlink collectors, Alembic migrations  |
+| 4      | Planned     | Analysis services                                          |

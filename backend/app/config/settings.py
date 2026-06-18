@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Application
     APP_NAME: str = "Polymarket Quant Bot"
-    APP_VERSION: str = "0.1.0"
+    APP_VERSION: str = "0.2.0"
     APP_ENV: str = "development"
     DEBUG: bool = False
 
@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: list[str] = ["*"]
 
+    # Collector
+    COLLECTOR_INTERVAL_SECONDS: int = 5
+    COLLECTOR_ENABLED: bool = True
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def normalise_db_url(cls, v: str) -> str:
@@ -52,14 +56,11 @@ class Settings(BaseSettings):
         if not isinstance(v, str):
             return v
 
-        # Swap scheme to asyncpg driver
         v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
         v = v.replace("postgres://", "postgresql+asyncpg://", 1)
 
-        # Parse and strip asyncpg-incompatible query params
         parsed = urlparse(v)
         params = parse_qs(parsed.query, keep_blank_values=True)
-        # asyncpg does not accept sslmode; ssl is passed as a connect_arg
         params.pop("sslmode", None)
         params.pop("sslrootcert", None)
         params.pop("sslcert", None)

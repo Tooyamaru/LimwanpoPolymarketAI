@@ -1,10 +1,12 @@
 """
-SQLAlchemy ORM models package.
+SQLAlchemy ORM models.
 
-Models will be added in Sprint 2 as collectors are implemented.
-All models inherit from app.core.database.Base.
+Importing this package ensures all models are registered with Base.metadata
+so that init_db() creates the correct tables.
 """
 
 from app.core.database import Base
+from app.models.market import Market
+from app.models.market_snapshot import MarketSnapshot
 
-__all__ = ["Base"]
+__all__ = ["Base", "Market", "MarketSnapshot"]
