@@ -6,3 +6,9 @@ id = "wJTfgpSPIL0w412GnOa1r"
 uri = "file://SPRINT5_INVESTIGATION_REPORT.md"
 type = "text"
 title = "SPRINT5_INVESTIGATION_REPORT.md"
+
+[[outputs]]
+id = "DVsYXURFiloCdHDbNiixm"
+uri = "file://SPRINT6_SOURCE_DISCOVERY_REPORT.md"
+type = "text"
+title = "SPRINT6_SOURCE_DISCOVERY_REPORT.md"
