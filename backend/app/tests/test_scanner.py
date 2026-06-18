@@ -24,7 +24,7 @@ MOCK_MARKETS = {
     "data": [
         {
             "condition_id": "0xscan-btc-5m",
-            "question": "Will BTC be above $70k in 5m?",
+            "question": "Will BTC be Up or Down in 5m?",
             "tokens": [
                 {"token_id": "a", "outcome": "Yes", "price": 0.65},
                 {"token_id": "b", "outcome": "No", "price": 0.35},
@@ -35,7 +35,7 @@ MOCK_MARKETS = {
         },
         {
             "condition_id": "0xscan-sol-1h",
-            "question": "SOL above $200 in 1H?",
+            "question": "SOL Up or Down in 1H?",
             "tokens": [
                 {"token_id": "c", "outcome": "Yes", "price": 0.55},
                 {"token_id": "d", "outcome": "No", "price": 0.45},

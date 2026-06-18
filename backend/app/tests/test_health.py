@@ -18,7 +18,7 @@ async def test_health_schema(client: AsyncClient) -> None:
     data = response.json()
     assert data["status"] == "healthy"
     assert "version" in data
-    assert data["version"] == "0.3.0"
+    assert data["version"] == "0.4.0"
     assert "uptime_seconds" in data
     assert isinstance(data["uptime_seconds"], float)
 

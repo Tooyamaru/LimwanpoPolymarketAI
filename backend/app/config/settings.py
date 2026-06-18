@@ -14,15 +14,14 @@ class Settings(BaseSettings):
 
     # Application
     APP_NAME: str = "Polymarket Quant Bot"
-    APP_VERSION: str = "0.3.0"
+    APP_VERSION: str = "0.4.0"
     APP_ENV: str = "development"
     DEBUG: bool = False
 
     # API
     API_V1_PREFIX: str = "/api/v1"
 
-    # Database — Replit injects DATABASE_URL as postgresql://...?sslmode=require
-    # We normalise to asyncpg scheme and strip incompatible query params.
+    # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/polymarket"
     DB_POOL_SIZE: int = 5
     DB_MAX_OVERFLOW: int = 10
@@ -45,25 +44,18 @@ class Settings(BaseSettings):
     COLLECTOR_INTERVAL_SECONDS: int = 5
     COLLECTOR_ENABLED: bool = True
 
-    # Scanner (market universe discovery — Sprint 3)
-    SCANNER_INTERVAL_SECONDS: int = 300   # 5 minutes; discovery paginates ~20k markets
+    # Scanner (market universe discovery — Sprint 3/4)
+    SCANNER_INTERVAL_SECONDS: int = 300
     SCANNER_ENABLED: bool = True
-    SCANNER_RUN_ON_STARTUP: bool = True   # run once immediately at boot
+    SCANNER_RUN_ON_STARTUP: bool = True
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def normalise_db_url(cls, v: str) -> str:
-        """
-        Convert plain postgresql:// / postgres:// URLs to postgresql+asyncpg://.
-        Also strips query params that asyncpg doesn't understand (e.g. sslmode).
-        asyncpg SSL is handled via engine connect_args, not query params.
-        """
         if not isinstance(v, str):
             return v
-
         v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
         v = v.replace("postgres://", "postgresql+asyncpg://", 1)
-
         parsed = urlparse(v)
         params = parse_qs(parsed.query, keep_blank_values=True)
         params.pop("sslmode", None)

@@ -1,95 +1,88 @@
 """
-Scanner Engine — Sprint 3.
+Scanner Engine — Sprint 3 / Sprint 4.
 
 Builds and maintains the active market universe by orchestrating the discovery
 engine and persisting results to the scanner_markets table.
 
-The scanner runs on its own cadence (SCANNER_INTERVAL_SECONDS), independently
-from the 5-second price-collection tick.
-
-Output per matched market:
-    ScannerMarket
-        asset
-        timeframe
-        market_id
-        health_status
+Sprint 4 change: scanner now filters to UPDOWN markets ONLY.
+All other event types (PRICE_RANGE, NEWS_EVENT, POLITICS, OTHER) are
+classified and stored in event_classifications but are NOT promoted to
+the scanner_markets universe.
 """
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Optional
 
 from app.core.database import get_session_factory
 from app.core.logging import get_logger
-from app.services.market_discovery import DiscoveryResult, MarketDiscoveryService, MatchedMarket
+from app.services.event_classification_repository import save_classification
+from app.services.market_discovery import DiscoveryResult, MarketDiscoveryService
 from app.services.scanner_repository import (
-    get_scanner_markets,
-    save_scanner_market,
     mark_stale_markets,
+    save_scanner_market,
 )
 
 logger = get_logger(__name__)
 
-
-@dataclass
-class ScannerMarket:
-    """In-memory representation of one scanner universe entry."""
-    asset: str
-    timeframe: str
-    market_id: str
-    health_status: str
-    raw_title: str
-    matching_rule: str
-    detected_asset: str
-    detected_timeframe: str
+UPDOWN = "UPDOWN"
 
 
 class ScannerService:
     """
-    Orchestrates discovery → persistence.
+    Orchestrates discovery → classification → persistence.
 
-    Call run() once per scan cycle.  Returns the ScannerResult summary.
+    Flow per scan cycle:
+      1. Discover all active Polymarket markets (asset+timeframe filtered).
+      2. Save EventClassification row for every matched market.
+      3. Promote UPDOWN markets to scanner_markets (active universe).
+      4. Mark scanner_markets entries no longer UPDOWN as stale.
+      5. Persist discovery run diagnostics (including classification stats).
     """
 
     def __init__(self) -> None:
         self._discovery = MarketDiscoveryService()
 
     async def run(self) -> DiscoveryResult:
-        """
-        Execute one full scan:
-        1. Discover all active Polymarket markets.
-        2. Upsert matched markets into scanner_markets table.
-        3. Mark any previously-seen markets that are no longer active as stale.
-        4. Persist the discovery run diagnostics.
-        5. Return the full DiscoveryResult.
-        """
         result = await self._discovery.discover()
 
         factory = get_session_factory()
         async with factory() as session:
             try:
                 now = datetime.now(timezone.utc)
-                seen_ids: set[str] = set()
+                updown_ids: set[str] = set()
 
                 for mm in result.matched_markets:
-                    await save_scanner_market(
+                    # ── Step 1: persist classification for every matched market ──
+                    await save_classification(
                         session,
-                        asset=mm.asset,
-                        timeframe=mm.timeframe,
                         market_id=mm.market_id,
-                        health_status="active",
-                        created_at=now,
                         raw_title=mm.raw_title,
-                        matching_rule=mm.matching_rule,
-                        detected_asset=mm.detected_asset,
-                        detected_timeframe=mm.detected_timeframe,
+                        event_type=mm.event_type,
+                        confidence=mm.confidence,
+                        matched_rule=mm.classification_rule,
+                        created_at=now,
                     )
-                    seen_ids.add(mm.market_id)
 
-                # Mark markets no longer returned by the API as stale
-                await mark_stale_markets(session, active_ids=seen_ids)
+                    # ── Step 2: promote UPDOWN → scanner universe ──────────────
+                    if mm.event_type == UPDOWN:
+                        await save_scanner_market(
+                            session,
+                            asset=mm.asset,
+                            timeframe=mm.timeframe,
+                            market_id=mm.market_id,
+                            health_status="active",
+                            created_at=now,
+                            raw_title=mm.raw_title,
+                            matching_rule=mm.matching_rule,
+                            detected_asset=mm.detected_asset,
+                            detected_timeframe=mm.detected_timeframe,
+                        )
+                        updown_ids.add(mm.market_id)
 
-                # Persist discovery diagnostics
+                # ── Step 3: mark stale scanner markets ────────────────────────
+                await mark_stale_markets(session, active_ids=updown_ids)
+
+                # ── Step 4: persist discovery run (with classification stats) ──
                 from app.models.discovery_run import DiscoveryRun
                 run_row = DiscoveryRun(
                     run_at=result.run_at,
@@ -99,15 +92,23 @@ class ScannerService:
                     eth_count=result.eth_count,
                     sol_count=result.sol_count,
                     xrp_count=result.xrp_count,
+                    updown_count=result.updown_count,
+                    price_range_count=result.price_range_count,
+                    news_event_count=result.news_event_count,
+                    politics_count=result.politics_count,
+                    other_count=result.other_count,
                 )
                 session.add(run_row)
                 await session.commit()
 
+                updown_total = len(updown_ids)
                 logger.info(
-                    "Scanner run persisted",
-                    matched=result.total_matched,
-                    stale_candidates=len(seen_ids),
+                    "Scanner run complete",
+                    total_matched=result.total_matched,
+                    updown_promoted=updown_total,
+                    other_classified=result.total_matched - updown_total,
                 )
+
             except Exception as exc:
                 await session.rollback()
                 logger.error("Scanner DB persist failed", error=str(exc))

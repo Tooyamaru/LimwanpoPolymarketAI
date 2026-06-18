@@ -1,0 +1,3 @@
+- [Polymarket page size](polymarket-page-size.md) — API returns ~1000 records/page despite limit=100; MAX_PAGES=250 ≈ 250k markets, ~4 min scan
+- [Sprint 4 DB migration](sprint4-db-migration.md) — discovery_runs table gains 5 classification count columns via ADD COLUMN IF NOT EXISTS in init_db()
+- [Test path](test-path.md) — tests live at backend/app/tests/, not backend/tests/

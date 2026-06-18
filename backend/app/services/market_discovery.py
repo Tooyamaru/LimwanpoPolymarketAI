@@ -1,16 +1,21 @@
 """
-Market Discovery Engine — Sprint 3.
+Market Discovery Engine — Sprint 3 / Sprint 4.
 
 Scans ALL active Polymarket markets, counts totals, and identifies which
 markets match our tracked asset + timeframe universe.
 
-For every matched market, we record:
-  - raw_title        : the exact question string from Polymarket
-  - matching_rule    : which keyword pattern triggered the match
-  - detected_asset   : the normalised asset (BTC / ETH / SOL / XRP)
-  - detected_timeframe: the normalised timeframe (5m / 15m / 1H)
+Sprint 4 addition: runs EventClassifier on EVERY scanned market to accumulate
+aggregate classification statistics (UPDOWN / PRICE_RANGE / NEWS_EVENT /
+POLITICS / OTHER) across the full 250k+ market corpus.
 
-This transparency is mandatory — we must be able to audit every matched market.
+Transparency fields stored per matched market:
+  raw_title           — exact question string from Polymarket
+  matching_rule       — asset+timeframe rule that triggered the match
+  detected_asset      — normalised asset (BTC / ETH / SOL / XRP)
+  detected_timeframe  — normalised timeframe (5m / 15m / 1H)
+  event_type          — EventClassifier output (UPDOWN etc.)
+  confidence          — classifier confidence score
+  classification_rule — classifier rule name that fired
 """
 
 import re
@@ -21,27 +26,26 @@ from typing import Optional
 import httpx
 
 from app.core.logging import get_logger
+from app.services.event_classifier import EventClassifier, EventType
 
 logger = get_logger(__name__)
 
 CLOB_BASE_URL = "https://clob.polymarket.com"
 REQUEST_TIMEOUT = 15.0
 PAGE_SIZE = 100
-MAX_PAGES = 250  # hard ceiling; 250 × 100 = 25 000 markets
+MAX_PAGES = 250   # 250 pages; Polymarket returns ~1000 records/page → ~250k markets
 
-# ── Match rules ──────────────────────────────────────────────────────────────
-# Each rule is (rule_name, regex_pattern). Rules are tested in order; the first
-# match wins. Rules are case-insensitive.
+# ── Asset match rules ─────────────────────────────────────────────────────────
 
 ASSET_RULES: list[tuple[str, str]] = [
-    ("exact_BTC",  r"\bBTC\b"),
-    ("exact_ETH",  r"\bETH\b"),
-    ("exact_SOL",  r"\bSOL\b"),
-    ("exact_XRP",  r"\bXRP\b"),
+    ("exact_BTC",    r"\bBTC\b"),
+    ("exact_ETH",    r"\bETH\b"),
+    ("exact_SOL",    r"\bSOL\b"),
+    ("exact_XRP",    r"\bXRP\b"),
     ("word_Bitcoin", r"\bBitcoin\b"),
-    ("word_Ethereum", r"\bEthereum\b"),
-    ("word_Solana", r"\bSolana\b"),
-    ("word_Ripple", r"\bRipple\b"),
+    ("word_Ethereum",r"\bEthereum\b"),
+    ("word_Solana",  r"\bSolana\b"),
+    ("word_Ripple",  r"\bRipple\b"),
 ]
 
 ASSET_NORMALISE: dict[str, str] = {
@@ -52,16 +56,15 @@ ASSET_NORMALISE: dict[str, str] = {
 }
 
 TIMEFRAME_RULES: list[tuple[str, str, str]] = [
-    # (rule_name, regex_pattern, normalised_label)
-    ("tf_5m",       r"\b5\s*m(?:in(?:ute)?s?)?\b",       "5m"),
-    ("tf_15m",      r"\b15\s*m(?:in(?:ute)?s?)?\b",      "15m"),
-    ("tf_1H_abbr",  r"\b1\s*[Hh]\b",                     "1H"),
-    ("tf_1H_word",  r"\b1[\s-]?hour\b",                   "1H"),
-    ("tf_60m",      r"\b60\s*m(?:in(?:ute)?s?)?\b",       "1H"),
+    ("tf_5m",       r"\b5\s*m(?:in(?:ute)?s?)?\b",   "5m"),
+    ("tf_15m",      r"\b15\s*m(?:in(?:ute)?s?)?\b",  "15m"),
+    ("tf_1H_abbr",  r"\b1\s*[Hh]\b",                 "1H"),
+    ("tf_1H_word",  r"\b1[\s-]?hour\b",               "1H"),
+    ("tf_60m",      r"\b60\s*m(?:in(?:ute)?s?)?\b",   "1H"),
 ]
 
 
-# ── Result types ─────────────────────────────────────────────────────────────
+# ── Result types ──────────────────────────────────────────────────────────────
 
 @dataclass
 class MatchedMarket:
@@ -70,14 +73,19 @@ class MatchedMarket:
     asset: str
     timeframe: str
     raw_title: str
-    matching_rule: str          # e.g. "exact_BTC + tf_5m"
-    detected_asset: str         # the keyword that fired (e.g. "BTC")
-    detected_timeframe: str     # the timeframe keyword (e.g. "5m")
+    matching_rule: str          # asset+timeframe rule, e.g. "exact_BTC + tf_5m"
+    detected_asset: str
+    detected_timeframe: str
     yes_price: float = 0.0
     no_price: float = 0.0
     liquidity: float = 0.0
     volume: float = 0.0
     end_time: Optional[datetime] = None
+
+    # ── Sprint 4 classifier fields ────────────────────────────────────────────
+    event_type: str = EventType.OTHER.value
+    confidence: float = 0.0
+    classification_rule: str = ""
 
 
 @dataclass
@@ -87,11 +95,18 @@ class DiscoveryResult:
     total_matched: int
     matched_markets: list[MatchedMarket] = field(default_factory=list)
 
-    # Per-asset counts
+    # Per-asset counts (asset+timeframe matched markets)
     btc_count: int = 0
     eth_count: int = 0
     sol_count: int = 0
     xrp_count: int = 0
+
+    # Sprint 4: classification counts across ALL scanned markets
+    updown_count: int = 0
+    price_range_count: int = 0
+    news_event_count: int = 0
+    politics_count: int = 0
+    other_count: int = 0
 
     def as_dict(self) -> dict:
         return {
@@ -102,35 +117,32 @@ class DiscoveryResult:
             "eth": self.eth_count,
             "sol": self.sol_count,
             "xrp": self.xrp_count,
+            "classification": {
+                "updown": self.updown_count,
+                "price_range": self.price_range_count,
+                "news_event": self.news_event_count,
+                "politics": self.politics_count,
+                "other": self.other_count,
+            },
         }
 
 
 # ── Matching helpers ──────────────────────────────────────────────────────────
 
 def _match_asset(title: str) -> Optional[tuple[str, str]]:
-    """
-    Returns (rule_name, normalised_asset) for the first matching asset rule,
-    or None if no asset is detected.
-    """
     for rule_name, pattern in ASSET_RULES:
         m = re.search(pattern, title, re.IGNORECASE)
         if m:
             keyword = m.group(0).strip()
-            # Normalise to canonical asset name
             for key, asset in ASSET_NORMALISE.items():
                 if keyword.upper() == key.upper() or keyword.lower() == key.lower():
                     return rule_name, asset
-            # Fallback: derive from rule name
             asset = rule_name.split("_")[-1].upper()
             return rule_name, asset
     return None
 
 
 def _match_timeframe(title: str) -> Optional[tuple[str, str, str]]:
-    """
-    Returns (rule_name, raw_keyword, normalised_timeframe) for first match,
-    or None if no timeframe is detected.
-    """
     for rule_name, pattern, normalised in TIMEFRAME_RULES:
         m = re.search(pattern, title, re.IGNORECASE)
         if m:
@@ -152,8 +164,12 @@ def _parse_token_price(tokens: list[dict], outcome: str) -> float:
 
 class MarketDiscoveryService:
     """
-    Scans all active Polymarket markets and returns a DiscoveryResult
-    containing diagnostics and the full list of matched markets.
+    Scans all active Polymarket markets and returns a DiscoveryResult.
+
+    Sprint 4: runs EventClassifier on EVERY market to accumulate
+    classification stats across the full corpus.  Only asset+timeframe
+    matched markets are stored in matched_markets, but all classification
+    counts reflect the entire scan.
     """
 
     def __init__(self) -> None:
@@ -184,13 +200,20 @@ class MarketDiscoveryService:
 
     async def discover(self) -> DiscoveryResult:
         """
-        Paginate all active Polymarket markets and classify each one.
-        Records full match transparency for every accepted market.
+        Paginate all active Polymarket markets.
+
+        For every market:
+          1. Run EventClassifier (accumulate global classification stats).
+          2. Check asset + timeframe filter.
+          3. If both match, add to matched_markets with full transparency.
         """
         run_at = datetime.now(timezone.utc)
         total_scanned = 0
         matched: list[MatchedMarket] = []
         asset_counts: dict[str, int] = {"BTC": 0, "ETH": 0, "SOL": 0, "XRP": 0}
+
+        # Sprint 4: global classification counters (all markets)
+        class_counts: dict[str, int] = {et.value: 0 for et in EventType}
 
         next_cursor = ""
         pages = 0
@@ -213,22 +236,26 @@ class MarketDiscoveryService:
                 if not title or not condition_id:
                     continue
 
-                # Asset match
+                # ── Sprint 4: classify EVERY market for global stats ──────────
+                clf = EventClassifier.classify(title)
+                class_counts[clf.event_type.value] += 1
+
+                # ── Asset + timeframe filter ──────────────────────────────────
                 asset_match = _match_asset(title)
                 if not asset_match:
                     continue
                 asset_rule, asset = asset_match
 
-                # Timeframe match
                 tf_match = _match_timeframe(title)
                 if not tf_match:
                     continue
                 tf_rule, tf_raw, timeframe = tf_match
 
-                # Build transparency record
+                # Re-classify with asset+timeframe context for higher confidence
+                clf_ctx = EventClassifier.classify(title, asset=asset, timeframe=tf_raw)
+
                 combined_rule = f"{asset_rule} + {tf_rule}"
 
-                # Parse prices
                 tokens: list[dict] = raw.get("tokens", []) or []
                 yes_price = _parse_token_price(tokens, "Yes")
                 no_price = _parse_token_price(tokens, "No")
@@ -257,6 +284,9 @@ class MarketDiscoveryService:
                     liquidity=float(raw.get("liquidity", 0) or 0),
                     volume=float(raw.get("volume", 0) or 0),
                     end_time=end_time,
+                    event_type=clf_ctx.event_type.value,
+                    confidence=clf_ctx.confidence,
+                    classification_rule=clf_ctx.matched_rule,
                 )
                 matched.append(mm)
 
@@ -282,6 +312,11 @@ class MarketDiscoveryService:
             eth_count=asset_counts["ETH"],
             sol_count=asset_counts["SOL"],
             xrp_count=asset_counts["XRP"],
+            updown_count=class_counts[EventType.UPDOWN.value],
+            price_range_count=class_counts[EventType.PRICE_RANGE.value],
+            news_event_count=class_counts[EventType.NEWS_EVENT.value],
+            politics_count=class_counts[EventType.POLITICS.value],
+            other_count=class_counts[EventType.OTHER.value],
         )
 
         logger.info(
@@ -289,6 +324,11 @@ class MarketDiscoveryService:
             total_scanned=total_scanned,
             matched=len(matched),
             pages=pages,
+            updown=result.updown_count,
+            price_range=result.price_range_count,
+            news_event=result.news_event_count,
+            politics=result.politics_count,
+            other=result.other_count,
             **{k.lower(): v for k, v in asset_counts.items()},
         )
         return result

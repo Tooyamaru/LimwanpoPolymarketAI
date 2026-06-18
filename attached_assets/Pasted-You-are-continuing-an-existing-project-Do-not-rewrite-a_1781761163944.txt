@@ -1,0 +1,188 @@
+You are continuing an existing project.
+
+Do not rewrite architecture.
+
+Goal:
+
+Sprint 4 = Event Classification Layer
+
+We must identify true Up/Down markets.
+
+No trading.
+No dashboard.
+No confidence engine.
+No probability engine.
+
+=================================================
+
+TASK 1
+
+Create EventClassifier.
+
+File:
+
+backend/app/services/event_classifier.py
+
+Classify markets into:
+
+UPDOWN
+PRICE_RANGE
+NEWS_EVENT
+POLITICS
+OTHER
+
+=================================================
+
+TASK 2
+
+Create classification rules.
+
+High priority:
+
+UPDOWN
+
+Detect:
+
+BTC Up or Down
+ETH Up or Down
+SOL Up or Down
+XRP Up or Down
+
+Timeframes:
+
+5m
+15m
+1H
+
+=================================================
+
+TASK 3
+
+Create diagnostics.
+
+GET /api/v1/classifier/stats
+
+Response:
+
+{
+  "total": 250000,
+  "updown": 18,
+  "price_range": 112,
+  "news_event": 9000,
+  "politics": 70000,
+  "other": 170000
+}
+
+=================================================
+
+TASK 4
+
+Create database table.
+
+event_classifications
+
+Fields:
+
+id
+market_id
+raw_title
+event_type
+confidence
+matched_rule
+created_at
+
+=================================================
+
+TASK 5
+
+Create SQLAlchemy model.
+
+event_classification.py
+
+=================================================
+
+TASK 6
+
+Create repository.
+
+event_classification_repository.py
+
+=================================================
+
+TASK 7
+
+Create API.
+
+GET /api/v1/classifier
+
+GET /api/v1/classifier/updown
+
+GET /api/v1/classifier/stats
+
+=================================================
+
+TASK 8
+
+Scanner Integration
+
+Scanner must use:
+
+UPDOWN only
+
+All other event types ignored.
+
+=================================================
+
+TASK 9
+
+Transparency
+
+Every classified market must store:
+
+raw title
+rule
+classification
+confidence
+
+=================================================
+
+TASK 10
+
+Testing
+
+Create comprehensive tests.
+
+Target:
+
+60+ total tests project-wide.
+
+=================================================
+
+TASK 11
+
+README
+
+Add Sprint 4 architecture.
+
+=================================================
+
+IMPORTANT
+
+We are trying to discover markets like:
+
+BTC Up or Down 5 Minutes
+ETH Up or Down 15 Minutes
+SOL Up or Down 1 Hour
+XRP Up or Down 1 Hour
+
+Ignore everything else.
+
+Output:
+
+Show examples of classified markets.
+
+Show examples of UPDOWN markets found.
+
+Show classifier statistics.
+
+Show test results.

@@ -92,12 +92,34 @@ async def check_db_health() -> bool:
 
 
 async def init_db() -> None:
-    """Create all tables. Logs a warning instead of crashing if DB is unavailable."""
+    """
+    Create all tables, then apply additive column migrations for tables that
+    already exist.  Uses ADD COLUMN IF NOT EXISTS so it is safe to run on
+    every startup — it is a no-op when the column already exists.
+    """
+    from sqlalchemy import text
+
     try:
         engine = get_engine()
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database tables created")
+
+            # Sprint 4: add classification count columns to discovery_runs
+            # (table already existed from Sprint 3 without these columns)
+            sprint4_migrations = [
+                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS updown_count INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS price_range_count INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS news_event_count INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS politics_count INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS other_count INTEGER NOT NULL DEFAULT 0",
+            ]
+            for stmt in sprint4_migrations:
+                try:
+                    await conn.execute(text(stmt))
+                except Exception as col_exc:
+                    logger.debug("Column migration skipped", stmt=stmt, error=str(col_exc))
+
+        logger.info("Database tables initialised")
     except Exception as exc:
         logger.warning("Database init skipped — DB not reachable at startup", error=str(exc))
 

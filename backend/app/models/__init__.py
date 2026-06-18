@@ -7,8 +7,16 @@ so that init_db() creates the correct tables.
 
 from app.core.database import Base
 from app.models.discovery_run import DiscoveryRun
+from app.models.event_classification import EventClassification
 from app.models.market import Market
 from app.models.market_snapshot import MarketSnapshot
 from app.models.scanner_market import ScannerMarket
 
-__all__ = ["Base", "Market", "MarketSnapshot", "ScannerMarket", "DiscoveryRun"]
+__all__ = [
+    "Base",
+    "DiscoveryRun",
+    "EventClassification",
+    "Market",
+    "MarketSnapshot",
+    "ScannerMarket",
+]
