@@ -18,6 +18,28 @@ setup_logging()
 logger = get_logger(__name__)
 
 
+async def _run_scanner_loop(scanner) -> None:
+    """
+    Scanner background loop.
+
+    Optionally runs once on startup, then repeats every SCANNER_INTERVAL_SECONDS.
+    Discovery paginates ~20k Polymarket markets so the interval is much longer
+    than the price-collection tick (default 300 s vs 5 s).
+    """
+    if settings.SCANNER_RUN_ON_STARTUP:
+        try:
+            await scanner.run()
+        except Exception as exc:
+            logger.error("Scanner startup run failed", error=str(exc))
+
+    while True:
+        await asyncio.sleep(settings.SCANNER_INTERVAL_SECONDS)
+        try:
+            await scanner.run()
+        except Exception as exc:
+            logger.error("Scanner periodic run failed", error=str(exc))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info(
@@ -27,30 +49,51 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     )
     await init_db()
 
-    # Start collector scheduler in the background
-    scheduler_task = None
+    # ── Price collector (every 5 s) ───────────────────────────────────────────
+    collector_task = None
     if settings.COLLECTOR_ENABLED:
         from app.collector.scheduler import CollectorScheduler
         scheduler = CollectorScheduler()
-        scheduler_task = asyncio.create_task(scheduler.run())
-        app.state.scheduler = scheduler
+        collector_task = asyncio.create_task(scheduler.run())
+        app.state.collector = scheduler
         logger.info(
-            "Collector scheduler started",
+            "Price collector started",
             interval=settings.COLLECTOR_INTERVAL_SECONDS,
+        )
+
+    # ── Market scanner (every 300 s) ──────────────────────────────────────────
+    scanner_task = None
+    if settings.SCANNER_ENABLED:
+        from app.services.scanner import ScannerService
+        scanner = ScannerService()
+        scanner_task = asyncio.create_task(_run_scanner_loop(scanner))
+        app.state.scanner = scanner
+        logger.info(
+            "Market scanner started",
+            interval=settings.SCANNER_INTERVAL_SECONDS,
+            run_on_startup=settings.SCANNER_RUN_ON_STARTUP,
         )
 
     yield
 
-    # Graceful shutdown
+    # ── Graceful shutdown ─────────────────────────────────────────────────────
     logger.info("Shutting down Polymarket Quant Bot")
-    if scheduler_task is not None:
-        app.state.scheduler.stop()
-        scheduler_task.cancel()
-        try:
-            await scheduler_task
-        except asyncio.CancelledError:
-            pass
-        await app.state.scheduler.close()
+
+    for task, name in [(collector_task, "collector"), (scanner_task, "scanner")]:
+        if task is not None:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+            logger.info(f"{name} task stopped")
+
+    if settings.COLLECTOR_ENABLED and hasattr(app.state, "collector"):
+        app.state.collector.stop()
+        await app.state.collector.close()
+
+    if settings.SCANNER_ENABLED and hasattr(app.state, "scanner"):
+        await app.state.scanner.close()
 
     await close_db()
     await close_redis()

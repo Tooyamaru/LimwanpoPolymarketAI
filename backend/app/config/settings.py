@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Application
     APP_NAME: str = "Polymarket Quant Bot"
-    APP_VERSION: str = "0.2.0"
+    APP_VERSION: str = "0.3.0"
     APP_ENV: str = "development"
     DEBUG: bool = False
 
@@ -41,9 +41,14 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: list[str] = ["*"]
 
-    # Collector
+    # Collector (price ticks — Sprint 2)
     COLLECTOR_INTERVAL_SECONDS: int = 5
     COLLECTOR_ENABLED: bool = True
+
+    # Scanner (market universe discovery — Sprint 3)
+    SCANNER_INTERVAL_SECONDS: int = 300   # 5 minutes; discovery paginates ~20k markets
+    SCANNER_ENABLED: bool = True
+    SCANNER_RUN_ON_STARTUP: bool = True   # run once immediately at boot
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod

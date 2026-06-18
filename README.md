@@ -14,111 +14,159 @@ polymarket-quant-bot/
 │   ├── app/
 │   │   ├── api/
 │   │   │   └── v1/
-│   │   │       ├── __init__.py          # Router registry
-│   │   │       ├── health.py            # GET /api/v1/health (+ /detailed)
-│   │   │       └── markets.py           # GET /api/v1/markets/*
+│   │   │       ├── __init__.py            # Router registry
+│   │   │       ├── health.py              # GET /api/v1/health (+ /detailed)
+│   │   │       ├── markets.py             # GET /api/v1/markets/*
+│   │   │       ├── discovery.py           # GET /api/v1/discovery/*
+│   │   │       └── scanner.py             # GET /api/v1/scanner/*
 │   │   ├── collector/
-│   │   │   ├── __init__.py
-│   │   │   ├── binance_spot.py          # Binance Spot ticker collector
-│   │   │   ├── binance_futures.py       # Placeholder (Sprint 3)
-│   │   │   ├── polymarket.py            # Polymarket CLOB market collector
-│   │   │   ├── chainlink.py             # Placeholder (Sprint 3)
-│   │   │   └── scheduler.py            # Async 5-second collection loop
+│   │   │   ├── binance_spot.py            # Binance Spot ticker collector
+│   │   │   ├── binance_futures.py         # Placeholder (Sprint 4)
+│   │   │   ├── polymarket.py              # Polymarket CLOB price collector
+│   │   │   ├── chainlink.py               # Placeholder (Sprint 4)
+│   │   │   └── scheduler.py              # 5-second price collection loop
 │   │   ├── core/
-│   │   │   ├── database.py              # SQLAlchemy async engine (lazy init)
-│   │   │   ├── logging.py              # structlog JSON logging
-│   │   │   └── redis.py                # Async Redis connection pool
+│   │   │   ├── database.py                # SQLAlchemy async engine (lazy init)
+│   │   │   ├── logging.py                # structlog JSON logging
+│   │   │   └── redis.py                  # Async Redis connection pool
 │   │   ├── models/
-│   │   │   ├── __init__.py
-│   │   │   ├── market.py               # Market ORM model
-│   │   │   └── market_snapshot.py      # MarketSnapshot ORM model
+│   │   │   ├── market.py                  # Market ORM model
+│   │   │   ├── market_snapshot.py         # MarketSnapshot ORM model
+│   │   │   ├── scanner_market.py          # ScannerMarket ORM model
+│   │   │   └── discovery_run.py           # DiscoveryRun diagnostics model
 │   │   ├── services/
-│   │   │   └── market_repository.py    # DB persistence layer
+│   │   │   ├── market_repository.py       # Market persistence layer
+│   │   │   ├── market_discovery.py        # Full market discovery engine
+│   │   │   ├── scanner.py                 # Scanner orchestrator
+│   │   │   └── scanner_repository.py      # Scanner persistence layer
 │   │   ├── config/
-│   │   │   └── settings.py             # Pydantic Settings management
+│   │   │   └── settings.py                # Pydantic Settings
 │   │   ├── tests/
 │   │   │   ├── conftest.py
-│   │   │   ├── test_health.py          # Health endpoint tests
-│   │   │   ├── test_binance_collector.py # Binance collector unit tests
-│   │   │   └── test_market_repository.py # Repository integration tests
-│   │   └── main.py                     # FastAPI factory + lifespan + scheduler
+│   │   │   ├── test_health.py
+│   │   │   ├── test_binance_collector.py
+│   │   │   ├── test_market_repository.py
+│   │   │   ├── test_market_discovery.py   # Sprint 3
+│   │   │   ├── test_scanner_repository.py # Sprint 3
+│   │   │   └── test_scanner.py            # Sprint 3
+│   │   └── main.py                        # FastAPI factory + dual scheduler
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── requirements-dev.txt
 │   ├── pytest.ini
 │   └── pyproject.toml
 │
-├── frontend/                            # Sprint 3+
+├── frontend/                              # Sprint 5+
 │
 ├── database/
-│   ├── init/
-│   │   └── 01_extensions.sql           # PostgreSQL extensions
-│   └── migrations/                     # Alembic migrations (Sprint 3)
+│   ├── init/01_extensions.sql
+│   └── migrations/                        # Alembic (Sprint 4)
 │
 ├── deployment/
-│   └── docker-compose.prod.yml         # Production Docker overrides
+│   └── docker-compose.prod.yml
 │
-├── docs/
-│   └── architecture.md                 # System architecture
-│
-├── docker-compose.yml                  # Development Docker Compose
-├── .env.example                        # Environment variable template
-├── .gitignore
+├── docs/architecture.md
+├── docker-compose.yml
+├── .env.example
 └── README.md
 ```
 
 ---
 
-## Sprint 2 Architecture
+## Sprint 3 Architecture — Discovery & Scanner Layer
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                     FastAPI Application                          │
-│                                                                  │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │                  CollectorScheduler (every 5 s)          │    │
-│  │                                                         │    │
-│  │   BinanceSpotCollector ──► BinanceSpotData[]            │    │
-│  │          │                                              │    │
-│  │   PolymarketCollector  ──► PolymarketMarketData[]       │    │
-│  │          │                                              │    │
-│  │   market_repository    ──► PostgreSQL                   │    │
-│  │     save_market()           markets table               │    │
-│  │     save_snapshot()         market_snapshots table      │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                                                                  │
-│  REST API                                                        │
-│    GET /api/v1/health           Basic health + uptime            │
-│    GET /api/v1/health/detailed  DB + Redis status                │
-│    GET /api/v1/markets          All markets                      │
-│    GET /api/v1/markets/active   Active markets                   │
-│    GET /api/v1/markets/latest   Latest snapshots                 │
-└──────────────────────────────────────────────────────────────────┘
-        │                              │
-   PostgreSQL :5432              Redis :6379
-   markets                       (Sprint 3+)
-   market_snapshots
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        FastAPI Application                              │
+│                                                                         │
+│  ┌────────────────────────────────────────────────────────────────┐    │
+│  │   Price Collector  (every 5 s)                                 │    │
+│  │   Binance Spot → Polymarket prices → PostgreSQL snapshots      │    │
+│  └────────────────────────────────────────────────────────────────┘    │
+│                                                                         │
+│  ┌────────────────────────────────────────────────────────────────┐    │
+│  │   Market Scanner   (every 300 s + on startup)                  │    │
+│  │                                                                 │    │
+│  │   MarketDiscoveryService                                        │    │
+│  │     Paginate ALL Polymarket markets (~30k+)                    │    │
+│  │     Match: asset ∈ {BTC,ETH,SOL,XRP}                          │    │
+│  │            timeframe ∈ {5m,15m,1H}                            │    │
+│  │     Record WHY each market matched (transparency)              │    │
+│  │         raw_title, matching_rule, detected_asset,              │    │
+│  │         detected_timeframe                                      │    │
+│  │          │                                                      │    │
+│  │   ScannerService                                                │    │
+│  │     Upsert → scanner_markets table                             │    │
+│  │     Mark stale markets that left the active set                │    │
+│  │     Persist → discovery_runs table (diagnostics)               │    │
+│  └────────────────────────────────────────────────────────────────┘    │
+│                                                                         │
+│  REST API                                                               │
+│    GET /api/v1/health              Basic health + uptime               │
+│    GET /api/v1/health/detailed     DB + Redis status                   │
+│    GET /api/v1/markets             All markets (price universe)        │
+│    GET /api/v1/markets/active      Active markets                      │
+│    GET /api/v1/markets/latest      Latest price snapshots              │
+│    GET /api/v1/discovery           Latest discovery run stats          │
+│    POST /api/v1/discovery/run      Trigger on-demand discovery scan    │
+│    GET /api/v1/discovery/markets   All matched markets + transparency  │
+│    GET /api/v1/scanner             Full scanner universe               │
+│    GET /api/v1/scanner/active      Active scanner markets              │
+│    GET /api/v1/scanner/stats       Aggregate stats by asset/status     │
+└─────────────────────────────────────────────────────────────────────────┘
+            │
+     PostgreSQL tables
+       markets
+       market_snapshots
+       scanner_markets      ← Sprint 3 (universe + transparency)
+       discovery_runs       ← Sprint 3 (per-run diagnostics)
 ```
 
-### Data Flow
+### Discovery Matching Rules
 
-```
-Every 5 seconds:
+Asset rules (first match wins, case-insensitive):
 
-1. Binance Spot API
-   GET /api/v3/ticker/24hr?symbols=[BTCUSDT,ETHUSDT,SOLUSDT,XRPUSDT]
-   → last_price, bid, ask, volume
+| Rule Name      | Pattern         | Normalised |
+|----------------|-----------------|------------|
+| `exact_BTC`    | `\bBTC\b`       | BTC        |
+| `exact_ETH`    | `\bETH\b`       | ETH        |
+| `exact_SOL`    | `\bSOL\b`       | SOL        |
+| `exact_XRP`    | `\bXRP\b`       | XRP        |
+| `word_Bitcoin` | `\bBitcoin\b`   | BTC        |
+| `word_Ethereum`| `\bEthereum\b`  | ETH        |
+| `word_Solana`  | `\bSolana\b`    | SOL        |
+| `word_Ripple`  | `\bRipple\b`    | XRP        |
 
-2. Polymarket CLOB API
-   GET /markets (paginated)
-   → filter: asset ∈ {BTC, ETH, SOL, XRP}
-   → filter: timeframe ∈ {5m, 15m, 1H}
-   → yes_price, no_price, liquidity, volume
+Timeframe rules:
 
-3. Merge & Persist
-   save_market()    → upsert to markets table
-   save_snapshot()  → append to market_snapshots
-```
+| Rule Name    | Pattern                     | Normalised |
+|--------------|-----------------------------|------------|
+| `tf_5m`      | `5 min(ute)?s?`             | 5m         |
+| `tf_15m`     | `15 min(ute)?s?`            | 15m        |
+| `tf_1H_abbr` | `1H` / `1h`                 | 1H         |
+| `tf_1H_word` | `1 hour` / `1-hour`         | 1H         |
+| `tf_60m`     | `60 min(ute)?s?`            | 1H         |
+
+Every matched market stores `matching_rule = "<asset_rule> + <tf_rule>"` for full auditability.
+
+---
+
+## All Sprints
+
+### Sprint 1 ✅ — Infrastructure
+FastAPI, Docker, PostgreSQL, Redis, health endpoint, project structure.
+
+### Sprint 2 ✅ — Data Collection Layer
+Binance Spot collector, Polymarket price collector, ORM models (`markets`, `market_snapshots`), 5-second scheduler, price API endpoints.
+
+### Sprint 3 ✅ — Discovery & Scanner Layer
+Full market discovery engine (paginates all 30k+ Polymarket markets), scanner universe builder, transparency metadata for every matched market, `scanner_markets` + `discovery_runs` tables, discovery and scanner API endpoints.
+
+### Sprint 4 — Planned
+Binance Futures + Chainlink collectors, Alembic migrations.
+
+### Sprint 5 — Planned
+Analysis services.
 
 ---
 
@@ -139,118 +187,84 @@ Every 5 seconds:
 
 ## Quick Start
 
-### 1. Copy environment file
-
 ```bash
+# 1. Copy env
 cp .env.example .env
-```
 
-### 2. Start all services with Docker
-
-```bash
+# 2. Start all services
 docker-compose up --build
-```
 
-The API will be available at **http://localhost:8000**.
-
-### 3. Verify it's running
-
-```bash
-# Basic health
+# 3. Verify
 curl http://localhost:8000/api/v1/health
-
-# Detailed health (DB + Redis)
-curl http://localhost:8000/api/v1/health/detailed
-
-# Active markets (populated after first collector tick)
-curl http://localhost:8000/api/v1/markets/active
-
-# Latest snapshots
-curl http://localhost:8000/api/v1/markets/latest
+curl http://localhost:8000/api/v1/discovery
+curl http://localhost:8000/api/v1/scanner/stats
+curl http://localhost:8000/api/v1/scanner/active
 ```
 
 ---
 
-## API Reference
+## Full API Reference
 
-| Method | Path                      | Description                                |
-|--------|---------------------------|--------------------------------------------|
-| GET    | `/api/v1/health`          | Basic health check — status, version, uptime |
-| GET    | `/api/v1/health/detailed` | Health with DB + Redis status              |
-| GET    | `/api/v1/markets`         | All markets (all statuses)                 |
-| GET    | `/api/v1/markets/active`  | Active markets only                        |
-| GET    | `/api/v1/markets/latest`  | Latest snapshots (default: 50)             |
-| GET    | `/api/docs`               | Swagger UI                                 |
-| GET    | `/api/redoc`              | ReDoc UI                                   |
+| Method | Path                        | Description                                         |
+|--------|-----------------------------|-----------------------------------------------------|
+| GET    | `/api/v1/health`            | Status, version, uptime                             |
+| GET    | `/api/v1/health/detailed`   | DB + Redis dependency health                        |
+| GET    | `/api/v1/markets`           | All tracked markets                                 |
+| GET    | `/api/v1/markets/active`    | Active markets only                                 |
+| GET    | `/api/v1/markets/latest`    | Latest price snapshots                              |
+| GET    | `/api/v1/discovery`         | Latest discovery run diagnostics                    |
+| POST   | `/api/v1/discovery/run`     | Trigger on-demand full market discovery             |
+| GET    | `/api/v1/discovery/markets` | All matched markets with transparency metadata      |
+| GET    | `/api/v1/scanner`           | Full scanner market universe                        |
+| GET    | `/api/v1/scanner/active`    | Active scanner markets                              |
+| GET    | `/api/v1/scanner/stats`     | Aggregate stats by asset and health status          |
+| GET    | `/api/docs`                 | Swagger UI                                          |
 
-### Health response (Sprint 2)
+### Discovery response (Sprint 3)
 
 ```json
 {
-  "status": "healthy",
-  "version": "0.2.0",
-  "uptime_seconds": 142.5
+  "run_at": "2026-06-18T05:30:00Z",
+  "total_markets_scanned": 30000,
+  "matched_markets": 42,
+  "btc": 18,
+  "eth": 12,
+  "sol": 8,
+  "xrp": 4
 }
 ```
 
-### Market response
+### Scanner market response (Sprint 3)
 
 ```json
 {
   "id": 1,
   "asset": "BTC",
   "timeframe": "5m",
-  "polymarket_market_id": "0xabc...",
-  "title": "Will BTC be above $70k in 5m?",
-  "start_time": "2026-06-18T05:00:00Z",
-  "end_time": "2026-06-18T06:00:00Z",
-  "status": "active"
+  "market_id": "0xabc...",
+  "health_status": "active",
+  "created_at": "2026-06-18T05:00:00Z",
+  "raw_title": "Will BTC be above $70k in 5m?",
+  "matching_rule": "exact_BTC + tf_5m",
+  "detected_asset": "BTC",
+  "detected_timeframe": "5m"
 }
 ```
 
-### Snapshot response
+### Scanner stats response
 
 ```json
 {
-  "id": 1,
-  "market_id": 1,
-  "timestamp": "2026-06-18T05:00:05Z",
-  "yes_price": 0.72,
-  "no_price": 0.28,
-  "liquidity": 48000.0,
-  "volume": 12300.0,
-  "binance_price": 65432.10
+  "total": 42,
+  "active": 38,
+  "stale": 4,
+  "by_asset": {
+    "BTC": 18,
+    "ETH": 12,
+    "SOL": 8,
+    "XRP": 4
+  }
 }
-```
-
----
-
-## Docker Commands
-
-```bash
-# Start (development — hot reload)
-docker-compose up --build
-
-# Start in background
-docker-compose up -d --build
-
-# Stop
-docker-compose down
-
-# Full reset (removes volumes)
-docker-compose down -v
-
-# Logs
-docker-compose logs -f
-docker-compose logs -f backend
-
-# Shell access
-docker-compose exec backend bash
-docker-compose exec postgres psql -U postgres -d polymarket
-docker-compose exec redis redis-cli
-
-# Production
-docker-compose -f docker-compose.yml -f deployment/docker-compose.prod.yml up -d
 ```
 
 ---
@@ -263,35 +277,42 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-Expected output: **15 passed**
+**Sprint 3 target: 43 tests passed**
 
-Test coverage:
-- `test_health.py`         — health endpoint schema + status codes
-- `test_binance_collector.py` — collector parsing with mock HTTP transport
-- `test_market_repository.py` — save/update/query against in-memory SQLite
+Test modules:
+- `test_health.py`              — health endpoint schema + status codes
+- `test_binance_collector.py`   — collector with mock HTTP transport
+- `test_market_repository.py`   — repository against in-memory SQLite
+- `test_market_discovery.py`    — discovery matching logic + mock HTTP
+- `test_scanner_repository.py`  — scanner CRUD + stale marking + stats
+- `test_scanner.py`             — scanner orchestration end-to-end
 
 ---
 
 ## Environment Variables
 
-| Variable                    | Default                   | Description                        |
-|-----------------------------|---------------------------|------------------------------------|
-| `DATABASE_URL`              | `postgresql+asyncpg://...`| PostgreSQL DSN (asyncpg driver)    |
-| `REDIS_URL`                 | `redis://localhost:6379/0`| Redis DSN                          |
-| `APP_ENV`                   | `development`             | Environment name                   |
-| `LOG_LEVEL`                 | `INFO`                    | Log verbosity                      |
-| `LOG_FORMAT`                | `json`                    | `json` or `console`                |
-| `DEBUG`                     | `false`                   | SQLAlchemy echo                    |
-| `COLLECTOR_INTERVAL_SECONDS`| `5`                       | Data collection frequency          |
-| `COLLECTOR_ENABLED`         | `true`                    | Enable/disable background scheduler|
+| Variable                    | Default     | Description                               |
+|-----------------------------|-------------|-------------------------------------------|
+| `DATABASE_URL`              | *(asyncpg)* | PostgreSQL DSN                            |
+| `REDIS_URL`                 | `redis://…` | Redis DSN                                 |
+| `APP_ENV`                   | `development` | Environment name                        |
+| `LOG_LEVEL`                 | `INFO`      | Log verbosity                             |
+| `COLLECTOR_INTERVAL_SECONDS`| `5`         | Price collection frequency                |
+| `COLLECTOR_ENABLED`         | `true`      | Enable/disable price collector            |
+| `SCANNER_INTERVAL_SECONDS`  | `300`       | Market universe refresh frequency         |
+| `SCANNER_ENABLED`           | `true`      | Enable/disable market scanner             |
+| `SCANNER_RUN_ON_STARTUP`    | `true`      | Run scanner once immediately at boot      |
 
 ---
 
-## Sprint Roadmap
+## Docker Commands
 
-| Sprint | Status      | Scope                                                      |
-|--------|-------------|------------------------------------------------------------|
-| 1      | ✅ Complete | Infrastructure, Docker, FastAPI, DB/Redis connections      |
-| 2      | ✅ Complete | Binance + Polymarket collectors, ORM models, scheduler, API |
-| 3      | Planned     | Binance Futures + Chainlink collectors, Alembic migrations  |
-| 4      | Planned     | Analysis services                                          |
+```bash
+docker-compose up --build          # Start (dev, hot-reload)
+docker-compose up -d --build       # Start in background
+docker-compose down                # Stop
+docker-compose down -v             # Full reset
+docker-compose logs -f backend     # Backend logs
+docker-compose exec backend bash   # Shell access
+docker-compose exec postgres psql -U postgres -d polymarket
+```
