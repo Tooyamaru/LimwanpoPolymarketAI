@@ -1,0 +1,263 @@
+SPRINT 7 — MARKET UNIVERSE ENGINE
+
+IMPORTANT
+
+Before writing code:
+
+Create a new git branch:
+
+git checkout -b sprint-7-market-universe
+
+=================================================
+
+GOAL
+
+Replace large-scale market discovery with a deterministic market universe built from Gamma Series API.
+
+NO trading logic.
+
+NO confidence engine.
+
+NO risk engine.
+
+NO order execution.
+
+Only market universe management.
+
+=================================================
+
+KNOWN SERIES
+
+5M
+
+btc-up-or-down-5m
+eth-up-or-down-5m
+sol-up-or-down-5m
+xrp-up-or-down-5m
+
+15M
+
+btc-up-or-down-15m
+eth-up-or-down-15m
+sol-up-or-down-15m
+xrp-up-or-down-15m
+
+1H
+
+btc-up-or-down-hourly
+eth-up-or-down-hourly
+solana-up-or-down-hourly
+xrp-up-or-down-hourly
+
+=================================================
+
+TASK 1
+
+Create model:
+
+market_universe
+
+Fields:
+
+id
+
+asset
+timeframe
+
+series_slug
+series_id
+
+event_id
+condition_id
+
+yes_token_id
+no_token_id
+
+question
+
+start_time
+end_time
+
+status
+
+created_at
+updated_at
+
+=================================================
+
+TASK 2
+
+Create service:
+
+gamma_series_client.py
+
+Responsibilities:
+
+Fetch series
+
+Fetch events
+
+Fetch active market
+
+Fetch next markets
+
+Retry logic
+
+Rate limiting
+
+=================================================
+
+TASK 3
+
+Create service:
+
+market_universe_service.py
+
+Responsibilities:
+
+Sync all 12 series
+
+Store active market
+
+Store upcoming market
+
+Update expired markets
+
+Maintain universe integrity
+
+=================================================
+
+TASK 4
+
+Create scheduler
+
+Every 60 seconds:
+
+sync universe
+
+=================================================
+
+TASK 5
+
+Create endpoints
+
+GET /api/v1/universe
+
+GET /api/v1/universe/active
+
+GET /api/v1/universe/upcoming
+
+GET /api/v1/universe/stats
+
+POST /api/v1/universe/sync
+
+=================================================
+
+TASK 6
+
+Statistics endpoint must show:
+
+BTC
+ETH
+SOL
+XRP
+
+count by timeframe
+
+5M
+15M
+1H
+
+active
+
+upcoming
+
+expired
+
+=================================================
+
+TASK 7
+
+Testing
+
+Minimum:
+
+40+ new tests
+
+Keep all previous tests green
+
+Target:
+
+200+ passing tests
+
+=================================================
+
+TASK 8
+
+Documentation
+
+Update README
+
+Add architecture diagram
+
+Explain Gamma Series flow
+
+=================================================
+
+TASK 9
+
+Performance
+
+Universe sync must complete in under 10 seconds.
+
+No scanning of hundreds of thousands of markets.
+
+Use only known series.
+
+=================================================
+
+TASK 10
+
+DELIVERABLE REPORT
+
+Create:
+
+SPRINT7_MARKET_UNIVERSE_REPORT.md
+
+Include:
+
+Architecture
+
+Endpoints
+
+Database schema
+
+Performance metrics
+
+Test results
+
+Live examples
+
+=================================================
+
+FINAL STEP
+
+Run full test suite.
+
+Verify all endpoints.
+
+Then:
+
+git add .
+
+git commit -m "Sprint 7 complete - Market Universe Engine"
+
+git push origin sprint-7-market-universe
+
+Show:
+
+git status
+
+Must be:
+
+working tree clean
