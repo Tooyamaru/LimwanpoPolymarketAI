@@ -1,0 +1,177 @@
+You are acting as QA Engineer, Research Analyst, and System Auditor.
+
+DO NOT build new features.
+
+DO NOT modify architecture.
+
+DO NOT create new services.
+
+Your task is ONLY to investigate and report.
+
+=================================================
+
+STEP 1
+
+Run:
+
+POST /api/v1/source-validation/run
+
+Wait until completion.
+
+Do not stop early.
+
+=================================================
+
+STEP 2
+
+Collect results from:
+
+GET /api/v1/source-validation
+
+GET /api/v1/source-validation/audit
+
+GET /api/v1/source-validation/search?q=btc
+
+GET /api/v1/source-validation/search?q=eth
+
+GET /api/v1/source-validation/search?q=sol
+
+GET /api/v1/source-validation/search?q=xrp
+
+=================================================
+
+STEP 3
+
+Generate investigation report.
+
+Show:
+
+1. Total markets scanned
+
+2. Total matched markets
+
+3. Total UPDOWN candidates
+
+4. Total PRICE_RANGE candidates
+
+5. Total NEWS_EVENT candidates
+
+6. Total POLITICS candidates
+
+7. Total OTHER candidates
+
+=================================================
+
+STEP 4
+
+For BTC
+
+Show first 20 discovered markets:
+
+title
+slug
+market_id
+event_id
+event_type
+
+=================================================
+
+STEP 5
+
+For ETH
+
+Show first 20 discovered markets:
+
+title
+slug
+market_id
+event_id
+event_type
+
+=================================================
+
+STEP 6
+
+For SOL
+
+Show first 20 discovered markets:
+
+title
+slug
+market_id
+event_id
+event_type
+
+=================================================
+
+STEP 7
+
+For XRP
+
+Show first 20 discovered markets:
+
+title
+slug
+market_id
+event_id
+event_type
+
+=================================================
+
+STEP 8
+
+Research Question
+
+Answer clearly:
+
+Did we find markets similar to:
+
+BTC Up or Down 5 Minutes
+BTC Up or Down 15 Minutes
+BTC Up or Down 1 Hour
+
+ETH Up or Down
+SOL Up or Down
+XRP Up or Down
+
+Answer:
+
+YES
+or
+NO
+
+=================================================
+
+STEP 9
+
+If YES:
+
+Show exact examples.
+
+=================================================
+
+STEP 10
+
+If NO:
+
+Explain:
+
+* what market families were found instead
+* which endpoint produced them
+* whether another Polymarket source may be required
+
+=================================================
+
+FINAL OUTPUT
+
+Create a single report called:
+
+SPRINT5_INVESTIGATION_REPORT.md
+
+Do not write code.
+
+Do not modify database schemas.
+
+Do not create new APIs.
+
+Investigation only.
