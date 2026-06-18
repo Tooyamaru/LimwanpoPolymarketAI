@@ -119,6 +119,18 @@ async def init_db() -> None:
                 except Exception as col_exc:
                     logger.debug("Column migration skipped", stmt=stmt, error=str(col_exc))
 
+            # Sprint 7: market_universe table is created by create_all above.
+            # Add updated_at index for efficient stale-market queries if not present.
+            sprint7_migrations = [
+                "CREATE INDEX IF NOT EXISTS ix_market_universe_status ON market_universe (status)",
+                "CREATE INDEX IF NOT EXISTS ix_market_universe_end_time ON market_universe (end_time)",
+            ]
+            for stmt in sprint7_migrations:
+                try:
+                    await conn.execute(text(stmt))
+                except Exception as col_exc:
+                    logger.debug("Sprint 7 migration skipped", stmt=stmt, error=str(col_exc))
+
         logger.info("Database tables initialised")
     except Exception as exc:
         logger.warning("Database init skipped — DB not reachable at startup", error=str(exc))

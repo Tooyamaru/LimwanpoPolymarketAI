@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     SCANNER_ENABLED: bool = True
     SCANNER_RUN_ON_STARTUP: bool = True
 
+    # Universe sync (Gamma Series — Sprint 7)
+    UNIVERSE_SYNC_INTERVAL_SECONDS: int = 60
+    UNIVERSE_SYNC_ENABLED: bool = True
+    UNIVERSE_SYNC_RUN_ON_STARTUP: bool = True
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def normalise_db_url(cls, v: str) -> str:

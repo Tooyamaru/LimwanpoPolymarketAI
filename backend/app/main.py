@@ -40,6 +40,28 @@ async def _run_scanner_loop(scanner) -> None:
             logger.error("Scanner periodic run failed", error=str(exc))
 
 
+async def _run_universe_sync_loop(service) -> None:
+    """
+    Universe sync background loop — Sprint 7.
+
+    Optionally runs once on startup, then repeats every
+    UNIVERSE_SYNC_INTERVAL_SECONDS (default 60 s).
+    Only syncs known series — no large-scale market scanning.
+    """
+    if settings.UNIVERSE_SYNC_RUN_ON_STARTUP:
+        try:
+            await service.sync()
+        except Exception as exc:
+            logger.error("Universe sync startup run failed", error=str(exc))
+
+    while True:
+        await asyncio.sleep(settings.UNIVERSE_SYNC_INTERVAL_SECONDS)
+        try:
+            await service.sync()
+        except Exception as exc:
+            logger.error("Universe sync periodic run failed", error=str(exc))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info(
@@ -74,12 +96,29 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.SCANNER_RUN_ON_STARTUP,
         )
 
+    # ── Universe sync (every 60 s) — Sprint 7 ────────────────────────────────
+    universe_task = None
+    if settings.UNIVERSE_SYNC_ENABLED:
+        from app.services.market_universe_service import MarketUniverseService
+        universe_service = MarketUniverseService()
+        universe_task = asyncio.create_task(_run_universe_sync_loop(universe_service))
+        app.state.universe_service = universe_service
+        logger.info(
+            "Universe sync started",
+            interval=settings.UNIVERSE_SYNC_INTERVAL_SECONDS,
+            run_on_startup=settings.UNIVERSE_SYNC_RUN_ON_STARTUP,
+        )
+
     yield
 
     # ── Graceful shutdown ─────────────────────────────────────────────────────
     logger.info("Shutting down Polymarket Quant Bot")
 
-    for task, name in [(collector_task, "collector"), (scanner_task, "scanner")]:
+    for task, name in [
+        (collector_task, "collector"),
+        (scanner_task, "scanner"),
+        (universe_task, "universe"),
+    ]:
         if task is not None:
             task.cancel()
             try:
@@ -94,6 +133,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     if settings.SCANNER_ENABLED and hasattr(app.state, "scanner"):
         await app.state.scanner.close()
+
+    if settings.UNIVERSE_SYNC_ENABLED and hasattr(app.state, "universe_service"):
+        await app.state.universe_service.close()
 
     await close_db()
     await close_redis()

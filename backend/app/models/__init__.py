@@ -10,6 +10,7 @@ from app.models.discovery_run import DiscoveryRun
 from app.models.event_classification import EventClassification
 from app.models.market import Market
 from app.models.market_snapshot import MarketSnapshot
+from app.models.market_universe import MarketUniverse
 from app.models.scanner_market import ScannerMarket
 from app.models.source_validation_result import SourceValidationResult
 
@@ -19,6 +20,7 @@ __all__ = [
     "EventClassification",
     "Market",
     "MarketSnapshot",
+    "MarketUniverse",
     "ScannerMarket",
     "SourceValidationResult",
 ]
