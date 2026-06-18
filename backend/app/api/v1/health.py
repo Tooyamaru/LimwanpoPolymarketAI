@@ -52,7 +52,7 @@ async def health() -> HealthResponse:
 async def health_detailed() -> DetailedHealthResponse:
     db_ok = await check_db_health()
     redis_ok = await check_redis_health()
-    overall = "healthy" if db_ok and redis_ok else "degraded"
+    overall = "healthy" if db_ok else "degraded"
 
     return DetailedHealthResponse(
         status=overall,

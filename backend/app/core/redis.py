@@ -1,50 +1,55 @@
 from typing import Optional
 
-import redis.asyncio as aioredis
-from redis.asyncio import Redis
-from redis.asyncio.connection import ConnectionPool
-
-from app.config.settings import settings
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
-_redis_pool: Optional[ConnectionPool] = None
-_redis_client: Optional[Redis] = None
+_redis_client = None
+_redis_pool = None
 
 
-def create_redis_pool() -> ConnectionPool:
-    return aioredis.ConnectionPool.from_url(
-        settings.REDIS_URL,
-        max_connections=settings.REDIS_POOL_SIZE,
-        decode_responses=settings.REDIS_DECODE_RESPONSES,
-    )
-
-
-async def get_redis_client() -> Redis:
+async def get_redis_client():
     global _redis_pool, _redis_client
     if _redis_client is None:
-        _redis_pool = create_redis_pool()
-        _redis_client = aioredis.Redis(connection_pool=_redis_pool)
+        try:
+            import redis.asyncio as aioredis
+            from app.config.settings import settings
+            _redis_pool = aioredis.ConnectionPool.from_url(
+                settings.REDIS_URL,
+                max_connections=settings.REDIS_POOL_SIZE,
+                decode_responses=settings.REDIS_DECODE_RESPONSES,
+            )
+            _redis_client = aioredis.Redis(connection_pool=_redis_pool)
+        except Exception as exc:
+            logger.warning("Redis not available", error=str(exc))
+            return None
     return _redis_client
 
 
 async def check_redis_health() -> bool:
     try:
         client = await get_redis_client()
+        if client is None:
+            return False
         await client.ping()
         return True
     except Exception as exc:
-        logger.error("Redis health check failed", error=str(exc))
+        logger.warning("Redis health check failed", error=str(exc))
         return False
 
 
 async def close_redis() -> None:
     global _redis_pool, _redis_client
     if _redis_client is not None:
-        await _redis_client.aclose()
+        try:
+            await _redis_client.aclose()
+        except Exception:
+            pass
         _redis_client = None
     if _redis_pool is not None:
-        await _redis_pool.aclose()
+        try:
+            await _redis_pool.aclose()
+        except Exception:
+            pass
         _redis_pool = None
     logger.info("Redis connection closed")
