@@ -11,6 +11,7 @@ from app.models.event_classification import EventClassification
 from app.models.market import Market
 from app.models.market_snapshot import MarketSnapshot
 from app.models.scanner_market import ScannerMarket
+from app.models.source_validation_result import SourceValidationResult
 
 __all__ = [
     "Base",
@@ -19,4 +20,5 @@ __all__ = [
     "Market",
     "MarketSnapshot",
     "ScannerMarket",
+    "SourceValidationResult",
 ]

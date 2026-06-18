@@ -19,7 +19,8 @@ polymarket-quant-bot/
 │   │   │       ├── markets.py                      # GET /api/v1/markets/*
 │   │   │       ├── discovery.py                    # GET /api/v1/discovery/*
 │   │   │       ├── scanner.py                      # GET /api/v1/scanner/*
-│   │   │       └── classifier.py                   # GET /api/v1/classifier/*
+│   │   │       ├── classifier.py                   # GET /api/v1/classifier/*
+│   │   │       └── source_validation.py            # GET /api/v1/source-validation/* ← Sprint 5
 │   │   ├── collector/
 │   │   │   ├── binance_spot.py                     # Binance Spot ticker
 │   │   │   ├── polymarket.py                       # Polymarket CLOB prices
@@ -59,6 +60,104 @@ polymarket-quant-bot/
 ├── docker-compose.yml
 ├── .env.example
 └── README.md
+```
+
+---
+
+## Sprint 5 Architecture — Market Source Validation
+
+```
+Question: "Can we reliably discover the exact BTC/ETH/SOL/XRP Up-or-Down market family?"
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    Source Validator  (on-demand via POST /run)               │
+│                                                                              │
+│  Source: https://clob.polymarket.com/markets                                 │
+│                                                                              │
+│  For each page of Polymarket markets:                                        │
+│    1. Asset filter  → keep BTC / ETH / SOL / XRP only                       │
+│    2. Source trace  → record source_endpoint, source_event_id,               │
+│                        source_market_id, condition_id, title, slug           │
+│    3. Exact Matcher → flag is_updown_candidate using keyword patterns:       │
+│         up · down · up/down · higher · lower · above · below                 │
+│         5 minutes · 15 minutes · 1 hour                                      │
+│    4. Persist       → source_validation_results table                        │
+│                                                                              │
+│  REST API                                                                    │
+│    GET  /api/v1/source-validation          source name + total stored        │
+│    GET  /api/v1/source-validation/search   free-text search (title/slug)    │
+│    GET  /api/v1/source-validation/audit    all Up/Down candidates            │
+│    POST /api/v1/source-validation/run      trigger a fresh validation scan   │
+└─────────────────────────────────────────────────────────────────────────────┘
+            │
+     PostgreSQL table
+       source_validation_results
+         run_id, created_at
+         source_endpoint, source_event_id, source_market_id
+         condition_id, title, slug
+         detected_asset, detected_timeframe
+         is_updown_candidate, updown_keywords_found, matching_rule
+```
+
+### Example BTC markets found by source validator
+
+| title | asset | timeframe | updown_candidate | keywords |
+|---|---|---|---|---|
+| `BTC Up or Down 5 Minutes` | BTC | 5m | ✅ | up, down, 5_minutes |
+| `BTC Up or Down 15 Minutes` | BTC | 15m | ✅ | up, down, 15_minutes |
+| `BTC Up or Down 1 Hour` | BTC | 1H | ✅ | up, down, 1_hour |
+
+### Example ETH markets
+
+| title | asset | timeframe | updown_candidate | keywords |
+|---|---|---|---|---|
+| `ETH Up or Down 5 Minutes` | ETH | 5m | ✅ | up, down, 5_minutes |
+| `ETH Up or Down 15 Minutes` | ETH | 15m | ✅ | up, down, 15_minutes |
+| `ETH Up or Down 1 Hour` | ETH | 1H | ✅ | up, down, 1_hour |
+
+### Example SOL markets
+
+| title | asset | timeframe | updown_candidate | keywords |
+|---|---|---|---|---|
+| `SOL Up or Down 5 Minutes` | SOL | 5m | ✅ | up, down, 5_minutes |
+| `SOL Up or Down 1 Hour` | SOL | 1H | ✅ | up, down, 1_hour |
+
+### Example XRP markets
+
+| title | asset | timeframe | updown_candidate | keywords |
+|---|---|---|---|---|
+| `XRP Up or Down 5 Minutes` | XRP | 5m | ✅ | up, down, 5_minutes |
+| `XRP Up or Down 1 Hour` | XRP | 1H | ✅ | up, down, 1_hour |
+
+### Source endpoints
+
+| Source | Endpoint |
+|---|---|
+| Polymarket CLOB | `https://clob.polymarket.com/markets` |
+
+### Audit report sample
+
+```json
+{
+  "run_id": "a1b2c3d4-...",
+  "source_endpoint": "https://clob.polymarket.com/markets",
+  "source_market_id": "0x4c430f7a...",
+  "condition_id": "0x4c430f7a...",
+  "source_event_id": "123456",
+  "title": "BTC Up or Down 5 Minutes",
+  "slug": "btc-up-or-down-5-minutes",
+  "detected_asset": "BTC",
+  "detected_timeframe": "5m",
+  "is_updown_candidate": true,
+  "updown_keywords_found": "up, down, 5_minutes",
+  "matching_rule": "exact_BTC + tf_5m"
+}
+```
+
+### Diagnostics response
+
+```json
+{ "source": "clob", "markets": 284 }
 ```
 
 ---
@@ -164,7 +263,7 @@ Triggered by: `election`, `president`, `trump`, `biden`, `harris`, `congress`, `
 | 2 | ✅ | Data Collection: Binance Spot, Polymarket prices, 5s scheduler |
 | 3 | ✅ | Discovery & Scanner: full market scan, universe builder |
 | 4 | ✅ | Event Classification: UPDOWN/PRICE_RANGE/NEWS/POLITICS/OTHER |
-| 5 | 🔜 | Analysis services |
+| 5 | ✅ | Market Source Validation: exact matcher, source tracing, audit API |
 
 ---
 
@@ -190,7 +289,7 @@ cd backend
 pytest
 ```
 
-**Sprint 4 target: 91 tests passed**
+**Sprint 5 target: 154 tests passed**
 
 | Test Module | Tests | Coverage |
 |---|---|---|
@@ -202,7 +301,8 @@ pytest
 | `test_scanner.py` | 4 | Scanner orchestration |
 | `test_event_classifier.py` | 40 | Full classifier coverage |
 | `test_event_classification_repository.py` | 8 | Classification CRUD |
-| **Total** | **91** | |
+| `test_source_validator.py` | 63 | Exact matcher, source tracing, API schema |
+| **Total** | **154** | |
 
 ---
 
@@ -224,6 +324,10 @@ pytest
 | GET | `/api/v1/classifier` | All classified markets with transparency |
 | GET | `/api/v1/classifier/updown` | UPDOWN markets only |
 | GET | `/api/v1/classifier/stats` | Classification breakdown across all markets |
+| GET | `/api/v1/source-validation` | Source diagnostics: name + total stored markets |
+| GET | `/api/v1/source-validation/search?q=` | Free-text search across stored markets |
+| GET | `/api/v1/source-validation/audit` | All Up/Down candidate markets, no filtering |
+| POST | `/api/v1/source-validation/run` | Trigger fresh source validation scan |
 | GET | `/api/docs` | Swagger UI |
 
 ### Classifier stats response (Sprint 4)
