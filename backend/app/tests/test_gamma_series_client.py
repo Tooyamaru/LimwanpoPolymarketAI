@@ -1,13 +1,15 @@
 """
-Gamma Series client tests — Sprint 7 / Sprint 8.5 fix.
+Gamma Series client tests — Sprint 7 / Sprint 8.6 fix.
 
 Uses unittest.mock to intercept httpx calls so no real network is needed.
 
-Sprint 8.5 changes:
-  - _extract_tokens / GammaToken removed; replaced by _extract_clob_token_ids
-  - fetch_events now expects GET /series?slug= response format (series obj
-    with embedded events[]) instead of a bare events list
-  - fetch_active_market and fetch_next_markets sort by end_time
+Sprint 8.6 changes:
+  - fetch_events uses GET /events?series_slug=&order=startDate&ascending=false
+    (flat event list with markets embedded) instead of GET /series (events
+    with empty markets[]).
+  - fetch_events internally filters expired/closed events and sorts by
+    end_time ascending, so index 0 is always the active market.
+  - fetch_active_market and fetch_next_markets rely on that sort order.
 """
 
 import json
@@ -129,12 +131,11 @@ def _mock_http(return_value=None, side_effect=None):
     return m
 
 
-# ── Series-format payload helpers ─────────────────────────────────────────────
+# ── Event payload helpers (flat list, as returned by GET /events) ──────────────
 
 def _make_market_dict(
     condition_id="cid-abc",
     question="Will BTC go up?",
-    start_offset_h=0,
     end_offset_h=1,
     active=True,
     closed=False,
@@ -146,7 +147,7 @@ def _make_market_dict(
     return {
         "conditionId": condition_id,
         "question": question,
-        "startDate": (now + timedelta(hours=start_offset_h)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "startDate": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "endDate": (now + timedelta(hours=end_offset_h)).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "active": active,
         "closed": closed,
@@ -158,35 +159,23 @@ def _make_event_dict(
     event_id="evt-1",
     slug="btc-5m-event",
     title="BTC 5m event",
-    start_offset_h=0,
     end_offset_h=1,
     active=True,
     closed=False,
     markets=None,
 ):
+    """Build a raw event dict as returned directly by GET /events."""
     now = datetime.now(timezone.utc)
     return {
         "id": event_id,
         "slug": slug,
         "title": title,
-        "startDate": (now + timedelta(hours=start_offset_h)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "startDate": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "endDate": (now + timedelta(hours=end_offset_h)).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "active": active,
         "closed": closed,
         "markets": markets if markets is not None else [_make_market_dict()],
     }
-
-
-def _series_payload(events=None, series_id="10684", slug="btc-up-or-down-5m"):
-    """Wrap events in a series object as returned by GET /series?slug=."""
-    return [
-        {
-            "id": series_id,
-            "slug": slug,
-            "title": "BTC Up or Down 5m",
-            "events": events if events is not None else [_make_event_dict()],
-        }
-    ]
 
 
 # ── GammaSeriesClient.fetch_series ─────────────────────────────────────────────
@@ -227,12 +216,12 @@ async def test_fetch_series_title_is_set():
     await client.close()
 
 
-# ── GammaSeriesClient.fetch_events (series endpoint format) ────────────────────
+# ── GammaSeriesClient.fetch_events (flat events endpoint format) ───────────────
 
 @pytest.mark.anyio
 async def test_fetch_events_returns_events():
     client = GammaSeriesClient()
-    response = _make_response(_series_payload())
+    response = _make_response([_make_event_dict()])
     client._client = _mock_http(return_value=response)
 
     events = await client.fetch_events("btc-up-or-down-5m")
@@ -247,7 +236,7 @@ async def test_fetch_events_returns_events():
 @pytest.mark.anyio
 async def test_fetch_events_parses_yes_token_from_clob_token_ids():
     client = GammaSeriesClient()
-    response = _make_response(_series_payload())
+    response = _make_response([_make_event_dict()])
     client._client = _mock_http(return_value=response)
 
     events = await client.fetch_events("btc-up-or-down-5m")
@@ -258,7 +247,7 @@ async def test_fetch_events_parses_yes_token_from_clob_token_ids():
 @pytest.mark.anyio
 async def test_fetch_events_parses_no_token_from_clob_token_ids():
     client = GammaSeriesClient()
-    response = _make_response(_series_payload())
+    response = _make_response([_make_event_dict()])
     client._client = _mock_http(return_value=response)
 
     events = await client.fetch_events("btc-up-or-down-5m")
@@ -268,11 +257,10 @@ async def test_fetch_events_parses_no_token_from_clob_token_ids():
 
 @pytest.mark.anyio
 async def test_fetch_events_skips_events_without_markets():
-    payload = _series_payload(events=[
-        _make_event_dict(event_id="evt-empty", markets=[]),
-    ])
     client = GammaSeriesClient()
-    client._client = _mock_http(return_value=_make_response(payload))
+    client._client = _mock_http(
+        return_value=_make_response([_make_event_dict(markets=[])])
+    )
 
     events = await client.fetch_events("btc-up-or-down-5m")
     assert len(events) == 0
@@ -280,7 +268,7 @@ async def test_fetch_events_skips_events_without_markets():
 
 
 @pytest.mark.anyio
-async def test_fetch_events_empty_series_response():
+async def test_fetch_events_empty_response():
     client = GammaSeriesClient()
     client._client = _mock_http(return_value=_make_response([]))
 
@@ -290,20 +278,9 @@ async def test_fetch_events_empty_series_response():
 
 
 @pytest.mark.anyio
-async def test_fetch_events_series_with_no_events_key():
-    payload = [{"id": "10684", "slug": "btc-up-or-down-5m", "title": "BTC"}]
-    client = GammaSeriesClient()
-    client._client = _mock_http(return_value=_make_response(payload))
-
-    events = await client.fetch_events("btc-up-or-down-5m")
-    assert events == []
-    await client.close()
-
-
-@pytest.mark.anyio
 async def test_fetch_events_parses_active_flag():
     client = GammaSeriesClient()
-    client._client = _mock_http(return_value=_make_response(_series_payload()))
+    client._client = _mock_http(return_value=_make_response([_make_event_dict()]))
 
     events = await client.fetch_events("btc-up-or-down-5m")
     assert events[0].is_active is True
@@ -313,16 +290,52 @@ async def test_fetch_events_parses_active_flag():
 
 @pytest.mark.anyio
 async def test_fetch_events_multiple_events_parsed():
-    events_list = [
-        _make_event_dict(event_id=f"evt-{i}", end_offset_h=i + 1)
-        for i in range(3)
-    ]
-    payload = _series_payload(events=events_list)
+    payload = [_make_event_dict(event_id=f"evt-{i}", end_offset_h=i + 1) for i in range(3)]
     client = GammaSeriesClient()
     client._client = _mock_http(return_value=_make_response(payload))
 
     events = await client.fetch_events("btc-up-or-down-5m")
     assert len(events) == 3
+    await client.close()
+
+
+@pytest.mark.anyio
+async def test_fetch_events_sorted_by_end_time_ascending():
+    """fetch_events must return events sorted by end_time ascending (active first)."""
+    payload = [
+        _make_event_dict(event_id="evt-far",  end_offset_h=5,
+                         markets=[_make_market_dict(condition_id="cid-far",  end_offset_h=5)]),
+        _make_event_dict(event_id="evt-near", end_offset_h=1,
+                         markets=[_make_market_dict(condition_id="cid-near", end_offset_h=1)]),
+        _make_event_dict(event_id="evt-mid",  end_offset_h=3,
+                         markets=[_make_market_dict(condition_id="cid-mid",  end_offset_h=3)]),
+    ]
+    client = GammaSeriesClient()
+    client._client = _mock_http(return_value=_make_response(payload))
+
+    events = await client.fetch_events("btc-up-or-down-5m")
+    assert len(events) == 3
+    assert events[0].markets[0].condition_id == "cid-near"
+    assert events[1].markets[0].condition_id == "cid-mid"
+    assert events[2].markets[0].condition_id == "cid-far"
+    await client.close()
+
+
+@pytest.mark.anyio
+async def test_fetch_events_filters_closed_events():
+    """fetch_events must exclude closed events."""
+    payload = [
+        _make_event_dict(event_id="evt-closed", closed=True,
+                         markets=[_make_market_dict(condition_id="cid-closed")]),
+        _make_event_dict(event_id="evt-open",   closed=False,
+                         markets=[_make_market_dict(condition_id="cid-open")]),
+    ]
+    client = GammaSeriesClient()
+    client._client = _mock_http(return_value=_make_response(payload))
+
+    events = await client.fetch_events("btc-up-or-down-5m")
+    assert len(events) == 1
+    assert events[0].event_id == "evt-open"
     await client.close()
 
 
@@ -336,7 +349,7 @@ async def test_fetch_events_real_clob_token_ids_format():
         yes_token=yes_tok,
         no_token=no_tok,
     )
-    payload = _series_payload(events=[_make_event_dict(markets=[market_dict])])
+    payload = [_make_event_dict(markets=[market_dict])]
     client = GammaSeriesClient()
     client._client = _mock_http(return_value=_make_response(payload))
 
@@ -352,9 +365,7 @@ async def test_fetch_events_real_clob_token_ids_format():
 
 @pytest.mark.anyio
 async def test_fetch_active_market_returns_market():
-    payload = _series_payload(events=[
-        _make_event_dict(event_id="evt-active", end_offset_h=1),
-    ])
+    payload = [_make_event_dict(event_id="evt-active", end_offset_h=1)]
     client = GammaSeriesClient()
     client._client = _mock_http(return_value=_make_response(payload))
 
@@ -377,13 +388,12 @@ async def test_fetch_active_market_returns_none_when_none_active():
 @pytest.mark.anyio
 async def test_fetch_active_market_returns_soonest_expiring():
     """Active market must be the one with the earliest future end_time."""
-    events_list = [
+    payload = [
+        _make_event_dict(event_id="evt-far",  end_offset_h=5,
+                         markets=[_make_market_dict(condition_id="cid-far",  end_offset_h=5)]),
         _make_event_dict(event_id="evt-near", end_offset_h=1,
                          markets=[_make_market_dict(condition_id="cid-near", end_offset_h=1)]),
-        _make_event_dict(event_id="evt-far", end_offset_h=5,
-                         markets=[_make_market_dict(condition_id="cid-far", end_offset_h=5)]),
     ]
-    payload = _series_payload(events=events_list)
     client = GammaSeriesClient()
     client._client = _mock_http(return_value=_make_response(payload))
 
@@ -395,13 +405,12 @@ async def test_fetch_active_market_returns_soonest_expiring():
 
 @pytest.mark.anyio
 async def test_fetch_active_market_skips_closed_events():
-    events_list = [
+    payload = [
         _make_event_dict(event_id="evt-closed", closed=True, end_offset_h=1,
                          markets=[_make_market_dict(condition_id="cid-closed", end_offset_h=1)]),
-        _make_event_dict(event_id="evt-open", closed=False, end_offset_h=2,
-                         markets=[_make_market_dict(condition_id="cid-open", end_offset_h=2)]),
+        _make_event_dict(event_id="evt-open",   closed=False, end_offset_h=2,
+                         markets=[_make_market_dict(condition_id="cid-open",   end_offset_h=2)]),
     ]
-    payload = _series_payload(events=events_list)
     client = GammaSeriesClient()
     client._client = _mock_http(return_value=_make_response(payload))
 
@@ -415,8 +424,8 @@ async def test_fetch_active_market_skips_closed_events():
 
 @pytest.mark.anyio
 async def test_fetch_next_markets_returns_upcoming_after_active():
-    """Next markets = all events after the first (active) one."""
-    events_list = [
+    """Next markets = all events after index 0 (active)."""
+    payload = [
         _make_event_dict(event_id="evt-1", end_offset_h=1,
                          markets=[_make_market_dict(condition_id="cid-1", end_offset_h=1)]),
         _make_event_dict(event_id="evt-2", end_offset_h=2,
@@ -424,7 +433,6 @@ async def test_fetch_next_markets_returns_upcoming_after_active():
         _make_event_dict(event_id="evt-3", end_offset_h=3,
                          markets=[_make_market_dict(condition_id="cid-3", end_offset_h=3)]),
     ]
-    payload = _series_payload(events=events_list)
     client = GammaSeriesClient()
     client._client = _mock_http(return_value=_make_response(payload))
 
@@ -439,12 +447,11 @@ async def test_fetch_next_markets_returns_upcoming_after_active():
 
 @pytest.mark.anyio
 async def test_fetch_next_markets_respects_count_limit():
-    events_list = [
+    payload = [
         _make_event_dict(event_id=f"evt-{i}", end_offset_h=i + 1,
                          markets=[_make_market_dict(condition_id=f"cid-{i}", end_offset_h=i + 1)])
         for i in range(5)
     ]
-    payload = _series_payload(events=events_list)
     client = GammaSeriesClient()
     client._client = _mock_http(return_value=_make_response(payload))
 
@@ -455,7 +462,7 @@ async def test_fetch_next_markets_respects_count_limit():
 
 @pytest.mark.anyio
 async def test_fetch_next_markets_empty_when_only_one_event():
-    payload = _series_payload(events=[_make_event_dict(end_offset_h=1)])
+    payload = [_make_event_dict(end_offset_h=1)]
     client = GammaSeriesClient()
     client._client = _mock_http(return_value=_make_response(payload))
 

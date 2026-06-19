@@ -111,21 +111,14 @@ class MarketUniverseService:
                 series = await self._client.fetch_series(slug)
                 series_id = series.series_id if series else None
 
+                # fetch_events returns events pre-sorted by end_time ascending
+                # with closed/expired events already filtered out.
+                # Index 0 = active (soonest expiry), rest = upcoming.
                 events = await self._client.fetch_events(slug, limit=20)
-
-                # Sort open events by end_time ascending.
-                # The first entry (soonest expiry) is the active market;
-                # all others are upcoming.
-                now = datetime.now(timezone.utc)
-                open_events = [
-                    e for e in events
-                    if not e.is_closed and e.end_time and e.end_time > now
-                ]
-                open_events.sort(key=lambda e: e.end_time)  # type: ignore[arg-type]
 
                 async with factory() as session:
                     upserted_this_series = 0
-                    for idx, event in enumerate(open_events):
+                    for idx, event in enumerate(events):
                         # First event = active, all others = upcoming
                         effective_active = idx == 0
                         for market in event.markets:

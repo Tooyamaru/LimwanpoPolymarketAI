@@ -1,23 +1,33 @@
 """
-Gamma Series API client — Sprint 7 / Sprint 8.5 fix.
+Gamma Series API client — Sprint 7 / Sprint 8.6 fix.
 
 Fetches series metadata, events, and markets from the Polymarket
 Gamma API (https://gamma-api.polymarket.com).
 
 Responsibilities:
-  - Fetch series info by slug
-  - Fetch active and upcoming events for a series via GET /series?slug=
-  - Parse clobTokenIds (JSON string) for YES / NO token IDs
+  - Fetch series info by slug           → GET /series?slug=
+  - Fetch live/upcoming events          → GET /events?series_slug=
+  - Parse clobTokenIds (JSON string)    → YES token at [0], NO token at [1]
   - Retry logic with exponential backoff
   - Rate limiting between requests
 
-Sprint 8.5 fixes:
-  Bug 1 — fetch_events now calls GET /series?slug= (returns embedded
-           live events) instead of GET /events?series_slug= (returned
-           historical events only).
-  Bug 2 — token IDs are parsed from the clobTokenIds JSON string field
-           (index 0 = YES, index 1 = NO) instead of a non-existent
-           tokens[] array.
+Sprint 8.5 fix (Bug 2):
+  Token IDs are now parsed from the clobTokenIds JSON string field
+  (index 0 = YES, index 1 = NO) instead of a non-existent tokens[] array.
+
+Sprint 8.6 fix (Bug 3):
+  fetch_events now calls:
+    GET /events?series_slug={slug}&order=startDate&ascending=false
+  instead of GET /series?slug= which embeds events with empty markets[].
+
+  The /series endpoint pre-stages upcoming events before they are
+  deployed; their markets[] array is empty until deployment.
+  The /events endpoint returns only deployed events whose markets are
+  live on the CLOB with clobTokenIds populated.
+
+  Ordering by startDate descending gives the 20 most-recently deployed
+  events. After fetch, we sort by end_time ascending so the soonest-
+  expiring market is identified as the active one.
 """
 
 import asyncio
@@ -71,7 +81,6 @@ class GammaSeriesRaw(BaseModel):
     id: Optional[str] = None
     slug: Optional[str] = None
     title: str = ""
-    events: list[GammaEventRaw] = Field(default_factory=list)
 
     model_config = {"populate_by_name": True}
 
@@ -219,32 +228,30 @@ class GammaSeriesClient:
         """
         Fetch active and upcoming events for the given series slug.
 
-        Calls GET /series?slug={series_slug} which returns the series
-        object with its currently live events embedded in events[].
-        This is the authoritative source used by the Polymarket website.
+        Calls GET /events?series_slug={slug}&order=startDate&ascending=false
+        which returns the most recently DEPLOYED events (limit up to 20).
+        These have markets[] populated with conditionId and clobTokenIds.
 
-        Sprint 8.5: replaces the old GET /events?series_slug= call that
-        returned historical (expired) events only.
+        Important: the GET /series endpoint embeds events in series.events[]
+        but those events are pre-staged and have empty markets[] until
+        deployment.  Never use that array for live market data.
+
+        The returned events are sorted by end_time ascending before being
+        returned so callers can rely on index 0 being the active market.
         """
         await asyncio.sleep(RATE_LIMIT_DELAY)
         rows = await self._get_with_retry(
-            "/series",
-            params={"slug": series_slug},
+            "/events",
+            params={
+                "series_slug": series_slug,
+                "limit": limit,
+                "order": "startDate",
+                "ascending": "false",
+            },
         )
 
-        if not rows:
-            logger.info(
-                "Gamma events fetched",
-                series_slug=series_slug,
-                events_count=0,
-            )
-            return []
-
-        series_data = rows[0] if isinstance(rows[0], dict) else {}
-        event_rows: list[dict] = series_data.get("events", [])
-
         events: list[GammaEvent] = []
-        for row in event_rows:
+        for row in rows:
             try:
                 raw = GammaEventRaw.model_validate(row)
                 markets = self._parse_markets(raw.markets)
@@ -269,6 +276,11 @@ class GammaSeriesClient:
                     error=str(exc),
                 )
 
+        # Sort by end_time ascending: index 0 = soonest expiry = active market
+        now = datetime.now(timezone.utc)
+        events = [e for e in events if not e.is_closed and e.end_time and e.end_time > now]
+        events.sort(key=lambda e: e.end_time)  # type: ignore[arg-type]
+
         logger.info(
             "Gamma events fetched",
             series_slug=series_slug,
@@ -280,18 +292,12 @@ class GammaSeriesClient:
         """
         Return the single currently-active market for a series.
 
-        The active market is the one with the soonest future end_time
-        among all open (not closed) events in the series.
+        The active market is at index 0 of fetch_events() (soonest
+        future end_time, already sorted by the fetch).
         """
-        now = datetime.now(timezone.utc)
         events = await self.fetch_events(series_slug, limit=20)
-        open_events = [
-            e for e in events
-            if not e.is_closed and e.end_time and e.end_time > now
-        ]
-        open_events.sort(key=lambda e: e.end_time)  # type: ignore[arg-type]
-        if open_events:
-            for market in open_events[0].markets:
+        if events:
+            for market in events[0].markets:
                 if not market.is_closed:
                     return market
         return None
@@ -302,17 +308,11 @@ class GammaSeriesClient:
         """
         Return up to `count` upcoming markets after the current active one.
 
-        Upcoming = all open events sorted by end_time, skipping the first
-        (the active one).
+        Upcoming = events[1:] from fetch_events() (already sorted by
+        end_time ascending, skipping the active market at index 0).
         """
-        now = datetime.now(timezone.utc)
         events = await self.fetch_events(series_slug, limit=20)
-        open_events = [
-            e for e in events
-            if not e.is_closed and e.end_time and e.end_time > now
-        ]
-        open_events.sort(key=lambda e: e.end_time)  # type: ignore[arg-type]
-        upcoming_events = open_events[1:]  # skip the active (first) event
+        upcoming_events = events[1:]  # skip the active (index 0)
         results: list[GammaMarket] = []
         for event in upcoming_events:
             results.extend(event.markets)

@@ -364,19 +364,20 @@ async def test_sync_marks_remaining_events_upcoming():
 
 
 @pytest.mark.anyio
-async def test_sync_skips_closed_events():
-    """Closed events are excluded from the open_events list and not upserted."""
+async def test_sync_upserts_only_events_returned_by_fetch_events():
+    """
+    sync() upserts every event that fetch_events() returns.
+    Filtering of closed/past events is the responsibility of fetch_events
+    (tested in test_gamma_series_client.py), so the mock returns only
+    the already-filtered open event — as the real implementation would.
+    """
+    open_end = _future(3600)
     events_returned = [
-        _make_event(
-            event_id="evt-closed",
-            is_closed=True,
-            markets=[_make_market(condition_id="cid-closed")],
-        ),
         _make_event(
             event_id="evt-open",
             is_closed=False,
-            end_time=_future(3600),
-            markets=[_make_market(condition_id="cid-open", end_time=_future(3600))],
+            end_time=open_end,
+            markets=[_make_market(condition_id="cid-open", end_time=open_end)],
         ),
     ]
 
@@ -413,5 +414,4 @@ async def test_sync_skips_closed_events():
 
     condition_ids = [c.get("condition_id") for c in captured]
     assert "cid-open" in condition_ids
-    assert "cid-closed" not in condition_ids
     await svc.close()
