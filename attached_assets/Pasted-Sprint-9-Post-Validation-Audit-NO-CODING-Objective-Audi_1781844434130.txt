@@ -1,0 +1,169 @@
+Sprint 9 Post-Validation Audit (NO CODING)
+
+Objective:
+Audit Sprint 9 implementation using live data and database evidence.
+
+Do NOT modify any code.
+Do NOT create commits.
+Do NOT write new features.
+
+Audit only.
+
+Tasks:
+
+1. Verify Active Market Count
+
+Run SQL:
+
+SELECT
+asset,
+timeframe,
+COUNT(*) AS active_count
+FROM market_universe
+WHERE status = 'active'
+GROUP BY asset, timeframe
+ORDER BY asset, timeframe;
+
+Then run:
+
+SELECT COUNT(*)
+FROM market_universe
+WHERE status = 'active';
+
+Expected result:
+
+12 active markets total
+(4 assets × 3 timeframes)
+
+2. Investigate Sprint 9 Discrepancy
+
+Sprint 8.6 report states:
+
+active = 12
+
+Sprint 9 report states:
+
+active_markets_with_data = 31
+
+Explain exactly why.
+
+Determine whether:
+
+* duplicate active records exist
+* stale records exist
+* scheduler overlap exists
+* status lifecycle bug exists
+* query logic is incorrect
+
+3. Check Active Market Integrity
+
+For every active market return:
+
+* asset
+* timeframe
+* condition_id
+* event_id
+* end_time
+* status
+
+Confirm:
+
+Only one active market exists per asset/timeframe.
+
+4. Validate Price Snapshot Coverage
+
+Run:
+
+SELECT COUNT(*) FROM market_price_snapshots;
+
+Run:
+
+SELECT
+condition_id,
+COUNT(*) AS snapshots
+FROM market_price_snapshots
+GROUP BY condition_id
+ORDER BY snapshots DESC
+LIMIT 20;
+
+Explain snapshot distribution.
+
+5. Validate Price Endpoint
+
+Fetch:
+
+GET /api/v1/price/stats
+
+Provide raw response.
+
+Fetch:
+
+GET /api/v1/price/active
+
+Provide sample records.
+
+6. Validate Order Book Parsing
+
+For BTC 5m active market:
+
+Show:
+
+* yes_bid
+* yes_ask
+* yes_mid
+* no_bid
+* no_ask
+* no_mid
+
+Verify whether values are still:
+
+0.01 / 0.99
+
+or have evolved.
+
+Determine whether parser is reading real best bid/ask levels correctly.
+
+7. Detect Duplicate Statuses
+
+Run SQL:
+
+SELECT
+asset,
+timeframe,
+COUNT(*)
+FROM market_universe
+WHERE status='active'
+GROUP BY asset,timeframe
+HAVING COUNT(*) > 1;
+
+Return results.
+
+8. Final Verdict
+
+Answer:
+
+A. Is Sprint 9 production ready?
+
+B. Is active market lifecycle correct?
+
+C. Can Sprint 10 begin safely?
+
+D. If not, what exact bug remains?
+
+Deliverable:
+
+Create:
+
+SPRINT9_AUDIT_REPORT.md
+
+Include:
+
+* raw SQL outputs
+* API outputs
+* findings
+* root-cause analysis
+* final recommendation
+
+Do not modify code.
+Do not create fixes.
+Audit only.
