@@ -12,3 +12,9 @@ id = "DVsYXURFiloCdHDbNiixm"
 uri = "file://SPRINT6_SOURCE_DISCOVERY_REPORT.md"
 type = "text"
 title = "SPRINT6_SOURCE_DISCOVERY_REPORT.md"
+
+[[outputs]]
+id = "6pNMQ16ErCqy-gCUP57Z0"
+uri = "file://SPRINT9_3_MARKET_DATA_QUALITY_AUDIT.md"
+type = "text"
+title = "Sprint 9.3 — Market Data Quality Audit"
