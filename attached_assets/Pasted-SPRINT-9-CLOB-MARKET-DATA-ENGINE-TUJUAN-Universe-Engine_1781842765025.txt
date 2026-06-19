@@ -1,0 +1,276 @@
+SPRINT 9 — CLOB MARKET DATA ENGINE
+
+TUJUAN
+
+Universe Engine sudah valid.
+
+Sekarang bangun layer yang mengambil data market langsung dari CLOB menggunakan:
+
+* condition_id
+* yes_token_id
+* no_token_id
+
+yang sudah tersimpan di market_universe.
+
+JANGAN mengubah layer Discovery, Scanner, Classifier, atau Universe.
+
+Fokus hanya pada market data live.
+
+==================================================
+TASK 1 — DATABASE MODEL
+=======================
+
+Buat model baru:
+
+market_price_snapshot.py
+
+table:
+
+market_price_snapshots
+
+columns:
+
+id
+market_universe_id
+condition_id
+yes_token_id
+no_token_id
+
+yes_bid
+yes_ask
+yes_mid
+
+no_bid
+no_ask
+no_mid
+
+spread_yes
+spread_no
+
+volume
+
+liquidity
+
+captured_at
+
+==================================================
+TASK 2 — CLOB CLIENT
+====================
+
+Buat:
+
+clob_client.py
+
+Support:
+
+get_market(condition_id)
+
+Ambil dari CLOB endpoint yang benar.
+
+Ekstrak:
+
+best bid
+best ask
+
+YES side
+NO side
+
+Jika tersedia:
+
+volume
+liquidity
+
+Tambahkan retry.
+
+Tambahkan timeout.
+
+Tambahkan rate limit protection.
+
+==================================================
+TASK 3 — REPOSITORY
+===================
+
+Buat:
+
+market_price_repository.py
+
+Functions:
+
+save_snapshot()
+
+get_latest_snapshot()
+
+get_latest_by_condition()
+
+get_latest_active_markets()
+
+==================================================
+TASK 4 — PRICE SERVICE
+======================
+
+Buat:
+
+market_price_service.py
+
+Flow:
+
+1.
+
+Load active markets dari market_universe
+
+2.
+
+Untuk setiap market:
+
+call CLOB
+
+3.
+
+Hitung:
+
+yes_mid = (bid + ask)/2
+
+no_mid = (bid + ask)/2
+
+spread_yes
+
+spread_no
+
+4.
+
+Simpan snapshot
+
+==================================================
+TASK 5 — SCHEDULER
+==================
+
+Tambahkan scheduler baru.
+
+PRICE_REFRESH_SECONDS=10
+
+Setiap 10 detik:
+
+sync active market prices
+
+JANGAN mengganggu universe scheduler.
+
+==================================================
+TASK 6 — API
+============
+
+Router:
+
+price.py
+
+Endpoints:
+
+GET /price/latest
+
+GET /price/active
+
+GET /price/{condition_id}
+
+GET /price/stats
+
+Response harus menampilkan:
+
+asset
+timeframe
+
+condition_id
+
+yes_bid
+yes_ask
+yes_mid
+
+no_bid
+no_ask
+no_mid
+
+spread
+
+liquidity
+
+captured_at
+
+==================================================
+TASK 7 — VALIDATION
+===================
+
+Verifikasi live terhadap minimal:
+
+BTC 5m
+ETH 5m
+SOL 5m
+XRP 5m
+
+Pastikan data berasal dari market aktif.
+
+==================================================
+TASK 8 — TESTS
+==============
+
+Minimal:
+
+60+ test baru
+
+Coverage:
+
+client
+repository
+service
+api
+
+Semua test lama harus tetap hijau.
+
+Target:
+
+300+ total tests passing.
+
+==================================================
+TASK 9 — REPORT
+===============
+
+Buat:
+
+SPRINT9_CLOB_MARKET_DATA_REPORT.md
+
+Isi:
+
+* architecture
+* endpoint yang dipakai
+* contoh response mentah
+* contoh BTC active market
+* contoh ETH active market
+* contoh SOL active market
+* contoh XRP active market
+* performa scheduler
+* jumlah snapshot tersimpan
+
+==================================================
+TASK 10 — GITHUB
+================
+
+SETELAH SEMUA SELESAI:
+
+jalankan:
+
+git status
+
+jika ada perubahan:
+
+git add .
+git commit -m "Sprint 9 CLOB market data engine"
+git push
+
+Lampirkan:
+
+1. hasil test
+2. hasil endpoint live
+3. isi report
+4. output git status
+5. output git push
+
+Jangan mulai Sprint 10.
+
+Fokus hanya pada CLOB Market Data Engine.

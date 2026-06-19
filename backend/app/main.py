@@ -40,6 +40,35 @@ async def _run_scanner_loop(scanner) -> None:
             logger.error("Scanner periodic run failed", error=str(exc))
 
 
+async def _run_price_refresh_loop(service) -> None:
+    """
+    Price refresh background loop — Sprint 9.
+
+    Optionally runs once on startup, then repeats every
+    PRICE_REFRESH_SECONDS (default 10 s).
+    Fetches live CLOB bid/ask for all active universe markets.
+    """
+    from app.core.database import get_session_factory
+
+    async def _one_cycle():
+        factory = get_session_factory()
+        async with factory() as session:
+            await service.refresh(session)
+
+    if settings.PRICE_REFRESH_RUN_ON_STARTUP:
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Price refresh startup run failed", error=str(exc))
+
+    while True:
+        await asyncio.sleep(settings.PRICE_REFRESH_SECONDS)
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Price refresh periodic run failed", error=str(exc))
+
+
 async def _run_universe_sync_loop(service) -> None:
     """
     Universe sync background loop — Sprint 7.
@@ -109,6 +138,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.UNIVERSE_SYNC_RUN_ON_STARTUP,
         )
 
+    # ── Price refresh (every 10 s) — Sprint 9 ────────────────────────────────
+    price_task = None
+    if settings.PRICE_REFRESH_ENABLED:
+        from app.services.market_price_service import MarketPriceService
+        price_service = MarketPriceService()
+        price_task = asyncio.create_task(_run_price_refresh_loop(price_service))
+        app.state.price_service = price_service
+        logger.info(
+            "Price refresh started",
+            interval=settings.PRICE_REFRESH_SECONDS,
+            run_on_startup=settings.PRICE_REFRESH_RUN_ON_STARTUP,
+        )
+
     yield
 
     # ── Graceful shutdown ─────────────────────────────────────────────────────
@@ -118,6 +160,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         (collector_task, "collector"),
         (scanner_task, "scanner"),
         (universe_task, "universe"),
+        (price_task, "price"),
     ]:
         if task is not None:
             task.cancel()
@@ -136,6 +179,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     if settings.UNIVERSE_SYNC_ENABLED and hasattr(app.state, "universe_service"):
         await app.state.universe_service.close()
+
+    if settings.PRICE_REFRESH_ENABLED and hasattr(app.state, "price_service"):
+        await app.state.price_service.close()
 
     await close_db()
     await close_redis()

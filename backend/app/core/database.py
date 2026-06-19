@@ -131,6 +131,17 @@ async def init_db() -> None:
                 except Exception as col_exc:
                     logger.debug("Sprint 7 migration skipped", stmt=stmt, error=str(col_exc))
 
+            # Sprint 9: market_price_snapshots created by create_all above.
+            # Add performance indexes for common query patterns.
+            sprint9_migrations = [
+                "CREATE INDEX IF NOT EXISTS ix_mps_condition_captured ON market_price_snapshots (condition_id, captured_at DESC)",
+            ]
+            for stmt in sprint9_migrations:
+                try:
+                    await conn.execute(text(stmt))
+                except Exception as col_exc:
+                    logger.debug("Sprint 9 migration skipped", stmt=stmt, error=str(col_exc))
+
         logger.info("Database tables initialised")
     except Exception as exc:
         logger.warning("Database init skipped — DB not reachable at startup", error=str(exc))
