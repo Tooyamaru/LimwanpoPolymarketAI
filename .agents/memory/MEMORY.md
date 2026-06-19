@@ -1,3 +1,5 @@
 - [Polymarket page size](polymarket-page-size.md) — API returns ~1000 records/page despite limit=100; MAX_PAGES=250 ≈ 250k markets, ~4 min scan
 - [Sprint 4 DB migration](sprint4-db-migration.md) — discovery_runs table gains 5 classification count columns via ADD COLUMN IF NOT EXISTS in init_db()
 - [Test path](test-path.md) — tests live at backend/app/tests/, not backend/tests/
+- [Gamma series endpoint](gamma-series-endpoint.md) — live markets from GET /series?slug= (events[] embedded); GET /events?series_slug= returns only expired historical events
+- [Gamma clobTokenIds](gamma-clob-token-ids.md) — token IDs in clobTokenIds JSON string (index 0=YES, index 1=NO); tokens[] array does not exist in the API response

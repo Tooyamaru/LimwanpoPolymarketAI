@@ -1,0 +1,174 @@
+SPRINT 8.5 — UNIVERSE ENGINE FIX
+
+IMPORTANT
+
+This is a repair sprint.
+
+Do NOT create new architecture.
+
+Do NOT create new database tables.
+
+Do NOT create new services.
+
+Fix Sprint 7 only.
+
+=================================================
+
+BUG 1
+
+Current:
+
+GET /events?series_slug={slug}
+
+Wrong.
+
+Replace with:
+
+GET /series?slug={slug}
+
+Use embedded events[].
+
+=================================================
+
+BUG 2
+
+Current token extraction:
+
+tokens[]
+
+Wrong.
+
+Use:
+
+clobTokenIds
+
+Parse JSON string.
+
+Index 0 = YES token
+
+Index 1 = NO token
+
+=================================================
+
+TASK 1
+
+Fix GammaSeriesClient.
+
+=================================================
+
+TASK 2
+
+Fix token extraction.
+
+=================================================
+
+TASK 3
+
+Run universe sync.
+
+=================================================
+
+TASK 4
+
+Verify:
+
+GET /api/v1/universe
+
+GET /api/v1/universe/active
+
+GET /api/v1/universe/upcoming
+
+GET /api/v1/universe/stats
+
+=================================================
+
+TASK 5
+
+Show counts:
+
+active
+upcoming
+expired
+
+=================================================
+
+TASK 6
+
+Verify all 12 series:
+
+BTC
+ETH
+SOL
+XRP
+
+5M
+15M
+1H
+
+=================================================
+
+TASK 7
+
+Verify:
+
+condition_id populated
+
+yes_token_id populated
+
+no_token_id populated
+
+=================================================
+
+TASK 8
+
+Testing
+
+Keep all existing tests green.
+
+Add new tests covering:
+
+series endpoint parsing
+
+clobTokenIds parsing
+
+active market detection
+
+upcoming market detection
+
+=================================================
+
+OUTPUT
+
+SPRINT8_5_FIX_REPORT.md
+
+Include:
+
+before
+
+after
+
+active count
+
+upcoming count
+
+expired count
+
+token population %
+
+=================================================
+
+FINAL STEP
+
+Run all tests.
+
+git add .
+
+git commit -m "Sprint 8.5 complete - Universe Engine fixed"
+
+git push origin sprint-7-market-universe
+
+Show:
+
+git status
+
+Must be clean.

@@ -1,9 +1,16 @@
 """
-Market Universe Service — Sprint 7.
+Market Universe Service — Sprint 7 / Sprint 8.5 fix.
 
 Syncs all 12 known Gamma Series into the market_universe table.
 Determines status (active / upcoming / expired) for each market
 and keeps the universe current on every sync cycle.
+
+Sprint 8.5 fix:
+  Events returned by the series endpoint all carry active=True,
+  closed=False.  Status is now determined by sort position:
+    - The event with the soonest future end_time → active
+    - All other open events → upcoming
+    - expire_stale_markets() handles past-end_time cleanup
 """
 
 import asyncio
@@ -81,6 +88,10 @@ class MarketUniverseService:
         """
         Sync the entire universe.  Returns a summary dict.
         Target: completes in under 10 seconds for all 12 series.
+
+        Sprint 8.5: events from the series endpoint all have active=True.
+        We sort by end_time ascending so the soonest-expiring open event
+        gets status="active" and all others get status="upcoming".
         """
         started_at = datetime.now(timezone.utc)
         logger.info("Universe sync started", series_count=len(SERIES_CATALOG))
@@ -102,12 +113,24 @@ class MarketUniverseService:
 
                 events = await self._client.fetch_events(slug, limit=20)
 
+                # Sort open events by end_time ascending.
+                # The first entry (soonest expiry) is the active market;
+                # all others are upcoming.
+                now = datetime.now(timezone.utc)
+                open_events = [
+                    e for e in events
+                    if not e.is_closed and e.end_time and e.end_time > now
+                ]
+                open_events.sort(key=lambda e: e.end_time)  # type: ignore[arg-type]
+
                 async with factory() as session:
                     upserted_this_series = 0
-                    for event in events:
+                    for idx, event in enumerate(open_events):
+                        # First event = active, all others = upcoming
+                        effective_active = idx == 0
                         for market in event.markets:
                             status = _determine_status(
-                                is_active=market.is_active,
+                                is_active=effective_active,
                                 is_closed=market.is_closed,
                                 start_time=market.start_time,
                                 end_time=market.end_time,

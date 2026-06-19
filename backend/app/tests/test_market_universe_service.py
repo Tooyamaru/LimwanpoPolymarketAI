@@ -1,13 +1,17 @@
 """
-Market Universe Service tests — Sprint 7.
+Market Universe Service tests — Sprint 7 / Sprint 8.5 fix.
 
 Tests the sync logic, status determination, and error-tolerance
 of MarketUniverseService using mocked clients.
+
+Sprint 8.5 additions:
+  - test_sync_marks_first_event_active
+  - test_sync_marks_remaining_events_upcoming
 """
 
 import pytest
 from datetime import datetime, timezone, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch, call
 
 from app.services.market_universe_service import (
     MarketUniverseService,
@@ -48,13 +52,19 @@ def _make_market(
     )
 
 
-def _make_event(markets=None, is_active=True, is_closed=False):
+def _make_event(
+    markets=None,
+    is_active=True,
+    is_closed=False,
+    end_time=None,
+    event_id="evt-1",
+):
     return GammaEvent(
-        event_id="evt-1",
+        event_id=event_id,
         slug="btc-5m-event",
         title="BTC 5m event",
         start_time=_now(),
-        end_time=_future(),
+        end_time=end_time or _future(),
         is_active=is_active,
         is_closed=is_closed,
         markets=markets or [_make_market()],
@@ -224,4 +234,184 @@ async def test_sync_errors_are_collected_not_raised():
                 result = await svc.sync()
 
     assert len(result["errors"]) > 0
+    await svc.close()
+
+
+# ── Sprint 8.5: active vs upcoming status assignment ──────────────────────────
+
+@pytest.mark.anyio
+async def test_sync_marks_first_event_active():
+    """
+    When the series returns multiple open events, the one with the
+    soonest end_time must be upserted with status="active".
+    """
+    # Two events: near=1h away, far=5h away — both active=True from API
+    near_end = _future(3600)
+    far_end = _future(18000)
+    events_returned = [
+        _make_event(
+            event_id="evt-near",
+            end_time=near_end,
+            markets=[_make_market(condition_id="cid-near", end_time=near_end)],
+        ),
+        _make_event(
+            event_id="evt-far",
+            end_time=far_end,
+            markets=[_make_market(condition_id="cid-far", end_time=far_end)],
+        ),
+    ]
+
+    svc = MarketUniverseService()
+    mock_client = MagicMock()
+    mock_client.fetch_series = AsyncMock(return_value=None)
+    mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.close = AsyncMock()
+    svc._client = mock_client
+
+    captured: list[dict] = []
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+    with patch("app.services.market_universe_service.get_session_factory") as mock_factory:
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.commit = AsyncMock()
+        mock_factory_instance = MagicMock()
+        mock_factory_instance.return_value = mock_session
+        mock_factory.return_value = mock_factory_instance
+
+        with patch(
+            "app.services.market_universe_service.upsert_universe_market",
+            side_effect=capture_upsert,
+        ):
+            with patch(
+                "app.services.market_universe_service.expire_stale_markets",
+                new=AsyncMock(return_value=0),
+            ):
+                await svc.sync()
+
+    near_calls = [c for c in captured if c.get("condition_id") == "cid-near"]
+    assert any(c["status"] == "active" for c in near_calls), \
+        "soonest-expiring event must be marked active"
+    await svc.close()
+
+
+@pytest.mark.anyio
+async def test_sync_marks_remaining_events_upcoming():
+    """
+    All events after the first (active) one must be upserted with
+    status="upcoming".
+    """
+    near_end = _future(3600)
+    mid_end = _future(7200)
+    far_end = _future(10800)
+    events_returned = [
+        _make_event(
+            event_id="evt-near",
+            end_time=near_end,
+            markets=[_make_market(condition_id="cid-near", end_time=near_end)],
+        ),
+        _make_event(
+            event_id="evt-mid",
+            end_time=mid_end,
+            markets=[_make_market(condition_id="cid-mid", end_time=mid_end)],
+        ),
+        _make_event(
+            event_id="evt-far",
+            end_time=far_end,
+            markets=[_make_market(condition_id="cid-far", end_time=far_end)],
+        ),
+    ]
+
+    svc = MarketUniverseService()
+    mock_client = MagicMock()
+    mock_client.fetch_series = AsyncMock(return_value=None)
+    mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.close = AsyncMock()
+    svc._client = mock_client
+
+    captured: list[dict] = []
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+    with patch("app.services.market_universe_service.get_session_factory") as mock_factory:
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.commit = AsyncMock()
+        mock_factory_instance = MagicMock()
+        mock_factory_instance.return_value = mock_session
+        mock_factory.return_value = mock_factory_instance
+
+        with patch(
+            "app.services.market_universe_service.upsert_universe_market",
+            side_effect=capture_upsert,
+        ):
+            with patch(
+                "app.services.market_universe_service.expire_stale_markets",
+                new=AsyncMock(return_value=0),
+            ):
+                await svc.sync()
+
+    mid_calls = [c for c in captured if c.get("condition_id") == "cid-mid"]
+    far_calls = [c for c in captured if c.get("condition_id") == "cid-far"]
+    assert any(c["status"] == "upcoming" for c in mid_calls), "second event must be upcoming"
+    assert any(c["status"] == "upcoming" for c in far_calls), "third event must be upcoming"
+    await svc.close()
+
+
+@pytest.mark.anyio
+async def test_sync_skips_closed_events():
+    """Closed events are excluded from the open_events list and not upserted."""
+    events_returned = [
+        _make_event(
+            event_id="evt-closed",
+            is_closed=True,
+            markets=[_make_market(condition_id="cid-closed")],
+        ),
+        _make_event(
+            event_id="evt-open",
+            is_closed=False,
+            end_time=_future(3600),
+            markets=[_make_market(condition_id="cid-open", end_time=_future(3600))],
+        ),
+    ]
+
+    svc = MarketUniverseService()
+    mock_client = MagicMock()
+    mock_client.fetch_series = AsyncMock(return_value=None)
+    mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.close = AsyncMock()
+    svc._client = mock_client
+
+    captured: list[dict] = []
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+    with patch("app.services.market_universe_service.get_session_factory") as mock_factory:
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.commit = AsyncMock()
+        mock_factory_instance = MagicMock()
+        mock_factory_instance.return_value = mock_session
+        mock_factory.return_value = mock_factory_instance
+
+        with patch(
+            "app.services.market_universe_service.upsert_universe_market",
+            side_effect=capture_upsert,
+        ):
+            with patch(
+                "app.services.market_universe_service.expire_stale_markets",
+                new=AsyncMock(return_value=0),
+            ):
+                await svc.sync()
+
+    condition_ids = [c.get("condition_id") for c in captured]
+    assert "cid-open" in condition_ids
+    assert "cid-closed" not in condition_ids
     await svc.close()
