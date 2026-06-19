@@ -114,8 +114,14 @@ class ClobClient:
         """
         Fetch the order book for a single token and return best bid/ask.
 
-        Bids are sorted descending (highest first) → index 0 = best bid.
-        Asks are sorted ascending (lowest first)  → index 0 = best ask.
+        The Polymarket CLOB /book endpoint returns bids in ASCENDING price
+        order (lowest price first) and asks in DESCENDING price order (highest
+        price first).  Therefore:
+          - best bid  = bids[-1]  (highest price = last element)
+          - best ask  = asks[-1]  (lowest price  = last element)
+
+        DEF-001 fix (Sprint 9.4): corrected from bids[0]/asks[0] which
+        returned the worst bid (0.01) and worst ask (0.99).
         """
         await asyncio.sleep(RATE_LIMIT_DELAY)
         data = await self._get_json("/book", {"token_id": token_id})
@@ -130,13 +136,13 @@ class ClobClient:
 
         if bids:
             try:
-                best_bid = float(bids[0]["price"])
+                best_bid = float(bids[-1]["price"])
             except (KeyError, ValueError, TypeError):
                 pass
 
         if asks:
             try:
-                best_ask = float(asks[0]["price"])
+                best_ask = float(asks[-1]["price"])
             except (KeyError, ValueError, TypeError):
                 pass
 
