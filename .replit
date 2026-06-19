@@ -23,18 +23,43 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "redis-server --daemonize yes --port 6379 && sleep 1 && cd backend && uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 6379
+externalPort = 3000
+
 [deployment]
 deploymentTarget = "autoscale"
 run = ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--workers", "4"]
+
+[userenv]
+
+[userenv.shared]
+APP_ENV = "development"
+APP_VERSION = "0.4.0"
+DEBUG = "false"
+LOG_LEVEL = "INFO"
+LOG_FORMAT = "json"
+REDIS_URL = "redis://localhost:6379/0"
+COLLECTOR_INTERVAL_SECONDS = "5"
+COLLECTOR_ENABLED = "true"
+SCANNER_INTERVAL_SECONDS = "300"
+SCANNER_ENABLED = "true"
+SCANNER_RUN_ON_STARTUP = "false"
+UNIVERSE_SYNC_INTERVAL_SECONDS = "60"
+UNIVERSE_SYNC_ENABLED = "true"
+UNIVERSE_SYNC_RUN_ON_STARTUP = "false"
+PRICE_REFRESH_SECONDS = "10"
+PRICE_REFRESH_ENABLED = "true"
+PRICE_REFRESH_RUN_ON_STARTUP = "false"
