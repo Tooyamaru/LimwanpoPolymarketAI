@@ -3,3 +3,7 @@
 - [Test path](test-path.md) — tests live at backend/app/tests/, not backend/tests/
 - [Gamma events endpoint](gamma-events-endpoint.md) — deployed live events from GET /events?series_slug=&order=startDate&ascending=false; GET /series?slug= embeds pre-staged events with empty markets[]
 - [Gamma clobTokenIds](gamma-clob-token-ids.md) — token IDs in clobTokenIds JSON string (index 0=YES, index 1=NO); tokens[] array does not exist in the API response
+- [CLOB book sort order](clob-book-sort-order.md) — bids ASCENDING (0.01→0.49), asks DESCENDING (0.99→0.51); best bid = bids[-1], best ask = asks[-1] (DEF-001 fixed in clob_client.py)
+- [DEF-002 startup race](def002-startup-race.md) — universe_sync and price_refresh both asyncio.create_task in lifespan() with no gate; fixed with asyncio.Event in main.py (Sprint 9.5)
+- [Market maturity status](market-maturity.md) — all 12 active markets at mid=0.50, zero variance, 100% null volume/liquidity as of 2026-06-19; pure AMM init phase, no human trades yet
+- [Market lifetimes](market-lifetimes.md) — 5m/15m markets live ~24h each; 1H markets live ~48h; names refer to prediction window not expiry; 27 upcoming per 5m asset

@@ -24,3 +24,21 @@ id = "bbDSZJdJVpb-DbGHW7Sgh"
 uri = "file://SIGNAL_FEASIBILITY_REPORT.md"
 type = "text"
 title = "Sprint 9.4 — Signal Feasibility Report"
+
+[[outputs]]
+id = "MArkfXdyvzW618ZysFd5A"
+uri = "file://DEF002_ROOT_CAUSE_REPORT.md"
+type = "text"
+title = "DEF-002 Root Cause Report"
+
+[[outputs]]
+id = "3gZzzmiiu5xS_lKV-K2PX"
+uri = "file://MARKET_READINESS_AUDIT.md"
+type = "text"
+title = "Market Readiness Audit"
+
+[[outputs]]
+id = "rhcTjtkXTEBqqXNwNBLgk"
+uri = "file://ALPHA_DISCOVERY_REPORT.md"
+type = "text"
+title = "Alpha Discovery Report"

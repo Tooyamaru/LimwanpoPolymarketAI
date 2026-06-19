@@ -1,0 +1,72 @@
+SPRINT 9.5 — Market Readiness & Alpha Discovery Audit
+
+Tujuan sprint ini BUKAN membangun signal engine.
+
+Tujuan utama adalah membuktikan apakah data Polymarket aktif benar-benar mengandung informasi prediktif yang layak dijadikan input signal.
+
+Lakukan audit berikut:
+
+1. DEF-002 Verification
+
+* Buktikan secara definitif penyebab upcoming-market leakage.
+* Verifikasi apakah leakage berasal dari startup ordering, stale cache, atau race condition antara universe_sync dan price_refresh.
+* Berikan timeline event yang dapat direproduksi.
+* Usulkan fix permanen.
+
+2. 24-Hour Market Readiness Observation
+
+* Jalankan observasi minimal 24 jam.
+* Rekam:
+
+  * mid-price variance
+  * spread variance
+  * volume availability
+  * liquidity availability
+  * active market rotations
+* Jangan menarik kesimpulan hanya dari observasi jangka pendek.
+
+3. Lead-Lag Analysis
+
+* Bandingkan perubahan harga Binance vs perubahan mid-price Polymarket.
+* Uji lag:
+
+  * 10 detik
+  * 30 detik
+  * 60 detik
+  * 5 menit
+  * 15 menit
+* Cari apakah Polymarket bereaksi terhadap pergerakan spot market.
+
+4. Order Flow Feasibility
+
+* Audit apakah API menyediakan data yang cukup untuk menghitung:
+
+  * depth imbalance
+  * top-5 depth
+  * top-10 depth
+  * bid pressure
+  * ask pressure
+* Jika tersedia, desain skema penyimpanan historis.
+
+5. Market Rotation Risk
+
+* Audit apakah signal yang dibuat pada market lama masih valid setelah rotasi.
+* Ukur rata-rata lifetime active market.
+* Identifikasi potensi signal invalidation akibat pergantian condition_id.
+
+6. Alpha Discovery Verdict
+   Jawab secara eksplisit:
+   A. Apakah terdapat price discovery nyata?
+   B. Apakah terdapat order-flow signal?
+   C. Apakah terdapat lead-lag terhadap Binance?
+   D. Apakah Polymarket layak menjadi sumber alpha?
+   E. Jika belum, data tambahan apa yang perlu dikumpulkan?
+
+Output wajib:
+
+* MARKET_READINESS_AUDIT.md
+* ALPHA_DISCOVERY_REPORT.md
+* DEF002_ROOT_CAUSE_REPORT.md
+
+Jangan melakukan implementasi signal engine sebelum audit selesai.
+Fokus pada pembuktian keberadaan alpha terlebih dahulu.

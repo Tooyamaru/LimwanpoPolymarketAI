@@ -40,13 +40,24 @@ async def _run_scanner_loop(scanner) -> None:
             logger.error("Scanner periodic run failed", error=str(exc))
 
 
-async def _run_price_refresh_loop(service) -> None:
+async def _run_price_refresh_loop(
+    service,
+    universe_ready: asyncio.Event | None = None,
+) -> None:
     """
     Price refresh background loop — Sprint 9.
 
     Optionally runs once on startup, then repeats every
     PRICE_REFRESH_SECONDS (default 10 s).
     Fetches live CLOB bid/ask for all active universe markets.
+
+    DEF-002 fix (Sprint 9.5): accepts an optional ``universe_ready`` event.
+    When provided, the startup run is deferred until the event is set by
+    ``_run_universe_sync_loop``, guaranteeing that the active-market list in
+    ``market_universe`` is up-to-date before the first CLOB poll.  Without
+    this gate, both tasks raced at startup and the price refresh queried stale
+    condition IDs from the previous session, producing ``bid=0.01 /
+    spread=0.98`` snapshots for the first ~2 minutes of every restart.
     """
     from app.core.database import get_session_factory
 
@@ -56,6 +67,10 @@ async def _run_price_refresh_loop(service) -> None:
             await service.refresh(session)
 
     if settings.PRICE_REFRESH_RUN_ON_STARTUP:
+        if universe_ready is not None:
+            logger.info("Price refresh waiting for first universe sync to complete")
+            await universe_ready.wait()
+            logger.info("Universe ready — price refresh startup cycle starting")
         try:
             await _one_cycle()
         except Exception as exc:
@@ -69,19 +84,33 @@ async def _run_price_refresh_loop(service) -> None:
             logger.error("Price refresh periodic run failed", error=str(exc))
 
 
-async def _run_universe_sync_loop(service) -> None:
+async def _run_universe_sync_loop(
+    service,
+    universe_ready: asyncio.Event | None = None,
+) -> None:
     """
     Universe sync background loop — Sprint 7.
 
     Optionally runs once on startup, then repeats every
     UNIVERSE_SYNC_INTERVAL_SECONDS (default 60 s).
     Only syncs known series — no large-scale market scanning.
+
+    DEF-002 fix (Sprint 9.5): accepts an optional ``universe_ready`` event
+    that is set after the first sync attempt completes (success *or* error).
+    This unblocks ``_run_price_refresh_loop`` so it only polls the CLOB
+    after ``market_universe`` reflects the current active markets.  The event
+    is set even on error so price refresh is never left hanging.
     """
     if settings.UNIVERSE_SYNC_RUN_ON_STARTUP:
         try:
             await service.sync()
+            logger.info("Universe sync startup complete")
         except Exception as exc:
             logger.error("Universe sync startup run failed", error=str(exc))
+        finally:
+            if universe_ready is not None:
+                universe_ready.set()
+                logger.info("Universe ready event set — price refresh may proceed")
 
     while True:
         await asyncio.sleep(settings.UNIVERSE_SYNC_INTERVAL_SECONDS)
@@ -125,12 +154,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.SCANNER_RUN_ON_STARTUP,
         )
 
+    # ── DEF-002 fix: gate that price refresh must wait on before its first
+    # cycle.  Set by universe sync after its startup run completes so that
+    # market_universe already contains the current active condition IDs.
+    universe_ready_event: asyncio.Event | None = None
+    if settings.UNIVERSE_SYNC_ENABLED and settings.PRICE_REFRESH_ENABLED:
+        universe_ready_event = asyncio.Event()
+
     # ── Universe sync (every 60 s) — Sprint 7 ────────────────────────────────
     universe_task = None
     if settings.UNIVERSE_SYNC_ENABLED:
         from app.services.market_universe_service import MarketUniverseService
         universe_service = MarketUniverseService()
-        universe_task = asyncio.create_task(_run_universe_sync_loop(universe_service))
+        universe_task = asyncio.create_task(
+            _run_universe_sync_loop(universe_service, universe_ready=universe_ready_event)
+        )
         app.state.universe_service = universe_service
         logger.info(
             "Universe sync started",
@@ -143,7 +181,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if settings.PRICE_REFRESH_ENABLED:
         from app.services.market_price_service import MarketPriceService
         price_service = MarketPriceService()
-        price_task = asyncio.create_task(_run_price_refresh_loop(price_service))
+        price_task = asyncio.create_task(
+            _run_price_refresh_loop(price_service, universe_ready=universe_ready_event)
+        )
         app.state.price_service = price_service
         logger.info(
             "Price refresh started",
