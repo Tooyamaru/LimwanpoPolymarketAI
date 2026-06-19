@@ -86,6 +86,61 @@ async def upsert_universe_market(
     return market
 
 
+async def demote_excess_active_markets(
+    session: AsyncSession,
+    asset: str,
+    timeframe: str,
+    keep_condition_id: Optional[str],
+) -> int:
+    """
+    Sprint 9.1 — enforce the "exactly one active per (asset, timeframe)" invariant.
+
+    After sync has determined which condition_id is the true active market for
+    a series, call this function to downgrade every OTHER active record for the
+    same (asset, timeframe) to "upcoming".
+
+    This handles stale records that were inserted as "active" in a previous sync
+    cycle but whose condition_ids are no longer returned by the current
+    fetch_events call (e.g. old windows that fell off the top-20 page but whose
+    end_time is still in the future, so expire_stale_markets() cannot touch them).
+
+    Args:
+        session:           The current async session (inside an open transaction).
+        asset:             Asset identifier, e.g. "BTC".
+        timeframe:         Timeframe string, e.g. "5m".
+        keep_condition_id: The condition_id that must STAY active.
+                           Pass None when there is no active market for this series
+                           (e.g. all markets expired) — demotes all active rows.
+
+    Returns:
+        Number of rows demoted from "active" → "upcoming".
+    """
+    now = datetime.now(timezone.utc)
+    stmt = (
+        update(MarketUniverse)
+        .where(
+            MarketUniverse.asset == asset,
+            MarketUniverse.timeframe == timeframe,
+            MarketUniverse.status == "active",
+            MarketUniverse.condition_id != keep_condition_id
+            if keep_condition_id
+            else True,
+        )
+        .values(status="upcoming", updated_at=now)
+    )
+    result = await session.execute(stmt)
+    count = result.rowcount
+    if count:
+        logger.info(
+            "Demoted excess active markets to upcoming",
+            asset=asset,
+            timeframe=timeframe,
+            kept=keep_condition_id,
+            demoted=count,
+        )
+    return count
+
+
 async def expire_stale_markets(session: AsyncSession) -> int:
     """
     Mark any active/upcoming market whose end_time is in the past as expired.

@@ -363,6 +363,322 @@ async def test_sync_marks_remaining_events_upcoming():
     await svc.close()
 
 
+# ── Sprint 9.1: market-level active/upcoming enforcement ──────────────────────
+
+@pytest.mark.anyio
+async def test_sprint91_three_consecutive_5m_windows_only_first_active():
+    """
+    Case A: given three future 5m markets (03:00, 03:05, 03:10) inside
+    separate events for the same series, only the soonest-expiring market
+    (03:00) must be marked active; the other two must be upcoming.
+    """
+    t0 = _future(300)    # 03:00 — soonest
+    t1 = _future(600)    # 03:05
+    t2 = _future(900)    # 03:10
+
+    events_returned = [
+        _make_event(event_id="evt-0", end_time=t0,
+                    markets=[_make_market(condition_id="cid-0300", end_time=t0)]),
+        _make_event(event_id="evt-1", end_time=t1,
+                    markets=[_make_market(condition_id="cid-0305", end_time=t1)]),
+        _make_event(event_id="evt-2", end_time=t2,
+                    markets=[_make_market(condition_id="cid-0310", end_time=t2)]),
+    ]
+
+    svc = MarketUniverseService()
+    mock_client = MagicMock()
+    mock_client.fetch_series = AsyncMock(return_value=None)
+    mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.close = AsyncMock()
+    svc._client = mock_client
+
+    captured: list[dict] = []
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+    with patch("app.services.market_universe_service.get_session_factory") as mock_factory:
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.commit = AsyncMock()
+        mock_factory_instance = MagicMock()
+        mock_factory_instance.return_value = mock_session
+        mock_factory.return_value = mock_factory_instance
+
+        with patch("app.services.market_universe_service.upsert_universe_market",
+                   side_effect=capture_upsert):
+            with patch("app.services.market_universe_service.expire_stale_markets",
+                       new=AsyncMock(return_value=0)):
+                await svc.sync()
+
+    by_cid = {c["condition_id"]: c["status"] for c in captured}
+    assert by_cid.get("cid-0300") == "active",  "03:00 must be active"
+    assert by_cid.get("cid-0305") == "upcoming", "03:05 must be upcoming"
+    assert by_cid.get("cid-0310") == "upcoming", "03:10 must be upcoming"
+    await svc.close()
+
+
+@pytest.mark.anyio
+async def test_sprint91_two_markets_same_event_only_soonest_active():
+    """
+    Case A (multi-market variant): if a single Gamma event contains two
+    markets with different end_times, only the market with the smaller
+    end_time must be marked active.  This is the exact bug from the audit:
+    both markets were previously marked active because they shared idx==0.
+    """
+    t0 = _future(300)
+    t1 = _future(600)
+
+    single_event = GammaEvent(
+        event_id="evt-multi",
+        slug="eth-5m",
+        title="ETH 5m multi-market event",
+        start_time=_now(),
+        end_time=t1,
+        is_active=True,
+        is_closed=False,
+        markets=[
+            _make_market(condition_id="cid-early", end_time=t0),
+            _make_market(condition_id="cid-late",  end_time=t1),
+        ],
+    )
+
+    svc = MarketUniverseService()
+    mock_client = MagicMock()
+    mock_client.fetch_series = AsyncMock(return_value=None)
+    mock_client.fetch_events = AsyncMock(return_value=[single_event])
+    mock_client.close = AsyncMock()
+    svc._client = mock_client
+
+    captured: list[dict] = []
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+    with patch("app.services.market_universe_service.get_session_factory") as mock_factory:
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.commit = AsyncMock()
+        mock_factory_instance = MagicMock()
+        mock_factory_instance.return_value = mock_session
+        mock_factory.return_value = mock_factory_instance
+
+        with patch("app.services.market_universe_service.upsert_universe_market",
+                   side_effect=capture_upsert):
+            with patch("app.services.market_universe_service.expire_stale_markets",
+                       new=AsyncMock(return_value=0)):
+                await svc.sync()
+
+    by_cid = {c["condition_id"]: c["status"] for c in captured}
+    assert by_cid.get("cid-early") == "active",  "earlier end_time must be active"
+    assert by_cid.get("cid-late")  == "upcoming", "later end_time must be upcoming"
+    active_count = sum(1 for s in by_cid.values() if s == "active")
+    assert active_count == 1, f"exactly one active market per series, got {active_count}"
+    await svc.close()
+
+
+@pytest.mark.anyio
+async def test_sprint91_single_market_is_active():
+    """
+    Case B: a series with exactly one open market must mark it active.
+    """
+    t0 = _future(3600)
+    events_returned = [
+        _make_event(event_id="evt-only", end_time=t0,
+                    markets=[_make_market(condition_id="cid-only", end_time=t0)]),
+    ]
+
+    svc = MarketUniverseService()
+    mock_client = MagicMock()
+    mock_client.fetch_series = AsyncMock(return_value=None)
+    mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.close = AsyncMock()
+    svc._client = mock_client
+
+    captured: list[dict] = []
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+    with patch("app.services.market_universe_service.get_session_factory") as mock_factory:
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.commit = AsyncMock()
+        mock_factory_instance = MagicMock()
+        mock_factory_instance.return_value = mock_session
+        mock_factory.return_value = mock_factory_instance
+
+        with patch("app.services.market_universe_service.upsert_universe_market",
+                   side_effect=capture_upsert):
+            with patch("app.services.market_universe_service.expire_stale_markets",
+                       new=AsyncMock(return_value=0)):
+                await svc.sync()
+
+    by_cid = {c["condition_id"]: c["status"] for c in captured}
+    assert by_cid.get("cid-only") == "active", "sole open market must be active"
+    await svc.close()
+
+
+@pytest.mark.anyio
+async def test_sprint91_expired_market_is_not_active():
+    """
+    Case C: a market whose end_time is in the past must not be marked
+    active and must not be upserted at all (filtered out before ranking).
+    """
+    past_end   = _past(60)
+    future_end = _future(3600)
+
+    events_returned = [
+        _make_event(event_id="evt-past", end_time=past_end,
+                    markets=[_make_market(condition_id="cid-past", end_time=past_end)]),
+        _make_event(event_id="evt-future", end_time=future_end,
+                    markets=[_make_market(condition_id="cid-future", end_time=future_end)]),
+    ]
+
+    svc = MarketUniverseService()
+    mock_client = MagicMock()
+    mock_client.fetch_series = AsyncMock(return_value=None)
+    mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.close = AsyncMock()
+    svc._client = mock_client
+
+    captured: list[dict] = []
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+    with patch("app.services.market_universe_service.get_session_factory") as mock_factory:
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.commit = AsyncMock()
+        mock_factory_instance = MagicMock()
+        mock_factory_instance.return_value = mock_session
+        mock_factory.return_value = mock_factory_instance
+
+        with patch("app.services.market_universe_service.upsert_universe_market",
+                   side_effect=capture_upsert):
+            with patch("app.services.market_universe_service.expire_stale_markets",
+                       new=AsyncMock(return_value=0)):
+                await svc.sync()
+
+    condition_ids = [c["condition_id"] for c in captured]
+    statuses = {c["condition_id"]: c["status"] for c in captured}
+    assert "cid-past" not in condition_ids, "past-end_time market must be filtered out"
+    assert statuses.get("cid-future") == "active", "only future market must be active"
+    await svc.close()
+
+
+@pytest.mark.anyio
+async def test_sprint91_max_one_active_per_series():
+    """
+    Case D: regardless of how many open markets are returned by fetch_events,
+    the sync must produce exactly ONE active market per (asset, timeframe)
+    series entry.  We isolate a single series by patching SERIES_CATALOG.
+    """
+    # Six future markets with end_times spread 5 minutes apart
+    markets_and_events = [
+        _make_event(
+            event_id=f"evt-{i}",
+            end_time=_future(300 * (i + 1)),
+            markets=[_make_market(
+                condition_id=f"cid-{i}",
+                end_time=_future(300 * (i + 1)),
+            )],
+        )
+        for i in range(6)
+    ]
+
+    svc = MarketUniverseService()
+    mock_client = MagicMock()
+    mock_client.fetch_series = AsyncMock(return_value=None)
+    mock_client.fetch_events = AsyncMock(return_value=markets_and_events)
+    mock_client.close = AsyncMock()
+    svc._client = mock_client
+
+    captured: list[dict] = []
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+    single_series = [{"slug": "eth-up-or-down-5m", "asset": "ETH", "timeframe": "5m"}]
+
+    with patch("app.services.market_universe_service.SERIES_CATALOG", single_series):
+        with patch("app.services.market_universe_service.get_session_factory") as mock_factory:
+            mock_session = AsyncMock()
+            mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+            mock_session.__aexit__ = AsyncMock(return_value=False)
+            mock_session.commit = AsyncMock()
+            mock_factory_instance = MagicMock()
+            mock_factory_instance.return_value = mock_session
+            mock_factory.return_value = mock_factory_instance
+
+            with patch("app.services.market_universe_service.upsert_universe_market",
+                       side_effect=capture_upsert):
+                with patch("app.services.market_universe_service.expire_stale_markets",
+                           new=AsyncMock(return_value=0)):
+                    await svc.sync()
+
+    active_calls = [c for c in captured if c["status"] == "active"]
+    upcoming_calls = [c for c in captured if c["status"] == "upcoming"]
+    assert len(active_calls) == 1, \
+        f"exactly one active market per series; got {len(active_calls)}: {[c['condition_id'] for c in active_calls]}"
+    assert len(upcoming_calls) == 5, \
+        f"remaining 5 markets must be upcoming; got {len(upcoming_calls)}"
+    assert active_calls[0]["condition_id"] == "cid-0", \
+        "cid-0 has the smallest end_time and must be active"
+    await svc.close()
+
+
+@pytest.mark.anyio
+async def test_sprint91_no_active_when_all_markets_expired():
+    """
+    Case C (all expired): if every market returned by fetch_events has a
+    past end_time, no upsert should be called (all filtered out).
+    """
+    events_returned = [
+        _make_event(event_id="evt-expired-1", end_time=_past(120),
+                    markets=[_make_market(condition_id="cid-exp-1", end_time=_past(120))]),
+        _make_event(event_id="evt-expired-2", end_time=_past(60),
+                    markets=[_make_market(condition_id="cid-exp-2", end_time=_past(60))]),
+    ]
+
+    svc = MarketUniverseService()
+    mock_client = MagicMock()
+    mock_client.fetch_series = AsyncMock(return_value=None)
+    mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.close = AsyncMock()
+    svc._client = mock_client
+
+    captured: list[dict] = []
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+    with patch("app.services.market_universe_service.get_session_factory") as mock_factory:
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        mock_session.commit = AsyncMock()
+        mock_factory_instance = MagicMock()
+        mock_factory_instance.return_value = mock_session
+        mock_factory.return_value = mock_factory_instance
+
+        with patch("app.services.market_universe_service.upsert_universe_market",
+                   side_effect=capture_upsert):
+            with patch("app.services.market_universe_service.expire_stale_markets",
+                       new=AsyncMock(return_value=0)):
+                await svc.sync()
+
+    active_calls = [c for c in captured if c["status"] == "active"]
+    assert len(active_calls) == 0, \
+        "no active markets when all have past end_times"
+    await svc.close()
+
+
 @pytest.mark.anyio
 async def test_sync_upserts_only_events_returned_by_fetch_events():
     """
