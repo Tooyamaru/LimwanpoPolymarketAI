@@ -1,0 +1,206 @@
+Kamu sedang melanjutkan project audit Polymarket AMM yang sudah menghasilkan:
+
+1. AMM_REPRICE_REPORT.md
+2. UNDERLYING_LINKAGE_AUDIT.md
+
+JANGAN mengulang collection yang sudah selesai.
+
+Status saat ini:
+
+* 360 rounds selesai.
+* Sampling 10 detik.
+* Binance spot berhasil dikumpulkan.
+* CLOB berhasil dikumpulkan.
+* 5m dan 15m market expired sekitar round 300 karena token rollover.
+* 1H market lengkap 360 rounds.
+* Mid-price seluruh market tetap konstan.
+* Hanya ditemukan perubahan depth terjadwal.
+
+Saya ingin Audit #5 yang jauh lebih ketat.
+
+TUJUAN:
+Buktikan atau bantah secara statistik apakah AMM benar-benar tidak menggunakan harga underlying sama sekali.
+
+TUGAS:
+
+BAGIAN A — RAW ORDER BOOK FORENSICS
+
+Gunakan seluruh snapshot yang sudah dikumpulkan.
+
+Untuk setiap market:
+
+* Bandingkan seluruh level bid dan ask.
+* Bukan hanya best bid / best ask.
+* Hitung perubahan pada:
+    * setiap price level
+    * setiap size level
+    * total liquidity
+    * cumulative depth
+    * imbalance ratio
+
+Cari:
+
+1. apakah ada level order yang bergeser harga
+2. apakah hanya size yang berubah
+3. apakah ada pola tertentu pada level tertentu
+
+Output:
+
+ORDERBOOK_FORENSICS.md
+
+⸻
+
+BAGIAN B — CONTRACT ROLLOVER INVESTIGATION
+
+Saat round 300 terjadi expiry.
+
+Cari:
+
+* market baru yang menggantikan token lama
+* token IDs baru
+* seed liquidity market baru
+* harga awal market baru
+* spread awal market baru
+
+Bandingkan market lama vs market baru.
+
+Pertanyaan:
+
+Apakah market baru selalu di-seed pada 50/50?
+
+Output:
+
+ROLLOVER_AUDIT.md
+
+⸻
+
+BAGIAN C — LIVE REPLACEMENT MARKET TEST
+
+Temukan market pengganti yang aktif sekarang.
+
+Untuk:
+
+BTC
+ETH
+SOL
+XRP
+
+Pada:
+
+5m
+15m
+1H
+
+Lakukan observasi 30 menit.
+
+Setiap 10 detik:
+
+* orderbook
+* bid
+* ask
+* mid
+* spread
+* depth
+
+Tujuan:
+
+Menguji apakah market baru juga tetap frozen seperti market lama.
+
+Output:
+
+REPLACEMENT_MARKET_AUDIT.md
+
+⸻
+
+BAGIAN D — TRADE IMPACT ANALYSIS
+
+Ambil seluruh trade history yang tersedia untuk market-market tersebut.
+
+Analisis:
+
+* timestamp trade
+* side
+* size
+* price
+
+Lalu cocokkan dengan:
+
+* perubahan depth
+* perubahan orderbook
+* perubahan mid
+
+Pertanyaan:
+
+Apakah trade menyebabkan repricing?
+
+atau
+
+Apakah trade hanya mengurangi liquidity lalu AMM refill kembali?
+
+Output:
+
+TRADE_IMPACT_AUDIT.md
+
+⸻
+
+BAGIAN E — HYPOTHESIS TEST
+
+Uji 4 hipotesis:
+
+H0:
+AMM menggunakan underlying price feed aktif.
+
+H1:
+AMM menggunakan scheduled rebalancing.
+
+H2:
+AMM hanya liquidity seeding tanpa pricing engine.
+
+H3:
+AMM sepenuhnya pasif dan harga dibentuk trader.
+
+Gunakan semua audit sebelumnya:
+
+* Audit #1
+* Audit #2
+* Audit #3
+* Audit #4
+
+Berikan:
+
+1. Evidence For
+2. Evidence Against
+3. Confidence Score (0–100%)
+
+untuk setiap hipotesis.
+
+Output:
+
+FINAL_HYPOTHESIS_REPORT.md
+
+⸻
+
+ATURAN PENTING
+
+* Jangan berhenti hanya karena menemukan korelasi.
+* Verifikasi apakah korelasi berasal dari satu event saja.
+* Semua Pearson harus dicek dengan event count.
+* Semua hasil harus menyebut sample size.
+* Jangan menyimpulkan kausalitas tanpa bukti.
+
+Sebelum menulis kesimpulan akhir:
+
+Buat bagian:
+
+“Potential Failure Modes”
+
+yang menjelaskan semua kemungkinan kesalahan metodologi.
+
+Kemudian buat:
+
+“Confidence Assessment”
+
+yang menjelaskan seberapa kuat bukti yang diperoleh.
+
+Target akhir:
+Mencapai kesimpulan yang dapat dipertahankan secara statistik dan forensik mengenai mekanisme AMM Polymarket.
