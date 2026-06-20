@@ -19,10 +19,6 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Linkage Collector"
-
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -34,17 +30,6 @@ outputType = "webview"
 task = "shell.exec"
 args = "redis-server --daemonize yes --port 6379 && sleep 1 && cd backend && uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload"
 waitForPort = 5000
-
-[[workflows.workflow]]
-name = "Linkage Collector"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python linkage_full_run.py"
-
-[workflows.workflow.metadata]
-outputType = "console"
 
 [[ports]]
 localPort = 5000
