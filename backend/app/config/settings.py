@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Application
     APP_NAME: str = "Polymarket Quant Bot"
-    APP_VERSION: str = "0.4.0"
+    APP_VERSION: str = "0.5.0"
     APP_ENV: str = "development"
     DEBUG: bool = False
 
@@ -58,6 +58,11 @@ class Settings(BaseSettings):
     PRICE_REFRESH_SECONDS: int = 10
     PRICE_REFRESH_ENABLED: bool = True
     PRICE_REFRESH_RUN_ON_STARTUP: bool = True
+
+    # Signal engine (Layer 4)
+    SIGNAL_ENGINE_ENABLED: bool = True
+    SIGNAL_ENGINE_INTERVAL_SECONDS: int = 10
+    SIGNAL_ENGINE_RUN_ON_STARTUP: bool = True
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod

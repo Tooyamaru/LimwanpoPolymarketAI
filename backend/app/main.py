@@ -84,6 +84,40 @@ async def _run_price_refresh_loop(
             logger.error("Price refresh periodic run failed", error=str(exc))
 
 
+async def _run_signal_engine_loop(
+    engine,
+    universe_ready: asyncio.Event | None = None,
+) -> None:
+    """
+    Signal engine background loop — Layer 4.
+
+    Runs every SIGNAL_ENGINE_INTERVAL_SECONDS (default 10 s).
+    Compares consecutive price snapshots and emits signals to the DB.
+    Gates on universe_ready so it starts after the first universe sync.
+    """
+    from app.core.database import get_session_factory
+
+    async def _one_cycle():
+        factory = get_session_factory()
+        async with factory() as session:
+            await engine.scan(session)
+
+    if settings.SIGNAL_ENGINE_RUN_ON_STARTUP:
+        if universe_ready is not None:
+            await universe_ready.wait()
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Signal engine startup run failed", error=str(exc))
+
+    while True:
+        await asyncio.sleep(settings.SIGNAL_ENGINE_INTERVAL_SECONDS)
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Signal engine periodic run failed", error=str(exc))
+
+
 async def _run_universe_sync_loop(
     service,
     universe_ready: asyncio.Event | None = None,
@@ -191,6 +225,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.PRICE_REFRESH_RUN_ON_STARTUP,
         )
 
+    # ── Signal engine (every 10 s) — Layer 4 ─────────────────────────────────
+    signal_task = None
+    if settings.SIGNAL_ENGINE_ENABLED:
+        from app.services.signal_engine import SignalEngine
+        signal_engine = SignalEngine()
+        signal_task = asyncio.create_task(
+            _run_signal_engine_loop(signal_engine, universe_ready=universe_ready_event)
+        )
+        app.state.signal_engine = signal_engine
+        logger.info(
+            "Signal engine started",
+            interval=settings.SIGNAL_ENGINE_INTERVAL_SECONDS,
+            run_on_startup=settings.SIGNAL_ENGINE_RUN_ON_STARTUP,
+        )
+
     yield
 
     # ── Graceful shutdown ─────────────────────────────────────────────────────
@@ -201,6 +250,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         (scanner_task, "scanner"),
         (universe_task, "universe"),
         (price_task, "price"),
+        (signal_task, "signal"),
     ]:
         if task is not None:
             task.cancel()
