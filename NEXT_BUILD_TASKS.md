@@ -1,79 +1,59 @@
-# NEXT BUILD TASKS — Signal Engine (Layer 4)
-
-**Status: ✅ SELESAI — 2026-06-22**
+# NEXT BUILD TASKS
 
 ---
 
-## Task 1: Model `signals` ✅ SELESAI
-File: `backend/app/models/signal.py`
-- Tabel `signals` terbuat di PostgreSQL
-- 10 index: condition_id, asset, timeframe, signal_type, severity, detected_at, compound indexes
-- Kolom: signal_type, yes_mid_before/after/delta, spread_before/after/delta, seed_deviation, severity, snapshot FKs
+## ✅ Layer 5 — Opportunity Engine SELESAI (2026-06-22)
 
-## Task 2: Signal Repository ✅ SELESAI
-File: `backend/app/services/signal_repository.py`
-- `save_signal()` — insert signal baru
-- `get_latest_signals(limit)` — semua market
-- `get_signals_by_market(condition_id, limit)` — per market
-- `get_active_market_signals(limit)` — hanya market aktif
-- `get_signal_count()` — total count
-- `get_signal_counts_by_type()` — breakdown per type
-- `get_signal_counts_by_severity()` — breakdown per severity
-- `get_last_signal_for_market(condition_id, type)` — untuk deduplication
+**Files dibuat:**
+- `backend/app/models/opportunity.py` — Tabel `opportunities` dengan 5 score columns + UPSERT via ON CONFLICT
+- `backend/app/services/opportunity_engine.py` — `OpportunityEngine.evaluate()`, 5 sub-score functions
+- `backend/app/services/opportunity_repository.py` — upsert + query functions
+- `backend/app/api/v1/opportunities.py` — 4 REST endpoints
 
-## Task 3: Signal Engine Service ✅ SELESAI
-File: `backend/app/services/signal_engine.py`
-- `SignalEngine.scan(session)` — scan semua market aktif
-- Deteksi MID_MOVE (threshold: >0.001 delta)
-- Deteksi SEED_DEVIATION (threshold: |mid - 0.50| ≥ 0.01)
-- Deteksi SPREAD_CHANGE (threshold: |spread_delta| ≥ 0.005)
-- Severity tiers: LOW/MEDIUM/HIGH berdasarkan magnitude
-- Deduplication: skip jika sinyal identik dengan sinyal terakhir
+**Score components:**
+| Component | Max | Formula |
+|-----------|-----|---------|
+| mid_movement | 30 | min(30, abs(mid - 0.50) × 600) |
+| spread | 20 | max(0, (0.02 - spread) × 2000) |
+| depth_imbalance | 20 | min(20, abs(spread_no - spread_yes) × 2000) |
+| signal_activity | 20 | 0→10→15→20 pts by count; +3 per HIGH |
+| discovery | 10 | time-to-expiry urgency tiers |
 
-## Task 4: API Endpoint `/signals` ✅ SELESAI
-File: `backend/app/api/v1/signals.py`
-- `GET /api/v1/signals/latest?limit=50`
-- `GET /api/v1/signals/active?limit=50`
-- `GET /api/v1/signals/stats`
-- `GET /api/v1/signals/{condition_id}?limit=20`
+**Bug ditemukan dan fixed:**
+- `universe_ready` asyncio.Event ter-block forever ketika `UNIVERSE_SYNC_RUN_ON_STARTUP=false` (Replit env var)
+- Fix: set event immediately di else-branch dari startup check di `_run_universe_sync_loop`
 
-## Task 5: Integration ke `main.py` ✅ SELESAI
-- `_run_signal_engine_loop()` — background loop setiap 10s
-- Gates pada `universe_ready` event (tidak jalan sebelum sync pertama)
-- Graceful shutdown: signal_task di-cancel bersama task lain
-
-## Task 6: Register Model & Router ✅ SELESAI
-- `models/__init__.py` — Signal terdaftar
-- `api/v1/__init__.py` — signals_router terdaftar
-- `config/settings.py` — SIGNAL_ENGINE_ENABLED/INTERVAL/RUN_ON_STARTUP
-- `APP_VERSION` bumped ke 0.5.0
-
----
-
-## Verifikasi (2026-06-22)
-
+**Verifikasi (2026-06-22):**
 ```
-GET /api/v1/signals/stats
-{"total_signals": 0, "by_type": {}, "by_severity": {}}
+GET /api/v1/opportunities/stats
+{"total_markets": 12, "avg_score": 18.0, "top_score": 44.0, "top_asset": "SOL"}
+
+Top 5:
+  SOL/5m  → 44.0  BUY_NO  (mid=0.705, anomalous snapshot)
+  XRP/5m  → 24.0  NEUTRAL (mid=0.505, tight spread)
+  XRP/15m → 24.0  NEUTRAL
+  BTC/1H  →  1.0  NEUTRAL (seed, wide spread)
 ```
 
-Zero sinyal = BENAR. Semua pasar masih di 0.50–0.505 (dev maks 0.005 < threshold 0.01).
-Konsisten dengan temuan Audit #5: pure AMM init phase, tidak ada aktivitas trading manusia.
-
-Signal Engine akan mulai emit sinyal begitu ada market yang bergerak > 1% dari seed.
-
 ---
 
-## LAYER 5 — Strategy Engine (BERIKUTNYA)
+## 🔴 Layer 6 — Strategy Engine (BERIKUTNYA)
 
-Input: `signals` table  
-Output: `trade_decisions` table — BUY_YES | BUY_NO | HOLD  
-Rules awal: Mean-reversion terhadap seed 0.50  
+**Target:** Konversi Opportunity Score → TradeDecision
 
-Files yang akan dibuat:
+**Files yang akan dibuat:**
 - `backend/app/models/trade_decision.py`
 - `backend/app/services/strategy_engine.py`
 - `backend/app/services/trade_decision_repository.py`
 - `backend/app/api/v1/strategies.py`
 
-*Generated: 2026-06-22*
+**Decision rules (mean-reversion):**
+- Score ≥ 40, direction = BUY_NO → OPEN_LONG_NO
+- Score ≥ 40, direction = BUY_YES → OPEN_LONG_YES
+- Score 20–39 → WATCH
+- Score < 20 → SKIP
+- Spread > 0.02 → SKIP (terlalu mahal)
+
+**Background loop:** 30s, gated pada universe_ready
+
+*Updated: 2026-06-22*

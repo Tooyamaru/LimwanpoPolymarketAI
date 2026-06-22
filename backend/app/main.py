@@ -84,6 +84,40 @@ async def _run_price_refresh_loop(
             logger.error("Price refresh periodic run failed", error=str(exc))
 
 
+async def _run_opportunity_engine_loop(
+    engine,
+    universe_ready: asyncio.Event | None = None,
+) -> None:
+    """
+    Opportunity engine background loop — Layer 5.
+
+    Runs every OPPORTUNITY_ENGINE_INTERVAL_SECONDS (default 30 s).
+    Evaluates all active markets and upserts their Opportunity Scores.
+    Gates on universe_ready to ensure universe is populated first.
+    """
+    from app.core.database import get_session_factory
+
+    async def _one_cycle():
+        factory = get_session_factory()
+        async with factory() as session:
+            await engine.evaluate(session)
+
+    if settings.OPPORTUNITY_ENGINE_RUN_ON_STARTUP:
+        if universe_ready is not None:
+            await universe_ready.wait()
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Opportunity engine startup run failed", error=str(exc))
+
+    while True:
+        await asyncio.sleep(settings.OPPORTUNITY_ENGINE_INTERVAL_SECONDS)
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Opportunity engine periodic run failed", error=str(exc))
+
+
 async def _run_signal_engine_loop(
     engine,
     universe_ready: asyncio.Event | None = None,
@@ -144,7 +178,18 @@ async def _run_universe_sync_loop(
         finally:
             if universe_ready is not None:
                 universe_ready.set()
-                logger.info("Universe ready event set — price refresh may proceed")
+                logger.info("Universe ready event set — downstream engines may proceed")
+    else:
+        # run_on_startup=False (e.g. overridden by env var).
+        # DB already contains universe data from previous sessions so
+        # downstream engines (price refresh, signal, opportunity) can
+        # start immediately. Set the gate now so they are not blocked.
+        if universe_ready is not None:
+            universe_ready.set()
+            logger.info(
+                "Universe ready event set immediately (run_on_startup=False) "
+                "— downstream engines proceeding with existing DB state"
+            )
 
     while True:
         await asyncio.sleep(settings.UNIVERSE_SYNC_INTERVAL_SECONDS)
@@ -240,6 +285,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.SIGNAL_ENGINE_RUN_ON_STARTUP,
         )
 
+    # ── Opportunity engine (every 30 s) — Layer 5 ────────────────────────────
+    opportunity_task = None
+    if settings.OPPORTUNITY_ENGINE_ENABLED:
+        from app.services.opportunity_engine import OpportunityEngine
+        opp_engine = OpportunityEngine()
+        opportunity_task = asyncio.create_task(
+            _run_opportunity_engine_loop(opp_engine, universe_ready=universe_ready_event)
+        )
+        app.state.opportunity_engine = opp_engine
+        logger.info(
+            "Opportunity engine started",
+            interval=settings.OPPORTUNITY_ENGINE_INTERVAL_SECONDS,
+            run_on_startup=settings.OPPORTUNITY_ENGINE_RUN_ON_STARTUP,
+        )
+
     yield
 
     # ── Graceful shutdown ─────────────────────────────────────────────────────
@@ -251,6 +311,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         (universe_task, "universe"),
         (price_task, "price"),
         (signal_task, "signal"),
+        (opportunity_task, "opportunity"),
     ]:
         if task is not None:
             task.cancel()

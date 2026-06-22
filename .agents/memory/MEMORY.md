@@ -8,3 +8,5 @@
 - [Market maturity status](market-maturity.md) — all 12 active markets at mid=0.50, zero variance, 100% null volume/liquidity as of 2026-06-19; pure AMM init phase, no human trades yet
 - [Market lifetimes](market-lifetimes.md) — 5m/15m markets live ~24h each; 1H markets live ~48h; names refer to prediction window not expiry; 27 upcoming per 5m asset
 - [Signal Engine design](signal-engine-design.md) — Layer 4 complete (v0.5.0); thresholds MID_MOVE>0.001 SEED_DEV>=0.01 SPREAD>=0.005; dedup by last signal value; runs every 10s after universe_ready gate
+- [Opportunity Engine design](opportunity-engine-design.md) — Layer 5 complete (v0.6.0); score 0-100 from 5 components; UPSERT by condition_id; universe_ready deadlock fix required
+- [Replit env var overrides](replit-env-overrides.md) — Replit sets APP_VERSION=0.4.0 UNIVERSE_SYNC_RUN_ON_STARTUP=false PRICE_REFRESH_RUN_ON_STARTUP=false via env; universe_ready gate must handle run_on_startup=False case
