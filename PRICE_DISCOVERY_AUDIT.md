@@ -1,6 +1,6 @@
 # PRICE_DISCOVERY_AUDIT.md
 
-**Generated:** 2026-06-23 05:43:42 UTC
+**Generated:** 2026-06-23 11:43:19 UTC
 **Audit:** #5 — Part 2
 **Observation window:** 60 rounds × 5s = 5 minutes
 **Markets monitored:** 12
@@ -32,7 +32,7 @@ whether the bid, ask, mid, or only depth was affected.
 | Best bid changes | 0 |
 | Best ask changes | 0 |
 | Mid changes | 0 |
-| Depth-only changes (no mid move) | 2 |
+| Depth-only changes (no mid move) | 0 |
 
 ### BTC/5m
 
@@ -42,7 +42,7 @@ whether the bid, ask, mid, or only depth was affected.
 | Best bid changes | 0 |
 | Best ask changes | 0 |
 | Mid changes | 0 |
-| Depth-only changes (no mid move) | 1 |
+| Depth-only changes (no mid move) | 0 |
 
 ### ETH/15m
 
@@ -141,10 +141,10 @@ whether the bid, ask, mid, or only depth was affected.
 | LTP changes | 0 |
 | Best bid changes | 0 |
 | Mid changes | 0 |
-| Depth-only changes | 3 |
+| Depth-only changes | 0 |
 
 **Conclusion:** No bid/ask price changes detected in 5-minute window.
 Order books are static. If LTP changes occurred, they did not move the NBBO.
 
 ---
-*Data fetched: 2026-06-23 05:43 UTC*
+*Data fetched: 2026-06-23 11:43 UTC*
