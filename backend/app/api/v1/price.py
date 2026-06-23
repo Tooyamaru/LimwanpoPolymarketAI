@@ -9,70 +9,27 @@ GET /price/{condition_id}  — latest snapshot(s) for one condition_id
 GET /price/stats           — aggregate statistics
 """
 
-from datetime import datetime
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.logging import get_logger
+from app.models.market_price_snapshot import MarketPriceSnapshot
 from app.models.market_universe import MarketUniverse
 from app.repositories import market_price_repository as repo
-from app.models.market_price_snapshot import MarketPriceSnapshot
+from app.schemas.price import PriceSnapshotResponse, PriceStatsResponse
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/price", tags=["price"])
 
 
-# ── Response schemas ──────────────────────────────────────────────────────────
-
-class PriceSnapshotResponse(BaseModel):
-    id: int
-    condition_id: str
-    yes_token_id: Optional[str]
-    no_token_id: Optional[str]
-
-    yes_bid: Optional[float]
-    yes_ask: Optional[float]
-    yes_mid: Optional[float]
-
-    no_bid: Optional[float]
-    no_ask: Optional[float]
-    no_mid: Optional[float]
-
-    spread_yes: Optional[float]
-    spread_no: Optional[float]
-
-    volume: Optional[float]
-    liquidity: Optional[float]
-
-    captured_at: datetime
-
-    asset: Optional[str] = None
-    timeframe: Optional[str] = None
-
-    model_config = {"from_attributes": True}
-
-
-class PriceStatsResponse(BaseModel):
-    total_snapshots: int
-    active_markets_with_data: int
-    assets_covered: list[str]
-    timeframes_covered: list[str]
-
-
-# ── Helper: enrich snapshot with asset/timeframe from universe ────────────────
-
 async def _enrich(
     snapshots: list[MarketPriceSnapshot],
     session: AsyncSession,
 ) -> list[PriceSnapshotResponse]:
     """Join snapshots with market_universe to add asset/timeframe labels."""
-    from sqlalchemy import select
-
     condition_ids = list({s.condition_id for s in snapshots})
     if not condition_ids:
         return []
@@ -111,8 +68,6 @@ async def _enrich(
     return out
 
 
-# ── Endpoints ─────────────────────────────────────────────────────────────────
-
 @router.get("/latest", response_model=list[PriceSnapshotResponse])
 async def get_latest_prices(
     limit: int = Query(default=50, ge=1, le=500),
@@ -137,9 +92,6 @@ async def get_price_stats(
     session: AsyncSession = Depends(get_db_session),
 ):
     """Return aggregate statistics about stored price snapshots."""
-    from sqlalchemy import select, func, distinct
-    from app.models.market_price_snapshot import MarketPriceSnapshot
-
     total = await repo.get_snapshot_count(session)
 
     active_snaps = await repo.get_latest_active_markets(session)

@@ -12,8 +12,9 @@ Decision types:
   WATCH          — score 20–39 (any direction)
   SKIP           — score < 20 OR spread > 0.02
 
-Status lifecycle (for future execution layer):
-  PENDING → EXECUTED | CANCELLED | EXPIRED
+Status lifecycle:
+  PENDING → RISK_APPROVED → EXECUTED   (normal path)
+  PENDING → BLOCKED                    (risk rule tripped)
 """
 
 from datetime import datetime
@@ -48,7 +49,7 @@ class TradeDecision(Base):
     )
     status: Mapped[str] = mapped_column(
         String(16), nullable=False, default="PENDING",
-        comment="PENDING | EXECUTED | CANCELLED | EXPIRED",
+        comment="PENDING | RISK_APPROVED | BLOCKED | EXECUTED",
     )
 
     # ── Inputs from Opportunity Engine ────────────────────────────────────────

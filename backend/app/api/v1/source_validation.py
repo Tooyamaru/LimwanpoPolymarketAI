@@ -10,14 +10,17 @@ Endpoints:
     POST /api/v1/source-validation/run      Trigger a fresh validation scan
 """
 
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.logging import get_logger
+from app.schemas.source_validation import (
+    AuditResult,
+    DiagnosticsResponse,
+    SearchResult,
+    ValidationRunResponse,
+)
 from app.services.source_validator import (
     SourceValidatorService,
     get_audit_results,
@@ -29,50 +32,6 @@ from app.services.source_validator import (
 router = APIRouter(prefix="/source-validation", tags=["source-validation"])
 logger = get_logger(__name__)
 
-
-# ── Response models ───────────────────────────────────────────────────────────
-
-class DiagnosticsResponse(BaseModel):
-    source: str
-    markets: int
-
-
-class SearchResult(BaseModel):
-    title: str
-    slug: Optional[str]
-    market_id: str
-    event_id: Optional[str]
-
-
-class AuditResult(BaseModel):
-    run_id: str
-    source_endpoint: str
-    source_market_id: str
-    condition_id: str
-    source_event_id: Optional[str]
-    title: str
-    slug: Optional[str]
-    detected_asset: Optional[str]
-    detected_timeframe: Optional[str]
-    is_updown_candidate: bool
-    updown_keywords_found: Optional[str]
-    matching_rule: Optional[str]
-
-
-class ValidationRunResponse(BaseModel):
-    run_id: str
-    run_at: str
-    source: str
-    total_scanned: int
-    total_asset_matched: int
-    total_updown_candidates: int
-    btc_candidates: int
-    eth_candidates: int
-    sol_candidates: int
-    xrp_candidates: int
-
-
-# ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.get(
     "",
@@ -99,8 +58,6 @@ async def search_markets(
 ) -> list[SearchResult]:
     """
     Search stored source validation results by market title or slug.
-
-    Returns title, slug, market_id, and event_id for each match.
     """
     rows = await search_results(session, q, limit=limit)
     return [
@@ -125,9 +82,7 @@ async def get_audit(
 ) -> list[AuditResult]:
     """
     Return all markets flagged as Up/Down candidates from source validation.
-
-    No asset or timeframe filtering is applied — every candidate is included
-    so the caller can audit the full discovery surface area.
+    No asset or timeframe filtering — every candidate is included.
     """
     rows = await get_audit_results(session, limit=limit)
     return [
@@ -162,8 +117,7 @@ async def run_validation(
     Fetch all active Polymarket markets, apply the exact matcher, and
     store source tracing results in ``source_validation_results``.
 
-    This endpoint performs a live paginated scan (~250 pages) and may take
-    several minutes to complete.
+    Blocking call — may take several minutes (~250 pages).
     """
     svc = SourceValidatorService()
     try:

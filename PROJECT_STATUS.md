@@ -1,7 +1,7 @@
 # PROJECT STATUS — Polymarket Quant Bot
 
 **Last updated:** 2026-06-23  
-**App version:** 0.7.0 (Replit env overrides to 0.4.0)  
+**App version:** 0.9.0  
 **Backend:** FastAPI + PostgreSQL + Redis  
 **Active workflow:** Start application (port 5000)
 
@@ -28,17 +28,17 @@
 
 ---
 
-## Layer 9 — Risk Engine (NEW 2026-06-23)
+## Layer 9 — Risk Engine (2026-06-23)
 
 **Pipeline position:** Strategy Engine → **Risk Engine** → Execution Engine
 
-**Files added:**
+**Files:**
 - `models/risk_event.py` — `risk_events` table
 - `repositories/risk_repository.py` — create / query / stats
 - `services/risk_engine.py` — 5-rule evaluator
 - `api/v1/risk.py` — `GET /risk`, `/risk/blocked`, `/risk/stats`
 
-**Status lifecycle change:**
+**Status lifecycle:**
 ```
 PENDING → RISK_APPROVED → EXECUTED   (normal path)
 PENDING → BLOCKED                    (risk rule tripped)
@@ -53,7 +53,7 @@ PENDING → BLOCKED                    (risk rule tripped)
 | DAILY_LOSS | Sum unrealized PnL ≤ −50.0 |
 | DAILY_TRADES | Orders placed today ≥ 20 |
 
-**Settings added:**
+**Settings:**
 ```
 RISK_ENGINE_ENABLED=true       RISK_ENGINE_INTERVAL_SECONDS=15
 MAX_OPEN_POSITIONS=10          MAX_EXPOSURE_PER_ASSET=3
@@ -68,8 +68,11 @@ MAX_DAILY_LOSS=-50.0           MAX_DAILY_TRADES=20
 |---------|--------|-------|
 | Repository layer | `services/*_repository.py` | `repositories/*_repository.py` |
 | Background loops | inline in `main.py` (~280 lines) | `workers/engine_workers.py` |
-| API response schemas | inline `class Foo(BaseModel):` in routers | `schemas/signal.py`, `schemas/opportunity.py`, etc. |
+| API response schemas | inline `class Foo(BaseModel):` in routers | `schemas/*.py` (one file per domain) |
 | Import hygiene | `from app.services import X_repo` | `from app.repositories import X_repo` |
+
+**schemas/ coverage (14 files, 2026-06-23 audit):**
+`classifier`, `discovery`, `health`, `market`, `opportunity`, `order`, `position`, `price`, `risk`, `scanner`, `signal`, `source_validation`, `strategy`, `universe`
 
 ---
 
@@ -95,28 +98,54 @@ MAX_DAILY_LOSS=-50.0           MAX_DAILY_TRADES=20
 | Endpoint | Layer |
 |----------|-------|
 | `GET /api/v1/health` | — |
+| `GET /api/v1/health/detailed` | — |
 | `GET /api/v1/markets` | L1 |
+| `GET /api/v1/markets/active` | L1 |
+| `GET /api/v1/markets/latest` | L1 |
 | `GET /api/v1/discovery` | L2 |
+| `POST /api/v1/discovery/run` | L2 |
+| `GET /api/v1/discovery/markets` | L2 |
 | `GET /api/v1/scanner` | L2 |
+| `GET /api/v1/scanner/active` | L2 |
+| `GET /api/v1/scanner/stats` | L2 |
 | `GET /api/v1/classifier` | L2 |
+| `GET /api/v1/classifier/updown` | L2 |
+| `GET /api/v1/classifier/stats` | L2 |
+| `GET /api/v1/source-validation` | L2 |
+| `GET /api/v1/source-validation/search` | L2 |
+| `GET /api/v1/source-validation/audit` | L2 |
+| `POST /api/v1/source-validation/run` | L2 |
 | `GET /api/v1/universe` | L3 |
+| `GET /api/v1/universe/active` | L3 |
+| `GET /api/v1/universe/upcoming` | L3 |
+| `GET /api/v1/universe/stats` | L3 |
+| `POST /api/v1/universe/sync` | L3 |
 | `GET /api/v1/price/latest` | L3b |
+| `GET /api/v1/price/active` | L3b |
+| `GET /api/v1/price/stats` | L3b |
+| `GET /api/v1/price/{condition_id}` | L3b |
 | `GET /api/v1/signals/latest` | L4 |
+| `GET /api/v1/signals/active` | L4 |
 | `GET /api/v1/signals/stats` | L4 |
+| `GET /api/v1/signals/{condition_id}` | L4 |
 | `GET /api/v1/opportunities` | L5 |
 | `GET /api/v1/opportunities/top` | L5 |
 | `GET /api/v1/opportunities/stats` | L5 |
+| `GET /api/v1/opportunities/{condition_id}` | L5 |
 | `GET /api/v1/strategies` | L6 |
 | `GET /api/v1/strategies/active` | L6 |
 | `GET /api/v1/strategies/stats` | L6 |
-| **`GET /api/v1/risk`** | **L9** |
-| **`GET /api/v1/risk/blocked`** | **L9** |
-| **`GET /api/v1/risk/stats`** | **L9** |
+| `GET /api/v1/risk` | L9 |
+| `GET /api/v1/risk/blocked` | L9 |
+| `GET /api/v1/risk/stats` | L9 |
 | `GET /api/v1/orders` | L7 |
 | `GET /api/v1/orders/stats` | L7 |
+| `GET /api/v1/orders/open` | L7 |
+| `GET /api/v1/orders/{id}` | L7 |
 | `GET /api/v1/positions` | L8 |
 | `GET /api/v1/positions/open` | L8 |
 | `GET /api/v1/positions/stats` | L8 |
+| `GET /api/v1/positions/{id}` | L8 |
 
 ---
 

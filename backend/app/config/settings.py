@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Application
     APP_NAME: str = "Polymarket Quant Bot"
-    APP_VERSION: str = "0.6.0"
+    APP_VERSION: str = "0.9.0"
     APP_ENV: str = "development"
     DEBUG: bool = False
 

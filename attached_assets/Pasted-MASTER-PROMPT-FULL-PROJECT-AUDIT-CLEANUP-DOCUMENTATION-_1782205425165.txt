@@ -1,0 +1,381 @@
+MASTER PROMPT — FULL PROJECT AUDIT, CLEANUP, DOCUMENTATION & ROADMAP SYNC
+
+Anda adalah Principal Software Architect, Senior Quant Developer, dan Technical Documentation Lead.
+
+Tugas Anda BUKAN langsung membuat fitur baru.
+
+Tugas pertama Anda adalah melakukan audit menyeluruh terhadap seluruh project yang saya berikan.
+
+Lakukan analisis mendalam terhadap:
+
+struktur folder
+arsitektur sistem
+dependency antar layer
+database schema
+model
+repository
+service
+API router
+background worker
+scheduler
+config
+migration
+dokumentasi
+
+Baca seluruh project terlebih dahulu sebelum mengubah apa pun.
+
+PHASE 1 — FULL AUDIT
+
+Buat laporan:
+
+Architecture Audit
+
+Identifikasi:
+
+dead code
+duplicate code
+unused model
+unused endpoint
+unused repository
+circular dependency
+code smell
+inconsistent naming
+inconsistent patterns
+inconsistent folder structure
+inconsistent imports
+inconsistent database usage
+race condition
+missing indexes
+missing constraints
+missing error handling
+missing logging
+Layer Audit
+
+Periksa seluruh layer.
+
+Contoh:
+
+Layer 1 Market Universe
+
+Layer 2 Scanner
+
+Layer 3 Price Snapshots
+
+Layer 4 Signal Engine
+
+Layer 5 Opportunity Engine
+
+Layer 6 Strategy Engine
+
+Layer 7 Execution Engine
+
+Layer 8 Position Tracking
+
+Layer 9 Risk Engine
+
+Layer 10 Monitoring
+
+Untuk setiap layer tampilkan:
+
+Status:
+
+COMPLETE
+PARTIAL
+BROKEN
+MISSING
+
+dan alasan teknisnya.
+
+API Audit
+
+Periksa seluruh endpoint.
+
+Tampilkan:
+
+endpoint aktif
+endpoint rusak
+endpoint duplikat
+endpoint tidak terpakai
+endpoint belum terdokumentasi
+Database Audit
+
+Periksa:
+
+seluruh tabel
+foreign key
+relationship
+indexes
+constraint
+
+Cari:
+
+tabel orphan
+kolom tidak digunakan
+relasi hilang
+query yang tidak optimal
+
+Berikan rekomendasi.
+
+PHASE 2 — PROJECT CLEANUP
+
+Setelah audit selesai:
+
+Rapikan seluruh project.
+
+Lakukan:
+
+Folder Cleanup
+
+Jika ada file:
+
+duplicate
+obsolete
+unused
+
+pindahkan ke:
+
+archive/
+
+atau hapus jika aman.
+
+Import Cleanup
+
+Hapus:
+
+unused import
+duplicate import
+circular import
+Naming Cleanup
+
+Samakan pola:
+
+Model:
+
+TradeDecision
+Order
+Position
+
+Repository:
+
+TradeDecisionRepository
+OrderRepository
+PositionRepository
+
+Service:
+
+StrategyEngine
+ExecutionEngine
+PositionService
+
+API:
+
+strategies.py
+orders.py
+positions.py
+
+Gunakan naming convention yang konsisten.
+
+Structure Cleanup
+
+Pastikan struktur:
+
+app/
+├── api/
+├── models/
+├── repositories/
+├── services/
+├── core/
+├── schemas/
+├── workers/
+├── utils/
+├── docs/
+└── tests/
+
+Jika ada struktur lebih baik, refactor secara konsisten.
+
+PHASE 3 — DOCUMENTATION SYNC
+
+Update seluruh dokumentasi.
+
+WAJIB sinkron dengan source code aktual.
+
+README.md
+
+Update:
+
+Overview
+
+Apa project ini
+
+Architecture
+
+Diagram layer terbaru
+
+Database Schema
+
+Semua tabel terbaru
+
+API Endpoints
+
+Semua endpoint terbaru
+
+Background Workers
+
+Semua worker terbaru
+
+Setup
+
+Cara install
+
+Run
+
+Cara menjalankan
+
+Environment Variables
+
+Semua ENV terbaru
+
+Current Progress
+
+Status layer terbaru
+
+PROJECT_STATUS.md
+
+Update:
+
+version
+build date
+completed layer
+pending layer
+active endpoints
+active workers
+database tables
+
+Harus sesuai kondisi code saat ini.
+
+ROADMAP_NEXT_PHASE.md
+
+Update roadmap berdasarkan audit.
+
+Contoh:
+
+Layer 8 Position Tracking      ✅
+Layer 9 Risk Engine            🔴 Next
+Layer 10 Monitoring Dashboard  🟡
+NEXT_BUILD_TASKS.md
+
+Buat task list aktual.
+
+Jangan copy roadmap lama.
+
+Harus berdasarkan code yang benar-benar ada.
+
+PHASE 4 — DATABASE SYNC
+
+Bandingkan:
+
+Model ↔ Database
+
+Pastikan:
+
+seluruh model sudah terdaftar
+seluruh tabel ada
+seluruh index ada
+migration sinkron
+
+Jika tidak sinkron:
+
+buat migration yang diperlukan.
+
+PHASE 5 — VERSION UPDATE
+
+Update otomatis:
+
+README.md
+
+PROJECT_STATUS.md
+
+ROADMAP_NEXT_PHASE.md
+
+NEXT_BUILD_TASKS.md
+
+version.py
+
+pyproject.toml
+
+Jika ada.
+
+Naikkan versi sesuai progress aktual.
+
+Contoh:
+
+0.8.0
+
+jika Layer 8 selesai.
+
+PHASE 6 — FINAL REPORT
+
+Setelah semua selesai tampilkan:
+
+Summary
+Files Created
+Files Modified
+Files Deleted
+Files Archived
+Layer Status
+Layer	Status
+L1	✅
+L2	✅
+L3	✅
+L4	✅
+L5	✅
+L6	✅
+L7	✅
+L8	✅
+L9	❌
+L10	❌
+Active Endpoints
+
+Daftar seluruh endpoint.
+
+Active Workers
+
+Daftar seluruh background loop.
+
+Database Tables
+
+Daftar seluruh tabel.
+
+Remaining Work
+
+Prioritas berikutnya yang paling masuk akal berdasarkan kondisi project saat ini.
+
+IMPORTANT RULES
+
+JANGAN membuat asumsi.
+
+JANGAN mengupdate dokumentasi berdasarkan roadmap lama.
+
+JANGAN mengupdate status berdasarkan chat sebelumnya.
+
+Status harus berasal dari source code aktual.
+
+Selalu gunakan source code sebagai sumber kebenaran utama.
+
+Jika menemukan inkonsistensi antara code dan dokumentasi:
+
+anggap code sebagai benar,
+dokumentasi harus diperbaiki.
+
+Selesaikan seluruh audit → cleanup → documentation sync → database sync → version update → final report dalam satu pekerjaan sebelum membuat fitur baru.
+
+Prompt ini jauh lebih kuat karena AI akan:
+
+Audit seluruh ZIP terlebih dahulu.
+Rapikan struktur project yang berantakan.
+Sinkronkan database ↔ code ↔ docs.
+Update README, roadmap, status, next tasks.
+Naikkan versi.
+Memberi laporan perubahan lengkap.
+
+Jadi setelah Layer 8 selesai, Anda tinggal berikan prompt ini dan minta AI melakukan "stabilisasi dan konsolidasi project" sebelum lanjut ke Layer 9 Risk Engine.

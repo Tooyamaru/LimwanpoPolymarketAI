@@ -1,38 +1,23 @@
 """
-Health endpoints — updated in Sprint 2 to include version and uptime.
+Health endpoints.
 """
 
 from datetime import datetime, timezone
 
 from fastapi import APIRouter
-from pydantic import BaseModel
 
 from app.config.settings import settings
 from app.core.database import check_db_health
 from app.core.redis import check_redis_health
+from app.schemas.health import DetailedHealthResponse, HealthResponse
 
 router = APIRouter()
 
-# Set when the application starts
 _start_time: datetime = datetime.now(timezone.utc)
 
 
 def get_uptime_seconds() -> float:
     return (datetime.now(timezone.utc) - _start_time).total_seconds()
-
-
-class HealthResponse(BaseModel):
-    status: str
-    version: str
-    uptime_seconds: float
-
-
-class DetailedHealthResponse(BaseModel):
-    status: str
-    version: str
-    uptime_seconds: float
-    database: str
-    redis: str
 
 
 @router.get("/health", response_model=HealthResponse, summary="Basic health check")

@@ -2,6 +2,25 @@
 
 ---
 
+## ✅ Full Codebase Audit COMPLETE (2026-06-23)
+
+**Scope:** All 90+ Python files across api/v1, models, repositories, services, workers, schemas, collector, core, config.
+
+**Findings fixed:**
+
+| Finding | Fix |
+|---------|-----|
+| 8 routers had inline Pydantic schemas | Created `schemas/market.py`, `schemas/price.py`, `schemas/scanner.py`, `schemas/discovery.py`, `schemas/classifier.py`, `schemas/universe.py`, `schemas/health.py`, `schemas/source_validation.py` — all routers now import from `schemas/` |
+| `TradeDecision.status` docstring stale (old lifecycle) | Updated to `PENDING → RISK_APPROVED → EXECUTED` / `PENDING → BLOCKED` in both module docstring and column comment |
+| `APP_VERSION` inconsistent (settings.py=0.6.0, .replit=0.6.0, docs=0.7.0) | Set to `0.9.0` everywhere: `settings.py`, env var override, `pyproject.toml`, all docs |
+| `schemas/__init__.py` had no exports | Added full re-export of all 34 schema classes |
+| `README.md` missing ~20 endpoints in API table | Full API table now documents all 48 endpoints |
+| `PROJECT_STATUS.md` missing 28 endpoints, wrong version | Fully updated |
+
+**Layers confirmed complete:** 1–9 (all 10 background loops running, 48 API endpoints, 14 schema files)
+
+---
+
 ## ✅ Layer 9 — Risk Engine COMPLETE (2026-06-23)
 
 **Pipeline position:** Strategy Engine → **Risk Engine** → Execution Engine
@@ -33,14 +52,11 @@
 
 ## ✅ Refactor COMPLETE (2026-06-23)
 
-**repositories/** — All 10 `*_repository.py` files moved from `services/` to `repositories/`.  
-All imports updated via sed: `app.services.X_repository` → `app.repositories.X_repository`.
+**repositories/** — All 10 `*_repository.py` files moved from `services/` to `repositories/`.
 
-**workers/engine_workers.py** — All 9 background loop coroutines extracted from `main.py`.  
-`main.py` now only contains lifespan + `create_application()`.
+**workers/engine_workers.py** — All 9 background loop coroutines extracted from `main.py`.
 
-**schemas/** — 6 Pydantic schema files created. All API routers import from here instead of  
-defining inline `class Foo(BaseModel)`.
+**schemas/** — 14 Pydantic schema files (all domains covered, no inline schemas remain in routers).
 
 ---
 

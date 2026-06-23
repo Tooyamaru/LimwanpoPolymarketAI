@@ -62,7 +62,7 @@ run = ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--work
 
 [userenv.shared]
 APP_ENV = "development"
-APP_VERSION = "0.6.0"
+APP_VERSION = "0.9.0"
 DEBUG = "false"
 LOG_LEVEL = "INFO"
 LOG_FORMAT = "json"

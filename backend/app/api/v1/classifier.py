@@ -6,55 +6,18 @@ GET /api/v1/classifier/updown    — UPDOWN markets only
 GET /api/v1/classifier/stats     — aggregate classification statistics
 """
 
-from datetime import datetime
-from typing import Optional
-
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.models.discovery_run import DiscoveryRun
-from app.models.event_classification import EventClassification
 from app.repositories.event_classification_repository import get_classifications
+from app.schemas.classifier import ClassificationResponse, ClassifierStatsResponse
 from app.services.event_classifier import EventType
 
 router = APIRouter(prefix="/classifier", tags=["classifier"])
 
-
-# ── Response schemas ──────────────────────────────────────────────────────────
-
-class ClassificationResponse(BaseModel):
-    id: int
-    market_id: str
-    raw_title: str
-    event_type: str
-    confidence: float
-    matched_rule: str
-    created_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
-class ClassifierStatsResponse(BaseModel):
-    """
-    Aggregate classification statistics.
-
-    total = total markets scanned in the latest discovery run.
-    All event-type counts come from that run's in-memory classification pass,
-    so they represent ALL scanned markets (not just the asset+timeframe subset).
-    """
-    total: int
-    updown: int
-    price_range: int
-    news_event: int
-    politics: int
-    other: int
-    run_at: Optional[datetime] = None
-
-
-# ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.get(
     "",

@@ -6,54 +6,17 @@ GET /api/v1/markets/active   — active markets only
 GET /api/v1/markets/latest   — latest snapshots across all markets
 """
 
-from datetime import datetime
-from typing import Optional
-
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.repositories.market_repository import (
-    get_active_markets,
-    get_latest_snapshots,
-)
-from sqlalchemy import select
 from app.models.market import Market
-from app.models.market_snapshot import MarketSnapshot
+from app.repositories.market_repository import get_active_markets, get_latest_snapshots
+from app.schemas.market import MarketResponse, SnapshotResponse
 
 router = APIRouter(prefix="/markets", tags=["markets"])
 
-
-# ── Response schemas ──────────────────────────────────────────────────────────
-
-class MarketResponse(BaseModel):
-    id: int
-    asset: str
-    timeframe: str
-    polymarket_market_id: str
-    title: str
-    start_time: Optional[datetime]
-    end_time: Optional[datetime]
-    status: str
-
-    model_config = {"from_attributes": True}
-
-
-class SnapshotResponse(BaseModel):
-    id: int
-    market_id: int
-    timestamp: datetime
-    yes_price: Optional[float]
-    no_price: Optional[float]
-    liquidity: Optional[float]
-    volume: Optional[float]
-    binance_price: Optional[float]
-
-    model_config = {"from_attributes": True}
-
-
-# ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.get("", response_model=list[MarketResponse], summary="List all markets")
 async def list_markets(

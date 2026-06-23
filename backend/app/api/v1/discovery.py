@@ -1,16 +1,14 @@
 """
 Discovery API — Sprint 3.
 
-GET /api/v1/discovery        — latest discovery run diagnostics
-GET /api/v1/discovery/run    — trigger an on-demand discovery run
-GET /api/v1/discovery/markets — all markets matched in the latest run (with transparency)
+GET  /api/v1/discovery         — latest discovery run diagnostics
+POST /api/v1/discovery/run     — trigger an on-demand discovery run
+GET  /api/v1/discovery/markets — all markets matched in the latest run
 """
 
-from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,37 +16,11 @@ from app.core.database import get_db_session
 from app.core.logging import get_logger
 from app.models.discovery_run import DiscoveryRun
 from app.models.scanner_market import ScannerMarket
+from app.schemas.discovery import DiscoveryDiagnosticsResponse, DiscoveryMarketResponse
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/discovery", tags=["discovery"])
 
-
-# ── Response schemas ──────────────────────────────────────────────────────────
-
-class DiscoveryDiagnosticsResponse(BaseModel):
-    run_at: Optional[datetime]
-    total_markets_scanned: int
-    matched_markets: int
-    btc: int
-    eth: int
-    sol: int
-    xrp: int
-
-
-class DiscoveryMarketResponse(BaseModel):
-    market_id: str
-    asset: str
-    timeframe: str
-    raw_title: str
-    matching_rule: str
-    detected_asset: str
-    detected_timeframe: str
-    health_status: str
-
-    model_config = {"from_attributes": True}
-
-
-# ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.get(
     "",
@@ -60,7 +32,6 @@ async def get_discovery_diagnostics(
 ) -> DiscoveryDiagnosticsResponse:
     """
     Returns stats from the most recent market discovery run.
-    Matches the spec: total_markets_scanned, matched_markets, btc/eth/sol/xrp counts.
     """
     result = await session.execute(
         select(DiscoveryRun).order_by(DiscoveryRun.run_at.desc()).limit(1)
@@ -97,8 +68,7 @@ async def get_discovery_diagnostics(
 async def run_discovery_now() -> DiscoveryDiagnosticsResponse:
     """
     Runs a full market discovery scan immediately and returns the result.
-    This is a blocking call — expect 10-30 seconds depending on Polymarket
-    pagination depth.
+    Blocking — expect 10–30 seconds depending on Polymarket pagination depth.
     """
     from app.services.scanner import ScannerService
     scanner = ScannerService()
