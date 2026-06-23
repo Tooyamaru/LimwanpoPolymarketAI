@@ -1,8 +1,8 @@
 # REPLACEMENT_FORENSICS.md
 
-**Generated:** 2026-06-23 13:11:00 UTC
+**Generated:** 2026-06-23 13:47:57 UTC
 **Audit:** #5 — Part 1
-**Markets examined:** 12
+**Markets examined:** 9
 
 ## Methodology
 
@@ -18,130 +18,100 @@ is not publicly accessible, so first-trade timing is inferred from `last-trade-p
 
 | Timeframe | Condition ID (prefix) | Created At | YES Token (prefix) | Best Bid | Best Ask | Mid | Spread | LTP | Seeded at 0.50? |
 |-----------|----------------------|------------|-------------------|----------|----------|-----|--------|-----|-----------------|
-| 15m | 0x0436240207fbf0f3… | 2026-06-23T12:52:35 | 562948251085267822… | 0.5 | 0.51 | 0.505 | 0.01 | 0.51 | Yes |
-| 1H | 0x5b58ab6adb16cc1c… | 2026-06-23T13:00:00 | 128464949280046478… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
-| 5m | 0x95cec064c0d43aa2… | 2026-06-23T13:02:06 | 593562809968269888… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
+| 15m | 0x235159f474a075de… | 2026-06-23T13:36:40 | 123040575375387818… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
+| 5m | 0xdae8c18648abf359… | 2026-06-23T13:42:04 | 795358583794501687… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
 
 **Order book top-5 depth:**
 
 #### BTC/15m
-- Created at: `2026-06-23T12:52:35.465565Z`
-- Start date: `2026-06-23T12:53:30.338724Z`
-- End date: `2026-06-24T13:00:00Z`
+- Created at: `2026-06-23T13:36:40.69383Z`
+- Start date: `2026-06-23T13:37:36.845381Z`
+- End date: `2026-06-24T13:45:00Z`
 - Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `47` | Ask levels: `46`
-- Top-5 bid depth: `3214.54` | Top-5 ask depth: `3848.85`
-- Last trade price: `0.51` side: `BUY`
-
-#### BTC/1H
-- Created at: `2026-06-23T13:00:00.69365Z`
-- Start date: `2026-06-23T13:02:00.933958Z`
-- End date: `2026-06-25T14:00:00Z`
-- Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `38` | Ask levels: `37`
-- Top-5 bid depth: `2971.0` | Top-5 ask depth: `3082.0`
+- Spread: `0.01` | Bid levels: `50` | Ask levels: `49`
+- Top-5 bid depth: `3264.54` | Top-5 ask depth: `3908.65`
 - Last trade price: `0.5` side: ``
 
 #### BTC/5m
-- Created at: `2026-06-23T13:02:06.079328Z`
-- Start date: `2026-06-23T13:03:13.619396Z`
-- End date: `2026-06-24T13:00:00Z`
+- Created at: `2026-06-23T13:42:04.278064Z`
+- Start date: `2026-06-23T13:43:48.658725Z`
+- End date: `2026-06-24T13:40:00Z`
 - Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `49` | Ask levels: `48`
-- Top-5 bid depth: `523.94` | Top-5 ask depth: `607.5`
+- Spread: `0.01` | Bid levels: `50` | Ask levels: `49`
+- Top-5 bid depth: `661.49` | Top-5 ask depth: `732.48`
 - Last trade price: `0.5` side: ``
 
 ### ETH
 
 | Timeframe | Condition ID (prefix) | Created At | YES Token (prefix) | Best Bid | Best Ask | Mid | Spread | LTP | Seeded at 0.50? |
 |-----------|----------------------|------------|-------------------|----------|----------|-----|--------|-----|-----------------|
-| 15m | 0x58320c5ce9eda579… | 2026-06-23T12:52:36 | 542680842020155535… | 0.5 | 0.51 | 0.505 | 0.01 | 0.51 | Yes |
-| 1H | 0xdc295b2c08fc5833… | 2026-06-23T13:00:04 | 377553496420005306… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
-| 5m | 0x6d0a3677a57b1224… | 2026-06-23T13:02:06 | 904126288414903900… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
+| 15m | 0xda9c9c53450f5eb6… | 2026-06-23T13:36:39 | 704406971145019886… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
+| 5m | 0x4c6fe3fa678271e8… | 2026-06-23T13:42:04 | 862250684235169550… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
 
 **Order book top-5 depth:**
 
 #### ETH/15m
-- Created at: `2026-06-23T12:52:36.172595Z`
-- Start date: `2026-06-23T12:53:51.439818Z`
-- End date: `2026-06-24T13:00:00Z`
+- Created at: `2026-06-23T13:36:39.875284Z`
+- Start date: `2026-06-23T13:37:53.980042Z`
+- End date: `2026-06-24T13:45:00Z`
 - Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `50` | Ask levels: `49`
-- Top-5 bid depth: `2639.4` | Top-5 ask depth: `2715.71`
-- Last trade price: `0.51` side: `BUY`
-
-#### ETH/1H
-- Created at: `2026-06-23T13:00:04.962349Z`
-- Start date: `2026-06-23T13:02:03.742704Z`
-- End date: `2026-06-25T14:00:00Z`
-- Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `42` | Ask levels: `42`
-- Top-5 bid depth: `1831.0` | Top-5 ask depth: `2282.0`
+- Spread: `0.01` | Bid levels: `48` | Ask levels: `47`
+- Top-5 bid depth: `2639.4` | Top-5 ask depth: `3108.51`
 - Last trade price: `0.5` side: ``
 
 #### ETH/5m
-- Created at: `2026-06-23T13:02:06.087944Z`
-- Start date: `2026-06-23T13:03:57.31431Z`
-- End date: `2026-06-24T13:00:00Z`
+- Created at: `2026-06-23T13:42:04.278972Z`
+- Start date: `2026-06-23T13:43:21.014542Z`
+- End date: `2026-06-24T13:40:00Z`
 - Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `43` | Ask levels: `42`
-- Top-5 bid depth: `246.02` | Top-5 ask depth: `289.02`
+- Spread: `0.01` | Bid levels: `40` | Ask levels: `39`
+- Top-5 bid depth: `271.02` | Top-5 ask depth: `301.02`
 - Last trade price: `0.5` side: ``
 
 ### SOL
 
 | Timeframe | Condition ID (prefix) | Created At | YES Token (prefix) | Best Bid | Best Ask | Mid | Spread | LTP | Seeded at 0.50? |
 |-----------|----------------------|------------|-------------------|----------|----------|-----|--------|-----|-----------------|
-| 15m | 0xaa4b82177392ea1e… | 2026-06-23T12:52:35 | 275580449494901473… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
-| 1H | 0x8009f642dc485c98… | 2026-06-23T13:00:06 | 145552008818156525… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
-| 5m | 0xd9e2d29200daacd6… | 2026-06-23T13:02:06 | 176680732603720186… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
+| 15m | 0xf3ec9ce875534457… | 2026-06-23T13:36:40 | 455739371926783223… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
+| 5m | 0x38732076185a6ef9… | 2026-06-23T13:42:06 | 514723246227567739… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
 
 **Order book top-5 depth:**
 
 #### SOL/15m
-- Created at: `2026-06-23T12:52:35.492491Z`
-- Start date: `2026-06-23T12:53:52.225026Z`
-- End date: `2026-06-24T13:00:00Z`
+- Created at: `2026-06-23T13:36:40.69104Z`
+- Start date: `2026-06-23T13:37:51.999533Z`
+- End date: `2026-06-24T13:45:00Z`
 - Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `46` | Ask levels: `45`
-- Top-5 bid depth: `640.53` | Top-5 ask depth: `655.53`
-- Last trade price: `0.5` side: ``
-
-#### SOL/1H
-- Created at: `2026-06-23T13:00:06.884519Z`
-- Start date: `2026-06-23T13:02:05.091211Z`
-- End date: `2026-06-25T14:00:00Z`
-- Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `46` | Ask levels: `45`
-- Top-5 bid depth: `185.0` | Top-5 ask depth: `217.0`
+- Spread: `0.01` | Bid levels: `47` | Ask levels: `46`
+- Top-5 bid depth: `640.53` | Top-5 ask depth: `665.53`
 - Last trade price: `0.5` side: ``
 
 #### SOL/5m
-- Created at: `2026-06-23T13:02:06.98228Z`
-- Start date: `2026-06-23T13:03:30.877019Z`
-- End date: `2026-06-24T13:00:00Z`
+- Created at: `2026-06-23T13:42:06.479714Z`
+- Start date: `2026-06-23T13:43:03.36965Z`
+- End date: `2026-06-24T13:40:00Z`
 - Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `44` | Ask levels: `43`
-- Top-5 bid depth: `146.0` | Top-5 ask depth: `166.0`
+- Spread: `0.01` | Bid levels: `43` | Ask levels: `42`
+- Top-5 bid depth: `213.0` | Top-5 ask depth: `223.0`
 - Last trade price: `0.5` side: ``
 
 ### XRP
 
 | Timeframe | Condition ID (prefix) | Created At | YES Token (prefix) | Best Bid | Best Ask | Mid | Spread | LTP | Seeded at 0.50? |
 |-----------|----------------------|------------|-------------------|----------|----------|-----|--------|-----|-----------------|
-| 15m | 0x7bf7d541bc9be925… | 2026-06-23T12:52:36 | 317371926061260238… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
+| 15m | 0x323d699e67c57110… | 2026-06-23T13:36:39 | 887632823480993399… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
 | 1H | 0xe09b11ec121bad5c… | 2026-06-23T13:00:08 | 165033569495780985… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
-| 5m | 0xe6c5623318c29480… | 2026-06-23T13:02:06 | 313127604818999620… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
+| 5m | 0x06ea567adb8de68d… | 2026-06-23T13:42:04 | 414130508576470389… | 0.5 | 0.51 | 0.505 | 0.01 | 0.5 | Yes |
 
 **Order book top-5 depth:**
 
 #### XRP/15m
-- Created at: `2026-06-23T12:52:36.50036Z`
-- Start date: `2026-06-23T12:53:33.378049Z`
-- End date: `2026-06-24T13:00:00Z`
+- Created at: `2026-06-23T13:36:39.872747Z`
+- Start date: `2026-06-23T13:37:34.253228Z`
+- End date: `2026-06-24T13:45:00Z`
 - Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `34` | Ask levels: `33`
-- Top-5 bid depth: `334.57` | Top-5 ask depth: `349.57`
+- Spread: `0.01` | Bid levels: `43` | Ask levels: `42`
+- Top-5 bid depth: `354.57` | Top-5 ask depth: `379.57`
 - Last trade price: `0.5` side: ``
 
 #### XRP/1H
@@ -149,23 +119,23 @@ is not publicly accessible, so first-trade timing is inferred from `last-trade-p
 - Start date: `2026-06-23T13:02:38.628903Z`
 - End date: `2026-06-25T14:00:00Z`
 - Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `33` | Ask levels: `31`
+- Spread: `0.01` | Bid levels: `34` | Ask levels: `33`
 - Top-5 bid depth: `202.0` | Top-5 ask depth: `227.0`
 - Last trade price: `0.5` side: ``
 
 #### XRP/5m
-- Created at: `2026-06-23T13:02:06.098966Z`
-- Start date: `2026-06-23T13:03:16.694025Z`
-- End date: `2026-06-24T13:00:00Z`
+- Created at: `2026-06-23T13:42:04.300071Z`
+- Start date: `2026-06-23T13:43:00.298704Z`
+- End date: `2026-06-24T13:40:00Z`
 - Best bid: `0.5` | Best ask: `0.51` | Mid: `0.505`
-- Spread: `0.01` | Bid levels: `46` | Ask levels: `45`
-- Top-5 bid depth: `153.0` | Top-5 ask depth: `173.0`
+- Spread: `0.01` | Bid levels: `48` | Ask levels: `47`
+- Top-5 bid depth: `206.0` | Top-5 ask depth: `226.0`
 - Last trade price: `0.5` side: ``
 
 ## Questions Answered
 
 **1. Was the market initially seeded at 0.50?**
-   - Markets with bid ≈ 0.50 (±0.015): **12/12**
+   - Markets with bid ≈ 0.50 (±0.015): **9/9**
 
 **2. Seed probability distribution:**
    - Mid range: [0.5050, 0.5050]
@@ -177,9 +147,7 @@ is not publicly accessible, so first-trade timing is inferred from `last-trade-p
    returns the most recent execution price and side but no timestamp.
 
 **4. Did the first trade change the price?**
-   - Markets where LTP ≠ 0.50: **2/12**
-     - ETH/15m: LTP=0.51
-     - BTC/15m: LTP=0.51
+   - Markets where LTP ≠ 0.50: **0/9**
 
 ---
-*Data fetched: 2026-06-23 13:11 UTC*
+*Data fetched: 2026-06-23 13:47 UTC*
