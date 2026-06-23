@@ -14,3 +14,4 @@
 - [Risk Engine design](risk-engine-design.md) — Layer 9 complete; PENDING→RISK_APPROVED|BLOCKED before Execution; 5 rules: DUPLICATE_POSITION MAX_OPEN_POSITIONS MAX_EXPOSURE DAILY_LOSS DAILY_TRADES
 - [Audit cleanup 2026-06-23](audit-cleanup.md) — Full audit done; inline schemas removed from all 8 routers; TradeDecision lifecycle comment fixed; version bumped to 0.9.0 everywhere; 14 schema files cover all domains
 - [Portfolio Reporting Layer 10](portfolio-layer10.md) — Layer 10 complete; 5 read-only endpoints; repository/service/schemas/router pattern; 35 tests pass; version bumped to 0.10.0
+- [Polymarket business model](polymarket-business-model.md) — Authoritative rules: prediction market only; CLOSE_POSITION is valid decision type (not yet in code); BNB is target asset (not in settings); multiple entries per market allowed by exposure rules not position count
