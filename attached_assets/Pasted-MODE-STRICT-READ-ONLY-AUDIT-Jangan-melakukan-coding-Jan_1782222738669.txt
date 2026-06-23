@@ -1,0 +1,173 @@
+MODE: STRICT READ-ONLY AUDIT
+
+Jangan melakukan coding.
+Jangan membuat file baru.
+Jangan mengubah file apa pun.
+Jangan menjalankan auto-fix.
+Jangan menambahkan fitur.
+Jangan membuat asumsi.
+
+Tugas Anda hanya membaca dan melakukan audit berbasis bukti.
+
+AUDIT TARGET:
+Menentukan apakah proyek benar-benar siap memasuki Layer 11 (Live Trading) berdasarkan roadmap resmi yang ada saat ini.
+
+LANGKAH AUDIT
+
+PHASE A — ROADMAP VERIFICATION
+
+Baca dan cross-check:
+
+README.md
+PROJECT_STATUS.md
+ROADMAP_NEXT_PHASE.md
+NEXT_BUILD_TASKS.md
+pyproject.toml
+.replit
+
+Verifikasi:
+
+1. Layer saat ini
+2. Phase saat ini
+3. Version saat ini
+4. Next approved layer
+5. Apakah semua dokumen konsisten
+
+Tampilkan tabel bukti lengkap.
+
+PHASE B — LAYER COMPLETION VALIDATION
+
+Verifikasi Layer 1–10 satu per satu.
+
+Untuk setiap layer tampilkan:
+
+* Nama layer
+* Worker
+* Service
+* Repository
+* Model
+* Router
+* Status
+
+Format:
+
+Layer | Name | Worker | Service | Repository | Model | Router | Status
+
+Gunakan bukti file dan line number.
+
+PHASE C — LAYER 10 VALIDATION
+
+Verifikasi seluruh implementasi Portfolio Reporting.
+
+Periksa:
+
+portfolio_repository.py
+portfolio_service.py
+portfolio.py router
+schemas/portfolio.py
+seluruh test Layer 10
+
+Jawab:
+
+1. Apakah repository benar-benar read-only
+2. Apakah ada INSERT/UPDATE/DELETE
+3. Apakah semua endpoint bekerja
+4. Apakah semua response model sesuai
+5. Apakah test coverage cukup
+
+Sertakan bukti line number.
+
+PHASE D — LIVE TRADING READINESS AUDIT
+
+Audit kesiapan Layer 11.
+
+Cari blocker nyata yang dapat mengganggu Live Trading.
+
+Periksa khusus:
+
+1. Decision lifecycle
+    PENDING → RISK_APPROVED → EXECUTED
+2. Order lifecycle
+3. Position lifecycle
+4. Risk lifecycle
+5. Data integrity
+6. Duplicate execution risk
+7. Race condition risk
+8. Foreign key integrity
+9. Retry / rate-limit handling
+10. Error recovery
+11. Worker resilience
+12. Database consistency
+13. Open position handling
+14. Exposure control
+15. Daily loss control
+
+Untuk setiap temuan tampilkan:
+
+ID
+Finding
+File
+Line
+Severity
+Evidence
+Classification
+
+Classification hanya boleh:
+
+CONFIRMED
+PARTIALLY CONFIRMED
+FALSE POSITIVE
+NEEDS REVIEW
+
+PHASE E — BLOCKER ANALYSIS
+
+Jawab secara eksplisit:
+
+A. Apakah ada blocker sebelum Layer 11?
+
+B. Jika ada:
+
+* Sebutkan blocker satu per satu
+* Jelaskan dampaknya terhadap Live Trading
+
+C. Jika tidak ada:
+
+* Nyatakan bahwa Layer 11 dapat dimulai
+
+D. Berikan ranking prioritas pekerjaan sebelum Layer 11
+
+Urutkan berdasarkan:
+
+1. Production risk
+2. Data integrity risk
+3. Financial risk
+4. Operational risk
+
+PHASE F — FINAL VERDICT
+
+Berikan skor:
+
+Architecture
+Maintainability
+Testing
+Deployment Readiness
+Trading Readiness
+Security
+
+Skala 1–5.
+
+Akhiri dengan:
+
+CURRENT LAYER:
+CURRENT PHASE:
+CURRENT VERSION:
+NEXT APPROVED LAYER:
+
+LIVE TRADING READY:
+YES / NO
+
+Jika NO:
+Sebutkan seluruh blocker yang harus diselesaikan terlebih dahulu.
+
+Jika YES:
+Nyatakan bahwa Layer 11 dapat dimulai tanpa melanggar roadmap resmi.
