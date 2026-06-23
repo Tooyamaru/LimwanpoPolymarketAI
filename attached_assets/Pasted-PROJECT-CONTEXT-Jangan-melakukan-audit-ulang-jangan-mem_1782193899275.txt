@@ -1,0 +1,119 @@
+PROJECT CONTEXT
+
+Jangan melakukan audit ulang, jangan membuat roadmap baru, jangan membaca seluruh codebase lagi.
+
+Asumsikan status proyek berikut SUDAH BENAR:
+
+- Layer 1 Market Registry = selesai
+- Layer 2 Market Scanner = selesai
+- Layer 3 Data Storage = selesai
+- Layer 4 Signal Engine = selesai
+- Layer 5 Opportunity Engine = selesai
+- Layer 6 Strategy Engine = selesai
+
+Komponen yang sudah ada:
+
+- market_universe
+- market_price_snapshots
+- signals
+- opportunities
+- trade_decisions
+
+Background loops aktif:
+
+- CollectorScheduler
+- MarketUniverseService
+- MarketPriceService
+- SignalEngine
+- OpportunityEngine
+- StrategyEngine
+
+Tujuan sekarang hanya satu:
+
+BUILD LAYER 7 — EXECUTION ENGINE (PAPER MODE)
+
+Requirements:
+
+1. Buat model order.py
+   Fields:
+   - id
+   - decision_id
+   - condition_id
+   - asset
+   - timeframe
+   - side
+   - order_type
+   - quantity
+   - requested_price
+   - filled_price
+   - status
+   - created_at
+   - filled_at
+
+2. Buat order_repository.py
+   - create_order()
+   - get_order()
+   - get_orders()
+   - get_open_orders()
+   - get_order_stats()
+
+3. Buat execution_engine.py
+
+   Logic:
+
+   - baca trade_decisions terbaru
+   - hanya proses:
+       OPEN_LONG_YES
+       OPEN_LONG_NO
+
+   - status harus PENDING
+
+   PAPER MODE:
+
+   OPEN_LONG_YES:
+       fill_price = yes_ask
+
+   OPEN_LONG_NO:
+       fill_price = 1 - yes_bid
+
+   - create order record
+   - mark order FILLED
+   - update trade_decision -> EXECUTED
+
+4. Buat API:
+
+   GET /api/v1/orders
+   GET /api/v1/orders/open
+   GET /api/v1/orders/stats
+   GET /api/v1/orders/{id}
+
+5. Tambahkan Execution Engine loop ke main.py
+
+   interval:
+   30 detik
+
+   gate:
+   universe_ready
+
+6. Tambahkan settings:
+
+   EXECUTION_ENGINE_ENABLED
+   EXECUTION_ENGINE_INTERVAL_SECONDS
+   EXECUTION_ENGINE_RUN_ON_STARTUP
+   EXECUTION_PAPER_MODE=True
+
+7. Register:
+   - model
+   - router
+   - startup task
+   - shutdown task
+
+8. Setelah coding selesai:
+
+   - restart aplikasi
+   - verifikasi endpoint
+   - verifikasi tabel orders
+   - tampilkan hasil testing
+
+Jangan mengubah Layer 1–6 kecuali diperlukan untuk integrasi.
+Fokus hanya pada Layer 7.

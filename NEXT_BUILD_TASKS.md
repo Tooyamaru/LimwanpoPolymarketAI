@@ -2,59 +2,71 @@
 
 ---
 
-## ✅ Layer 6 — Strategy Engine SELESAI (2026-06-23)
+## ✅ Layer 7 — Execution Engine SELESAI (2026-06-23)
 
 **Files dibuat:**
-- `backend/app/models/trade_decision.py` — Tabel `trade_decisions` (append-only log, bukan UPSERT)
-- `backend/app/services/strategy_engine.py` — `StrategyEngine.run()`, rule-based decision
-- `backend/app/services/trade_decision_repository.py` — insert + query functions
-- `backend/app/api/v1/strategies.py` — 3 REST endpoints
+- `backend/app/models/order.py` — Tabel `orders` (append-only fill log)
+- `backend/app/services/execution_engine.py` — `ExecutionEngine.run()`, paper-mode simulator
+- `backend/app/services/order_repository.py` — create + query functions
+- `backend/app/api/v1/orders.py` — 4 REST endpoints
 
-**Decision rules:**
-| Kondisi | Decision | skip_reason |
-|---------|----------|-------------|
-| spread_yes > 0.02 | SKIP | HIGH_SPREAD |
-| direction == NEUTRAL | SKIP | NEUTRAL_DIRECTION |
-| score ≥ 40 + BUY_NO | OPEN_LONG_NO | — |
-| score ≥ 40 + BUY_YES | OPEN_LONG_YES | — |
-| score 20–39 | WATCH | — |
-| score < 20 | SKIP | LOW_SCORE |
+**Paper fill logic:**
+| Decision | Side | fill_price |
+|----------|------|------------|
+| OPEN_LONG_YES | LONG_YES | yes_ask |
+| OPEN_LONG_NO | LONG_NO | 1.0 - yes_bid |
+
+**Alur eksekusi:**
+1. Baca TradeDecision WHERE decision IN ('OPEN_LONG_YES','OPEN_LONG_NO') AND status='PENDING'
+2. Hitung fill_price dari yes_ask / yes_bid (skip jika null)
+3. Insert Order dengan status=FILLED
+4. UPDATE TradeDecision SET status='EXECUTED'
+5. commit()
 
 **Konfigurasi ditambahkan ke settings.py:**
 ```
-STRATEGY_ENGINE_ENABLED = True
-STRATEGY_ENGINE_INTERVAL_SECONDS = 60
-STRATEGY_ENGINE_RUN_ON_STARTUP = True
-STRATEGY_PERSIST_SKIPS = False   # SKIP tidak disimpan ke DB agar tabel lean
+EXECUTION_ENGINE_ENABLED = True
+EXECUTION_ENGINE_INTERVAL_SECONDS = 30
+EXECUTION_ENGINE_RUN_ON_STARTUP = True
+EXECUTION_PAPER_MODE = True
 ```
 
-**Background loop:** 60s, gated pada universe_ready event (sama seperti L4/L5)
+**Background loop:** 30s, gated pada universe_ready event
+
+**Verifikasi startup log:**
+```json
+{"interval": 30, "paper_mode": true, "run_on_startup": true,
+ "event": "Execution engine started"}
+```
 
 **Verifikasi endpoints:**
 ```
-GET /api/v1/strategies          — semua decisions (newest first)
-GET /api/v1/strategies/active   — OPEN_LONG_YES/NO dengan status PENDING
-GET /api/v1/strategies/stats    — aggregate counts + avg_score_actionable
+GET /api/v1/orders          → 200 []        (kosong — belum ada fills)
+GET /api/v1/orders/open     → 200 []
+GET /api/v1/orders/stats    → 200 {"total_orders":0,...}
+GET /api/v1/orders/1        → 404           (expected)
 ```
 
 ---
 
-## 🔴 Layer 7 — Execution Engine (BERIKUTNYA)
+## 🔴 Layer 8 — Position Tracking (BERIKUTNYA)
 
-**Target:** Simulate order fills dari TradeDecision OPEN_LONG_* → Order record
+**Target:** Melacak posisi terbuka dari order fills, hitung P&L unrealized/realized.
 
 **Files yang akan dibuat:**
-- `backend/app/models/order.py` — tabel `orders` (paper mode)
-- `backend/app/services/execution_engine.py` — paper simulator
-- `backend/app/services/order_repository.py` — CRUD
-- `backend/app/api/v1/orders.py` — monitoring endpoint
+- `backend/app/models/position.py` — tabel `positions`
+  Fields: id, condition_id, asset, timeframe, side, size, entry_price,
+          current_price, unrealized_pnl, realized_pnl, status, opened_at, closed_at
+- `backend/app/services/position_service.py` — buka/tutup posisi dari order fills
+- `backend/app/services/position_repository.py` — CRUD
+- `backend/app/api/v1/positions.py` — endpoints
 
-**Logic paper mode:**
-- Baca OPEN_LONG_YES/NO decisions dengan status PENDING
-- Simulate fill pada yes_ask (untuk YES) atau 1-yes_bid (untuk NO)
-- Insert order record dengan status FILLED
-- Update trade_decision status → EXECUTED
+**Logic:**
+- Buka posisi dari FILLED orders (status=OPEN)
+- Update current_price dari price snapshots (setiap 30s)
+- Hitung unrealized_pnl = (current_price - entry_price) × size
+- Posisi ditutup manual atau saat market expire
 
-**Background loop:** 30s, gated universe_ready
+**Background loop:** 30s
 
 *Updated: 2026-06-23*

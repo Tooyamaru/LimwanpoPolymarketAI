@@ -63,13 +63,19 @@ Score components: mid_movement(30) + spread(20) + depth_imbalance(20) + signal_a
 | `services/trade_decision_repository.py` | Insert + query operations |
 | `api/v1/strategies.py` | REST endpoints |
 
-Decision rules:
-- spread_yes > 0.02 → SKIP (HIGH_SPREAD)
-- direction == NEUTRAL → SKIP (NEUTRAL_DIRECTION)
-- score ≥ 40 + BUY_NO → OPEN_LONG_NO
-- score ≥ 40 + BUY_YES → OPEN_LONG_YES
-- score 20–39 → WATCH
-- score < 20 → SKIP (LOW_SCORE)
+Decision rules: spread>0.02→SKIP | NEUTRAL→SKIP | score≥40+BUY_NO→OPEN_LONG_NO | score≥40+BUY_YES→OPEN_LONG_YES | score 20–39→WATCH | score<20→SKIP
+
+### Layer 7: Execution Engine ✅ SELESAI (Paper Mode)
+| File | Fungsi |
+|------|--------|
+| `models/order.py` | Tabel `orders` (append-only fill log) |
+| `services/execution_engine.py` | Paper-mode fill simulator |
+| `services/order_repository.py` | create + query operations |
+| `api/v1/orders.py` | REST endpoints |
+
+Paper fill logic:
+- OPEN_LONG_YES → side=LONG_YES, fill_price = yes_ask
+- OPEN_LONG_NO  → side=LONG_NO,  fill_price = 1 - yes_bid
 
 ---
 
@@ -83,9 +89,8 @@ Decision rules:
 | MarketPriceService (refresh) | 10s | universe_ready |
 | SignalEngine | 10s | universe_ready |
 | OpportunityEngine | 30s | universe_ready |
-| **StrategyEngine** | **60s** | **universe_ready** |
-
-**DEF-002 fix:** `universe_ready` asyncio.Event diset segera jika `UNIVERSE_SYNC_RUN_ON_STARTUP=False` (env var override dari Replit) — downstream engines tidak lagi ter-block.
+| StrategyEngine | 60s | universe_ready |
+| **ExecutionEngine** | **30s** | **universe_ready** |
 
 ---
 
@@ -106,6 +111,10 @@ Decision rules:
 | `GET /api/v1/strategies` | L6 |
 | `GET /api/v1/strategies/active` | L6 |
 | `GET /api/v1/strategies/stats` | L6 |
+| `GET /api/v1/orders` | L7 |
+| `GET /api/v1/orders/open` | L7 |
+| `GET /api/v1/orders/stats` | L7 |
+| `GET /api/v1/orders/{id}` | L7 |
 
 ---
 
@@ -113,7 +122,6 @@ Decision rules:
 
 | Layer | Modul | Status |
 |-------|-------|--------|
-| **Layer 7** | Execution Engine | ❌ TIDAK ADA |
 | **Layer 8** | Position Tracking | ❌ TIDAK ADA |
 | **Layer 9** | Risk Engine | ❌ TIDAK ADA |
 | **Layer 10** | Monitoring Dashboard | ❌ TIDAK ADA |

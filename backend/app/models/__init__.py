@@ -16,6 +16,7 @@ from app.models.scanner_market import ScannerMarket
 from app.models.opportunity import Opportunity
 from app.models.signal import Signal
 from app.models.source_validation_result import SourceValidationResult
+from app.models.order import Order
 from app.models.trade_decision import TradeDecision
 
 __all__ = [
@@ -26,6 +27,7 @@ __all__ = [
     "MarketPriceSnapshot",
     "MarketSnapshot",
     "MarketUniverse",
+    "Order",
     "Opportunity",
     "ScannerMarket",
     "Signal",

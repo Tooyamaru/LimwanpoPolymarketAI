@@ -84,6 +84,41 @@ async def _run_price_refresh_loop(
             logger.error("Price refresh periodic run failed", error=str(exc))
 
 
+async def _run_execution_engine_loop(
+    engine,
+    universe_ready: asyncio.Event | None = None,
+) -> None:
+    """
+    Execution engine background loop — Layer 7.
+
+    Runs every EXECUTION_ENGINE_INTERVAL_SECONDS (default 30 s).
+    Processes PENDING OPEN_LONG_YES / OPEN_LONG_NO trade decisions and
+    creates paper-mode Order fills.
+    Gates on universe_ready so it starts only after the first universe sync.
+    """
+    from app.core.database import get_session_factory
+
+    async def _one_cycle():
+        factory = get_session_factory()
+        async with factory() as session:
+            await engine.run(session)
+
+    if settings.EXECUTION_ENGINE_RUN_ON_STARTUP:
+        if universe_ready is not None:
+            await universe_ready.wait()
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Execution engine startup run failed", error=str(exc))
+
+    while True:
+        await asyncio.sleep(settings.EXECUTION_ENGINE_INTERVAL_SECONDS)
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Execution engine periodic run failed", error=str(exc))
+
+
 async def _run_strategy_engine_loop(
     engine,
     universe_ready: asyncio.Event | None = None,
@@ -334,6 +369,22 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.OPPORTUNITY_ENGINE_RUN_ON_STARTUP,
         )
 
+    # ── Execution engine (every 30 s) — Layer 7 ──────────────────────────────
+    execution_task = None
+    if settings.EXECUTION_ENGINE_ENABLED:
+        from app.services.execution_engine import ExecutionEngine
+        exec_engine = ExecutionEngine()
+        execution_task = asyncio.create_task(
+            _run_execution_engine_loop(exec_engine, universe_ready=universe_ready_event)
+        )
+        app.state.execution_engine = exec_engine
+        logger.info(
+            "Execution engine started",
+            interval=settings.EXECUTION_ENGINE_INTERVAL_SECONDS,
+            paper_mode=settings.EXECUTION_PAPER_MODE,
+            run_on_startup=settings.EXECUTION_ENGINE_RUN_ON_STARTUP,
+        )
+
     # ── Strategy engine (every 60 s) — Layer 6 ───────────────────────────────
     strategy_task = None
     if settings.STRATEGY_ENGINE_ENABLED:
@@ -362,6 +413,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         (signal_task, "signal"),
         (opportunity_task, "opportunity"),
         (strategy_task, "strategy"),
+        (execution_task, "execution"),
     ]:
         if task is not None:
             task.cancel()

@@ -1,60 +1,41 @@
 # ROADMAP — BUILD PHASE (Layers 6–10)
 
 **Phase 1 (Research):** SELESAI — Audit #1–#5  
-**Phase 2 (Build):** IN PROGRESS — Layer 6 baru selesai  
-**Next target:** Layer 7 — Execution Engine
+**Phase 2 (Build):** IN PROGRESS — Layer 7 baru selesai  
+**Next target:** Layer 8 — Position Tracking
 
 ---
 
 ## Layer 6 — Strategy Engine ✅ SELESAI (2026-06-23)
 
-**Input:** `opportunities` table  
-**Output:** `trade_decisions` table — OPEN_LONG_YES | OPEN_LONG_NO | WATCH | SKIP
-
-**Decision logic:**
-- spread_yes > 0.02 → SKIP (HIGH_SPREAD)
-- direction == NEUTRAL → SKIP (NEUTRAL_DIRECTION)
-- score ≥ 40 + BUY_NO → OPEN_LONG_NO
-- score ≥ 40 + BUY_YES → OPEN_LONG_YES
-- score 20–39 → WATCH
-- score < 20 → SKIP (LOW_SCORE)
-
-**Background loop:** 60s, gated pada universe_ready
+Decision rules: spread>0.02→SKIP | NEUTRAL→SKIP | score≥40→OPEN_LONG | 20–39→WATCH | <20→SKIP  
+Background loop: 60s, gated universe_ready
 
 ---
 
-## Layer 7 — Execution Engine 🔴 PRIORITAS TERTINGGI BERIKUTNYA
+## Layer 7 — Execution Engine ✅ SELESAI (2026-06-23)
 
-**Tujuan:** Mengirim order ke Polymarket CLOB (paper mode dulu).
-
-**Catatan:**
-- Order submission memerlukan API key + wallet signing (py-clob-client)
-- Paper mode: simulate fills tanpa actual order ke CLOB
-- Real mode: akan diaktifkan setelah risk engine selesai
-
-**Komponen:**
-- `services/execution_engine.py` — paper order simulator
-- `models/order.py` — order tracking
-- `api/v1/orders.py` — monitoring endpoint
-
-**Estimasi:** 3–4 jam (paper mode)
+Paper-mode fill: OPEN_LONG_YES→fill@yes_ask | OPEN_LONG_NO→fill@(1-yes_bid)  
+Updates TradeDecision status → EXECUTED after fill.  
+Background loop: 30s, gated universe_ready
 
 ---
 
-## Layer 8 — Position Tracking 🟠 PRIORITAS 2
+## Layer 8 — Position Tracking 🔴 PRIORITAS TERTINGGI BERIKUTNYA
 
-**Tujuan:** Melacak posisi terbuka, P&L unrealized/realized.
+**Tujuan:** Melacak posisi terbuka, P&L unrealized/realized dari order fills.
 
 **Komponen:**
 - `models/position.py` — posisi (side, size, entry_price, current_price, pnl)
-- `services/position_service.py` — update dari order fills
-- `api/v1/positions.py`
+- `services/position_service.py` — buka dari fills, update harga, hitung P&L
+- `services/position_repository.py` — CRUD
+- `api/v1/positions.py` — endpoints
 
 **Estimasi:** 3–4 jam
 
 ---
 
-## Layer 9 — Risk Engine 🟠 PRIORITAS 3
+## Layer 9 — Risk Engine 🟠 PRIORITAS 2
 
 **Rules minimum:**
 - Max posisi per market: configurable USDC limit
@@ -71,7 +52,7 @@
 
 ---
 
-## Layer 10 — Monitoring Dashboard 🟢 PRIORITAS 4
+## Layer 10 — Monitoring Dashboard 🟢 PRIORITAS 3
 
 **Minimum viable:**
 - Live scores 12 markets
@@ -88,11 +69,11 @@
 | Layer | Status | Estimasi | Dependency |
 |-------|--------|----------|------------|
 | 6 Strategy Engine | ✅ SELESAI | — | L5 ✅ |
-| 7 Execution Engine | 🔴 NEXT | 4 jam | L6 ✅ |
-| 8 Position Tracking | 🟠 | 3 jam | L7 |
+| 7 Execution Engine | ✅ SELESAI | — | L6 ✅ |
+| 8 Position Tracking | 🔴 NEXT | 3 jam | L7 ✅ |
 | 9 Risk Engine | 🟠 | 3 jam | L8 |
 | 10 Dashboard | 🟢 | 8 jam | L3-L9 |
-| **Total remaining** | | **~18 jam** | |
+| **Total remaining** | | **~14 jam** | |
 
 ---
 

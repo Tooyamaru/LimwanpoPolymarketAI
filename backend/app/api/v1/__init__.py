@@ -7,6 +7,7 @@ from app.api.v1.markets import router as markets_router
 from app.api.v1.price import router as price_router
 from app.api.v1.scanner import router as scanner_router
 from app.api.v1.opportunities import router as opportunities_router
+from app.api.v1.orders import router as orders_router
 from app.api.v1.signals import router as signals_router
 from app.api.v1.source_validation import router as source_validation_router
 from app.api.v1.strategies import router as strategies_router
@@ -25,3 +26,4 @@ api_router.include_router(price_router)
 api_router.include_router(signals_router)
 api_router.include_router(opportunities_router)
 api_router.include_router(strategies_router)
+api_router.include_router(orders_router)
