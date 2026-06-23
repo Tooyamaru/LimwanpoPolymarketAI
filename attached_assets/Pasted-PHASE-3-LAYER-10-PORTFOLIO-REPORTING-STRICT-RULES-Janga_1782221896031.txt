@@ -1,0 +1,168 @@
+PHASE 3 — LAYER 10 PORTFOLIO REPORTING
+
+STRICT RULES
+
+- Jangan membuat fitur di luar Layer 10.
+- Jangan mengubah logic Layer 1–9.
+- Jangan melakukan refactor besar.
+- Jangan mengubah workflow trading.
+- Jangan menambah strategi baru.
+- Jangan mengubah Risk Engine.
+- Jangan mengubah Execution Engine.
+- Fokus hanya membangun Layer 10 sesuai roadmap.
+
+OBJECTIVE
+
+Implement Layer 10 Portfolio Reporting.
+
+Layer ini hanya membaca data yang sudah dihasilkan oleh:
+
+- TradeDecision
+- RiskEvent
+- Order
+- Position
+
+Tidak boleh menghasilkan trade baru.
+
+==================================================
+STEP 1 — REPOSITORY
+==================================================
+
+Buat:
+
+backend/app/repositories/portfolio_repository.py
+
+Repository harus menyediakan:
+
+- get_portfolio_summary()
+- get_position_summary()
+- get_order_summary()
+- get_risk_summary()
+- get_pnl_summary()
+
+Gunakan SQLAlchemy async.
+
+==================================================
+STEP 2 — SERVICE
+==================================================
+
+Buat:
+
+backend/app/services/portfolio_service.py
+
+Service menghitung:
+
+Portfolio Summary
+
+- total_positions
+- open_positions
+- closed_positions
+
+Trading Summary
+
+- total_orders
+- executed_orders
+
+Risk Summary
+
+- approved_decisions
+- blocked_decisions
+
+PnL Summary
+
+- total_unrealized_pnl
+- average_unrealized_pnl
+
+==================================================
+STEP 3 — SCHEMAS
+==================================================
+
+Buat:
+
+backend/app/schemas/portfolio.py
+
+Response schema:
+
+PortfolioSummaryResponse
+
+PositionSummaryResponse
+
+RiskSummaryResponse
+
+PnlSummaryResponse
+
+==================================================
+STEP 4 — API ROUTER
+==================================================
+
+Buat:
+
+backend/app/api/v1/portfolio.py
+
+Endpoints:
+
+GET /portfolio/summary
+
+GET /portfolio/positions
+
+GET /portfolio/orders
+
+GET /portfolio/risk
+
+GET /portfolio/pnl
+
+Read-only endpoints.
+
+==================================================
+STEP 5 — ROUTER REGISTRATION
+==================================================
+
+Daftarkan router ke:
+
+backend/app/api/v1/__init__.py
+
+Pastikan muncul bersama router lainnya.
+
+==================================================
+STEP 6 — TESTS
+==================================================
+
+Buat:
+
+test_portfolio_repository.py
+
+test_portfolio_service.py
+
+test_portfolio_api.py
+
+==================================================
+STEP 7 — DOCUMENTATION
+==================================================
+
+Update:
+
+README.md
+
+PROJECT_STATUS.md
+
+ROADMAP_NEXT_PHASE.md
+
+NEXT_BUILD_TASKS.md
+
+Status:
+
+Layer 10 = COMPLETE
+
+Layer 11 = NEXT
+
+==================================================
+OUTPUT FORMAT
+==================================================
+
+Berikan:
+
+1. File yang dibuat
+2. File yang dimodifikasi
+3. Ringkasan implementasi
+4. Potensi issue
+5. Jangan melakukan pekerjaan Layer 11

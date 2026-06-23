@@ -1,7 +1,7 @@
 # PROJECT STATUS — Polymarket Quant Bot
 
 **Last updated:** 2026-06-23  
-**App version:** 0.9.0  
+**App version:** 0.10.0  
 **Backend:** FastAPI + PostgreSQL + Redis  
 **Active workflow:** Start application (port 5000)
 
@@ -21,8 +21,8 @@
 | 7 | Execution Engine | ✅ COMPLETE (paper) | 30s |
 | 8 | Position Tracking | ✅ COMPLETE | 30s |
 | **9** | **Risk Engine** | **✅ COMPLETE** | **15s** |
-| 10 | Portfolio Reporting | ⬜ NEXT | — |
-| 11 | Live Trading | ⬜ FUTURE | — |
+| **10** | **Portfolio Reporting** | **✅ COMPLETE** | — |
+| 11 | Live Trading | ⬜ NEXT | — |
 | 12 | Backtesting | ⬜ FUTURE | — |
 | 13 | Alert System | ⬜ FUTURE | — |
 

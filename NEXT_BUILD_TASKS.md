@@ -60,31 +60,29 @@
 
 ---
 
-## ⬜ Layer 10 — Portfolio Reporting (NEXT)
+## ✅ Layer 10 — Portfolio Reporting COMPLETE (2026-06-23)
 
 **Goal:** Aggregate performance metrics for the paper trading portfolio.
 
-**Files to create:**
-- `backend/app/api/v1/portfolio.py` — response endpoints
-- `backend/app/repositories/portfolio_repository.py` — aggregate SQL queries
-- `backend/app/schemas/portfolio.py` — Pydantic schemas
+**Files created:**
+- `backend/app/repositories/portfolio_repository.py` — 5 read-only aggregate queries
+- `backend/app/services/portfolio_service.py` — PortfolioService delegates to repository
+- `backend/app/schemas/portfolio.py` — 5 Pydantic response schemas
+- `backend/app/api/v1/portfolio.py` — 5 read-only GET endpoints
+- `backend/app/tests/test_portfolio_repository.py` — 12 repository tests
+- `backend/app/tests/test_portfolio_service.py` — 10 service tests
+- `backend/app/tests/test_portfolio_api.py` — 12 API integration tests
 
-**Endpoints to implement:**
+**Endpoints live:**
 ```
-GET /api/v1/portfolio/summary     — total positions, PnL, win rate
-GET /api/v1/portfolio/daily       — daily breakdown of fills and PnL
-GET /api/v1/portfolio/by-asset    — performance split by BTC/ETH/SOL/XRP
-GET /api/v1/portfolio/risk        — risk utilization (open vs max, loss vs limit)
+GET /api/v1/portfolio/summary   — positions + orders + trade decisions overview
+GET /api/v1/portfolio/positions — breakdown by status / asset / side
+GET /api/v1/portfolio/orders    — breakdown by status / asset / side
+GET /api/v1/portfolio/risk      — allowed/blocked counts + by-reason breakdown
+GET /api/v1/portfolio/pnl       — unrealized (OPEN) + realized (CLOSED) PnL
 ```
 
-**Key metrics:**
-- `realized_pnl` — sum from CLOSED positions
-- `unrealized_pnl` — sum from OPEN positions
-- `win_rate` — closed positions where realized_pnl > 0 / total closed
-- `avg_hold_duration` — avg (closed_at − opened_at) for CLOSED positions
-- `risk_utilization_pct` — len(OPEN) / MAX_OPEN_POSITIONS × 100
-
-**Estimated effort:** 2–3 hours
+**Router registered** in `api/v1/__init__.py`. **Version bumped** to 0.10.0.
 
 ---
 

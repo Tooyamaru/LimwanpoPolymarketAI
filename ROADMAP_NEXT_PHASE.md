@@ -2,7 +2,8 @@
 
 **Phase 1 (Research):** COMPLETE — Audit, source validation  
 **Phase 2 (Build):** COMPLETE — Layers 1–9 all live  
-**Next target:** Layer 10 — Portfolio Reporting
+**Phase 3 (Reporting):** COMPLETE — Layer 10 Portfolio Reporting live  
+**Next target:** Layer 11 — Live Trading
 
 ---
 
@@ -36,23 +37,28 @@ PENDING → RISK_APPROVED | BLOCKED.
 
 ---
 
-## ⬜ Layer 10 — Portfolio Reporting (NEXT)
+## ✅ Layer 10 — Portfolio Reporting (COMPLETE — 2026-06-23)
 
-**Goal:** Daily/weekly performance metrics for the paper trading portfolio.
+**Goal:** Aggregate performance metrics for the paper trading portfolio.
 
-**Components:**
-- `api/v1/portfolio.py` — aggregate endpoints
-- Daily PnL summary (realized + unrealized)
-- Win rate (closed positions with positive realized_pnl)
-- Sharpe estimate (mean daily return / std dev)
-- Best/worst performing asset and timeframe
-- Risk utilization (open positions vs MAX_OPEN_POSITIONS)
+**Files created:**
+- `repositories/portfolio_repository.py` — 5 read-only aggregate queries
+- `services/portfolio_service.py` — PortfolioService assembles responses
+- `schemas/portfolio.py` — 5 Pydantic response schemas
+- `api/v1/portfolio.py` — 5 read-only GET endpoints
 
-**Estimated effort:** 2–3 hours
+**Endpoints live:**
+- `GET /api/v1/portfolio/summary` — positions + orders + decisions overview
+- `GET /api/v1/portfolio/positions` — breakdown by status / asset / side
+- `GET /api/v1/portfolio/orders` — breakdown by status / asset / side
+- `GET /api/v1/portfolio/risk` — allowed/blocked counts + by-reason
+- `GET /api/v1/portfolio/pnl` — unrealized (OPEN) + realized (CLOSED) PnL
+
+**Tests:** `test_portfolio_repository.py`, `test_portfolio_service.py`, `test_portfolio_api.py`
 
 ---
 
-## ⬜ Layer 11 — Live Trading (FUTURE)
+## ⬜ Layer 11 — Live Trading (NEXT)
 
 **Goal:** Replace paper-mode fills with real CLOB order submission.
 
@@ -98,8 +104,8 @@ PENDING → RISK_APPROVED | BLOCKED.
 
 | Layer | Status | Est. Effort |
 |-------|--------|-------------|
-| 10 Portfolio Reporting | ⬜ NEXT | 2–3 hrs |
-| 11 Live Trading | ⬜ FUTURE | 6–8 hrs |
+| 10 Portfolio Reporting | ✅ COMPLETE | 2–3 hrs |
+| 11 Live Trading | ⬜ NEXT | 6–8 hrs |
 | 12 Backtesting | ⬜ FUTURE | 4–6 hrs |
 | 13 Alert System | ⬜ FUTURE | 2–3 hrs |
 | **Total remaining** | | **~18 hrs** |
