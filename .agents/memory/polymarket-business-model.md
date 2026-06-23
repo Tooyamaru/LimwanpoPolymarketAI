@@ -1,9 +1,10 @@
 ---
 name: Polymarket Business Model
-description: Authoritative business rules for this prediction-market system — must be applied in all future audits and design decisions.
+description: Authoritative business rules for LimwanpoAI — must be applied in all future audits and design decisions.
 ---
 
 ## Core Identity
+**Project name: LimwanpoAI**
 This is a Polymarket prediction market engine, NOT a Binance/futures/spot/options trading bot.
 
 ## External Data Sources (signal input only)
