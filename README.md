@@ -2,9 +2,36 @@
 
 Production-grade quantitative trading infrastructure for Polymarket prediction markets.
 Integrates live price feeds from Binance and Polymarket CLOB to analyze, score, screen, and
-paper-trade "Up-or-Down" binary outcome markets for BTC, ETH, SOL, and XRP.
+paper-trade "Up-or-Down" binary outcome markets for BTC, ETH, SOL, and BNB.
 
 **Version:** 0.10.0 — Layers 1–10 complete, Layer 11 (Live Trading) next.
+
+---
+
+## IMPORTANT: LimwanpoPolymarketAI Is A Polymarket Quant Bot
+
+**LimwanpoPolymarketAI is NOT a crypto trading bot, Binance futures bot, spot trading bot, arbitrage bot, or market-making bot.**
+
+LimwanpoPolymarketAI is a **Polymarket Quant Bot** — a prediction-market engine that predicts outcomes and executes YES/NO contracts on Polymarket.
+
+| What this system does | What this system does NOT do |
+|---|---|
+| Predicts BTC/ETH/SOL/BNB Up or Down probability | Trade BTC, ETH, SOL, or BNB directly |
+| Buys YES or NO contracts on Polymarket | Hold or sell spot/futures crypto |
+| Uses Binance & Chainlink as signal inputs only | Execute orders on Binance or any CEX/DEX |
+
+**Business rules (mandatory for all audits and development):**
+
+1. Multiple entries on the same market are allowed.
+2. Multiple positions on the same `condition_id` are allowed if exposure rules permit.
+3. Exposure management is more important than position count.
+4. Duplicate entries must NOT be automatically classified as bugs.
+5. Profit-taking exits before market settlement are valid and preferred.
+6. Positions do NOT need to remain open until event resolution.
+7. Closing a profitable position before expiry is expected behavior.
+8. All audits must use prediction-market assumptions, not futures/spot assumptions.
+9. Findings based on spot/futures logic are invalid unless explicitly applicable to prediction markets.
+10. All architecture decisions must align with Polymarket market mechanics.
 
 ---
 
