@@ -15,9 +15,9 @@ from datetime import datetime, timezone
 
 from app.core.database import get_session_factory
 from app.core.logging import get_logger
-from app.services.event_classification_repository import save_classification
+from app.repositories.event_classification_repository import save_classification
 from app.services.market_discovery import DiscoveryResult, MarketDiscoveryService
-from app.services.scanner_repository import (
+from app.repositories.scanner_repository import (
     mark_stale_markets,
     save_scanner_market,
 )

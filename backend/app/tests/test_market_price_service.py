@@ -14,7 +14,7 @@ from app.core.database import Base
 from app.models.market_universe import MarketUniverse
 from app.services.clob_client import ClobMarketData
 from app.services.market_price_service import MarketPriceService
-from app.services import market_price_repository as repo
+from app.repositories import market_price_repository as repo
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────

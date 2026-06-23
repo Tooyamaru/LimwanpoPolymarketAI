@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 
 import app.models
 from app.core.database import Base
-from app.services.event_classification_repository import (
+from app.repositories.event_classification_repository import (
     save_classification,
     get_classifications,
     get_classification_db_stats,

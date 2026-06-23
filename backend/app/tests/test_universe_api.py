@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock
 import app.models
 from app.core.database import Base
 from app.main import app
-from app.services.universe_repository import upsert_universe_market
+from app.repositories.universe_repository import upsert_universe_market
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 

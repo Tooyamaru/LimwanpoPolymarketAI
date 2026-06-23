@@ -35,7 +35,7 @@ from app.core.logging import get_logger
 from app.models.order import Order
 from app.models.opportunity import Opportunity
 from app.models import position as pos_model
-from app.services import position_repository as repo
+from app.repositories import position_repository as repo
 
 logger = get_logger(__name__)
 

@@ -10,3 +10,5 @@
 - [Signal Engine design](signal-engine-design.md) — Layer 4 complete (v0.5.0); thresholds MID_MOVE>0.001 SEED_DEV>=0.01 SPREAD>=0.005; dedup by last signal value; runs every 10s after universe_ready gate
 - [Opportunity Engine design](opportunity-engine-design.md) — Layer 5 complete (v0.6.0); score 0-100 from 5 components; UPSERT by condition_id; universe_ready deadlock fix required
 - [Replit env var overrides](replit-env-overrides.md) — Replit sets APP_VERSION=0.4.0 UNIVERSE_SYNC_RUN_ON_STARTUP=false PRICE_REFRESH_RUN_ON_STARTUP=false via env; universe_ready gate must handle run_on_startup=False case
+- [Folder structure refactor](folder-refactor.md) — repositories/ workers/ schemas/ utils/ created; all *_repository.py moved from services/; background loops extracted to workers/engine_workers.py; Pydantic schemas in schemas/
+- [Risk Engine design](risk-engine-design.md) — Layer 9 complete; PENDING→RISK_APPROVED|BLOCKED before Execution; 5 rules: DUPLICATE_POSITION MAX_OPEN_POSITIONS MAX_EXPOSURE DAILY_LOSS DAILY_TRADES

@@ -19,6 +19,7 @@ from app.models.source_validation_result import SourceValidationResult
 from app.models.order import Order
 from app.models.trade_decision import TradeDecision
 from app.models.position import Position
+from app.models.risk_event import RiskEvent
 
 __all__ = [
     "Base",
@@ -31,6 +32,7 @@ __all__ = [
     "Order",
     "Opportunity",
     "Position",
+    "RiskEvent",
     "ScannerMarket",
     "Signal",
     "SourceValidationResult",

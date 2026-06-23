@@ -2,71 +2,88 @@
 
 ---
 
-## ✅ Layer 7 — Execution Engine SELESAI (2026-06-23)
+## ✅ Layer 9 — Risk Engine COMPLETE (2026-06-23)
 
-**Files dibuat:**
-- `backend/app/models/order.py` — Tabel `orders` (append-only fill log)
-- `backend/app/services/execution_engine.py` — `ExecutionEngine.run()`, paper-mode simulator
-- `backend/app/services/order_repository.py` — create + query functions
-- `backend/app/api/v1/orders.py` — 4 REST endpoints
+**Pipeline position:** Strategy Engine → **Risk Engine** → Execution Engine
 
-**Paper fill logic:**
-| Decision | Side | fill_price |
-|----------|------|------------|
-| OPEN_LONG_YES | LONG_YES | yes_ask |
-| OPEN_LONG_NO | LONG_NO | 1.0 - yes_bid |
+**Files created:**
+- `backend/app/models/risk_event.py` — `risk_events` table
+- `backend/app/repositories/risk_repository.py` — create / query / stats
+- `backend/app/services/risk_engine.py` — 5-rule evaluator (`evaluate()`)
+- `backend/app/api/v1/risk.py` — `GET /risk`, `/risk/blocked`, `/risk/stats`
 
-**Alur eksekusi:**
-1. Baca TradeDecision WHERE decision IN ('OPEN_LONG_YES','OPEN_LONG_NO') AND status='PENDING'
-2. Hitung fill_price dari yes_ask / yes_bid (skip jika null)
-3. Insert Order dengan status=FILLED
-4. UPDATE TradeDecision SET status='EXECUTED'
-5. commit()
+**Integration points:**
+- `execution_engine.py` — changed `status == "PENDING"` → `status == "RISK_APPROVED"`
+- `trade_decisions.status` lifecycle: `PENDING → RISK_APPROVED | BLOCKED → EXECUTED`
+- `models/__init__.py` — added `RiskEvent`
+- `api/v1/__init__.py` — added `risk_router`
+- `core/database.py` — Layer 9 migration block
+- `config/settings.py` — all 7 new risk settings
 
-**Konfigurasi ditambahkan ke settings.py:**
-```
-EXECUTION_ENGINE_ENABLED = True
-EXECUTION_ENGINE_INTERVAL_SECONDS = 30
-EXECUTION_ENGINE_RUN_ON_STARTUP = True
-EXECUTION_PAPER_MODE = True
-```
-
-**Background loop:** 30s, gated pada universe_ready event
-
-**Verifikasi startup log:**
-```json
-{"interval": 30, "paper_mode": true, "run_on_startup": true,
- "event": "Execution engine started"}
-```
-
-**Verifikasi endpoints:**
-```
-GET /api/v1/orders          → 200 []        (kosong — belum ada fills)
-GET /api/v1/orders/open     → 200 []
-GET /api/v1/orders/stats    → 200 {"total_orders":0,...}
-GET /api/v1/orders/1        → 404           (expected)
-```
+**Risk rules:**
+| Rule | Check |
+|------|-------|
+| DUPLICATE_POSITION | OPEN position for same condition_id |
+| MAX_OPEN_POSITIONS | Total OPEN ≥ MAX_OPEN_POSITIONS (10) |
+| MAX_EXPOSURE | OPEN for this asset ≥ MAX_EXPOSURE_PER_ASSET (3) |
+| DAILY_LOSS | Sum unrealized PnL ≤ MAX_DAILY_LOSS (−50.0) |
+| DAILY_TRADES | Orders today ≥ MAX_DAILY_TRADES (20) |
 
 ---
 
-## 🔴 Layer 8 — Position Tracking (BERIKUTNYA)
+## ✅ Refactor COMPLETE (2026-06-23)
 
-**Target:** Melacak posisi terbuka dari order fills, hitung P&L unrealized/realized.
+**repositories/** — All 10 `*_repository.py` files moved from `services/` to `repositories/`.  
+All imports updated via sed: `app.services.X_repository` → `app.repositories.X_repository`.
 
-**Files yang akan dibuat:**
-- `backend/app/models/position.py` — tabel `positions`
-  Fields: id, condition_id, asset, timeframe, side, size, entry_price,
-          current_price, unrealized_pnl, realized_pnl, status, opened_at, closed_at
-- `backend/app/services/position_service.py` — buka/tutup posisi dari order fills
-- `backend/app/services/position_repository.py` — CRUD
-- `backend/app/api/v1/positions.py` — endpoints
+**workers/engine_workers.py** — All 9 background loop coroutines extracted from `main.py`.  
+`main.py` now only contains lifespan + `create_application()`.
 
-**Logic:**
-- Buka posisi dari FILLED orders (status=OPEN)
-- Update current_price dari price snapshots (setiap 30s)
-- Hitung unrealized_pnl = (current_price - entry_price) × size
-- Posisi ditutup manual atau saat market expire
+**schemas/** — 6 Pydantic schema files created. All API routers import from here instead of  
+defining inline `class Foo(BaseModel)`.
 
-**Background loop:** 30s
+---
+
+## ⬜ Layer 10 — Portfolio Reporting (NEXT)
+
+**Goal:** Aggregate performance metrics for the paper trading portfolio.
+
+**Files to create:**
+- `backend/app/api/v1/portfolio.py` — response endpoints
+- `backend/app/repositories/portfolio_repository.py` — aggregate SQL queries
+- `backend/app/schemas/portfolio.py` — Pydantic schemas
+
+**Endpoints to implement:**
+```
+GET /api/v1/portfolio/summary     — total positions, PnL, win rate
+GET /api/v1/portfolio/daily       — daily breakdown of fills and PnL
+GET /api/v1/portfolio/by-asset    — performance split by BTC/ETH/SOL/XRP
+GET /api/v1/portfolio/risk        — risk utilization (open vs max, loss vs limit)
+```
+
+**Key metrics:**
+- `realized_pnl` — sum from CLOSED positions
+- `unrealized_pnl` — sum from OPEN positions
+- `win_rate` — closed positions where realized_pnl > 0 / total closed
+- `avg_hold_duration` — avg (closed_at − opened_at) for CLOSED positions
+- `risk_utilization_pct` — len(OPEN) / MAX_OPEN_POSITIONS × 100
+
+**Estimated effort:** 2–3 hours
+
+---
+
+## ⬜ Position Close Logic (OPTIONAL)
+
+Currently positions are OPEN indefinitely.  
+Close trigger: when `market_universe.status` changes to `EXPIRED` for the position's condition_id.
+
+**Change in `position_service.py`:**
+1. Fetch all OPEN positions
+2. For each: check `market_universe.status` for `condition_id`
+3. If EXPIRED: set `status=CLOSED`, `close_price=current_price`, compute `realized_pnl`
+
+**Estimated effort:** 1 hour
+
+---
 
 *Updated: 2026-06-23*

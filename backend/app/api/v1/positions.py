@@ -7,50 +7,19 @@ GET /positions/stats     — aggregate PnL and count statistics
 GET /positions/{id}      — single position detail
 """
 
-from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.logging import get_logger
-from app.services import position_repository as repo
+from app.repositories import position_repository as repo
+from app.schemas.position import PositionResponse, PositionStatsResponse
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/positions", tags=["positions"])
-
-
-# ── Response schemas ────────────────────────────────────────────────────────────
-
-class PositionResponse(BaseModel):
-    id: int
-    order_id: int
-    condition_id: str
-    asset: str
-    timeframe: str
-    side: str
-    quantity: float
-    entry_price: float
-    current_price: Optional[float]
-    unrealized_pnl: Optional[float]
-    realized_pnl: Optional[float]
-    status: str
-    opened_at: datetime
-    closed_at: Optional[datetime]
-
-    model_config = {"from_attributes": True}
-
-
-class PositionStatsResponse(BaseModel):
-    total_positions: int
-    open: int
-    closed: int
-    total_unrealized_pnl: float
-    total_realized_pnl: float
-    avg_unrealized_pnl: float
 
 
 # ── Endpoints ───────────────────────────────────────────────────────────────────

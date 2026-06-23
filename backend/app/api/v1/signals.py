@@ -7,53 +7,17 @@ GET /signals/stats           — count by type and severity
 GET /signals/{condition_id}  — signals for a specific market
 """
 
-from datetime import datetime
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.logging import get_logger
-from app.services import signal_repository as repo
+from app.repositories import signal_repository as repo
+from app.schemas.signal import SignalResponse, SignalStatsResponse
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/signals", tags=["signals"])
-
-
-class SignalResponse(BaseModel):
-    id: int
-    condition_id: str
-    asset: str
-    timeframe: str
-
-    signal_type: str
-    severity: str
-
-    yes_mid_before: Optional[float]
-    yes_mid_after: Optional[float]
-    yes_mid_delta: Optional[float]
-
-    spread_before: Optional[float]
-    spread_after: Optional[float]
-    spread_delta: Optional[float]
-
-    seed_deviation: Optional[float]
-
-    snapshot_id_before: Optional[int]
-    snapshot_id_after: Optional[int]
-
-    detected_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
-class SignalStatsResponse(BaseModel):
-    total_signals: int
-    by_type: dict[str, int]
-    by_severity: dict[str, int]
 
 
 @router.get("/latest", response_model=list[SignalResponse])

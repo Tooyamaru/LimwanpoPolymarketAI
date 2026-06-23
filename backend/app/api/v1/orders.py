@@ -7,55 +7,19 @@ GET /orders/stats    — aggregate fill counts and average prices
 GET /orders/{id}     — single order detail
 """
 
-from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.logging import get_logger
-from app.services import order_repository as repo
+from app.repositories import order_repository as repo
+from app.schemas.order import OrderResponse, OrderStatsResponse
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/orders", tags=["orders"])
-
-
-# ── Response schemas ───────────────────────────────────────────────────────────
-
-class OrderResponse(BaseModel):
-    id: int
-    decision_id: int
-    condition_id: str
-    asset: str
-    timeframe: str
-
-    side: str
-    order_type: str
-    quantity: float
-
-    requested_price: Optional[float]
-    filled_price: Optional[float]
-
-    status: str
-    created_at: datetime
-    filled_at: Optional[datetime]
-
-    model_config = {"from_attributes": True}
-
-
-class OrderStatsResponse(BaseModel):
-    total_orders: int
-    filled: int
-    pending: int
-    cancelled: int
-    failed: int
-    long_yes_filled: int
-    long_no_filled: int
-    avg_fill_price_yes: float
-    avg_fill_price_no: float
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────────────

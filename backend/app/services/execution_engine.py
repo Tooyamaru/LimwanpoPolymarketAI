@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
 from app.models.trade_decision import TradeDecision
-from app.services import order_repository as order_repo
+from app.repositories import order_repository as order_repo
 
 logger = get_logger(__name__)
 
@@ -53,7 +53,7 @@ class ExecutionEngine:
             select(TradeDecision)
             .where(
                 TradeDecision.decision.in_(["OPEN_LONG_YES", "OPEN_LONG_NO"]),
-                TradeDecision.status == "PENDING",
+                TradeDecision.status == "RISK_APPROVED",
             )
             .order_by(TradeDecision.decided_at)
         )

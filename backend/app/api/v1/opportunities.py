@@ -7,67 +7,17 @@ GET /opportunities/stats        — aggregate summary
 GET /opportunities/{condition_id} — single market detail
 """
 
-from datetime import datetime
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.logging import get_logger
-from app.services import opportunity_repository as repo
+from app.repositories import opportunity_repository as repo
+from app.schemas.opportunity import OpportunityResponse, OpportunityStatsResponse
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/opportunities", tags=["opportunities"])
-
-
-# ── Response schemas ───────────────────────────────────────────────────────────
-
-class OpportunityResponse(BaseModel):
-    id: int
-    condition_id: str
-    asset: str
-    timeframe: str
-
-    opportunity_score: float
-
-    score_mid_movement: float
-    score_spread: float
-    score_depth_imbalance: float
-    score_signal_activity: float
-    score_discovery: float
-
-    yes_mid: Optional[float]
-    yes_bid: Optional[float]
-    yes_ask: Optional[float]
-    no_mid: Optional[float]
-    spread_yes: Optional[float]
-    spread_no: Optional[float]
-    seed_deviation: Optional[float]
-
-    signal_count_1h: int
-    last_signal_type: Optional[str]
-    last_signal_severity: Optional[str]
-
-    minutes_to_expiry: Optional[float]
-    direction: str
-    evaluated_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
-class OpportunityStatsResponse(BaseModel):
-    total_markets: int
-    markets_with_direction: int
-    avg_score: float
-    top_score: float
-    top_asset: Optional[str]
-    top_timeframe: Optional[str]
-    buy_yes_count: int
-    buy_no_count: int
-    neutral_count: int
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────────────

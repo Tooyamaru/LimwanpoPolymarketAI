@@ -12,7 +12,7 @@ from sqlalchemy import event
 
 import app.models  # ensure models are registered with Base.metadata
 from app.core.database import Base
-from app.services.market_repository import (
+from app.repositories.market_repository import (
     save_market,
     update_market,
     save_snapshot,

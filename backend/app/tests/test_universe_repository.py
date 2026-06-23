@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 
 import app.models  # register all models with Base.metadata
 from app.core.database import Base
-from app.services.universe_repository import (
+from app.repositories.universe_repository import (
     upsert_universe_market,
     expire_stale_markets,
     get_active_universe,

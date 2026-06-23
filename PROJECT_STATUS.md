@@ -1,131 +1,129 @@
 # PROJECT STATUS — Polymarket Quant Bot
 
 **Last updated:** 2026-06-23  
-**App version:** 0.7.0  
+**App version:** 0.7.0 (Replit env overrides to 0.4.0)  
 **Backend:** FastAPI + PostgreSQL + Redis  
 **Active workflow:** Start application (port 5000)
 
 ---
 
-## 1. COMPLETED LAYERS
+## Layer Status
 
-### Layer 1: Market Registry ✅ SELESAI
-| File | Fungsi |
-|------|--------|
-| `models/market_universe.py` | Tabel `market_universe` — 12 market aktif |
-| `services/market_universe_service.py` | Sync 12 series dari Gamma API setiap 60s |
-| `services/universe_repository.py` | CRUD + expire stale markets |
-| `services/gamma_series_client.py` | Gamma API client |
-| `api/v1/universe.py` | REST endpoints |
-
-### Layer 2: Market Scanner ✅ SELESAI
-| File | Fungsi |
-|------|--------|
-| `services/scanner.py` | Scan ~20k Polymarket markets setiap 300s |
-| `services/market_discovery.py` | Discovery orchestration |
-| `services/event_classifier.py` | Klasifikasi market type |
-| `api/v1/scanner.py` + `discovery.py` + `classifier.py` | REST endpoints |
-
-### Layer 3: Data Storage ✅ SELESAI
-| File | Fungsi |
-|------|--------|
-| `models/market_price_snapshot.py` | CLOB snapshots setiap 10s |
-| `services/market_price_service.py` | Refresh harga 12 market |
-| `services/clob_client.py` | Polymarket CLOB client |
-| `collector/scheduler.py` + Binance/Chainlink | Tick data (5s) |
-| `api/v1/price.py` | REST endpoints |
-
-### Layer 4: Signal Engine ✅ SELESAI
-| File | Fungsi |
-|------|--------|
-| `models/signal.py` | Tabel `signals` |
-| `services/signal_engine.py` | Deteksi MID_MOVE, SEED_DEVIATION, SPREAD_CHANGE |
-| `services/signal_repository.py` | DB operations + deduplication |
-| `api/v1/signals.py` | REST endpoints |
-
-Signal types: MID_MOVE (>0.001 delta), SEED_DEVIATION (≥0.01 dari seed), SPREAD_CHANGE (≥0.005)
-
-### Layer 5: Opportunity Engine ✅ SELESAI
-| File | Fungsi |
-|------|--------|
-| `models/opportunity.py` | Tabel `opportunities` (UPSERT per market) |
-| `services/opportunity_engine.py` | Score 0–100, 5 komponen |
-| `services/opportunity_repository.py` | CRUD + upsert PostgreSQL |
-| `api/v1/opportunities.py` | REST endpoints |
-
-Score components: mid_movement(30) + spread(20) + depth_imbalance(20) + signal_activity(20) + discovery(10)
-
-### Layer 6: Strategy Engine ✅ SELESAI
-| File | Fungsi |
-|------|--------|
-| `models/trade_decision.py` | Tabel `trade_decisions` (append-only log) |
-| `services/strategy_engine.py` | Rule-based decision engine |
-| `services/trade_decision_repository.py` | Insert + query operations |
-| `api/v1/strategies.py` | REST endpoints |
-
-Decision rules: spread>0.02→SKIP | NEUTRAL→SKIP | score≥40+BUY_NO→OPEN_LONG_NO | score≥40+BUY_YES→OPEN_LONG_YES | score 20–39→WATCH | score<20→SKIP
-
-### Layer 7: Execution Engine ✅ SELESAI (Paper Mode)
-| File | Fungsi |
-|------|--------|
-| `models/order.py` | Tabel `orders` (append-only fill log) |
-| `services/execution_engine.py` | Paper-mode fill simulator |
-| `services/order_repository.py` | create + query operations |
-| `api/v1/orders.py` | REST endpoints |
-
-Paper fill logic:
-- OPEN_LONG_YES → side=LONG_YES, fill_price = yes_ask
-- OPEN_LONG_NO  → side=LONG_NO,  fill_price = 1 - yes_bid
+| Layer | Name | Status | Interval |
+|-------|------|--------|----------|
+| 1 | Market Collector | ✅ COMPLETE | 5s |
+| 2 | Scanner | ✅ COMPLETE | 300s |
+| 3 | Universe Sync | ✅ COMPLETE | 60s |
+| 3b | Price Refresh | ✅ COMPLETE | 10s |
+| 4 | Signal Engine | ✅ COMPLETE | 10s |
+| 5 | Opportunity Engine | ✅ COMPLETE | 30s |
+| 6 | Strategy Engine | ✅ COMPLETE | 60s |
+| 7 | Execution Engine | ✅ COMPLETE (paper) | 30s |
+| 8 | Position Tracking | ✅ COMPLETE | 30s |
+| **9** | **Risk Engine** | **✅ COMPLETE** | **15s** |
+| 10 | Portfolio Reporting | ⬜ NEXT | — |
+| 11 | Live Trading | ⬜ FUTURE | — |
+| 12 | Backtesting | ⬜ FUTURE | — |
+| 13 | Alert System | ⬜ FUTURE | — |
 
 ---
 
-## 2. BACKGROUND LOOPS AKTIF
+## Layer 9 — Risk Engine (NEW 2026-06-23)
+
+**Pipeline position:** Strategy Engine → **Risk Engine** → Execution Engine
+
+**Files added:**
+- `models/risk_event.py` — `risk_events` table
+- `repositories/risk_repository.py` — create / query / stats
+- `services/risk_engine.py` — 5-rule evaluator
+- `api/v1/risk.py` — `GET /risk`, `/risk/blocked`, `/risk/stats`
+
+**Status lifecycle change:**
+```
+PENDING → RISK_APPROVED → EXECUTED   (normal path)
+PENDING → BLOCKED                    (risk rule tripped)
+```
+
+**5 Risk Rules:**
+| Rule | Description |
+|------|-------------|
+| DUPLICATE_POSITION | Same condition_id already OPEN |
+| MAX_OPEN_POSITIONS | Total open positions ≥ 10 |
+| MAX_EXPOSURE | Open positions for this asset ≥ 3 |
+| DAILY_LOSS | Sum unrealized PnL ≤ −50.0 |
+| DAILY_TRADES | Orders placed today ≥ 20 |
+
+**Settings added:**
+```
+RISK_ENGINE_ENABLED=true       RISK_ENGINE_INTERVAL_SECONDS=15
+MAX_OPEN_POSITIONS=10          MAX_EXPOSURE_PER_ASSET=3
+MAX_DAILY_LOSS=-50.0           MAX_DAILY_TRADES=20
+```
+
+---
+
+## Refactor Summary (2026-06-23)
+
+| Concern | Before | After |
+|---------|--------|-------|
+| Repository layer | `services/*_repository.py` | `repositories/*_repository.py` |
+| Background loops | inline in `main.py` (~280 lines) | `workers/engine_workers.py` |
+| API response schemas | inline `class Foo(BaseModel):` in routers | `schemas/signal.py`, `schemas/opportunity.py`, etc. |
+| Import hygiene | `from app.services import X_repo` | `from app.repositories import X_repo` |
+
+---
+
+## Background Loops
 
 | Loop | Interval | Gate |
 |------|----------|------|
 | CollectorScheduler | 5s | — |
-| ScannerService | 300s | — |
-| MarketUniverseService (sync) | 60s | — |
-| MarketPriceService (refresh) | 10s | universe_ready |
-| SignalEngine | 10s | universe_ready |
-| OpportunityEngine | 30s | universe_ready |
-| StrategyEngine | 60s | universe_ready |
-| **ExecutionEngine** | **30s** | **universe_ready** |
+| run_scanner_loop | 300s | — |
+| run_universe_sync_loop | 60s | sets universe_ready |
+| run_price_refresh_loop | 10s | universe_ready |
+| run_signal_engine_loop | 10s | universe_ready |
+| run_opportunity_engine_loop | 30s | universe_ready |
+| run_strategy_engine_loop | 60s | universe_ready |
+| **run_risk_engine_loop** | **15s** | universe_ready |
+| run_execution_engine_loop | 30s | universe_ready |
+| run_position_tracking_loop | 30s | universe_ready |
 
 ---
 
-## 3. API ENDPOINTS
+## API Endpoints (full)
 
 | Endpoint | Layer |
 |----------|-------|
-| `GET /api/v1/price/latest` | L3 |
-| `GET /api/v1/price/active` | L3 |
-| `GET /api/v1/price/stats` | L3 |
+| `GET /api/v1/health` | — |
+| `GET /api/v1/markets` | L1 |
+| `GET /api/v1/discovery` | L2 |
+| `GET /api/v1/scanner` | L2 |
+| `GET /api/v1/classifier` | L2 |
+| `GET /api/v1/universe` | L3 |
+| `GET /api/v1/price/latest` | L3b |
 | `GET /api/v1/signals/latest` | L4 |
-| `GET /api/v1/signals/active` | L4 |
 | `GET /api/v1/signals/stats` | L4 |
 | `GET /api/v1/opportunities` | L5 |
 | `GET /api/v1/opportunities/top` | L5 |
 | `GET /api/v1/opportunities/stats` | L5 |
-| `GET /api/v1/opportunities/{condition_id}` | L5 |
 | `GET /api/v1/strategies` | L6 |
 | `GET /api/v1/strategies/active` | L6 |
 | `GET /api/v1/strategies/stats` | L6 |
+| **`GET /api/v1/risk`** | **L9** |
+| **`GET /api/v1/risk/blocked`** | **L9** |
+| **`GET /api/v1/risk/stats`** | **L9** |
 | `GET /api/v1/orders` | L7 |
-| `GET /api/v1/orders/open` | L7 |
 | `GET /api/v1/orders/stats` | L7 |
-| `GET /api/v1/orders/{id}` | L7 |
+| `GET /api/v1/positions` | L8 |
+| `GET /api/v1/positions/open` | L8 |
+| `GET /api/v1/positions/stats` | L8 |
 
 ---
 
-## 4. MODUL YANG BELUM ADA
+## Known Limitations
 
-| Layer | Modul | Status |
-|-------|-------|--------|
-| **Layer 8** | Position Tracking | ❌ TIDAK ADA |
-| **Layer 9** | Risk Engine | ❌ TIDAK ADA |
-| **Layer 10** | Monitoring Dashboard | ❌ TIDAK ADA |
-
----
-
-*Updated: 2026-06-23*
+1. Markets in AMM init phase (mid ≈ 0.50) — limited signal generation
+2. Paper mode only — no real CLOB order submission
+3. Quantity hardcoded to 1.0 per fill
+4. No position close trigger (expiry-based close is passive via universe status)
+5. No Alembic — schema managed by startup migrations

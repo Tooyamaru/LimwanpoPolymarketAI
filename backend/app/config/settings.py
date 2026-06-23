@@ -81,6 +81,19 @@ class Settings(BaseSettings):
     EXECUTION_ENGINE_RUN_ON_STARTUP: bool = True
     EXECUTION_PAPER_MODE: bool = True
 
+    # Position tracking (Layer 8)
+    POSITION_TRACKING_INTERVAL_SECONDS: int = 30
+
+    # Risk engine (Layer 9)
+    RISK_ENGINE_ENABLED: bool = True
+    RISK_ENGINE_INTERVAL_SECONDS: int = 15
+    RISK_ENGINE_RUN_ON_STARTUP: bool = True
+    MAX_OPEN_POSITIONS: int = 10
+    MAX_POSITION_SIZE: float = 1.0
+    MAX_EXPOSURE_PER_ASSET: int = 3
+    MAX_DAILY_LOSS: float = -50.0
+    MAX_DAILY_TRADES: int = 20
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def normalise_db_url(cls, v: str) -> str:

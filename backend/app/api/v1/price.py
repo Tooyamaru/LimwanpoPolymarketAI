@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.core.logging import get_logger
 from app.models.market_universe import MarketUniverse
-from app.services import market_price_repository as repo
+from app.repositories import market_price_repository as repo
 from app.models.market_price_snapshot import MarketPriceSnapshot
 
 logger = get_logger(__name__)

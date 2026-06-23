@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 
 import app.models  # registers all models with Base.metadata
 from app.core.database import Base
-from app.services.scanner_repository import (
+from app.repositories.scanner_repository import (
     save_scanner_market,
     mark_stale_markets,
     get_scanner_markets,

@@ -28,8 +28,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.settings import settings
 from app.core.logging import get_logger
-from app.services import opportunity_repository as opp_repo
-from app.services import trade_decision_repository as td_repo
+from app.repositories import opportunity_repository as opp_repo
+from app.repositories import trade_decision_repository as td_repo
 
 logger = get_logger(__name__)
 

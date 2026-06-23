@@ -16,7 +16,7 @@ import app.models
 from app.core.database import Base
 from app.services.market_discovery import MarketDiscoveryService
 from app.services.scanner import ScannerService
-from app.services.scanner_repository import get_scanner_markets, get_scanner_stats
+from app.repositories.scanner_repository import get_scanner_markets, get_scanner_stats
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 

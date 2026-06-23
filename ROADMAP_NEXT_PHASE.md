@@ -1,79 +1,108 @@
-# ROADMAP — BUILD PHASE (Layers 6–10)
+# ROADMAP — NEXT PHASE (Layer 10+)
 
-**Phase 1 (Research):** SELESAI — Audit #1–#5  
-**Phase 2 (Build):** IN PROGRESS — Layer 7 baru selesai  
-**Next target:** Layer 8 — Position Tracking
-
----
-
-## Layer 6 — Strategy Engine ✅ SELESAI (2026-06-23)
-
-Decision rules: spread>0.02→SKIP | NEUTRAL→SKIP | score≥40→OPEN_LONG | 20–39→WATCH | <20→SKIP  
-Background loop: 60s, gated universe_ready
+**Phase 1 (Research):** COMPLETE — Audit, source validation  
+**Phase 2 (Build):** COMPLETE — Layers 1–9 all live  
+**Next target:** Layer 10 — Portfolio Reporting
 
 ---
 
-## Layer 7 — Execution Engine ✅ SELESAI (2026-06-23)
+## ✅ Layer 1 — Market Collector (COMPLETE)
+Binance Spot + Polymarket page collector, 5s tick.
 
-Paper-mode fill: OPEN_LONG_YES→fill@yes_ask | OPEN_LONG_NO→fill@(1-yes_bid)  
-Updates TradeDecision status → EXECUTED after fill.  
-Background loop: 30s, gated universe_ready
+## ✅ Layer 2 — Scanner (COMPLETE)
+Full scan ~20k Polymarket markets, UPDOWN classifier, event types.
 
----
+## ✅ Layer 3 — Universe Sync + Price Refresh (COMPLETE)
+12 known series synced via Gamma Events API. CLOB bid/ask every 10s.
 
-## Layer 8 — Position Tracking 🔴 PRIORITAS TERTINGGI BERIKUTNYA
+## ✅ Layer 4 — Signal Engine (COMPLETE)
+MID_MOVE, SPREAD_COMPRESSION, SEED_DEVIATION detection every 10s.
 
-**Tujuan:** Melacak posisi terbuka, P&L unrealized/realized dari order fills.
+## ✅ Layer 5 — Opportunity Engine (COMPLETE)
+Composite score 0–100 with 5 weighted components. Upsert every 30s.
 
-**Komponen:**
-- `models/position.py` — posisi (side, size, entry_price, current_price, pnl)
-- `services/position_service.py` — buka dari fills, update harga, hitung P&L
-- `services/position_repository.py` — CRUD
-- `api/v1/positions.py` — endpoints
+## ✅ Layer 6 — Strategy Engine (COMPLETE)
+Score ≥ 40 → OPEN_LONG_YES/NO. Watch 20–39. Skip < 20 or spread > 0.02.
 
-**Estimasi:** 3–4 jam
+## ✅ Layer 7 — Execution Engine (COMPLETE, Paper Mode)
+Instant paper fills at CLOB best ask. No slippage. RISK_APPROVED only.
 
----
+## ✅ Layer 8 — Position Tracking (COMPLETE)
+Open positions from fills. Live unrealized PnL updated every 30s.
 
-## Layer 9 — Risk Engine 🟠 PRIORITAS 2
-
-**Rules minimum:**
-- Max posisi per market: configurable USDC limit
-- Max concurrent open positions: 3
-- Kill switch: total loss > X%
-- Spread filter: skip jika spread > 0.015
-
-**Komponen:**
-- `services/risk_engine.py` — pre-trade checks
-- `models/risk_config.py`
-- `api/v1/risk.py`
-
-**Estimasi:** 3–4 jam
+## ✅ Layer 9 — Risk Engine (COMPLETE — 2026-06-23)
+5 portfolio risk rules gate PENDING decisions before execution.
+PENDING → RISK_APPROVED | BLOCKED.
 
 ---
 
-## Layer 10 — Monitoring Dashboard 🟢 PRIORITAS 3
+## ⬜ Layer 10 — Portfolio Reporting (NEXT)
 
-**Minimum viable:**
-- Live scores 12 markets
-- Signal feed
-- Active positions + P&L
-- System health (loop latency, error rates)
+**Goal:** Daily/weekly performance metrics for the paper trading portfolio.
 
-**Estimasi:** 6–10 jam
+**Components:**
+- `api/v1/portfolio.py` — aggregate endpoints
+- Daily PnL summary (realized + unrealized)
+- Win rate (closed positions with positive realized_pnl)
+- Sharpe estimate (mean daily return / std dev)
+- Best/worst performing asset and timeframe
+- Risk utilization (open positions vs MAX_OPEN_POSITIONS)
+
+**Estimated effort:** 2–3 hours
+
+---
+
+## ⬜ Layer 11 — Live Trading (FUTURE)
+
+**Goal:** Replace paper-mode fills with real CLOB order submission.
+
+**Requirements:**
+- Polymarket API key + wallet
+- CLOB order submission via `POST /order` with ECDSA signature
+- Order state polling (OPEN → MATCHED → FILLED)
+- Real position tracking against actual CLOB fills
+- Risk Engine tightened for real-money exposure
+
+**Estimated effort:** 6–8 hours
+
+---
+
+## ⬜ Layer 12 — Backtesting Engine (FUTURE)
+
+**Goal:** Replay strategy against historical price snapshots in DB.
+
+**Components:**
+- Replay engine: iterate over `market_price_snapshots` by time window
+- Virtual signal + opportunity engine (in-memory, no DB writes)
+- P&L curve output
+- Comparison: paper strategy vs. baseline (always BUY_YES)
+
+**Estimated effort:** 4–6 hours
+
+---
+
+## ⬜ Layer 13 — Alert System (FUTURE)
+
+**Goal:** Push notifications for high-priority signals and fills.
+
+**Options:**
+- Webhook (Discord, Slack)
+- Email (SendGrid)
+- Trigger: signal severity=HIGH, RISK_APPROVED fill, BLOCKED decision
+
+**Estimated effort:** 2–3 hours
 
 ---
 
 ## Timeline
 
-| Layer | Status | Estimasi | Dependency |
-|-------|--------|----------|------------|
-| 6 Strategy Engine | ✅ SELESAI | — | L5 ✅ |
-| 7 Execution Engine | ✅ SELESAI | — | L6 ✅ |
-| 8 Position Tracking | 🔴 NEXT | 3 jam | L7 ✅ |
-| 9 Risk Engine | 🟠 | 3 jam | L8 |
-| 10 Dashboard | 🟢 | 8 jam | L3-L9 |
-| **Total remaining** | | **~14 jam** | |
+| Layer | Status | Est. Effort |
+|-------|--------|-------------|
+| 10 Portfolio Reporting | ⬜ NEXT | 2–3 hrs |
+| 11 Live Trading | ⬜ FUTURE | 6–8 hrs |
+| 12 Backtesting | ⬜ FUTURE | 4–6 hrs |
+| 13 Alert System | ⬜ FUTURE | 2–3 hrs |
+| **Total remaining** | | **~18 hrs** |
 
 ---
 

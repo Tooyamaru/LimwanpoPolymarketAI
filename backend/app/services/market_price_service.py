@@ -18,8 +18,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logging import get_logger
 from app.models.market_universe import MarketUniverse
 from app.services.clob_client import ClobClient, ClobMarketData
-from app.services import market_price_repository as repo
-from app.services import universe_repository
+from app.repositories import market_price_repository as repo
+from app.repositories import universe_repository
 
 logger = get_logger(__name__)
 

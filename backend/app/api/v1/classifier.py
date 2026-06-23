@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.models.discovery_run import DiscoveryRun
 from app.models.event_classification import EventClassification
-from app.services.event_classification_repository import get_classifications
+from app.repositories.event_classification_repository import get_classifications
 from app.services.event_classifier import EventType
 
 router = APIRouter(prefix="/classifier", tags=["classifier"])

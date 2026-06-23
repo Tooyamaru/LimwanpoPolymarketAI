@@ -39,9 +39,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
 from app.models.market_universe import MarketUniverse
-from app.services import signal_repository as repo
-from app.services.market_price_repository import get_latest_by_condition
-from app.services.universe_repository import get_active_universe
+from app.repositories import signal_repository as repo
+from app.repositories.market_price_repository import get_latest_by_condition
+from app.repositories.universe_repository import get_active_universe
 
 logger = get_logger(__name__)
 

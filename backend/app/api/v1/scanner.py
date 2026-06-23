@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.services.scanner_repository import get_scanner_markets, get_scanner_stats
+from app.repositories.scanner_repository import get_scanner_markets, get_scanner_stats
 
 router = APIRouter(prefix="/scanner", tags=["scanner"])
 

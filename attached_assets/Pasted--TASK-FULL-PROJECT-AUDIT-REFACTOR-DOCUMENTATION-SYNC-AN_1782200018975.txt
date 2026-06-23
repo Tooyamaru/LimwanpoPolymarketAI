@@ -1,0 +1,283 @@
+# TASK: FULL PROJECT AUDIT, REFACTOR, DOCUMENTATION SYNC, AND LAYER 9 IMPLEMENTATION
+
+Context:
+
+Project saat ini sudah selesai sampai Layer 8.
+
+Verified Layers:
+
+* Layer 1: Market Universe
+* Layer 2: Scanner
+* Layer 3: Price Snapshots
+* Layer 4: Signal Engine
+* Layer 5: Opportunity Engine
+* Layer 6: Strategy Engine
+* Layer 7: Execution Engine (Paper Mode)
+* Layer 8: Position Tracking
+
+Semua endpoint berjalan dan chain berikut sudah terverifikasi:
+
+Universe
+→ Snapshots
+→ Signals
+→ Opportunities
+→ Trade Decisions
+→ Orders
+→ Positions
+
+Current status:
+
+* Active markets: 12
+* Opportunities: 12
+* Signals: 0 (market masih fase AMM init)
+* Trade Decisions: generated jika direction bukan NEUTRAL
+* Orders: paper fills berjalan normal
+* Positions: terbentuk dan PnL terhitung normal
+
+====================================================
+PHASE 1 — FULL AUDIT
+====================
+
+Lakukan audit penuh terhadap seluruh codebase.
+
+Periksa:
+
+1. Dead code
+2. Duplicate code
+3. Unused imports
+4. Circular imports
+5. Duplicate repositories
+6. Duplicate models
+7. Duplicate settings
+8. Duplicate enums/constants
+9. Unused endpoints
+10. Unused services
+11. Unused background loops
+12. Naming inconsistency
+13. Folder structure inconsistency
+14. Missing indexes
+15. Missing foreign keys
+16. Missing database constraints
+17. Missing error handling
+18. Missing logging
+19. Missing type hints
+20. Missing docstrings
+
+Output:
+
+AUDIT_REPORT.md
+
+Berisi:
+
+* issue
+* severity
+* affected files
+* recommendation
+
+====================================================
+PHASE 2 — REFACTOR
+==================
+
+Rapikan project tanpa mengubah behaviour.
+
+Target:
+
+backend/app/
+
+Harus menjadi:
+
+backend/app/
+
+api/
+core/
+models/
+schemas/
+services/
+repositories/
+workers/
+utils/
+
+Rules:
+
+* semua repository pindah ke repositories/
+* business logic hanya di services/
+* routers hanya di api/
+* background loops hanya di workers/
+* tidak boleh ada duplicate logic
+
+Buat:
+
+ARCHITECTURE.md
+
+Isi:
+
+* layer diagram
+* dependency diagram
+* request flow
+* data flow
+* worker flow
+
+====================================================
+PHASE 3 — DATABASE REVIEW
+=========================
+
+Audit semua tabel:
+
+market_universe
+price_snapshots
+signals
+opportunities
+trade_decisions
+orders
+positions
+
+Periksa:
+
+* primary key
+* foreign key
+* indexes
+* uniqueness
+* constraints
+
+Tambahkan migration jika diperlukan.
+
+Buat:
+
+DATABASE.md
+
+Berisi:
+
+* ERD
+* table descriptions
+* column descriptions
+* indexes
+* constraints
+
+====================================================
+PHASE 4 — DOCUMENTATION SYNC
+============================
+
+Update seluruh dokumentasi agar 100% sinkron dengan code terbaru.
+
+Wajib update:
+
+README.md
+PROJECT_STATUS.md
+ROADMAP_NEXT_PHASE.md
+NEXT_BUILD_TASKS.md
+
+README harus berisi:
+
+1. Project overview
+2. Architecture
+3. Layer explanation
+4. Setup
+5. Environment variables
+6. API endpoints
+7. Background workers
+8. Database schema summary
+9. Roadmap
+10. Current progress
+
+Project status harus menunjukkan:
+
+Layer 1–8 = COMPLETE
+
+Layer 9 = NEXT
+
+Layer 10 = FUTURE
+
+====================================================
+PHASE 5 — BUILD LAYER 9 (RISK ENGINE)
+=====================================
+
+Implementasikan:
+
+models/risk_event.py
+
+repositories/risk_repository.py
+
+services/risk_engine.py
+
+api/v1/risk.py
+
+Tambahkan settings:
+
+MAX_OPEN_POSITIONS
+MAX_POSITION_SIZE
+MAX_EXPOSURE_PER_MARKET
+MAX_DAILY_LOSS
+MAX_DAILY_TRADES
+
+Risk engine harus berjalan sebelum Execution Engine.
+
+Flow:
+
+Decision
+→ Risk Engine
+→ Approved Decision
+→ Execution Engine
+
+Rules minimum:
+
+1. Duplicate Position Block
+2. Max Open Position Block
+3. Max Exposure Per Market Block
+4. Daily Loss Limit Block
+5. Daily Trade Limit Block
+
+Decision result:
+
+ALLOW
+BLOCK
+
+Reason:
+
+DUPLICATE_POSITION
+MAX_OPEN_POSITIONS
+MAX_EXPOSURE
+DAILY_LOSS
+DAILY_TRADES
+
+====================================================
+PHASE 6 — VERIFICATION
+======================
+
+Verifikasi:
+
+1. Startup logs
+2. API endpoints
+3. Database tables
+4. Foreign keys
+5. Indexes
+6. Background workers
+7. Risk rules
+8. Position lifecycle
+
+Output:
+
+VERIFICATION_REPORT.md
+
+====================================================
+PHASE 7 — FINAL DELIVERABLE
+===========================
+
+Setelah selesai tampilkan:
+
+1. Files created
+2. Files modified
+3. Files removed
+4. Database changes
+5. Endpoint changes
+6. Worker changes
+7. Architecture changes
+8. Documentation changes
+9. Remaining technical debt
+10. Recommended next layer
+
+Jangan berhenti setelah coding.
+
+Lakukan:
+Audit → Refactor → Documentation Sync → Layer 9 → Verification → Final Report
+
+Pastikan seluruh dokumentasi, roadmap, status project, dan struktur folder benar-benar sinkron dengan kondisi code terbaru.

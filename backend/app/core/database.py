@@ -155,6 +155,18 @@ async def init_db() -> None:
                 except Exception as col_exc:
                     logger.debug("Layer 8 migration skipped", stmt=stmt, error=str(col_exc))
 
+            # Layer 9: risk_events table created by create_all above.
+            # Add indexes for common query patterns.
+            layer9_migrations = [
+                "CREATE INDEX IF NOT EXISTS ix_risk_event_result ON risk_events (result)",
+                "CREATE INDEX IF NOT EXISTS ix_risk_event_decision_id ON risk_events (decision_id)",
+            ]
+            for stmt in layer9_migrations:
+                try:
+                    await conn.execute(text(stmt))
+                except Exception as col_exc:
+                    logger.debug("Layer 9 migration skipped", stmt=stmt, error=str(col_exc))
+
         logger.info("Database tables initialised")
     except Exception as exc:
         logger.warning("Database init skipped — DB not reachable at startup", error=str(exc))

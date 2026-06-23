@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.services.market_repository import (
+from app.repositories.market_repository import (
     get_active_markets,
     get_latest_snapshots,
 )

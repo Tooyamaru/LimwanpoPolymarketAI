@@ -17,7 +17,7 @@ from app.collector.polymarket import PolymarketCollector
 from app.config.settings import settings
 from app.core.database import get_session_factory
 from app.core.logging import get_logger
-from app.services.market_repository import (
+from app.repositories.market_repository import (
     get_active_markets,
     save_market,
     save_snapshot,

@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.services.universe_repository import (
+from app.repositories.universe_repository import (
     get_active_universe,
     get_all_universe,
     get_upcoming_universe,

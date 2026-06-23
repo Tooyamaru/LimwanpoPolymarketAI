@@ -33,7 +33,7 @@ from typing import Optional
 from app.core.database import get_session_factory
 from app.core.logging import get_logger
 from app.services.gamma_series_client import GammaSeriesClient
-from app.services.universe_repository import (
+from app.repositories.universe_repository import (
     demote_excess_active_markets,
     expire_stale_markets,
     upsert_universe_market,

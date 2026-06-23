@@ -6,54 +6,19 @@ GET /strategies/active   — actionable decisions (OPEN_LONG_YES / OPEN_LONG_NO,
 GET /strategies/stats    — aggregate decision counts and averages
 """
 
-from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.logging import get_logger
-from app.services import trade_decision_repository as repo
+from app.repositories import trade_decision_repository as repo
+from app.schemas.strategy import TradeDecisionResponse, StrategyStatsResponse
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/strategies", tags=["strategies"])
-
-
-# ── Response schemas ───────────────────────────────────────────────────────────
-
-class TradeDecisionResponse(BaseModel):
-    id: int
-    condition_id: str
-    asset: str
-    timeframe: str
-
-    decision: str
-    status: str
-
-    opportunity_score: float
-    direction: str
-
-    yes_mid: Optional[float]
-    yes_bid: Optional[float]
-    yes_ask: Optional[float]
-    spread_yes: Optional[float]
-
-    skip_reason: Optional[str]
-    decided_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
-class StrategyStatsResponse(BaseModel):
-    total_decisions: int
-    open_long_yes: int
-    open_long_no: int
-    watch: int
-    skip: int
-    avg_score_actionable: float
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────────────
