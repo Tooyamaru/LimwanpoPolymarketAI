@@ -2,58 +2,59 @@
 
 ---
 
-## ✅ Layer 5 — Opportunity Engine SELESAI (2026-06-22)
+## ✅ Layer 6 — Strategy Engine SELESAI (2026-06-23)
 
 **Files dibuat:**
-- `backend/app/models/opportunity.py` — Tabel `opportunities` dengan 5 score columns + UPSERT via ON CONFLICT
-- `backend/app/services/opportunity_engine.py` — `OpportunityEngine.evaluate()`, 5 sub-score functions
-- `backend/app/services/opportunity_repository.py` — upsert + query functions
-- `backend/app/api/v1/opportunities.py` — 4 REST endpoints
+- `backend/app/models/trade_decision.py` — Tabel `trade_decisions` (append-only log, bukan UPSERT)
+- `backend/app/services/strategy_engine.py` — `StrategyEngine.run()`, rule-based decision
+- `backend/app/services/trade_decision_repository.py` — insert + query functions
+- `backend/app/api/v1/strategies.py` — 3 REST endpoints
 
-**Score components:**
-| Component | Max | Formula |
-|-----------|-----|---------|
-| mid_movement | 30 | min(30, abs(mid - 0.50) × 600) |
-| spread | 20 | max(0, (0.02 - spread) × 2000) |
-| depth_imbalance | 20 | min(20, abs(spread_no - spread_yes) × 2000) |
-| signal_activity | 20 | 0→10→15→20 pts by count; +3 per HIGH |
-| discovery | 10 | time-to-expiry urgency tiers |
+**Decision rules:**
+| Kondisi | Decision | skip_reason |
+|---------|----------|-------------|
+| spread_yes > 0.02 | SKIP | HIGH_SPREAD |
+| direction == NEUTRAL | SKIP | NEUTRAL_DIRECTION |
+| score ≥ 40 + BUY_NO | OPEN_LONG_NO | — |
+| score ≥ 40 + BUY_YES | OPEN_LONG_YES | — |
+| score 20–39 | WATCH | — |
+| score < 20 | SKIP | LOW_SCORE |
 
-**Bug ditemukan dan fixed:**
-- `universe_ready` asyncio.Event ter-block forever ketika `UNIVERSE_SYNC_RUN_ON_STARTUP=false` (Replit env var)
-- Fix: set event immediately di else-branch dari startup check di `_run_universe_sync_loop`
-
-**Verifikasi (2026-06-22):**
+**Konfigurasi ditambahkan ke settings.py:**
 ```
-GET /api/v1/opportunities/stats
-{"total_markets": 12, "avg_score": 18.0, "top_score": 44.0, "top_asset": "SOL"}
+STRATEGY_ENGINE_ENABLED = True
+STRATEGY_ENGINE_INTERVAL_SECONDS = 60
+STRATEGY_ENGINE_RUN_ON_STARTUP = True
+STRATEGY_PERSIST_SKIPS = False   # SKIP tidak disimpan ke DB agar tabel lean
+```
 
-Top 5:
-  SOL/5m  → 44.0  BUY_NO  (mid=0.705, anomalous snapshot)
-  XRP/5m  → 24.0  NEUTRAL (mid=0.505, tight spread)
-  XRP/15m → 24.0  NEUTRAL
-  BTC/1H  →  1.0  NEUTRAL (seed, wide spread)
+**Background loop:** 60s, gated pada universe_ready event (sama seperti L4/L5)
+
+**Verifikasi endpoints:**
+```
+GET /api/v1/strategies          — semua decisions (newest first)
+GET /api/v1/strategies/active   — OPEN_LONG_YES/NO dengan status PENDING
+GET /api/v1/strategies/stats    — aggregate counts + avg_score_actionable
 ```
 
 ---
 
-## 🔴 Layer 6 — Strategy Engine (BERIKUTNYA)
+## 🔴 Layer 7 — Execution Engine (BERIKUTNYA)
 
-**Target:** Konversi Opportunity Score → TradeDecision
+**Target:** Simulate order fills dari TradeDecision OPEN_LONG_* → Order record
 
 **Files yang akan dibuat:**
-- `backend/app/models/trade_decision.py`
-- `backend/app/services/strategy_engine.py`
-- `backend/app/services/trade_decision_repository.py`
-- `backend/app/api/v1/strategies.py`
+- `backend/app/models/order.py` — tabel `orders` (paper mode)
+- `backend/app/services/execution_engine.py` — paper simulator
+- `backend/app/services/order_repository.py` — CRUD
+- `backend/app/api/v1/orders.py` — monitoring endpoint
 
-**Decision rules (mean-reversion):**
-- Score ≥ 40, direction = BUY_NO → OPEN_LONG_NO
-- Score ≥ 40, direction = BUY_YES → OPEN_LONG_YES
-- Score 20–39 → WATCH
-- Score < 20 → SKIP
-- Spread > 0.02 → SKIP (terlalu mahal)
+**Logic paper mode:**
+- Baca OPEN_LONG_YES/NO decisions dengan status PENDING
+- Simulate fill pada yes_ask (untuk YES) atau 1-yes_bid (untuk NO)
+- Insert order record dengan status FILLED
+- Update trade_decision status → EXECUTED
 
-**Background loop:** 30s, gated pada universe_ready
+**Background loop:** 30s, gated universe_ready
 
-*Updated: 2026-06-22*
+*Updated: 2026-06-23*

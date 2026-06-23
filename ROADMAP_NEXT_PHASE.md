@@ -1,37 +1,29 @@
 # ROADMAP — BUILD PHASE (Layers 6–10)
 
 **Phase 1 (Research):** SELESAI — Audit #1–#5  
-**Phase 2 (Build):** IN PROGRESS — Layer 5 baru selesai  
-**Next target:** Layer 6 — Strategy Engine
+**Phase 2 (Build):** IN PROGRESS — Layer 6 baru selesai  
+**Next target:** Layer 7 — Execution Engine
 
 ---
 
-## Layer 6 — Strategy Engine 🔴 PRIORITAS TERTINGGI BERIKUTNYA
+## Layer 6 — Strategy Engine ✅ SELESAI (2026-06-23)
 
-**Tujuan:** Mengkonversi Opportunity Score + sinyal menjadi keputusan posisi terstruktur.
+**Input:** `opportunities` table  
+**Output:** `trade_decisions` table — OPEN_LONG_YES | OPEN_LONG_NO | WATCH | SKIP
 
-**Input:** `opportunities` table + `signals` table  
-**Output:** `trade_decisions` table — BUY_YES | BUY_NO | HOLD | SKIP
+**Decision logic:**
+- spread_yes > 0.02 → SKIP (HIGH_SPREAD)
+- direction == NEUTRAL → SKIP (NEUTRAL_DIRECTION)
+- score ≥ 40 + BUY_NO → OPEN_LONG_NO
+- score ≥ 40 + BUY_YES → OPEN_LONG_YES
+- score 20–39 → WATCH
+- score < 20 → SKIP (LOW_SCORE)
 
-**Decision logic (mean-reversion baseline dari audit findings):**
-- Score ≥ 40 + direction=BUY_NO → open BUY_NO position
-- Score ≥ 40 + direction=BUY_YES → open BUY_YES position
-- Score 20–40 → watch (emit WATCH decision, no trade)
-- Score < 20 → skip
-- Market at NEUTRAL + score < 30 → skip
-
-**Komponen:**
-- `models/trade_decision.py` — tabel `trade_decisions`
-- `services/strategy_engine.py` — rules evaluator
-- `services/trade_decision_repository.py` — CRUD
-- `api/v1/strategies.py` — endpoints
-- Background loop: 30s (setelah opportunity engine)
-
-**Estimasi:** 3–4 jam
+**Background loop:** 60s, gated pada universe_ready
 
 ---
 
-## Layer 7 — Execution Engine 🟡 PRIORITAS 2
+## Layer 7 — Execution Engine 🔴 PRIORITAS TERTINGGI BERIKUTNYA
 
 **Tujuan:** Mengirim order ke Polymarket CLOB (paper mode dulu).
 
@@ -49,7 +41,7 @@
 
 ---
 
-## Layer 8 — Position Tracking 🟠 PRIORITAS 3
+## Layer 8 — Position Tracking 🟠 PRIORITAS 2
 
 **Tujuan:** Melacak posisi terbuka, P&L unrealized/realized.
 
@@ -62,7 +54,7 @@
 
 ---
 
-## Layer 9 — Risk Engine 🟠 PRIORITAS 4
+## Layer 9 — Risk Engine 🟠 PRIORITAS 3
 
 **Rules minimum:**
 - Max posisi per market: configurable USDC limit
@@ -79,7 +71,7 @@
 
 ---
 
-## Layer 10 — Monitoring Dashboard 🟢 PRIORITAS 5
+## Layer 10 — Monitoring Dashboard 🟢 PRIORITAS 4
 
 **Minimum viable:**
 - Live scores 12 markets
@@ -93,15 +85,15 @@
 
 ## Timeline
 
-| Layer | Estimasi | Dependency |
-|-------|----------|------------|
-| 6 Strategy Engine | 4 jam | L5 ✅ |
-| 7 Execution Engine | 4 jam | L6 |
-| 8 Position Tracking | 3 jam | L7 |
-| 9 Risk Engine | 3 jam | L8 |
-| 10 Dashboard | 8 jam | L3-L9 |
-| **Total** | **~22 jam** | |
+| Layer | Status | Estimasi | Dependency |
+|-------|--------|----------|------------|
+| 6 Strategy Engine | ✅ SELESAI | — | L5 ✅ |
+| 7 Execution Engine | 🔴 NEXT | 4 jam | L6 ✅ |
+| 8 Position Tracking | 🟠 | 3 jam | L7 |
+| 9 Risk Engine | 🟠 | 3 jam | L8 |
+| 10 Dashboard | 🟢 | 8 jam | L3-L9 |
+| **Total remaining** | | **~18 jam** | |
 
 ---
 
-*Updated: 2026-06-22*
+*Updated: 2026-06-23*

@@ -16,6 +16,7 @@ from app.models.scanner_market import ScannerMarket
 from app.models.opportunity import Opportunity
 from app.models.signal import Signal
 from app.models.source_validation_result import SourceValidationResult
+from app.models.trade_decision import TradeDecision
 
 __all__ = [
     "Base",
@@ -29,4 +30,5 @@ __all__ = [
     "ScannerMarket",
     "Signal",
     "SourceValidationResult",
+    "TradeDecision",
 ]

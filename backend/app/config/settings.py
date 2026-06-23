@@ -69,6 +69,12 @@ class Settings(BaseSettings):
     OPPORTUNITY_ENGINE_INTERVAL_SECONDS: int = 30
     OPPORTUNITY_ENGINE_RUN_ON_STARTUP: bool = True
 
+    # Strategy engine (Layer 6)
+    STRATEGY_ENGINE_ENABLED: bool = True
+    STRATEGY_ENGINE_INTERVAL_SECONDS: int = 60
+    STRATEGY_ENGINE_RUN_ON_STARTUP: bool = True
+    STRATEGY_PERSIST_SKIPS: bool = False
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def normalise_db_url(cls, v: str) -> str:

@@ -1,7 +1,7 @@
 # PROJECT STATUS — Polymarket Quant Bot
 
-**Last updated:** 2026-06-22  
-**App version:** 0.6.0  
+**Last updated:** 2026-06-23  
+**App version:** 0.7.0  
 **Backend:** FastAPI + PostgreSQL + Redis  
 **Active workflow:** Start application (port 5000)
 
@@ -55,6 +55,22 @@ Signal types: MID_MOVE (>0.001 delta), SEED_DEVIATION (≥0.01 dari seed), SPREA
 
 Score components: mid_movement(30) + spread(20) + depth_imbalance(20) + signal_activity(20) + discovery(10)
 
+### Layer 6: Strategy Engine ✅ SELESAI
+| File | Fungsi |
+|------|--------|
+| `models/trade_decision.py` | Tabel `trade_decisions` (append-only log) |
+| `services/strategy_engine.py` | Rule-based decision engine |
+| `services/trade_decision_repository.py` | Insert + query operations |
+| `api/v1/strategies.py` | REST endpoints |
+
+Decision rules:
+- spread_yes > 0.02 → SKIP (HIGH_SPREAD)
+- direction == NEUTRAL → SKIP (NEUTRAL_DIRECTION)
+- score ≥ 40 + BUY_NO → OPEN_LONG_NO
+- score ≥ 40 + BUY_YES → OPEN_LONG_YES
+- score 20–39 → WATCH
+- score < 20 → SKIP (LOW_SCORE)
+
 ---
 
 ## 2. BACKGROUND LOOPS AKTIF
@@ -67,6 +83,7 @@ Score components: mid_movement(30) + spread(20) + depth_imbalance(20) + signal_a
 | MarketPriceService (refresh) | 10s | universe_ready |
 | SignalEngine | 10s | universe_ready |
 | OpportunityEngine | 30s | universe_ready |
+| **StrategyEngine** | **60s** | **universe_ready** |
 
 **DEF-002 fix:** `universe_ready` asyncio.Event diset segera jika `UNIVERSE_SYNC_RUN_ON_STARTUP=False` (env var override dari Replit) — downstream engines tidak lagi ter-block.
 
@@ -86,37 +103,16 @@ Score components: mid_movement(30) + spread(20) + depth_imbalance(20) + signal_a
 | `GET /api/v1/opportunities/top` | L5 |
 | `GET /api/v1/opportunities/stats` | L5 |
 | `GET /api/v1/opportunities/{condition_id}` | L5 |
+| `GET /api/v1/strategies` | L6 |
+| `GET /api/v1/strategies/active` | L6 |
+| `GET /api/v1/strategies/stats` | L6 |
 
 ---
 
-## 4. SAMPLE OUTPUT (2026-06-22)
-
-```
-GET /api/v1/opportunities/stats
-{
-  "total_markets": 12,
-  "markets_with_direction": 1,
-  "avg_score": 18.0,
-  "top_score": 44.0,
-  "top_asset": "SOL",
-  "top_timeframe": "5m"
-}
-
-Top opportunities:
-  SOL/5m  → 44.0 BUY_NO  (mid=0.705, signal_count=2)
-  XRP/5m  → 24.0 NEUTRAL (mid=0.505, tight spread)
-  XRP/15m → 24.0 NEUTRAL
-  ETH/5m  → 24.0 NEUTRAL
-  BTC/1H  →  1.0 NEUTRAL (at seed, 1H spread)
-```
-
----
-
-## 5. MODUL YANG BELUM ADA
+## 4. MODUL YANG BELUM ADA
 
 | Layer | Modul | Status |
 |-------|-------|--------|
-| **Layer 6** | Strategy Engine | ❌ TIDAK ADA |
 | **Layer 7** | Execution Engine | ❌ TIDAK ADA |
 | **Layer 8** | Position Tracking | ❌ TIDAK ADA |
 | **Layer 9** | Risk Engine | ❌ TIDAK ADA |
@@ -124,4 +120,4 @@ Top opportunities:
 
 ---
 
-*Updated: 2026-06-22*
+*Updated: 2026-06-23*

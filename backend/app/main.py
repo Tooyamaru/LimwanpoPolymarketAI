@@ -84,6 +84,40 @@ async def _run_price_refresh_loop(
             logger.error("Price refresh periodic run failed", error=str(exc))
 
 
+async def _run_strategy_engine_loop(
+    engine,
+    universe_ready: asyncio.Event | None = None,
+) -> None:
+    """
+    Strategy engine background loop — Layer 6.
+
+    Runs every STRATEGY_ENGINE_INTERVAL_SECONDS (default 60 s).
+    Reads current Opportunity rows and emits TradeDecision records.
+    Gates on universe_ready to ensure opportunities are populated first.
+    """
+    from app.core.database import get_session_factory
+
+    async def _one_cycle():
+        factory = get_session_factory()
+        async with factory() as session:
+            await engine.run(session)
+
+    if settings.STRATEGY_ENGINE_RUN_ON_STARTUP:
+        if universe_ready is not None:
+            await universe_ready.wait()
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Strategy engine startup run failed", error=str(exc))
+
+    while True:
+        await asyncio.sleep(settings.STRATEGY_ENGINE_INTERVAL_SECONDS)
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Strategy engine periodic run failed", error=str(exc))
+
+
 async def _run_opportunity_engine_loop(
     engine,
     universe_ready: asyncio.Event | None = None,
@@ -300,6 +334,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.OPPORTUNITY_ENGINE_RUN_ON_STARTUP,
         )
 
+    # ── Strategy engine (every 60 s) — Layer 6 ───────────────────────────────
+    strategy_task = None
+    if settings.STRATEGY_ENGINE_ENABLED:
+        from app.services.strategy_engine import StrategyEngine
+        strat_engine = StrategyEngine()
+        strategy_task = asyncio.create_task(
+            _run_strategy_engine_loop(strat_engine, universe_ready=universe_ready_event)
+        )
+        app.state.strategy_engine = strat_engine
+        logger.info(
+            "Strategy engine started",
+            interval=settings.STRATEGY_ENGINE_INTERVAL_SECONDS,
+            run_on_startup=settings.STRATEGY_ENGINE_RUN_ON_STARTUP,
+        )
+
     yield
 
     # ── Graceful shutdown ─────────────────────────────────────────────────────
@@ -312,6 +361,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         (price_task, "price"),
         (signal_task, "signal"),
         (opportunity_task, "opportunity"),
+        (strategy_task, "strategy"),
     ]:
         if task is not None:
             task.cancel()
