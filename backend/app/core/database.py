@@ -142,6 +142,19 @@ async def init_db() -> None:
                 except Exception as col_exc:
                     logger.debug("Sprint 9 migration skipped", stmt=stmt, error=str(col_exc))
 
+            # Layer 8: positions table created by create_all above.
+            # Indexes declared in the model; ensure status index is present for
+            # the open-position filter that runs every 30 s.
+            layer8_migrations = [
+                "CREATE INDEX IF NOT EXISTS ix_position_status ON positions (status)",
+                "CREATE INDEX IF NOT EXISTS ix_position_condition_id ON positions (condition_id)",
+            ]
+            for stmt in layer8_migrations:
+                try:
+                    await conn.execute(text(stmt))
+                except Exception as col_exc:
+                    logger.debug("Layer 8 migration skipped", stmt=stmt, error=str(col_exc))
+
         logger.info("Database tables initialised")
     except Exception as exc:
         logger.warning("Database init skipped — DB not reachable at startup", error=str(exc))

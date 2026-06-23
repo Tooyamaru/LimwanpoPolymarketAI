@@ -12,6 +12,7 @@ from app.api.v1.signals import router as signals_router
 from app.api.v1.source_validation import router as source_validation_router
 from app.api.v1.strategies import router as strategies_router
 from app.api.v1.universe import router as universe_router
+from app.api.v1.positions import router as positions_router
 
 api_router = APIRouter()
 
@@ -27,3 +28,4 @@ api_router.include_router(signals_router)
 api_router.include_router(opportunities_router)
 api_router.include_router(strategies_router)
 api_router.include_router(orders_router)
+api_router.include_router(positions_router)

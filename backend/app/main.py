@@ -119,6 +119,36 @@ async def _run_execution_engine_loop(
             logger.error("Execution engine periodic run failed", error=str(exc))
 
 
+async def _run_position_tracking_loop(
+    service,
+    universe_ready: asyncio.Event | None = None,
+) -> None:
+    """
+    Position tracking background loop — Layer 8.
+
+    Runs every POSITION_TRACKING_INTERVAL_SECONDS (default 30 s).
+    Creates positions from new FILLED orders, refreshes current_price
+    from the opportunities table, and recomputes unrealized PnL.
+    Gates on universe_ready so prices are available before first cycle.
+    """
+    from app.core.database import get_session_factory
+
+    async def _one_cycle():
+        factory = get_session_factory()
+        async with factory() as session:
+            await service.run(session)
+
+    if universe_ready is not None:
+        await universe_ready.wait()
+
+    while True:
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Position tracking periodic run failed", error=str(exc))
+        await asyncio.sleep(30)
+
+
 async def _run_strategy_engine_loop(
     engine,
     universe_ready: asyncio.Event | None = None,
@@ -400,6 +430,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.STRATEGY_ENGINE_RUN_ON_STARTUP,
         )
 
+    # ── Position tracking (every 30 s) — Layer 8 ─────────────────────────────
+    position_task = None
+    from app.services.position_service import PositionService
+    pos_service = PositionService()
+    position_task = asyncio.create_task(
+        _run_position_tracking_loop(pos_service, universe_ready=universe_ready_event)
+    )
+    app.state.position_service = pos_service
+    logger.info("Position tracking started", interval=30)
+
     yield
 
     # ── Graceful shutdown ─────────────────────────────────────────────────────
@@ -414,6 +454,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         (opportunity_task, "opportunity"),
         (strategy_task, "strategy"),
         (execution_task, "execution"),
+        (position_task, "position"),
     ]:
         if task is not None:
             task.cancel()
