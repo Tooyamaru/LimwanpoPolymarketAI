@@ -1,6 +1,6 @@
 # PRICE_DISCOVERY_AUDIT.md
 
-**Generated:** 2026-06-24 03:24:25 UTC
+**Generated:** 2026-06-24 05:06:43 UTC
 **Audit:** #5 — Part 2
 **Observation window:** 60 rounds × 5s = 5 minutes
 **Markets monitored:** 8
@@ -107,4 +107,4 @@ whether the bid, ask, mid, or only depth was affected.
 Order books are static. If LTP changes occurred, they did not move the NBBO.
 
 ---
-*Data fetched: 2026-06-24 03:24 UTC*
+*Data fetched: 2026-06-24 05:06 UTC*
