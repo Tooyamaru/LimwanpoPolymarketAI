@@ -94,6 +94,14 @@ class Settings(BaseSettings):
     MAX_DAILY_LOSS: float = -50.0
     MAX_DAILY_TRADES: int = 20
 
+    # Position sizing (Layer 13)
+    POSITION_SIZE_MIN_USDC: float = 10.0
+    POSITION_SIZE_MEDIUM_USDC: float = 25.0
+    POSITION_SIZE_MAX_USDC: float = 50.0
+    POSITION_SCORE_MEDIUM: float = 85.0
+    POSITION_SCORE_HIGH: float = 90.0
+    POSITION_SCORE_MAX: float = 95.0
+
     # Exit engine (Layer between Opportunity and Strategy)
     EXIT_ENGINE_ENABLED: bool = True
     EXIT_ENGINE_INTERVAL_SECONDS: int = 30

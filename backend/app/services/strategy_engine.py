@@ -30,12 +30,15 @@ from app.config.settings import settings
 from app.core.logging import get_logger
 from app.repositories import opportunity_repository as opp_repo
 from app.repositories import trade_decision_repository as td_repo
+from app.services.position_sizing_service import PositionSizingService
 
 logger = get_logger(__name__)
 
 SCORE_OPEN: float = 40.0
 SCORE_WATCH: float = 20.0
 SPREAD_THRESHOLD: float = 0.02
+
+_sizing_service = PositionSizingService()
 
 
 def _make_decision(
@@ -125,6 +128,34 @@ class StrategyEngine:
                 if decision == "SKIP" and not persist_skips:
                     continue
 
+                # ── Layer 13: position sizing ──────────────────────────────────
+                # For actionable entry decisions call the sizing service.
+                # If it returns None the score is below the minimum threshold —
+                # skip silently (no TradeDecision inserted).
+                position_size_usdc: Optional[float] = None
+                if decision in ("OPEN_LONG_YES", "OPEN_LONG_NO"):
+                    position_size_usdc = _sizing_service.calculate(opp.opportunity_score)
+                    if position_size_usdc is None:
+                        logger.info(
+                            "Strategy engine: position sizing skipped trade",
+                            asset=opp.asset,
+                            timeframe=opp.timeframe,
+                            opportunity_score=round(opp.opportunity_score, 2),
+                            min_score_required=settings.POSITION_SCORE_MEDIUM,
+                        )
+                        counters[decision] -= 1
+                        counters["SKIP"] = counters.get("SKIP", 0) + 1
+                        continue
+
+                    logger.info(
+                        "Strategy engine: position sized",
+                        asset=opp.asset,
+                        timeframe=opp.timeframe,
+                        decision=decision,
+                        opportunity_score=round(opp.opportunity_score, 2),
+                        position_size_usdc=position_size_usdc,
+                    )
+
                 await td_repo.insert_decision(
                     session,
                     condition_id=opp.condition_id,
@@ -138,6 +169,7 @@ class StrategyEngine:
                     yes_ask=opp.yes_ask,
                     spread_yes=opp.spread_yes,
                     skip_reason=skip_reason,
+                    position_size_usdc=position_size_usdc,
                 )
             except Exception as exc:
                 logger.error(

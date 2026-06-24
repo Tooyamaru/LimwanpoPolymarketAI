@@ -180,6 +180,16 @@ async def init_db() -> None:
                 except Exception as col_exc:
                     logger.debug("Exit engine migration skipped", stmt=stmt, error=str(col_exc))
 
+            # Layer 13: add position_size_usdc to trade_decisions.
+            layer13_migrations = [
+                "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS position_size_usdc DOUBLE PRECISION NULL",
+            ]
+            for stmt in layer13_migrations:
+                try:
+                    await conn.execute(text(stmt))
+                except Exception as col_exc:
+                    logger.debug("Layer 13 migration skipped", stmt=stmt, error=str(col_exc))
+
             # Layer 12: add exit audit trail columns to positions table.
             # ADD COLUMN IF NOT EXISTS is a no-op when the column already exists.
             layer12_migrations = [

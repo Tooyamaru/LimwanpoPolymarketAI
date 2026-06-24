@@ -36,6 +36,7 @@ async def insert_decision(
     yes_ask: Optional[float],
     spread_yes: Optional[float],
     skip_reason: Optional[str] = None,
+    position_size_usdc: Optional[float] = None,
     status: str = "PENDING",
     decided_at: Optional[datetime] = None,
 ) -> TradeDecision:
@@ -56,6 +57,7 @@ async def insert_decision(
         yes_ask=yes_ask,
         spread_yes=spread_yes,
         skip_reason=skip_reason,
+        position_size_usdc=position_size_usdc,
         decided_at=decided_at,
     )
     session.add(row)
@@ -67,6 +69,7 @@ async def insert_decision(
         decision=decision,
         score=round(opportunity_score, 1),
         skip_reason=skip_reason,
+        position_size_usdc=position_size_usdc,
     )
     return row
 

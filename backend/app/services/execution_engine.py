@@ -334,6 +334,13 @@ class ExecutionEngine:
 
         fill_price = requested_price  # paper mode: no slippage
 
+        # ── Compute quantity from position_size_usdc (Layer 13) ───────────────
+        if td.position_size_usdc is not None and fill_price > 0:
+            quantity = round(td.position_size_usdc / fill_price, 6)
+        else:
+            # Backward-compat fallback for decisions without sizing (legacy rows)
+            quantity = 1.0
+
         # ── Create order record ────────────────────────────────────────────────
         order = await order_repo.create_order(
             session,
@@ -343,7 +350,7 @@ class ExecutionEngine:
             timeframe=td.timeframe,
             side=side,
             order_type="MARKET",
-            quantity=1.0,
+            quantity=quantity,
             requested_price=requested_price,
             filled_price=fill_price,
             status="FILLED",
@@ -365,6 +372,8 @@ class ExecutionEngine:
             timeframe=td.timeframe,
             side=side,
             fill_price=fill_price,
+            position_size_usdc=td.position_size_usdc,
+            quantity=quantity,
         )
 
         return order, False

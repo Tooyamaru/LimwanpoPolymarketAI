@@ -70,6 +70,12 @@ class TradeDecision(Base):
         comment="LOW_SCORE | HIGH_SPREAD | NEUTRAL_DIRECTION",
     )
 
+    # ── Layer 13: position sizing ─────────────────────────────────────────────
+    position_size_usdc: Mapped[Optional[float]] = mapped_column(
+        Float, nullable=True,
+        comment="USDC allocation computed by PositionSizingService",
+    )
+
     # ── Exit engine fields (populated when decision == CLOSE_POSITION) ────────
     target_position_id: Mapped[Optional[int]] = mapped_column(
         Integer, nullable=True,
