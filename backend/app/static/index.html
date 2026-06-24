@@ -773,6 +773,105 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
 
 ::-webkit-scrollbar{width:2px;}
 ::-webkit-scrollbar-thumb{background:var(--b2);}
+
+/* ═══════════════════════════════════════════════════════
+   TARGET — REASON SUMMARY (Task 1)
+═══════════════════════════════════════════════════════ */
+#tgt-reasons{display:flex;gap:5px;flex-wrap:wrap;padding-top:5px;}
+#tgt-reasons.hidden{display:none;}
+.reason-item{
+  display:flex;align-items:center;gap:4px;
+  font-size:7px;letter-spacing:.8px;
+  padding:2px 8px;border:1px solid var(--b2);border-radius:2px;
+  background:rgba(0,0,0,.22);color:var(--tm);transition:all .35s;
+}
+.reason-item::before{content:'•';font-size:9px;margin-right:1px;}
+.reason-item.pos{color:rgba(57,255,20,.82);border-color:rgba(57,255,20,.2);background:rgba(57,255,20,.04);}
+.reason-item.pos::before{color:var(--ng);}
+.reason-item.warn{color:rgba(255,230,0,.85);border-color:rgba(255,230,0,.22);background:rgba(255,230,0,.03);}
+.reason-item.warn::before{color:var(--ny);}
+.reason-item.neg{color:rgba(255,51,85,.75);border-color:rgba(255,51,85,.2);}
+.reason-item.neg::before{color:var(--red);}
+
+/* ═══════════════════════════════════════════════════════
+   HEATMAP EDGE DISPLAY (Task 2)
+═══════════════════════════════════════════════════════ */
+.hm-edge{
+  font-size:7.5px;font-weight:bold;letter-spacing:.3px;
+  margin-top:1px;line-height:1;transition:color .35s;
+}
+.hm-edge.pos{color:rgba(57,255,20,.9);}
+.hm-edge.neg{color:rgba(255,45,149,.85);}
+.hm-edge.neutral{color:var(--td);opacity:.5;}
+
+/* ═══════════════════════════════════════════════════════
+   TOP-3 RANK-1 GLOW (Task 5)
+═══════════════════════════════════════════════════════ */
+.rank-1{border-color:rgba(0,229,255,.3)!important;background:rgba(0,229,255,.07)!important;box-shadow:0 0 12px rgba(0,229,255,.09),inset 0 0 10px rgba(0,229,255,.03)!important;}
+.rank-1 .rank-mkt{color:var(--nc)!important;}
+.rank-1 .rank-pos{color:var(--nc)!important;font-weight:bold;}
+.rank-dir{display:inline-flex;align-items:center;}
+
+/* ═══════════════════════════════════════════════════════
+   READABILITY PASS V6.5 (Task 8)
+═══════════════════════════════════════════════════════ */
+.feed-ts{color:#3d6a82!important;}
+.lfeed-ts{color:#3d6a82!important;}
+.stage-sub{color:#5a7e96!important;}
+.stage-lbl{color:#8cb4cc!important;}
+.pos-col-hdr{color:#5a7e96!important;}
+.eng-cycle{color:var(--tm)!important;}
+.ts-l{color:#7faec8!important;}
+.cap-item-v5 .cap-lbl{color:#7faec8!important;}
+.cap-item-v5 .cap-remain{color:var(--tm)!important;}
+.hm-header{color:#8cb4cc!important;letter-spacing:3px;}
+.rank-pos{color:#7faec8!important;}
+.pipeline-ts{color:var(--tm)!important;}
+.bot-feed-hdr .ptitle-left{color:#8cb4cc!important;}
+footer{color:#6b8fa8!important;}
+.pos-lbl{color:var(--tm)!important;}
+.eng-name{color:#8cb4cc!important;}
+.ptitle-right{color:#7faec8!important;opacity:.9;}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — iPad Portrait 768–1100px (Task 7)
+═══════════════════════════════════════════════════════ */
+@media(max-width:1100px)and(orientation:portrait){
+  html,body{height:auto;overflow-y:auto;overflow-x:hidden;}
+  body{grid-template-rows:42px auto auto 22px;height:auto;min-height:100vh;}
+  main{
+    grid-template-columns:1fr;display:flex;flex-direction:column;
+    overflow:visible;min-height:auto;height:auto;
+  }
+  .col{
+    border-right:none;border-bottom:1px solid rgba(0,229,255,.07);
+    overflow:visible;flex-shrink:0;min-height:0;height:auto;
+  }
+  .col:nth-child(1){order:3;}
+  .col:nth-child(2){order:1;background:none;}
+  .col:nth-child(3){order:2;}
+  #mkt-list{max-height:200px;overflow-y:auto;flex:none;}
+  #left-feed-panel{min-height:54px;max-height:60px;}
+  #target-panel{flex-shrink:0;overflow:visible;}
+  #target-body{padding:8px 12px 6px;}
+  .tgt-market{font-size:22px;}
+  .tgt-score-num{font-size:22px;}
+  .tgt-top-row{flex-wrap:wrap;gap:10px;}
+  .tgt-radar{width:58px;}
+  .pipeline{flex-wrap:wrap;gap:4px;padding:6px 8px;}
+  .stage{flex:1 1 calc(33% - 5px);min-width:58px;max-width:none;}
+  .connector{display:none;}
+  #heatmap-grid{overflow-x:auto;}
+  #pos-split{grid-template-columns:1fr 1px 1fr;}
+  #health-panel{min-height:150px;}
+  #eng-grid{grid-template-columns:repeat(3,1fr);}
+  #perf-section{position:static;}
+  .kpi-row-8{grid-template-columns:repeat(4,1fr);}
+  .bot-row{grid-template-columns:1fr;gap:6px;}
+  .bot-feed,.bot-cap{min-height:80px;}
+  footer{font-size:6.5px;padding:0 12px;}
+  .hbar{gap:4px;flex-wrap:wrap;}
+}
 </style>
 </head>
 <body>
@@ -877,12 +976,14 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
             <div class="tgt-status-badge tsb-wait" id="tgt-status-badge">SCANNING</div>
             <div class="tgt-dist" id="tgt-dist">—</div>
           </div>
+          <!-- reason summary -->
+          <div id="tgt-reasons" class="hidden"></div>
         </div>
       </div>
       <!-- top-3 ranking -->
       <div id="tgt-ranking">
         <div class="rank-lbl">TOP&nbsp;3</div>
-        <div class="rank-item">
+        <div class="rank-item rank-1">
           <span class="rank-pos">#1</span>
           <span class="rank-mkt" id="r1-mkt">—</span>
           <span class="rank-score s0" id="r1-score">—</span>
@@ -911,7 +1012,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
           <div class="stage-icon">◎</div>
           <div class="stage-n" id="sn-market">12</div>
           <div class="stage-lbl">UNIVERSE</div>
-          <div class="stage-sub">active</div>
+          <div class="stage-sub" id="ss-market">12 scanned</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-market" style="width:100%"></div></div>
             <div class="stage-pct" id="sp-market">100%</div>
@@ -923,7 +1024,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
           <div class="stage-icon">≋</div>
           <div class="stage-n" id="sn-signal">—</div>
           <div class="stage-lbl">SIGNALS</div>
-          <div class="stage-sub">fired</div>
+          <div class="stage-sub" id="ss-signal">0 found</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-signal" style="width:0%"></div></div>
             <div class="stage-pct" id="sp-signal">0%</div>
@@ -935,7 +1036,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
           <div class="stage-icon">⊕</div>
           <div class="stage-n" id="sn-opp">—</div>
           <div class="stage-lbl">OPPS</div>
-          <div class="stage-sub">scored</div>
+          <div class="stage-sub" id="ss-opp">0 scored</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-opp" style="width:0%"></div></div>
             <div class="stage-pct" id="sp-opp">0%</div>
@@ -947,7 +1048,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
           <div class="stage-icon">⬡</div>
           <div class="stage-n" id="sn-strat">—</div>
           <div class="stage-lbl">STRATEGY</div>
-          <div class="stage-sub">selected</div>
+          <div class="stage-sub" id="ss-strat">0 selected</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-strat" style="width:0%"></div></div>
             <div class="stage-pct" id="sp-strat">0%</div>
@@ -959,7 +1060,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
           <div class="stage-icon">⊗</div>
           <div class="stage-n" id="sn-risk">—</div>
           <div class="stage-lbl">RISK</div>
-          <div class="stage-sub">approved</div>
+          <div class="stage-sub" id="ss-risk">0 approved</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-risk" style="width:0%"></div></div>
             <div class="stage-pct" id="sp-risk">0%</div>
@@ -971,7 +1072,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
           <div class="stage-icon">⚡</div>
           <div class="stage-n" id="sn-exec">—</div>
           <div class="stage-lbl">EXECUTION</div>
-          <div class="stage-sub">filled</div>
+          <div class="stage-sub" id="ss-exec">0 filled</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-exec" style="width:0%"></div></div>
             <div class="stage-pct" id="sp-exec">0%</div>
@@ -1513,6 +1614,29 @@ function updateTarget(ranked){
     distEl.innerHTML=`DISTANCE TO ENTRY:&nbsp;<em>${dist} PTS</em>&nbsp;·&nbsp;THRESHOLD: 85`;
     ptR.textContent='TOP MARKET';
   }
+
+  // ── Reason Summary (Task 1) ──────────────────────────
+  const rEl=document.getElementById('tgt-reasons');
+  if(rEl){
+    const reasons=[];
+    const sp=best.spread||0,mid=best.mid||0.5,expMin=best.minutesToExpiry,sc=Math.round(best.score);
+    if(isYes||isNo) reasons.push({text:(isYes?'▲ Momentum UP':'▼ Momentum DOWN'),cls:'pos'});
+    if(sp>0&&sp<=0.02) reasons.push({text:'Tight spread',cls:'pos'});
+    else if(sp>0.06) reasons.push({text:'Wide spread risk',cls:'neg'});
+    else if(sp>0) reasons.push({text:'Spread acceptable',cls:'pos'});
+    if(Math.abs(mid-0.5)>=0.025) reasons.push({text:'Price displaced from 50¢',cls:'pos'});
+    else reasons.push({text:'Price near fair value',cls:''});
+    if(sc>=85) reasons.push({text:'Risk threshold met',cls:'pos'});
+    else if(sc>=70) reasons.push({text:(85-sc)+' pts to entry',cls:'warn'});
+    else reasons.push({text:'Building signal strength',cls:''});
+    if(expMin!=null&&expMin<45) reasons.push({text:'Near expiry: '+Math.round(expMin)+'m',cls:'warn'});
+    else if(expMin!=null&&expMin>300) reasons.push({text:'Time horizon OK',cls:'pos'});
+    const out=reasons.slice(0,4);
+    if(out.length){
+      rEl.className='';
+      rEl.innerHTML=out.map(r=>`<span class="reason-item ${r.cls}">${r.text}</span>`).join('');
+    } else { rEl.className='hidden'; }
+  }
 }
 
 function updateRanking(ranked){
@@ -1526,14 +1650,27 @@ function updateRanking(ranked){
     const mEl=document.getElementById(s.mkt);
     const scEl=document.getElementById(s.sc);
     const dEl=document.getElementById(s.dir);
-    if(!m){mEl.textContent='—';scEl.textContent='—';scEl.className='rank-score s0';dEl.style.display='none';continue;}
+    if(!m){
+      mEl.textContent='—';scEl.textContent='—';scEl.className='rank-score s0';
+      dEl.style.display='none';continue;
+    }
     mEl.textContent=`${m.asset} ${m.tf}`;
     const sc=Math.round(m.score);
     scEl.textContent=sc;
     scEl.className='rank-score '+(sc>=95?'s95':sc>=90?'s90':sc>=85?'s85':sc>=70?'s70':'s0');
     const isY=m.dir==='BUY_YES',isN=m.dir==='BUY_NO';
-    if(isY||isN){dEl.style.display='';dEl.textContent=isY?'▲ UP':'▼ DN';dEl.className='rank-dir '+(isY?'yes':'no');}
-    else dEl.style.display='none';
+    // ── Task 5: always show direction, inline with score ─
+    if(isY||isN){
+      dEl.style.display='inline-flex';
+      dEl.textContent=isY?'▲ UP':'▼ DN';
+      dEl.className='rank-dir '+(isY?'yes':'no');
+    } else if(sc>0){
+      dEl.style.display='inline-flex';
+      dEl.textContent='·';
+      dEl.className='rank-dir';
+    } else {
+      dEl.style.display='none';
+    }
   }
 }
 
@@ -1568,6 +1705,19 @@ function updatePipeline(signal,opp,strat,risk,exec){
     const active=val>0||s.id==='market';
     el.className='stage'+(active?' '+s.cls:'');
   }
+  // ── Descriptive sub-labels (Task 3) ──────────────────
+  const subMap={
+    market:`${BASE} scanned`,
+    signal:signal>0?`${signal} found`:'0 found',
+    opp:opp>0?`${opp} scored`:'0 scored',
+    strat:strat>0?`${strat} selected`:'0 selected',
+    risk:risk>0?`${risk} approved`:'0 approved',
+    exec:exec>0?`${exec} filled`:'0 filled',
+  };
+  for(const[id,txt]of Object.entries(subMap)){
+    const ssEl=document.getElementById(`ss-${id}`);
+    if(ssEl) ssEl.textContent=txt;
+  }
   document.getElementById('pipe-ts').textContent=
     'LAST UPDATE: '+new Date().toISOString().split('T')[1].split('.')[0]+' UTC';
 }
@@ -1599,7 +1749,8 @@ function buildHeatmap(){
         <div class="hm-dir-row">
           <div class="hm-dir" id="hd-${a}-${tf}"></div>
           <div class="hm-arrow" id="ha-${a}-${tf}"></div>
-        </div></div>`;
+        </div>
+        <div class="hm-edge neutral" id="he-${a}-${tf}">—</div></div>`;
   }
   grid.innerHTML=html;
 }
@@ -1648,6 +1799,24 @@ function updateHeatmap(ranked){
     } else {
       dEl.textContent='';dEl.style.color='';dEl.style.fontWeight='';
       aEl.textContent='';aEl.className='hm-arrow';
+    }
+
+    // ── Edge display (Task 2) ─────────────────────────
+    const eEl=document.getElementById(`he-${m.asset}-${m.tf}`);
+    if(eEl&&sc>0){
+      const _bid2=d.bid??Math.max(0,(d.mid||0.5)-(d.spread||0)/2);
+      const _ask2=d.ask??Math.min(1,(d.mid||0.5)+(d.spread||0)/2);
+      let eStr='—',eCls='neutral';
+      if(dir==='BUY_YES'&&_ask2>0&&_ask2<1){
+        const ev=(0.5-_ask2)/_ask2*100;
+        eStr=(ev>=0?'+':'')+ev.toFixed(1)+'%';eCls=ev>=0?'pos':'neg';
+      } else if(dir==='BUY_NO'&&_bid2>0&&_bid2<1){
+        const nA=1-_bid2;const ev=(0.5-nA)/nA*100;
+        eStr=(ev>=0?'+':'')+ev.toFixed(1)+'%';eCls=ev>=0?'pos':'neg';
+      }
+      eEl.textContent=eStr;eEl.className='hm-edge '+eCls;
+    } else if(eEl){
+      eEl.textContent='—';eEl.className='hm-edge neutral';
     }
   }
 }
