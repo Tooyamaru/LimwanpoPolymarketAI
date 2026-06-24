@@ -1,6 +1,6 @@
 # UPDATED_FINAL_HYPOTHESIS.md
 
-**Generated:** 2026-06-24 07:09:59 UTC
+**Generated:** 2026-06-24 08:53:23 UTC
 **Audit:** #5 — Part 5
 **IMPORTANT:** All prior conclusions treated as open. Evidence evaluated independently.
 
@@ -148,4 +148,4 @@ The most accurate model is: **fixed-seed prediction market with passive liquidit
 not an active AMM or a liquid trader-driven book.
 
 ---
-*Generated: 2026-06-24 07:09 UTC*
+*Generated: 2026-06-24 08:53 UTC*

@@ -1,0 +1,516 @@
+# LIMWANPO POLYMARKET AI — DASHBOARD V4 FULL REDESIGN
+
+## IMPORTANT
+
+This is NOT a generic crypto dashboard.
+
+This dashboard is exclusively for Limwanpo Polymarket AI.
+
+The universe is permanently fixed:
+
+BTC 5M
+BTC 15M
+BTC 1H
+
+ETH 5M
+ETH 15M
+ETH 1H
+
+SOL 5M
+SOL 15M
+SOL 1H
+
+XRP 5M
+XRP 15M
+XRP 1H
+
+Total universe = 12 markets.
+
+DO NOT add any other assets.
+
+DO NOT add market selectors.
+
+DO NOT add watchlists.
+
+DO NOT add tabs.
+
+DO NOT add sidebars.
+
+DO NOT add navigation menus.
+
+This must remain a single fullscreen operator dashboard.
+
+---
+
+# DESIGN GOAL
+
+The dashboard should feel like:
+
+Professional trading terminal
++
+Cyberpunk AI command center
++
+Polymarket prediction engine
+
+The operator must understand system state within 2 seconds.
+
+Every element must contribute directly to trading decisions.
+
+Remove decorative elements that do not improve operator awareness.
+
+---
+
+# LAYOUT
+
+Fullscreen.
+
+Three-column layout.
+
+---
+
+LEFT COLUMN
+width ≈ 22%
+
+CENTER COLUMN
+width ≈ 56%
+
+RIGHT COLUMN
+width ≈ 22%
+
+---
+
+No scrolling.
+
+Everything visible on one screen.
+
+---
+
+# TOP HEADER
+
+Display:
+
+LIMWANPO POLYMARKET AI
+
+Subtitle:
+
+POLYMARKET UP/DOWN MARKETS
+
+Right side:
+
+CAPITAL STATUS
+
+ENGINE COUNT
+
+UPTIME
+
+UTC CLOCK
+
+Use cyberpunk neon styling.
+
+---
+
+# LEFT COLUMN
+
+TITLE
+
+UNIVERSE // 12 MARKETS
+
+Display all 12 markets.
+
+For every market show:
+
+Asset
+
+Timeframe
+
+Direction
+
+Score
+
+Current YES Price
+
+Mini trend sparkline
+
+Example:
+
+BTC 15M
+YES
+92
+0.61
+
+Use color coding:
+
+YES = neon green
+
+NO = neon magenta
+
+Score tiers:
+
+95+ bright green
+
+90-94 green
+
+85-89 cyan
+
+70-84 yellow
+
+<70 gray
+
+---
+
+# CENTER TOP PANEL
+
+TITLE
+
+AI CURRENT TARGET
+
+This is the most important panel.
+
+Show only the highest-ranked opportunity.
+
+Large typography.
+
+Example:
+
+BTC 15M YES
+
+Score 92
+
+Confidence:
+VERY HIGH
+
+Show:
+
+Current YES price
+
+24h change
+
+Mini chart
+
+Confidence bar
+
+Target panel must visually dominate the entire dashboard.
+
+This panel should immediately tell the operator:
+
+"What is the AI trying to trade right now?"
+
+---
+
+# CENTER MIDDLE PANEL
+
+TITLE
+
+AI DECISION ENGINE
+
+Replace the radar completely.
+
+Show actual pipeline:
+
+MARKET
+→
+SIGNAL
+→
+OPPORTUNITY
+→
+STRATEGY
+→
+RISK
+→
+EXECUTION
+
+Each stage must display:
+
+Current count
+
+Status
+
+Activity animation
+
+Example:
+
+MARKET
+12 scanned
+
+SIGNAL
+12 signals
+
+OPPORTUNITY
+4
+
+STRATEGY
+2
+
+RISK
+1
+
+EXECUTION
+0
+
+Animated flow between stages.
+
+Make it feel alive.
+
+This replaces the radar entirely.
+
+---
+
+# CENTER BOTTOM PANEL
+
+TITLE
+
+MARKET OPPORTUNITY HEATMAP
+
+Grid layout:
+
+```
+      5M   15M   1H
+```
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+Each cell contains score.
+
+Background color based on score.
+
+95+ extreme green
+
+90-94 green
+
+85-89 cyan
+
+70-84 yellow
+
+Below 70 dark gray
+
+Purpose:
+
+Instantly show where opportunities exist.
+
+This is the operator's map.
+
+---
+
+# RIGHT COLUMN TOP
+
+TITLE
+
+ACTIVE POSITION
+
+If open position exists:
+
+Asset
+
+Timeframe
+
+Direction
+
+Entry
+
+Current
+
+PnL %
+
+PnL USDC
+
+Holding time
+
+Mini chart
+
+Example:
+
+BTC 15M YES
+
+Entry 0.54
+
+Current 0.61
+
+PnL +12.8%
+
+PnL +312.64 USDC
+
+Holding 00:27:13
+
+If no position exists:
+
+WAITING FOR SIGNAL
+
+Subtle pulse animation.
+
+---
+
+# RIGHT COLUMN MIDDLE
+
+TITLE
+
+SYSTEM HEALTH
+
+Display:
+
+Universe
+
+Signal
+
+Opportunity
+
+Strategy
+
+Risk
+
+Execution
+
+Position
+
+Exit
+
+Analytics
+
+Capital
+
+Green = healthy
+
+Red = issue
+
+Must update live.
+
+---
+
+# BOTTOM PERFORMANCE SECTION
+
+Display:
+
+WIN RATE
+
+NET PNL
+
+TRADES
+
+MAX DRAWDOWN
+
+Use neon KPI cards.
+
+---
+
+# CAPITAL PROTECTION SECTION
+
+Display:
+
+Daily Loss
+
+Weekly Loss
+
+Loss Streak
+
+Drawdown
+
+Kill Switch
+
+Show progress bars.
+
+Example:
+
+Daily Loss
+$12 / $30
+
+Weekly Loss
+$25 / $75
+
+Loss Streak
+2 / 5
+
+Drawdown
+4% / 20%
+
+Kill Switch:
+ARMED
+
+---
+
+# DATA RULES
+
+Do not use fake data.
+
+Do not use mock data.
+
+Read directly from existing APIs.
+
+Use existing Layer 1-16 services.
+
+No new backend logic.
+
+No new trading logic.
+
+No new strategy logic.
+
+Dashboard only.
+
+---
+
+# REMOVE COMPLETELY
+
+Remove radar visualization.
+
+Remove circular nodes.
+
+Remove opportunity wheel.
+
+Remove empty decorative graphs.
+
+Remove giant blank spaces.
+
+Remove any visual that does not contribute to trading decisions.
+
+---
+
+# CYBERPUNK STYLE
+
+Background:
+#05070A
+
+Neon Green:
+#39FF14
+
+Neon Cyan:
+#00E5FF
+
+Neon Purple:
+#C000FF
+
+Neon Magenta:
+#FF2D95
+
+Neon Yellow:
+#FFE600
+
+Use subtle glow.
+
+Use thin borders.
+
+Use premium trading-terminal aesthetic.
+
+Do not create a gaming UI.
+
+Do not create a hacker movie UI.
+
+Create a professional AI trading command center.
+
+---
+
+# FINAL OBJECTIVE
+
+When an operator opens the dashboard, they must immediately know:
+
+1. What market is the best opportunity right now.
+2. What the AI is doing internally.
+3. Whether a position is open.
+4. Whether the system is healthy.
+5. Whether capital protection is safe.
+6. Which timeframe and asset currently have the highest probability edge.
+
+This is the only purpose of the dashboard.
