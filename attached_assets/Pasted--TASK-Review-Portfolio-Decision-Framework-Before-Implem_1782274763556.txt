@@ -1,0 +1,250 @@
+# TASK: Review Portfolio Decision Framework Before Implementation
+
+Read and understand the entire project first.
+
+Priority reading order:
+
+1. README.md (single source of truth)
+2. ARCHITECTURE.md
+3. DATABASE.md
+4. strategy_engine.py
+5. opportunity_engine.py
+6. risk_engine.py
+7. execution_engine.py
+8. position_service.py
+9. trade_decision model
+10. repositories related to positions, orders, opportunities, decisions
+
+---
+
+## Critical Project Context
+
+LimwanpoPolymarketAI is NOT:
+
+* Binance trading bot
+* Spot trading bot
+* Futures trading bot
+* Arbitrage bot
+* Market making bot
+
+LimwanpoPolymarketAI IS:
+
+* Polymarket Quant Bot
+* Prediction Market Intelligence System
+* Multi-factor quantitative decision engine
+
+The system trades:
+
+* YES contracts
+* NO contracts
+
+The system does NOT trade:
+
+* BTC
+* ETH
+* SOL
+* XRP
+
+Those assets are prediction targets only.
+
+---
+
+## Quant Philosophy
+
+The system is NOT a pure probability-mispricing engine.
+
+Decision making may use:
+
+* Probability estimation
+* Market pricing analysis
+* Price action
+* Trend analysis
+* Momentum
+* Volatility
+* Liquidity conditions
+* Order book information
+* Confidence scoring
+* Opportunity scoring
+* Statistical models
+
+Probability mispricing is ONE signal only.
+
+Future architecture must not assume all decisions originate from probability mispricing.
+
+---
+
+## Position Philosophy
+
+Exposure Management > Position Count
+
+Multiple entries on the same condition_id are allowed.
+
+Duplicate entries are NOT automatically bugs.
+
+Exposure limits are the actual constraint.
+
+Review existing DUPLICATE_POSITION logic carefully.
+
+---
+
+## Exit Philosophy
+
+A position may be closed before market settlement.
+
+Valid exit triggers include:
+
+* Profit target achieved
+* Edge disappears
+* Confidence deteriorates
+* Better opportunity appears
+* Exposure reduction required
+* Risk conditions change
+
+Do NOT assume:
+
+* Hold until expiry
+* Hold until settlement
+* Early exits are wrong
+
+---
+
+## Design Review Task
+
+Review the proposed Portfolio Decision Framework.
+
+Evaluate whether the following architecture is correct:
+
+### New Portfolio Decision Engine
+
+Responsibilities:
+
+* Evaluate all OPEN positions
+* Evaluate all available opportunities
+* Compute position health scores
+* Rank positions
+* Rank opportunities
+* Decide:
+
+  * KEEP
+  * ADD
+  * REDUCE
+  * CLOSE
+  * ROTATE
+
+---
+
+### Position Health Score
+
+Review whether a composite health score should include:
+
+* Opportunity score
+* Confidence score
+* PnL pressure
+* Liquidity quality
+* Time pressure
+
+Determine:
+
+* Whether weighting is reasonable
+* Whether additional inputs are required
+* Whether any component should be removed
+
+---
+
+### Rotation Logic
+
+Review whether rotation should require:
+
+* Portfolio at capacity
+* Better opportunity available
+* Minimum score improvement threshold
+* Cooldown period
+
+Determine:
+
+* Optimal design
+* Potential failure modes
+* Churn risks
+
+---
+
+### Exit Framework
+
+Review these proposed triggers:
+
+* PROFIT_TARGET
+* EDGE_DISAPPEARED
+* CONFIDENCE_DETERIORATED
+* EXPOSURE_REDUCTION
+* CAPITAL_ROTATION
+* RISK_REDUCTION
+* LIQUIDITY_DETERIORATION
+
+Determine:
+
+* Missing triggers
+* Redundant triggers
+* Better trigger hierarchy
+
+---
+
+### Polymarket-Specific Validation
+
+Very important:
+
+Review all assumptions against actual Polymarket trading mechanics.
+
+Consider:
+
+* YES bid
+* YES ask
+* NO bid
+* NO ask
+* Spread costs
+* Liquidity constraints
+* Order book depth
+* Exit feasibility
+
+Verify that:
+
+Exit decisions are evaluated using executable prices, not analytical mid-prices.
+
+---
+
+## Deliverables
+
+DO NOT WRITE CODE.
+
+DO NOT MODIFY FILES.
+
+DO NOT IMPLEMENT ANYTHING.
+
+Produce only:
+
+### 1. Architecture Review
+
+What is correct?
+What is incorrect?
+What is missing?
+
+### 2. Risk Analysis
+
+Potential failure modes.
+
+### 3. Recommended Changes
+
+Changes required before implementation.
+
+### 4. Final Architecture Recommendation
+
+Provide the architecture that should be implemented.
+
+### 5. Implementation Sequence
+
+Provide exact implementation order.
+
+No coding.
+
+No file edits.
+
+Design review only.
