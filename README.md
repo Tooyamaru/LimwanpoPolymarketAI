@@ -2,7 +2,7 @@
 
 Production-grade quantitative trading infrastructure for Polymarket prediction markets.
 Integrates live price feeds from Binance and Polymarket CLOB to analyze, score, screen, and
-paper-trade "Up-or-Down" binary outcome markets for BTC, ETH, SOL, and BNB.
+paper-trade "Up-or-Down" binary outcome markets for BTC, ETH, SOL, and XRP.
 
 **Version:** 0.10.0 — Layers 1–10 complete, Layer 11 (Live Trading) next.
 
@@ -10,28 +10,83 @@ paper-trade "Up-or-Down" binary outcome markets for BTC, ETH, SOL, and BNB.
 
 ## IMPORTANT: LimwanpoPolymarketAI Is A Polymarket Quant Bot
 
-**LimwanpoPolymarketAI is NOT a crypto trading bot, Binance futures bot, spot trading bot, arbitrage bot, or market-making bot.**
+### Project Identity
 
-LimwanpoPolymarketAI is a **Polymarket Quant Bot** — a prediction-market engine that predicts outcomes and executes YES/NO contracts on Polymarket.
+**Official name:** LimwanpoPolymarketAI  
+**Project type:** Polymarket Quant Bot — Prediction Market Intelligence System — Probability-Based Decision Engine
 
-| What this system does | What this system does NOT do |
+This project is **NOT** a Binance Trading Bot, Spot Trading Bot, Futures Trading Bot, Arbitrage Bot, Market Making Bot, Copy Trading Bot, or Traditional Crypto Trading System.
+
+### Business Model
+
+LimwanpoPolymarketAI is a prediction-market system. The system:
+
+1. Collects market data and price feeds.
+2. Analyzes quantitative signals.
+3. Estimates outcome probabilities.
+4. Determines whether YES or NO has statistical edge.
+5. Executes YES or NO contracts on Polymarket.
+6. Manages portfolio exposure.
+7. Takes profit when opportunities exist.
+
+**The system predicts outcomes. The system does NOT trade cryptocurrencies directly.**
+
+### Traded Instruments
+
+| Instrument | Role |
 |---|---|
-| Predicts BTC/ETH/SOL/BNB Up or Down probability | Trade BTC, ETH, SOL, or BNB directly |
-| Buys YES or NO contracts on Polymarket | Hold or sell spot/futures crypto |
-| Uses Binance & Chainlink as signal inputs only | Execute orders on Binance or any CEX/DEX |
+| YES contracts on Polymarket | ✅ Actual traded instrument |
+| NO contracts on Polymarket | ✅ Actual traded instrument |
+| BTC | ❌ Prediction target only — never bought or sold directly |
+| ETH | ❌ Prediction target only — never bought or sold directly |
+| SOL | ❌ Prediction target only — never bought or sold directly |
+| XRP | ❌ Prediction target only — never bought or sold directly |
 
-**Business rules (mandatory for all audits and development):**
+### Role of External Data Sources
 
-1. Multiple entries on the same market are allowed.
-2. Multiple positions on the same `condition_id` are allowed if exposure rules permit.
-3. Exposure management is more important than position count.
-4. Duplicate entries must NOT be automatically classified as bugs.
-5. Profit-taking exits before market settlement are valid and preferred.
-6. Positions do NOT need to remain open until event resolution.
-7. Closing a profitable position before expiry is expected behavior.
-8. All audits must use prediction-market assumptions, not futures/spot assumptions.
-9. Findings based on spot/futures logic are invalid unless explicitly applicable to prediction markets.
-10. All architecture decisions must align with Polymarket market mechanics.
+Binance, Chainlink, and all external market/price feeds are used **exclusively** as signal inputs, prediction inputs, probability features, and market intelligence sources. They are **not** execution venues. They are **not** traded assets. The only execution venue is **Polymarket**.
+
+### Primary Target Markets
+
+- BTC Up / Down (binary Polymarket prediction markets)
+- ETH Up / Down (binary Polymarket prediction markets)
+- SOL Up / Down (binary Polymarket prediction markets)
+- XRP Up / Down (binary Polymarket prediction markets)
+
+These are prediction markets — not spot assets, not futures contracts, not perpetual contracts.
+
+### Position & Exposure Philosophy
+
+**Exposure Management > Position Count**
+
+- Multiple entries on the same market are valid.
+- Multiple positions on the same `condition_id` are valid if exposure rules permit.
+- Duplicate entries must NOT be automatically classified as bugs.
+- A finding must verify violation of an explicit exposure rule before being classified as a duplicate defect.
+
+### Profit-Taking Philosophy
+
+Profit-taking before market settlement is **valid and expected**:
+
+```
+Open Position → Opportunity exists → Take profit → Close position
+```
+
+The system does not require waiting until event resolution or market expiry. Audits must not classify early profit-taking as a defect.
+
+### Audit Assumptions
+
+Before reporting a bug, determine whether the finding comes from:
+
+- **(A) Prediction-market logic** — valid basis for a finding
+- **(B) Traditional spot/futures-trading assumptions** — invalid basis unless also applicable to prediction markets
+
+The following assumptions are **invalid** for LimwanpoPolymarketAI:
+- One market = one position
+- Must hold until expiry
+- Must hold until settlement
+- Early profit-taking is wrong
+- Multiple entries are automatically bugs
 
 ---
 

@@ -9,16 +9,8 @@
 
 ## IMPORTANT: LimwanpoPolymarketAI Is A Polymarket Quant Bot
 
-**LimwanpoPolymarketAI is NOT a crypto trading bot, Binance futures bot, spot trading bot, arbitrage bot, or market-making bot.**
-
-LimwanpoPolymarketAI is a **Polymarket Quant Bot** — a prediction-market engine that predicts outcomes and executes YES/NO contracts on Polymarket.
-
-**What is traded:** YES and NO prediction contracts on Polymarket.  
-**What is NOT traded:** BTC, ETH, SOL, or BNB directly.  
-**External data (Binance, Chainlink):** Signal inputs only — not traded assets.  
-**Target markets:** BTC Up/Down, ETH Up/Down, SOL Up/Down, BNB Up/Down on Polymarket.
-
-**Audit rule:** All findings must be evaluated against prediction-market logic, not futures or spot trading assumptions.
+LimwanpoPolymarketAI is a Polymarket Quant Bot — a prediction-market engine, not a crypto trading bot.  
+See **README.md** for full business-model details, audit assumptions, and architecture philosophy.
 
 ---
 
