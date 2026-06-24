@@ -96,8 +96,20 @@ async def init_db() -> None:
     Create all tables, then apply additive column migrations for tables that
     already exist.  Uses ADD COLUMN IF NOT EXISTS so it is safe to run on
     every startup — it is a no-op when the column already exists.
+    Each migration runs in its own savepoint so a failure doesn't abort the
+    entire transaction.
     """
+    import app.models  # noqa: F401 — ensure all ORM models are registered
     from sqlalchemy import text
+
+    async def run_migration(conn, stmt: str, label: str) -> None:
+        try:
+            await conn.execute(text("SAVEPOINT _mig"))
+            await conn.execute(text(stmt))
+            await conn.execute(text("RELEASE SAVEPOINT _mig"))
+        except Exception as exc:
+            await conn.execute(text("ROLLBACK TO SAVEPOINT _mig"))
+            logger.debug(f"{label} migration skipped", stmt=stmt, error=str(exc))
 
     try:
         engine = get_engine()
@@ -106,103 +118,38 @@ async def init_db() -> None:
 
             # Sprint 4: add classification count columns to discovery_runs
             # (table already existed from Sprint 3 without these columns)
-            sprint4_migrations = [
-                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS updown_count INTEGER NOT NULL DEFAULT 0",
-                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS price_range_count INTEGER NOT NULL DEFAULT 0",
-                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS news_event_count INTEGER NOT NULL DEFAULT 0",
-                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS politics_count INTEGER NOT NULL DEFAULT 0",
-                "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS other_count INTEGER NOT NULL DEFAULT 0",
+            all_migrations = [
+                # Sprint 4: classification count columns on discovery_runs
+                ("sprint4", "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS updown_count INTEGER NOT NULL DEFAULT 0"),
+                ("sprint4", "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS price_range_count INTEGER NOT NULL DEFAULT 0"),
+                ("sprint4", "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS news_event_count INTEGER NOT NULL DEFAULT 0"),
+                ("sprint4", "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS politics_count INTEGER NOT NULL DEFAULT 0"),
+                ("sprint4", "ALTER TABLE discovery_runs ADD COLUMN IF NOT EXISTS other_count INTEGER NOT NULL DEFAULT 0"),
+                # Sprint 7: market_universe indexes
+                ("sprint7", "CREATE INDEX IF NOT EXISTS ix_market_universe_status ON market_universe (status)"),
+                ("sprint7", "CREATE INDEX IF NOT EXISTS ix_market_universe_end_time ON market_universe (end_time)"),
+                # Sprint 9: price snapshot index
+                ("sprint9", "CREATE INDEX IF NOT EXISTS ix_mps_condition_captured ON market_price_snapshots (condition_id, captured_at DESC)"),
+                # Layer 8: positions indexes
+                ("layer8", "CREATE INDEX IF NOT EXISTS ix_position_status ON positions (status)"),
+                ("layer8", "CREATE INDEX IF NOT EXISTS ix_position_condition_id ON positions (condition_id)"),
+                # Layer 9: risk_events indexes
+                ("layer9", "CREATE INDEX IF NOT EXISTS ix_risk_event_result ON risk_events (result)"),
+                ("layer9", "CREATE INDEX IF NOT EXISTS ix_risk_event_decision_id ON risk_events (decision_id)"),
+                # Exit engine: trade_decisions columns
+                ("exit_engine", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS target_position_id INTEGER NULL"),
+                ("exit_engine", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS exit_reason VARCHAR(64) NULL"),
+                ("exit_engine", "CREATE INDEX IF NOT EXISTS ix_td_target_position_id ON trade_decisions (target_position_id) WHERE target_position_id IS NOT NULL"),
+                # Layer 13: position sizing
+                ("layer13", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS position_size_usdc DOUBLE PRECISION NULL"),
+                # Layer 12: exit audit trail on positions
+                ("layer12", "ALTER TABLE positions ADD COLUMN IF NOT EXISTS close_reason VARCHAR(64) NULL"),
+                ("layer12", "ALTER TABLE positions ADD COLUMN IF NOT EXISTS exit_price DOUBLE PRECISION NULL"),
+                ("layer12", "ALTER TABLE positions ADD COLUMN IF NOT EXISTS close_decision_id INTEGER NULL"),
+                ("layer12", "ALTER TABLE positions ADD COLUMN IF NOT EXISTS close_order_id INTEGER NULL"),
             ]
-            for stmt in sprint4_migrations:
-                try:
-                    await conn.execute(text(stmt))
-                except Exception as col_exc:
-                    logger.debug("Column migration skipped", stmt=stmt, error=str(col_exc))
-
-            # Sprint 7: market_universe table is created by create_all above.
-            # Add updated_at index for efficient stale-market queries if not present.
-            sprint7_migrations = [
-                "CREATE INDEX IF NOT EXISTS ix_market_universe_status ON market_universe (status)",
-                "CREATE INDEX IF NOT EXISTS ix_market_universe_end_time ON market_universe (end_time)",
-            ]
-            for stmt in sprint7_migrations:
-                try:
-                    await conn.execute(text(stmt))
-                except Exception as col_exc:
-                    logger.debug("Sprint 7 migration skipped", stmt=stmt, error=str(col_exc))
-
-            # Sprint 9: market_price_snapshots created by create_all above.
-            # Add performance indexes for common query patterns.
-            sprint9_migrations = [
-                "CREATE INDEX IF NOT EXISTS ix_mps_condition_captured ON market_price_snapshots (condition_id, captured_at DESC)",
-            ]
-            for stmt in sprint9_migrations:
-                try:
-                    await conn.execute(text(stmt))
-                except Exception as col_exc:
-                    logger.debug("Sprint 9 migration skipped", stmt=stmt, error=str(col_exc))
-
-            # Layer 8: positions table created by create_all above.
-            # Indexes declared in the model; ensure status index is present for
-            # the open-position filter that runs every 30 s.
-            layer8_migrations = [
-                "CREATE INDEX IF NOT EXISTS ix_position_status ON positions (status)",
-                "CREATE INDEX IF NOT EXISTS ix_position_condition_id ON positions (condition_id)",
-            ]
-            for stmt in layer8_migrations:
-                try:
-                    await conn.execute(text(stmt))
-                except Exception as col_exc:
-                    logger.debug("Layer 8 migration skipped", stmt=stmt, error=str(col_exc))
-
-            # Layer 9: risk_events table created by create_all above.
-            # Add indexes for common query patterns.
-            layer9_migrations = [
-                "CREATE INDEX IF NOT EXISTS ix_risk_event_result ON risk_events (result)",
-                "CREATE INDEX IF NOT EXISTS ix_risk_event_decision_id ON risk_events (decision_id)",
-            ]
-            for stmt in layer9_migrations:
-                try:
-                    await conn.execute(text(stmt))
-                except Exception as col_exc:
-                    logger.debug("Layer 9 migration skipped", stmt=stmt, error=str(col_exc))
-
-            # Exit engine: add target_position_id and exit_reason to trade_decisions.
-            # ADD COLUMN IF NOT EXISTS is a no-op when the column already exists.
-            exit_engine_migrations = [
-                "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS target_position_id INTEGER NULL",
-                "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS exit_reason VARCHAR(64) NULL",
-                "CREATE INDEX IF NOT EXISTS ix_td_target_position_id ON trade_decisions (target_position_id) WHERE target_position_id IS NOT NULL",
-            ]
-            for stmt in exit_engine_migrations:
-                try:
-                    await conn.execute(text(stmt))
-                except Exception as col_exc:
-                    logger.debug("Exit engine migration skipped", stmt=stmt, error=str(col_exc))
-
-            # Layer 13: add position_size_usdc to trade_decisions.
-            layer13_migrations = [
-                "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS position_size_usdc DOUBLE PRECISION NULL",
-            ]
-            for stmt in layer13_migrations:
-                try:
-                    await conn.execute(text(stmt))
-                except Exception as col_exc:
-                    logger.debug("Layer 13 migration skipped", stmt=stmt, error=str(col_exc))
-
-            # Layer 12: add exit audit trail columns to positions table.
-            # ADD COLUMN IF NOT EXISTS is a no-op when the column already exists.
-            layer12_migrations = [
-                "ALTER TABLE positions ADD COLUMN IF NOT EXISTS close_reason VARCHAR(64) NULL",
-                "ALTER TABLE positions ADD COLUMN IF NOT EXISTS exit_price DOUBLE PRECISION NULL",
-                "ALTER TABLE positions ADD COLUMN IF NOT EXISTS close_decision_id INTEGER NULL",
-                "ALTER TABLE positions ADD COLUMN IF NOT EXISTS close_order_id INTEGER NULL",
-            ]
-            for stmt in layer12_migrations:
-                try:
-                    await conn.execute(text(stmt))
-                except Exception as col_exc:
-                    logger.debug("Layer 12 migration skipped", stmt=stmt, error=str(col_exc))
+            for label, stmt in all_migrations:
+                await run_migration(conn, stmt, label)
 
         logger.info("Database tables initialised")
     except Exception as exc:
