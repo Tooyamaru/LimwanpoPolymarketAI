@@ -59,40 +59,50 @@ These are prediction markets — not spot assets, not futures contracts, not per
 
 LimwanpoPolymarketAI is a **Quant Bot**, not a directional signal bot.
 
-The goal is NOT: *"Predict if BTC goes up."*  
-The goal IS: *"Detect probability mispricing."*
+The goal is NOT: *"Predict if BTC goes up or down."*  
+The goal IS: *"Identify high-probability profitable opportunities on Polymarket using quantitative analysis."*
 
-The objective is to identify **pricing inefficiencies** between:
+Decision-making draws from multiple inputs:
 
-- **(A)** The probability implied by current Polymarket market prices
-- **(B)** The probability estimated by LimwanpoPolymarketAI internal models
+| Input Category | Examples |
+|---|---|
+| Price action | Current bid/ask, mid price, price movement |
+| Trend analysis | Short-term and medium-term directional momentum |
+| Volatility analysis | Spread compression, price variance |
+| Statistical models | Historical outcome rates, base rates |
+| Confidence scoring | Signal strength, data quality |
+| Opportunity scoring | Composite score across all signals |
+| Probability estimation | Model-estimated outcome probability |
+| Market pricing analysis | Polymarket implied probability from CLOB |
 
-The system evaluates both directions of mispricing:
+**Probability mispricing is one important signal — it is NOT the only signal.**
 
-**Example 1 — Market underprices YES (BUY YES opportunity):**
+Future development must not assume all decisions originate solely from probability mispricing calculations.
 
+**Example of probability mispricing analysis (one component among many):**
+
+Market underprices YES:
 ```
 Market YES implied probability:   40%
 Model estimated probability:      68%
-Edge:                            +28%  →  BUY YES
+Edge:                            +28%  →  signal toward BUY YES
 ```
 
-**Example 2 — Market overprices YES (BUY NO opportunity):**
-
+Market overprices YES:
 ```
 Market YES implied probability:   95%
 Model estimated probability:      80%
-Edge:                            -15%  →  BUY NO
+Edge:                            -15%  →  signal toward BUY NO
 ```
 
-In Example 2, even though the model agrees the event is *likely* (80%), buying YES is still a **bad trade** — because the market has already priced in 95%. The model believes YES is *less likely* than the market implies, creating an edge on the NO side.
+In the second example, even though the model agrees the event is *likely* (80%), the market has already priced in 95% — creating edge on the NO side. The system detects mispricing in both directions.
 
-**The system does NOT operate on simple directional logic such as:**
+**The system does NOT operate on simple directional logic:**
 
 > "BTC going up → BUY YES"  
 > "BTC going down → BUY NO"
 
-That is a directional price-movement bot. LimwanpoPolymarketAI is a **probability mispricing engine** — it searches for markets where Polymarket's implied probability diverges meaningfully from the model's estimated true probability. The underlying asset direction is one input into that probability estimate, not the sole decision criterion.
+That is a directional price-movement bot. LimwanpoPolymarketAI is a **Polymarket Quant Bot** — it uses multi-factor quantitative analysis to identify high-probability opportunities on Polymarket prediction markets. Probability mispricing, trend signals, volatility patterns, and confidence scores all contribute to the final decision. No single factor is the sole criterion.
 
 ### Position & Exposure Philosophy
 

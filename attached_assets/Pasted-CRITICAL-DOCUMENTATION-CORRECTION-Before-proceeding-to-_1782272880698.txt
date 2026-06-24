@@ -1,0 +1,159 @@
+CRITICAL DOCUMENTATION CORRECTION
+
+Before proceeding to Layer 11, update all documentation so it accurately reflects the actual purpose of LimwanpoPolymarketAI.
+
+IMPORTANT:
+
+Do NOT describe LimwanpoPolymarketAI as a pure "Probability Mispricing Engine".
+
+That description is incomplete and may cause future development decisions to drift away from the intended architecture.
+
+==================================================
+PROJECT IDENTITY
+================
+
+Project Name:
+LimwanpoPolymarketAI
+
+Project Type:
+Polymarket Quant Bot
+
+LimwanpoPolymarketAI is NOT:
+
+* Binance trading bot
+* Spot trading bot
+* Futures trading bot
+* Arbitrage bot
+* Market maker
+* High-frequency trading system
+
+==================================================
+CORE BUSINESS MODEL
+===================
+
+The system participates in Polymarket prediction markets.
+
+The traded instruments are:
+
+* YES contracts
+* NO contracts
+
+The system does NOT trade:
+
+* BTC
+* ETH
+* SOL
+* XRP
+
+BTC, ETH, SOL and XRP are prediction targets only.
+
+==================================================
+ROLE OF EXTERNAL DATA
+=====================
+
+Binance:
+Used as market intelligence and signal source.
+
+Chainlink:
+Used as reference and validation source.
+
+Neither Binance nor Chainlink are execution venues.
+
+All execution occurs through Polymarket.
+
+==================================================
+QUANT PHILOSOPHY
+================
+
+The objective is NOT simply to predict whether BTC will go up or down.
+
+The objective is to identify high-probability profitable opportunities on Polymarket using quantitative analysis.
+
+Decision making may include:
+
+* Price action
+* Trend analysis
+* Momentum analysis
+* Volatility analysis
+* Historical behavior
+* Statistical models
+* Confidence scoring
+* Opportunity scoring
+* Probability estimation
+* Market pricing analysis
+
+Probability mispricing is one signal.
+
+It is NOT the only signal.
+
+Future development must not assume that all decisions originate solely from probability mispricing calculations.
+
+==================================================
+POSITION PHILOSOPHY
+===================
+
+Multiple positions may exist simultaneously.
+
+Multiple entries on the same market may be valid.
+
+Exposure management is more important than position count.
+
+Do not assume:
+
+"One market = one position"
+
+unless explicitly defined by future risk rules.
+
+==================================================
+EXIT PHILOSOPHY
+===============
+
+Positions do NOT need to remain open until settlement.
+
+Profit-taking before event resolution is valid.
+
+Early exits are expected behavior.
+
+The system should be capable of:
+
+* Opening positions
+* Scaling positions
+* Reducing positions
+* Closing positions before settlement
+
+==================================================
+AUDIT ASSUMPTIONS
+=================
+
+All future audits must evaluate the system as:
+
+"Polymarket Quant Bot"
+
+NOT as:
+
+* Spot trading system
+* Futures trading system
+* Binance trading bot
+* Traditional crypto exchange bot
+
+Any audit findings based solely on spot/futures assumptions should be rejected unless directly applicable to Polymarket prediction markets.
+
+==================================================
+DOCUMENT STRUCTURE
+==================
+
+README.md:
+Contains the full business model and architecture philosophy.
+
+PROJECT_STATUS.md:
+Contains only a short reference pointing to README.md.
+
+ROADMAP_NEXT_PHASE.md:
+Contains only a short architecture reminder pointing to README.md.
+
+NEXT_BUILD_TASKS.md:
+Contains only concise development rules pointing to README.md.
+
+Do not duplicate large business-model sections across multiple documents.
+
+README.md is the single source of truth.
