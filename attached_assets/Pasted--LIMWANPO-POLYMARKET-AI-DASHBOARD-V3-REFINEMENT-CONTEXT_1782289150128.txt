@@ -1,0 +1,392 @@
+# LIMWANPO POLYMARKET AI — DASHBOARD V3 REFINEMENT
+
+## CONTEXT
+
+Dashboard V2 is already deployed.
+
+DO NOT redesign from scratch.
+
+DO NOT change the overall layout.
+
+DO NOT add new pages.
+
+DO NOT add sidebars.
+
+DO NOT add tabs.
+
+DO NOT add menus.
+
+This task is a refinement of the existing V2 dashboard.
+
+The goal is to make the dashboard more useful for operating Limwanpo Polymarket AI in real trading conditions.
+
+---
+
+# PROJECT CONTEXT
+
+This is NOT a generic trading bot.
+
+This is NOT a crypto exchange dashboard.
+
+This is NOT a portfolio management system.
+
+Universe is permanently fixed:
+
+BTC Up/Down 5M
+BTC Up/Down 15M
+BTC Up/Down 1H
+
+ETH Up/Down 5M
+ETH Up/Down 15M
+ETH Up/Down 1H
+
+SOL Up/Down 5M
+SOL Up/Down 15M
+SOL Up/Down 1H
+
+XRP Up/Down 5M
+XRP Up/Down 15M
+XRP Up/Down 1H
+
+Total:
+
+12 markets only.
+
+Never design for more than 12 markets.
+
+---
+
+# PRIMARY GOAL
+
+When opening the dashboard, the operator must instantly know:
+
+1. Which market currently has the best opportunity.
+2. Which direction the AI prefers.
+3. Whether a trade is currently active.
+4. Whether the system is healthy.
+5. Whether capital protection is active.
+
+Nothing else.
+
+---
+
+# V3 CHANGE #1
+
+HOT MARKET PANEL
+
+Add a dedicated panel above the Opportunity Radar.
+
+This becomes the highest-priority information block.
+
+Display:
+
+HOT MARKET
+
+Example:
+
+BTC 15M YES
+SCORE 92
+
+or
+
+ETH 1H NO
+SCORE 95
+
+The selected market must be:
+
+Highest opportunity score among all 12 markets.
+
+---
+
+If no market has score >= 85:
+
+Display:
+
+NO TRADE READY
+
+instead of showing a market.
+
+---
+
+Styling:
+
+Large text.
+
+Cyberpunk glow.
+
+Centered.
+
+Immediately visible.
+
+This should be the first thing the operator sees.
+
+---
+
+# V3 CHANGE #2
+
+SHOW SCORE INSIDE RADAR NODES
+
+Current radar nodes only show:
+
+Asset
+Timeframe
+
+This is insufficient.
+
+Each radar node must display:
+
+Asset
+
+Timeframe
+
+Score
+
+Example:
+
+BTC
+15M
+92
+
+or
+
+ETH
+1H
+88
+
+Do not force the user to look at the left panel.
+
+The radar itself must communicate opportunity strength.
+
+---
+
+# V3 CHANGE #3
+
+SHOW DIRECTION INSIDE RADAR
+
+Each node must visibly display:
+
+YES
+
+or
+
+NO
+
+Example:
+
+BTC
+15M
+YES
+92
+
+---
+
+ETH
+1H
+NO
+95
+
+Direction is equally important as score.
+
+The operator must not need to inspect another panel.
+
+---
+
+# V3 CHANGE #4
+
+COLOR BASED ON DIRECTION
+
+Current coloring is based only on score.
+
+Improve it.
+
+Direction should be visible immediately.
+
+Rules:
+
+YES candidate
+
+Green family
+
+NO candidate
+
+Red/Magenta family
+
+Inactive market
+
+Grey
+
+---
+
+Example:
+
+BTC 15M YES score 92
+
+Bright Green
+
+---
+
+ETH 1H NO score 95
+
+Bright Magenta
+
+---
+
+BTC 5M score 24
+
+Dark Grey
+
+---
+
+# V3 CHANGE #5
+
+RADAR VISUAL PRIORITY
+
+The Opportunity Radar is now the heart of the system.
+
+Increase its visual dominance.
+
+Reduce unused empty space.
+
+Increase node size slightly.
+
+Increase center radar area.
+
+Improve readability.
+
+---
+
+# V3 CHANGE #6
+
+ACTIVE POSITION EMPTY STATE
+
+Current:
+
+NO OPEN POSITIONS
+
+Replace with:
+
+WAITING FOR SIGNAL
+
+Reason:
+
+The AI is active.
+
+The system is monitoring.
+
+It is not idle.
+
+Add subtle animation.
+
+Do not add flashy effects.
+
+---
+
+# V3 CHANGE #7
+
+POLYMARKET IDENTITY
+
+Add explicit identity text.
+
+Current dashboard still looks like a generic trading system.
+
+Add a small label:
+
+POLYMARKET UP/DOWN MARKETS
+
+Somewhere near the header.
+
+Do not make it large.
+
+Do not make it distracting.
+
+Purpose:
+
+Immediately identify the application.
+
+---
+
+# V3 CHANGE #8
+
+LEFT PANEL CLEANUP
+
+Keep the 12 market list.
+
+But reduce visual dominance.
+
+The Opportunity Radar must remain the primary focus.
+
+The left panel is secondary.
+
+Do not remove it.
+
+Do not expand it.
+
+Slightly reduce spacing if needed.
+
+---
+
+# DO NOT CHANGE
+
+Do not change:
+
+Performance cards
+
+WIN RATE
+
+NET PNL
+
+TRADES
+
+MAX DD
+
+---
+
+Do not change:
+
+Capital Protection section
+
+---
+
+Do not change:
+
+System Health section
+
+---
+
+Do not change:
+
+Single-screen layout
+
+---
+
+Do not add:
+
+Sharpe Ratio
+
+Profit Factor
+
+Expectancy
+
+Advanced analytics
+
+Extra charts
+
+Extra graphs
+
+Portfolio breakdowns
+
+Developer metrics
+
+---
+
+# SUCCESS CRITERIA
+
+When the operator opens the dashboard, they should be able to answer within 3 seconds:
+
+1. Is there a trade opportunity?
+2. Which market?
+3. YES or NO?
+4. What score?
+5. Is the system healthy?
+
+without reading any table.
