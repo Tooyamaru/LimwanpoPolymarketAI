@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api.v1.analytics import router as analytics_router
 from app.api.v1.classifier import router as classifier_router
 from app.api.v1.discovery import router as discovery_router
 from app.api.v1.health import router as health_router
@@ -33,3 +34,4 @@ api_router.include_router(orders_router)
 api_router.include_router(positions_router)
 api_router.include_router(risk_router)
 api_router.include_router(portfolio_router)
+api_router.include_router(analytics_router)

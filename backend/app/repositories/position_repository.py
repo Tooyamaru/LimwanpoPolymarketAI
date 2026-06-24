@@ -108,6 +108,16 @@ async def get_position_by_order(
     return result.scalar_one_or_none()
 
 
+async def get_closed_positions(session: AsyncSession) -> list[Position]:
+    """Return all CLOSED positions ordered by closed_at ascending (for equity curve)."""
+    result = await session.execute(
+        select(Position)
+        .where(Position.status == "CLOSED")
+        .order_by(Position.closed_at)
+    )
+    return list(result.scalars().all())
+
+
 async def get_total_open_exposure(session: AsyncSession) -> float:
     """Return sum(quantity * entry_price) across all OPEN positions."""
     result = await session.execute(
