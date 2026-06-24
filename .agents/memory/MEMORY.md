@@ -16,3 +16,4 @@
 - [Portfolio Reporting Layer 10](portfolio-layer10.md) — Layer 10 complete; 5 read-only endpoints; repository/service/schemas/router pattern; 35 tests pass; version bumped to 0.10.0
 - [Polymarket business model](polymarket-business-model.md) — LimwanpoAI: prediction market only; CLOSE_POSITION valid decision type; BNB target asset (settings shows XRP); multiple entries per market allowed by exposure rules not position count
 - [Exit Engine design](exit-engine-design.md) — Layer 11 complete; ExitEngine→RiskEngine auto-approve→ExecutionEngine close path; 4 triggers; exit price = bid never mid
+- [Cyberpunk dashboard](dashboard.md) — single-file backend/app/static/index.html; StaticFiles mounted in main.py via Path(__file__).parent/"static"; root GET "/" → RedirectResponse("/static/index.html")
