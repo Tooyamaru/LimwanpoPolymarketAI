@@ -1,0 +1,296 @@
+# LIMWANPO AI — LAYER 14: PORTFOLIO RISK MANAGEMENT
+
+Implement Layer 14 exactly as specified below.
+
+IMPORTANT:
+
+* Read existing code first before modifying anything.
+* Do not assume file structures.
+* Preserve all existing behavior from Layers 1–13.
+* This layer must only add portfolio-level risk controls.
+* Existing position sizing (Layer 13) must remain unchanged.
+* Existing Exit Engine (Layer 11) must remain unchanged.
+* Existing Position Lifecycle (Layer 12) must remain unchanged.
+
+---
+
+## OBJECTIVE
+
+Prevent excessive portfolio exposure.
+
+Currently Risk Engine only evaluates individual trade decisions.
+
+We need a second level of protection that evaluates the entire portfolio before allowing a new position.
+
+---
+
+# NEW SETTINGS
+
+Add to:
+
+backend/app/config/settings.py
+
+```python
+PORTFOLIO_MAX_EXPOSURE_USDC = 200.0
+PORTFOLIO_MAX_OPEN_POSITIONS = 5
+PORTFOLIO_MAX_PER_ASSET_USDC = 100.0
+PORTFOLIO_MAX_PER_TIMEFRAME_POSITIONS = 3
+```
+
+---
+
+# NEW RISK RULES
+
+Apply ONLY to:
+
+```python
+OPEN_LONG_YES
+OPEN_LONG_NO
+```
+
+Do NOT apply to:
+
+```python
+CLOSE_POSITION
+```
+
+Exit decisions must continue bypassing all risk checks.
+
+---
+
+# RULE 1
+
+MAX PORTFOLIO EXPOSURE
+
+Calculate:
+
+```python
+sum(
+    quantity * entry_price
+    for all OPEN positions
+)
+```
+
+If:
+
+```python
+current_exposure + decision.position_size_usdc
+>
+PORTFOLIO_MAX_EXPOSURE_USDC
+```
+
+Reject.
+
+Reason:
+
+```python
+PORTFOLIO_EXPOSURE_LIMIT
+```
+
+---
+
+# RULE 2
+
+MAX OPEN POSITIONS
+
+Count:
+
+```python
+status == OPEN
+```
+
+If:
+
+```python
+open_positions_count
+>=
+PORTFOLIO_MAX_OPEN_POSITIONS
+```
+
+Reject.
+
+Reason:
+
+```python
+PORTFOLIO_POSITION_LIMIT
+```
+
+---
+
+# RULE 3
+
+MAX EXPOSURE PER ASSET
+
+Example:
+
+BTC already has
+
+```python
+75 USDC
+```
+
+New trade:
+
+```python
+50 USDC
+```
+
+Total:
+
+```python
+125 USDC
+```
+
+If:
+
+```python
+asset_exposure + decision.position_size_usdc
+>
+PORTFOLIO_MAX_PER_ASSET_USDC
+```
+
+Reject.
+
+Reason:
+
+```python
+ASSET_EXPOSURE_LIMIT
+```
+
+---
+
+# RULE 4
+
+MAX POSITIONS PER TIMEFRAME
+
+Count OPEN positions sharing:
+
+```python
+timeframe
+```
+
+If:
+
+```python
+timeframe_position_count
+>=
+PORTFOLIO_MAX_PER_TIMEFRAME_POSITIONS
+```
+
+Reject.
+
+Reason:
+
+```python
+TIMEFRAME_POSITION_LIMIT
+```
+
+---
+
+# REPOSITORY HELPERS
+
+Add helper methods if they do not already exist.
+
+Examples:
+
+```python
+get_open_positions()
+
+get_total_open_exposure()
+
+get_asset_open_exposure(asset)
+
+get_open_position_count()
+
+get_open_position_count_by_timeframe(timeframe)
+```
+
+Use existing repositories whenever possible.
+
+Avoid N+1 queries.
+
+---
+
+# RISK ENGINE CHANGES
+
+File:
+
+```python
+backend/app/services/risk_engine.py
+```
+
+Keep all existing Layer 6 rules.
+
+Add Layer 14 checks AFTER existing trade-level checks.
+
+Evaluation order:
+
+```text
+Layer 6 Rules
+    ↓
+Layer 14 Portfolio Rules
+    ↓
+ALLOW / BLOCK
+```
+
+Do not modify CLOSE_POSITION pass.
+
+The existing auto-approval path must remain:
+
+```python
+decision == "CLOSE_POSITION"
+```
+
+→ automatically approved.
+
+---
+
+# RISK EVENTS
+
+When blocked:
+
+Store reason exactly:
+
+```python
+PORTFOLIO_EXPOSURE_LIMIT
+
+PORTFOLIO_POSITION_LIMIT
+
+ASSET_EXPOSURE_LIMIT
+
+TIMEFRAME_POSITION_LIMIT
+```
+
+Use existing RiskEvent logging flow.
+
+---
+
+# LOGGING
+
+When portfolio rule blocks:
+
+```python
+logger.info(
+    "Portfolio risk block",
+    reason=reason,
+    asset=td.asset,
+    timeframe=td.timeframe,
+)
+```
+
+---
+
+# DELIVERABLES
+
+After implementation provide:
+
+1. Files modified
+2. Exact code diff
+3. Example approval scenario
+4. Example rejection scenario
+5. Verification that CLOSE_POSITION still bypasses all risk rules
+6. Verification that Layer 13 sizing still works unchanged
+7. Verification that all previous layers remain compatible
+
+```
+```

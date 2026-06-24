@@ -94,6 +94,12 @@ class Settings(BaseSettings):
     MAX_DAILY_LOSS: float = -50.0
     MAX_DAILY_TRADES: int = 20
 
+    # Portfolio risk management (Layer 14)
+    PORTFOLIO_MAX_EXPOSURE_USDC: float = 200.0
+    PORTFOLIO_MAX_OPEN_POSITIONS: int = 5
+    PORTFOLIO_MAX_PER_ASSET_USDC: float = 100.0
+    PORTFOLIO_MAX_PER_TIMEFRAME_POSITIONS: int = 3
+
     # Position sizing (Layer 13)
     POSITION_SIZE_MIN_USDC: float = 10.0
     POSITION_SIZE_MEDIUM_USDC: float = 25.0

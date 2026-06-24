@@ -1,8 +1,8 @@
 """
-Risk Engine — Layer 9.
+Risk Engine — Layers 9 + 14.
 
 Screens PENDING OPEN_LONG_YES / OPEN_LONG_NO TradeDecision rows against a
-set of portfolio-level and market-level risk rules before they reach the
+set of trade-level and portfolio-level risk rules before they reach the
 Execution Engine.
 
 Pipeline position:
@@ -10,18 +10,28 @@ Pipeline position:
   → Risk Engine   → [RISK_APPROVED | BLOCKED]
   → Execution Engine executes RISK_APPROVED decisions only
 
-Risk rules (evaluated in order; first failure wins):
+Layer 9 rules (evaluated first; first failure wins):
   1. DUPLICATE_POSITION  — an OPEN position for the same condition_id exists
   2. MAX_OPEN_POSITIONS  — total OPEN positions >= MAX_OPEN_POSITIONS
   3. MAX_EXPOSURE        — OPEN positions for this asset >= MAX_EXPOSURE_PER_ASSET
   4. DAILY_LOSS          — sum of today's unrealized PnL <= MAX_DAILY_LOSS (negative)
   5. DAILY_TRADES        — orders placed today >= MAX_DAILY_TRADES
 
+Layer 14 portfolio rules (evaluated after Layer 9; first failure wins):
+  6. PORTFOLIO_EXPOSURE_LIMIT       — total USDC at risk would exceed portfolio cap
+  7. PORTFOLIO_POSITION_LIMIT       — total open positions would exceed portfolio cap
+  8. ASSET_EXPOSURE_LIMIT           — USDC at risk in this asset would exceed asset cap
+  9. TIMEFRAME_POSITION_LIMIT       — open positions in this timeframe >= timeframe cap
+
 Settings (from config/settings.py):
-  MAX_OPEN_POSITIONS     int   default 10
-  MAX_EXPOSURE_PER_ASSET int   default 3
-  MAX_DAILY_LOSS         float default -50.0
-  MAX_DAILY_TRADES       int   default 20
+  MAX_OPEN_POSITIONS                    int   default 10
+  MAX_EXPOSURE_PER_ASSET                int   default 3
+  MAX_DAILY_LOSS                        float default -50.0
+  MAX_DAILY_TRADES                      int   default 20
+  PORTFOLIO_MAX_EXPOSURE_USDC           float default 200.0
+  PORTFOLIO_MAX_OPEN_POSITIONS          int   default 5
+  PORTFOLIO_MAX_PER_ASSET_USDC          float default 100.0
+  PORTFOLIO_MAX_PER_TIMEFRAME_POSITIONS int   default 3
 """
 
 from datetime import datetime, timezone
@@ -224,11 +234,16 @@ class RiskEngine:
         daily_loss: float,
     ) -> Optional[str]:
         """
-        Run all five risk rules.
+        Run all nine risk rules (Layer 9 + Layer 14).
+
+        Layer 9 trade-level rules are evaluated first; the four Layer 14
+        portfolio-level rules run only when all Layer 9 rules pass.
 
         Returns the reason string for the first failing rule, or None if all
         rules pass (ALLOW).
         """
+        # ── Layer 9 rules ──────────────────────────────────────────────────────
+
         # Rule 1 — DUPLICATE_POSITION
         if self._is_duplicate(td, open_positions):
             return "DUPLICATE_POSITION"
@@ -237,7 +252,7 @@ class RiskEngine:
         if len(open_positions) >= settings.MAX_OPEN_POSITIONS:
             return "MAX_OPEN_POSITIONS"
 
-        # Rule 3 — MAX_EXPOSURE (positions per asset)
+        # Rule 3 — MAX_EXPOSURE (positions per asset, by count)
         asset_positions = [p for p in open_positions if p.asset == td.asset]
         if len(asset_positions) >= settings.MAX_EXPOSURE_PER_ASSET:
             return "MAX_EXPOSURE"
@@ -249,6 +264,74 @@ class RiskEngine:
         # Rule 5 — DAILY_TRADES limit
         if daily_trades >= settings.MAX_DAILY_TRADES:
             return "DAILY_TRADES"
+
+        # ── Layer 14 portfolio rules ────────────────────────────────────────────
+        # All calculations use the pre-fetched open_positions list — no extra
+        # DB round-trips.  position_size_usdc defaults to 0.0 for legacy rows.
+
+        incoming_usdc: float = td.position_size_usdc or 0.0
+
+        # Rule 6 — PORTFOLIO_EXPOSURE_LIMIT
+        total_exposure = sum(
+            (p.quantity or 0.0) * (p.entry_price or 0.0)
+            for p in open_positions
+        )
+        if total_exposure + incoming_usdc > settings.PORTFOLIO_MAX_EXPOSURE_USDC:
+            logger.info(
+                "Portfolio risk block",
+                reason="PORTFOLIO_EXPOSURE_LIMIT",
+                asset=td.asset,
+                timeframe=td.timeframe,
+                current_exposure=round(total_exposure, 4),
+                incoming_usdc=incoming_usdc,
+                limit=settings.PORTFOLIO_MAX_EXPOSURE_USDC,
+            )
+            return "PORTFOLIO_EXPOSURE_LIMIT"
+
+        # Rule 7 — PORTFOLIO_POSITION_LIMIT
+        if len(open_positions) >= settings.PORTFOLIO_MAX_OPEN_POSITIONS:
+            logger.info(
+                "Portfolio risk block",
+                reason="PORTFOLIO_POSITION_LIMIT",
+                asset=td.asset,
+                timeframe=td.timeframe,
+                open_positions=len(open_positions),
+                limit=settings.PORTFOLIO_MAX_OPEN_POSITIONS,
+            )
+            return "PORTFOLIO_POSITION_LIMIT"
+
+        # Rule 8 — ASSET_EXPOSURE_LIMIT
+        asset_exposure = sum(
+            (p.quantity or 0.0) * (p.entry_price or 0.0)
+            for p in open_positions
+            if p.asset == td.asset
+        )
+        if asset_exposure + incoming_usdc > settings.PORTFOLIO_MAX_PER_ASSET_USDC:
+            logger.info(
+                "Portfolio risk block",
+                reason="ASSET_EXPOSURE_LIMIT",
+                asset=td.asset,
+                timeframe=td.timeframe,
+                asset_exposure=round(asset_exposure, 4),
+                incoming_usdc=incoming_usdc,
+                limit=settings.PORTFOLIO_MAX_PER_ASSET_USDC,
+            )
+            return "ASSET_EXPOSURE_LIMIT"
+
+        # Rule 9 — TIMEFRAME_POSITION_LIMIT
+        timeframe_count = sum(
+            1 for p in open_positions if p.timeframe == td.timeframe
+        )
+        if timeframe_count >= settings.PORTFOLIO_MAX_PER_TIMEFRAME_POSITIONS:
+            logger.info(
+                "Portfolio risk block",
+                reason="TIMEFRAME_POSITION_LIMIT",
+                asset=td.asset,
+                timeframe=td.timeframe,
+                timeframe_count=timeframe_count,
+                limit=settings.PORTFOLIO_MAX_PER_TIMEFRAME_POSITIONS,
+            )
+            return "TIMEFRAME_POSITION_LIMIT"
 
         return None
 

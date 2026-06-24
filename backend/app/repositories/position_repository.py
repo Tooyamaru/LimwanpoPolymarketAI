@@ -108,6 +108,43 @@ async def get_position_by_order(
     return result.scalar_one_or_none()
 
 
+async def get_total_open_exposure(session: AsyncSession) -> float:
+    """Return sum(quantity * entry_price) across all OPEN positions."""
+    result = await session.execute(
+        select(func.coalesce(func.sum(Position.quantity * Position.entry_price), 0.0))
+        .where(Position.status == "OPEN")
+    )
+    return float(result.scalar_one() or 0.0)
+
+
+async def get_asset_open_exposure(session: AsyncSession, asset: str) -> float:
+    """Return sum(quantity * entry_price) for OPEN positions on a given asset."""
+    result = await session.execute(
+        select(func.coalesce(func.sum(Position.quantity * Position.entry_price), 0.0))
+        .where(Position.status == "OPEN", Position.asset == asset)
+    )
+    return float(result.scalar_one() or 0.0)
+
+
+async def get_open_position_count(session: AsyncSession) -> int:
+    """Return the count of OPEN positions."""
+    result = await session.execute(
+        select(func.count(Position.id)).where(Position.status == "OPEN")
+    )
+    return int(result.scalar_one() or 0)
+
+
+async def get_open_position_count_by_timeframe(
+    session: AsyncSession, timeframe: str
+) -> int:
+    """Return the count of OPEN positions for a given timeframe."""
+    result = await session.execute(
+        select(func.count(Position.id))
+        .where(Position.status == "OPEN", Position.timeframe == timeframe)
+    )
+    return int(result.scalar_one() or 0)
+
+
 async def get_position_stats(session: AsyncSession) -> dict:
     """Return aggregate position statistics."""
     status_result = await session.execute(
