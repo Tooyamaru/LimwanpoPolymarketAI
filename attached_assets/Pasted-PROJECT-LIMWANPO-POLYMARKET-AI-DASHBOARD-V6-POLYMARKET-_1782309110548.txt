@@ -1,0 +1,459 @@
+PROJECT: LIMWANPO POLYMARKET AI
+
+DASHBOARD V6 – POLYMARKET TRADING DESK FINALIZATION
+
+IMPORTANT
+
+DO NOT:
+
+* Redesign dashboard from scratch
+* Change architecture
+* Change backend logic
+* Change scoring logic
+* Change engine workflow
+* Change API contracts
+* Change database schema
+* Remove existing panels
+
+The current dashboard is already acceptable.
+
+This task is ONLY:
+
+1. Improve information quality.
+2. Improve trading relevance.
+3. Improve readability.
+4. Improve operator experience.
+5. Make dashboard reflect actual Polymarket workflow.
+
+==================================================
+CORE PRINCIPLE
+
+Current dashboard behaves like:
+
+YES / NO prediction dashboard.
+
+This is not ideal.
+
+Limwanpo AI trades:
+
+POLYMARKET UP/DOWN MARKETS
+
+The dashboard must represent:
+
+MARKET DIRECTION
++
+ORDERBOOK CONDITIONS
++
+EXECUTION QUALITY
+
+NOT merely YES/NO labels.
+
+==================================================
+TASK 1
+REPLACE YES/NO TERMINOLOGY
+
+Everywhere in dashboard:
+
+Replace:
+
+YES
+NO
+
+with:
+
+UP
+DOWN
+
+Examples:
+
+BTC 5M YES
+→ BTC 5M UP
+
+ETH 15M NO
+→ ETH 15M DOWN
+
+SOL 1H YES
+→ SOL 1H UP
+
+XRP 5M NO
+→ XRP 5M DOWN
+
+Maintain:
+
+Green = UP
+
+Magenta/Red = DOWN
+
+Do not change scoring logic.
+
+Only rename market direction labels.
+
+==================================================
+TASK 2
+UPGRADE AI CURRENT TARGET PANEL
+
+Current panel lacks trading information.
+
+Keep same layout.
+
+Add more information density.
+
+Display:
+
+MARKET
+TIMEFRAME
+DIRECTION
+
+Example:
+
+BTC 5M UP
+
+Display:
+
+Score
+
+Current Price
+
+Target Price
+
+Odds
+
+Volume
+
+Spread
+
+Distance To Entry
+
+Threshold
+
+Expected Edge
+
+Status
+
+Example:
+
+BTC 5M UP
+
+Score:
+24 / 100
+
+Current Odds:
+0.505
+
+Volume:
+1333
+
+Spread:
+0.010
+
+Distance To Entry:
+61 pts
+
+Threshold:
+85
+
+Expected Edge:
++0.7%
+
+Status:
+NOT READY
+
+==================================================
+TASK 3
+ADD ORDERBOOK INFORMATION
+
+Inside AI Current Target panel.
+
+Add:
+
+BEST BID
+
+BEST ASK
+
+SPREAD
+
+Example:
+
+Best Bid:
+0.49
+
+Best Ask:
+0.51
+
+Spread:
+0.02
+
+This is critical because Polymarket execution quality matters.
+
+==================================================
+TASK 4
+ADD TOP OPPORTUNITIES PANEL
+
+Create small compact panel.
+
+Do NOT make it large.
+
+Display:
+
+TOP 3 MARKETS
+
+Example:
+
+#1 BTC 5M UP
+Score 92
+
+#2 SOL 15M UP
+Score 87
+
+#3 ETH 1H DOWN
+Score 84
+
+Update automatically.
+
+Sort by highest score.
+
+==================================================
+TASK 5
+IMPROVE PIPELINE READABILITY
+
+Current pipeline numbers are difficult to understand.
+
+Keep same design.
+
+Improve labels.
+
+Display:
+
+UNIVERSE
+SIGNALS
+OPPORTUNITIES
+STRATEGY
+RISK
+EXECUTION
+
+Example:
+
+UNIVERSE
+12
+
+SIGNALS
+4
+
+OPPORTUNITIES
+32
+
+STRATEGY
+0
+
+RISK
+0
+
+EXECUTION
+0
+
+Make labels brighter.
+
+Make counts easier to read.
+
+Do not add animations.
+
+==================================================
+TASK 6
+HEATMAP IMPROVEMENT
+
+Current heatmap is too dark.
+
+Keep same layout.
+
+Improve:
+
+Cell contrast
+
+Score visibility
+
+Direction visibility
+
+Rules:
+
+90+
+Strong green glow
+
+85-89
+Bright green
+
+70-84
+Yellow
+
+Below 70
+Dark
+
+Display:
+
+UP
+DOWN
+
+inside heatmap.
+
+Display score prominently.
+
+==================================================
+TASK 7
+TEXT READABILITY PASS
+
+Audit every text element.
+
+Current issue:
+
+Several labels are too dim.
+
+Increase readability globally.
+
+Targets:
+
+Panel titles
+
+Table headers
+
+Heatmap labels
+
+Footer labels
+
+Pipeline labels
+
+Status labels
+
+Health labels
+
+Target panel labels
+
+Position labels
+
+Log feed labels
+
+Rules:
+
+No oversized text.
+
+No layout changes.
+
+Only improve contrast.
+
+Maintain cyberpunk style.
+
+==================================================
+TASK 8
+ACTIVE POSITION PANEL
+
+If no position exists:
+
+Display:
+
+WAITING FOR SIGNAL
+
+AI IS MONITORING ALL MARKETS
+
+If position exists:
+
+Display:
+
+Market
+
+Direction
+
+Entry
+
+Current
+
+PnL %
+
+PnL $
+
+Duration
+
+Example:
+
+BTC 15M UP
+
+Entry:
+0.54
+
+Current:
+0.61
+
+PnL:
++12.8%
+
+PnL:
++$312
+
+Duration:
+00:27:13
+
+==================================================
+TASK 9
+REMOVE VISUAL NOISE
+
+Do NOT add:
+
+New particles
+
+New radar widgets
+
+New backgrounds
+
+New floating effects
+
+New decorative animations
+
+Current visual style is sufficient.
+
+Focus on information quality.
+
+==================================================
+TASK 10
+FINAL VALIDATION
+
+Verify:
+
+Dashboard loads cleanly.
+
+No JS errors.
+
+No console errors.
+
+No missing endpoints.
+
+No broken widgets.
+
+No overlapping text.
+
+No unreadable labels.
+
+No layout regressions.
+
+==================================================
+GOAL
+
+Transform dashboard from:
+
+“Cyberpunk monitor”
+
+into:
+
+“Professional Polymarket Trading Desk”
+
+while keeping:
+
+Current architecture
+
+Current layout
+
+Current logic
+
+Current backend
+
+Current scoring system
+
+Dashboard must become more useful,
+more readable,
+and more aligned with actual Polymarket trading.

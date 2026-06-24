@@ -368,7 +368,7 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
   display:flex;gap:8px;align-items:center;position:relative;z-index:2;
   background:rgba(0,0,0,.12);
 }
-.rank-lbl{font-size:6.5px;letter-spacing:2px;color:var(--td);flex-shrink:0;}
+.rank-lbl{font-size:6.5px;letter-spacing:2px;color:var(--tm);flex-shrink:0;font-weight:bold;}
 .rank-item{
   display:flex;align-items:center;gap:5px;
   background:rgba(0,0,0,.32);border:1px solid var(--b2);
@@ -377,7 +377,7 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
   animation:rank-glow 4s ease-in-out infinite;
 }
 .rank-item:hover{border-color:rgba(0,229,255,.2);background:rgba(0,229,255,.03);}
-.rank-pos{font-size:7px;color:var(--td);letter-spacing:1px;flex-shrink:0;}
+.rank-pos{font-size:7px;color:var(--tm);letter-spacing:1px;flex-shrink:0;}
 .rank-mkt{font-size:9.5px;font-weight:bold;color:var(--tw);letter-spacing:.5px;flex:1;}
 .rank-score{font-size:12px;font-weight:bold;transition:color .35s;}
 .rank-score.s95{color:var(--ng);text-shadow:0 0 7px var(--ng);}
@@ -520,7 +520,7 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
   flex-shrink:0;border-top:1px solid var(--b1);
   background:rgba(0,0,0,.18);
 }
-.leg-item{display:flex;align-items:center;gap:3px;font-size:7px;letter-spacing:1px;color:var(--td);}
+.leg-item{display:flex;align-items:center;gap:3px;font-size:7px;letter-spacing:1px;color:var(--tm);}
 .leg-dot{width:6px;height:6px;border-radius:1px;}
 
 /* ═══════════════════════════════════════════════════════
@@ -752,10 +752,12 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
 
             <!-- right stats -->
             <div class="tgt-right">
-              <div class="tgt-stats-row">
-                <div class="ts"><div class="ts-l">SCORE</div><div class="ts-v score" id="tgt-score">—</div></div>
-                <div class="ts"><div class="ts-l">YES&nbsp;PRICE</div><div class="ts-v" id="tgt-price">—</div></div>
+              <div class="tgt-stats-row" style="grid-template-columns:1fr 1fr 1fr;gap:4px 8px">
+                <div class="ts"><div class="ts-l">ODDS</div><div class="ts-v" id="tgt-price">—</div></div>
                 <div class="ts"><div class="ts-l">SPREAD</div><div class="ts-v" id="tgt-spread">—</div></div>
+                <div class="ts"><div class="ts-l">EDGE</div><div class="ts-v" id="tgt-edge">—</div></div>
+                <div class="ts"><div class="ts-l">BEST&nbsp;BID</div><div class="ts-v" id="tgt-bid">—</div></div>
+                <div class="ts"><div class="ts-l">BEST&nbsp;ASK</div><div class="ts-v" id="tgt-ask">—</div></div>
                 <div class="ts"><div class="ts-l">EXP&nbsp;MIN</div><div class="ts-v" id="tgt-expiry">—</div></div>
               </div>
               <div class="conf-wrap" style="margin-top:4px">
@@ -805,8 +807,8 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
         <div class="stage active" id="st-market">
           <div class="stage-icon">◎</div>
           <div class="stage-n" id="sn-market">12</div>
-          <div class="stage-lbl">MARKET</div>
-          <div class="stage-sub">scanned</div>
+          <div class="stage-lbl">UNIVERSE</div>
+          <div class="stage-sub">active</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-market" style="width:100%"></div></div>
             <div class="stage-pct" id="sp-market">100%</div>
@@ -817,7 +819,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
         <div class="stage" id="st-signal">
           <div class="stage-icon">≋</div>
           <div class="stage-n" id="sn-signal">—</div>
-          <div class="stage-lbl">SIGNAL</div>
+          <div class="stage-lbl">SIGNALS</div>
           <div class="stage-sub">fired</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-signal" style="width:0%"></div></div>
@@ -829,7 +831,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
         <div class="stage" id="st-opp">
           <div class="stage-icon">⊕</div>
           <div class="stage-n" id="sn-opp">—</div>
-          <div class="stage-lbl">OPPORTUNITY</div>
+          <div class="stage-lbl">OPPS</div>
           <div class="stage-sub">scored</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-opp" style="width:0%"></div></div>
@@ -842,7 +844,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
           <div class="stage-icon">⬡</div>
           <div class="stage-n" id="sn-strat">—</div>
           <div class="stage-lbl">STRATEGY</div>
-          <div class="stage-sub">decided</div>
+          <div class="stage-sub">selected</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-strat" style="width:0%"></div></div>
             <div class="stage-pct" id="sp-strat">0%</div>
@@ -929,7 +931,7 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
         <div class="pos-active" id="pos-active" style="display:none">
           <div class="pos-header">
             <span class="pos-market" id="pos-market">—</span>
-            <span class="pos-side yes" id="pos-side">YES</span>
+            <span class="pos-side yes" id="pos-side">UP</span>
           </div>
           <div class="pos-grid">
             <div class="pos-row"><div class="pos-lbl">ENTRY</div><div class="pos-val" id="pos-entry">—</div></div>
@@ -1061,7 +1063,7 @@ const mktData = {};
 const priceHistory = {};
 MARKETS.forEach(m=>{
   const k=`${m.asset}-${m.tf}`;
-  mktData[k]={score:0,dir:'NEUTRAL',mid:0.5,spread:0,conditionId:null,minutesToExpiry:null};
+  mktData[k]={score:0,dir:'NEUTRAL',mid:0.5,spread:0,bid:null,ask:null,volume:null,conditionId:null,minutesToExpiry:null};
   priceHistory[k]=Array(20).fill(0.5);
 });
 
@@ -1191,8 +1193,8 @@ function updateMarketRow(asset,tf,score,dir,mid){
   let sc='';
   if(score>=95)sc='s95';else if(score>=90)sc='s90';else if(score>=85)sc='s85';else if(score>=70)sc='s70';
   scoreEl.className='mr-score'+(sc?' '+sc:'');
-  if(dir==='BUY_YES'){dirEl.textContent='YES';dirEl.className='mr-dir yes';row.className='mrow m-yes';}
-  else if(dir==='BUY_NO'){dirEl.textContent='NO';dirEl.className='mr-dir no';row.className='mrow m-no';}
+  if(dir==='BUY_YES'){dirEl.textContent='UP';dirEl.className='mr-dir yes';row.className='mrow m-yes';}
+  else if(dir==='BUY_NO'){dirEl.textContent='DN';dirEl.className='mr-dir no';row.className='mrow m-no';}
   else{dirEl.textContent='—';dirEl.className='mr-dir';row.className='mrow';}
   const k=`${asset}-${tf}`;
   const h=priceHistory[k];h.push(mid);if(h.length>20)h.shift();
@@ -1227,7 +1229,7 @@ function updateTarget(ranked){
 
   if(!best){
     panel.className='';
-    ['tgt-market','tgt-dir','tgt-score-n','tgt-score','tgt-price','tgt-spread','tgt-expiry']
+    ['tgt-market','tgt-dir','tgt-score-n','tgt-price','tgt-spread','tgt-edge','tgt-bid','tgt-ask','tgt-expiry']
       .forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='—';});
     document.getElementById('tgt-dir').className='tgt-dir neutral';
     document.getElementById('tgt-score-n').className='tgt-score-num neutral';
@@ -1251,17 +1253,25 @@ function updateTarget(ranked){
   mktEl.className='tgt-market '+(isYes?'c-yes':isNo?'c-no':'');
 
   const dirEl=document.getElementById('tgt-dir');
-  dirEl.textContent=isYes?'YES':isNo?'NO':'—';
+  dirEl.textContent=isYes?'UP':isNo?'DOWN':'—';
   dirEl.className='tgt-dir '+(isYes?'yes':isNo?'no':'neutral');
 
   const snEl=document.getElementById('tgt-score-n');
   snEl.textContent=Math.round(best.score);
   snEl.className='tgt-score-num '+(isYes?'yes':isNo?'no':'neutral');
 
-  document.getElementById('tgt-score').textContent=Math.round(best.score);
+  const _scEl=document.getElementById('tgt-score');if(_scEl)_scEl.textContent=Math.round(best.score);
+  const _bid=best.bid??Math.max(0,best.mid-(best.spread||0)/2);
+  const _ask=best.ask??Math.min(1,best.mid+(best.spread||0)/2);
+  let _edge='—',_edgeCls='ts-v';
+  if(isYes&&_ask>0){const e=(0.5-_ask)/_ask*100;_edge=(e>=0?'+':'')+e.toFixed(1)+'%';_edgeCls='ts-v '+(e>=0?'pos':'neg');}
+  else if(isNo&&_bid>0&&_bid<1){const nA=1-_bid;const e=(0.5-nA)/nA*100;_edge=(e>=0?'+':'')+e.toFixed(1)+'%';_edgeCls='ts-v '+(e>=0?'pos':'neg');}
   document.getElementById('tgt-price').textContent=best.mid.toFixed(3);
   document.getElementById('tgt-spread').textContent=best.spread?best.spread.toFixed(3):'—';
   document.getElementById('tgt-expiry').textContent=best.minutesToExpiry!=null?Math.round(best.minutesToExpiry):'—';
+  const _eEl=document.getElementById('tgt-edge');if(_eEl){_eEl.textContent=_edge;_eEl.className=_edgeCls;}
+  const _bEl=document.getElementById('tgt-bid');if(_bEl)_bEl.textContent=_bid.toFixed(3);
+  const _aEl=document.getElementById('tgt-ask');if(_aEl)_aEl.textContent=_ask.toFixed(3);
 
   const tier=confTier(best.score);
   const tierEl=document.getElementById('conf-tier');
@@ -1305,7 +1315,7 @@ function updateRanking(ranked){
     scEl.textContent=sc;
     scEl.className='rank-score '+(sc>=95?'s95':sc>=90?'s90':sc>=85?'s85':sc>=70?'s70':'s0');
     const isY=m.dir==='BUY_YES',isN=m.dir==='BUY_NO';
-    if(isY||isN){dEl.style.display='';dEl.textContent=isY?'▲':'▼';dEl.className='rank-dir '+(isY?'yes':'no');}
+    if(isY||isN){dEl.style.display='';dEl.textContent=isY?'▲ UP':'▼ DN';dEl.className='rank-dir '+(isY?'yes':'no');}
     else dEl.style.display='none';
   }
 }
@@ -1407,19 +1417,19 @@ function updateHeatmap(ranked){
       cell.style.boxShadow='';sEl.style.color='#FFE600';sEl.style.textShadow='none';
       cell.className='hm-cell hm-data';
     } else {
-      cell.style.background='';cell.style.borderColor='';
-      cell.style.boxShadow='';sEl.style.color='';sEl.style.textShadow='';
+      cell.style.background='rgba(9,14,22,.7)';cell.style.borderColor='rgba(17,29,46,.9)';
+      cell.style.boxShadow='';sEl.style.color='#4d6e8a';sEl.style.textShadow='';
       cell.className='hm-cell hm-data';
     }
 
     if(dir==='BUY_YES'){
-      dEl.textContent='YES';dEl.style.color='rgba(57,255,20,.75)';
+      dEl.textContent='UP';dEl.style.color='rgba(57,255,20,.9)';dEl.style.fontWeight='bold';
       aEl.textContent='▲';aEl.className='hm-arrow up';
     } else if(dir==='BUY_NO'){
-      dEl.textContent='NO';dEl.style.color='rgba(255,45,149,.75)';
+      dEl.textContent='DN';dEl.style.color='rgba(255,45,149,.9)';dEl.style.fontWeight='bold';
       aEl.textContent='▼';aEl.className='hm-arrow dn';
     } else {
-      dEl.textContent='';dEl.style.color='';
+      dEl.textContent='';dEl.style.color='';dEl.style.fontWeight='';
       aEl.textContent='';aEl.className='hm-arrow';
     }
   }
@@ -1462,7 +1472,7 @@ function renderPosition(posOpen,closedPos){
       waiting.style.display='none';last.style.display='flex';
       const isY=closedPos.side==='LONG_YES';
       document.getElementById('lt-market').textContent=`${closedPos.asset||'—'} ${closedPos.timeframe||''}`;
-      const ltS=document.getElementById('lt-side');ltS.textContent=isY?'LONG YES':'LONG NO';ltS.className='pos-side '+(isY?'yes':'no');
+      const ltS=document.getElementById('lt-side');ltS.textContent=isY?'LONG UP':'LONG DOWN';ltS.className='pos-side '+(isY?'yes':'no');
       const pnl=closedPos.realized_pnl??closedPos.unrealized_pnl??0;
       const cost=(closedPos.quantity||0)*(closedPos.entry_price||1);
       const pct=cost>0?pnl/cost*100:0,sign=pnl>=0?'+':'';
@@ -1477,7 +1487,7 @@ function renderPosition(posOpen,closedPos){
   waiting.style.display='none';last.style.display='none';active.style.display='flex';
   const p=posOpen[0],isY=p.side==='LONG_YES';
   document.getElementById('pos-market').textContent=`${p.asset} ${p.timeframe}`;
-  const se=document.getElementById('pos-side');se.textContent=isY?'LONG YES':'LONG NO';se.className='pos-side '+(isY?'yes':'no');
+  const se=document.getElementById('pos-side');se.textContent=isY?'LONG UP':'LONG DOWN';se.className='pos-side '+(isY?'yes':'no');
   document.getElementById('pos-entry').textContent=(p.entry_price||0).toFixed(3);
   document.getElementById('pos-current').textContent=(p.current_price||p.entry_price||0).toFixed(3);
   document.getElementById('pos-qty').textContent='$'+((p.quantity||0)*(p.entry_price||0)).toFixed(0);
@@ -1574,9 +1584,13 @@ async function refresh(){
     prices.forEach(pr=>{
       const opp=oppMap[pr.condition_id]||{};
       const k=`${pr.asset}-${pr.timeframe}`;
+      const _mid=pr.yes_mid??0.5,_sp=opp.spread_yes??0;
       mktData[k]={
         score:opp.opportunity_score??0,dir:opp.direction??'NEUTRAL',
-        mid:pr.yes_mid??0.5,spread:opp.spread_yes??0,
+        mid:_mid,spread:_sp,
+        bid:pr.yes_bid??opp.yes_bid??Math.max(0,_mid-_sp/2),
+        ask:pr.yes_ask??opp.yes_ask??Math.min(1,_mid+_sp/2),
+        volume:opp.volume_yes??opp.volume??null,
         minutesToExpiry:opp.minutes_to_expiry??null,conditionId:pr.condition_id,
       };
       updateMarketRow(pr.asset,pr.timeframe,mktData[k].score,mktData[k].dir,mktData[k].mid);
