@@ -49,12 +49,18 @@ header{
   flex-shrink:0;
 }
 
+.logo-block{display:flex;flex-direction:column;justify-content:center;gap:1px;}
 .logo{
   font-size:14px;font-weight:bold;letter-spacing:5px;
   color:var(--cyan);
   text-shadow:0 0 12px var(--cyan),0 0 24px rgba(0,212,255,.2);
 }
 .logo em{color:var(--mag);text-shadow:0 0 12px var(--mag);font-style:normal;}
+/* V3 #7 — Polymarket identity */
+.poly-id{
+  font-size:7px;letter-spacing:3px;color:var(--td);
+  text-transform:uppercase;margin-top:1px;
+}
 
 .hbar{display:flex;gap:10px;align-items:center;}
 .pill{
@@ -74,7 +80,7 @@ header{
 /* ── MAIN ── */
 main{
   display:grid;
-  grid-template-columns:244px 1fr 228px;
+  grid-template-columns:220px 1fr 220px;
   overflow:hidden;min-height:0;
 }
 
@@ -88,7 +94,7 @@ main{
 
 .ptitle{
   font-size:9px;letter-spacing:3px;color:var(--td);
-  padding:6px 11px 5px;
+  padding:5px 11px 4px;
   border-bottom:1px solid var(--border);
   text-transform:uppercase;
   display:flex;align-items:center;gap:7px;flex-shrink:0;
@@ -98,19 +104,19 @@ main{
   background:var(--cyan);box-shadow:0 0 5px var(--cyan);
 }
 
-/* ── LEFT: MARKET LIST ── */
+/* ── LEFT: MARKET LIST — V3 #8 reduced dominance ── */
 #mkt-list{
-  flex:1;padding:6px 7px;
-  display:flex;flex-direction:column;gap:4px;
+  flex:1;padding:5px 6px;
+  display:flex;flex-direction:column;gap:3px;
   overflow-y:auto;
 }
 .agroup{display:flex;flex-direction:column;gap:2px;}
-.albl{font-size:9px;letter-spacing:2px;color:var(--td);padding:1px 3px 3px;}
+.albl{font-size:8px;letter-spacing:2px;color:var(--td);padding:1px 3px 2px;}
 .mrow{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
 
 .mcell{
   background:var(--panel);border:1px solid var(--border);
-  border-radius:2px;padding:5px 6px;position:relative;overflow:hidden;
+  border-radius:2px;padding:4px 5px;position:relative;overflow:hidden;
   transition:border-color .4s;
 }
 .mcell::before{
@@ -122,10 +128,10 @@ main{
 .mcell.cno{border-color:rgba(255,0,110,.3);}
 .mcell.cno::before{background:var(--mag);box-shadow:0 0 7px var(--mag);}
 
-.ctf{font-size:8px;color:var(--td);letter-spacing:1px;margin-bottom:2px;}
-.cmid{font-size:13px;font-weight:bold;color:var(--tw);letter-spacing:.5px;}
+.ctf{font-size:7px;color:var(--td);letter-spacing:1px;margin-bottom:2px;}
+.cmid{font-size:12px;font-weight:bold;color:var(--tw);letter-spacing:.5px;}
 
-.cbar{width:100%;height:2px;background:var(--dim);border-radius:1px;margin:4px 0 2px;}
+.cbar{width:100%;height:2px;background:var(--dim);border-radius:1px;margin:3px 0 2px;}
 .cbfill{
   height:100%;border-radius:1px;
   background:var(--cyan);box-shadow:0 0 4px var(--cyan);
@@ -135,26 +141,68 @@ main{
 .cbfill.md{background:var(--yellow);box-shadow:0 0 4px var(--yellow);}
 
 .cmeta{display:flex;justify-content:space-between;align-items:center;}
-.cscore{font-size:9px;color:var(--tm);}
-.cdir{font-size:8px;letter-spacing:.5px;padding:1px 3px;border-radius:1px;}
+.cscore{font-size:8px;color:var(--tm);}
+.cdir{font-size:7px;letter-spacing:.5px;padding:1px 3px;border-radius:1px;}
 .cdir.yes{color:var(--green);border:1px solid rgba(0,255,136,.35);}
 .cdir.no{color:var(--mag);border:1px solid rgba(255,0,110,.35);}
 .cdir.neu{color:var(--td);border:1px solid var(--dim);}
+
+/* ── CENTER: HOT MARKET PANEL — V3 #1 ── */
+#hot-panel{
+  flex-shrink:0;
+  border-bottom:1px solid var(--border2);
+  padding:8px 12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:72px;
+  background:var(--panel);
+  position:relative;overflow:hidden;
+}
+#hot-panel::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center, rgba(0,212,255,.03) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hot-label{
+  font-size:8px;letter-spacing:4px;color:var(--td);
+  text-transform:uppercase;margin-bottom:4px;
+}
+.hot-market{
+  font-size:26px;font-weight:bold;letter-spacing:6px;
+  text-shadow:0 0 20px currentColor, 0 0 40px rgba(0,0,0,.8);
+  line-height:1;
+}
+.hot-market.yes{
+  color:var(--green);
+  text-shadow:0 0 16px var(--green), 0 0 32px rgba(0,255,136,.4);
+}
+.hot-market.no{
+  color:var(--mag);
+  text-shadow:0 0 16px var(--mag), 0 0 32px rgba(255,0,110,.4);
+}
+.hot-market.none{
+  color:var(--td);font-size:14px;letter-spacing:3px;
+  text-shadow:none;
+}
+.hot-score{
+  font-size:11px;letter-spacing:3px;margin-top:4px;
+  color:var(--tm);
+}
+.hot-score em{color:var(--tw);font-style:normal;font-size:13px;}
 
 /* ── CENTER: RADAR ── */
 #radar-wrap{
   flex:1 1 0;min-height:0;
   display:flex;align-items:center;justify-content:center;
-  padding:6px;overflow:hidden;
+  padding:4px;overflow:hidden;
 }
 #radar-cv{display:block;}
 
 /* ── CENTER: PERFORMANCE ── */
 #perf-wrap{
   border-top:1px solid var(--border);
-  padding:8px 10px;flex-shrink:0;
+  padding:7px 10px;flex-shrink:0;
 }
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:7px;}
 .kpi{
   background:var(--panel);border:1px solid var(--border);
   border-radius:2px;padding:7px 10px;text-align:center;
@@ -169,7 +217,7 @@ main{
 
 .capbox{
   background:var(--panel);border:1px solid var(--border);
-  border-radius:2px;padding:8px 10px;
+  border-radius:2px;padding:7px 10px;
 }
 .cap-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .cap-title{font-size:8px;letter-spacing:2px;color:var(--td);text-transform:uppercase;}
@@ -207,13 +255,18 @@ main{
 .pos-pnl.neg{color:var(--red);text-shadow:0 0 8px rgba(255,51,85,.5);}
 .pos-pnl.neu{color:var(--tm);}
 
+/* V3 #6 — WAITING FOR SIGNAL empty state */
 .empty{
   flex:1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   color:var(--td);gap:8px;
 }
-.empty-ic{font-size:26px;opacity:.25;}
-.empty-tx{font-size:9px;letter-spacing:3px;}
+.empty-ic{font-size:22px;opacity:.35;animation:waiting-pulse 3s ease-in-out infinite;}
+.empty-tx{font-size:8px;letter-spacing:3px;}
+@keyframes waiting-pulse{
+  0%,100%{opacity:.35;transform:scale(1);}
+  50%{opacity:.6;transform:scale(1.08);}
+}
 
 /* ── RIGHT: HEALTH ── */
 #hlth-wrap{border-top:1px solid var(--border);padding:7px 7px 7px;flex-shrink:0;}
@@ -242,7 +295,11 @@ footer{
 <body>
 
 <header>
-  <div class="logo">LIMWANPO<em>//</em>AI</div>
+  <!-- V3 #7 — Polymarket identity -->
+  <div class="logo-block">
+    <div class="logo">LIMWANPO<em>//</em>AI</div>
+    <div class="poly-id">POLYMARKET&nbsp;UP/DOWN&nbsp;MARKETS</div>
+  </div>
   <div class="hbar">
     <div class="pill"><div class="dot" id="h-cdot"></div><span id="h-clbl">CAPITAL&nbsp;OK</span></div>
     <div class="pill"><div class="dot"></div><span>9&nbsp;ENGINES</span></div>
@@ -259,9 +316,17 @@ footer{
     <div id="mkt-list"></div>
   </div>
 
-  <!-- CENTER: Radar + Performance -->
+  <!-- CENTER: Hot Market + Radar + Performance -->
   <div class="col">
     <div class="ptitle">OPPORTUNITY&nbsp;RADAR&nbsp;//&nbsp;LIVE</div>
+
+    <!-- V3 #1 — Hot Market Panel -->
+    <div id="hot-panel">
+      <div class="hot-label">HOT&nbsp;MARKET</div>
+      <div class="hot-market none" id="hot-market-text">SCANNING...</div>
+      <div class="hot-score" id="hot-score-text" style="display:none"></div>
+    </div>
+
     <div id="radar-wrap">
       <canvas id="radar-cv"></canvas>
     </div>
@@ -303,9 +368,10 @@ footer{
   <div class="col">
     <div class="ptitle">ACTIVE&nbsp;POSITIONS</div>
     <div id="pos-wrap">
+      <!-- V3 #6 — WAITING FOR SIGNAL -->
       <div class="empty" id="pos-empty">
-        <div class="empty-ic">◈</div>
-        <div class="empty-tx">NO&nbsp;OPEN&nbsp;POSITIONS</div>
+        <div class="empty-ic">◉</div>
+        <div class="empty-tx">WAITING&nbsp;FOR&nbsp;SIGNAL</div>
       </div>
     </div>
     <div id="hlth-wrap">
@@ -328,10 +394,6 @@ footer{
 // ═══════════════════════════════════════════════════════
 const REFRESH = 5000;
 
-// 12 fixed markets — angular position on radar (canvas degrees, 0=right, CW)
-// Grouped: BTC top, ETH right, SOL bottom, XRP left
-// From-top (clockwise): BTC 1H=0°, BTC 15m=30°, BTC 5m=60°, ETH 5m=90°...
-// Canvas angles = from-top - 90°
 const MARKETS = [
   { asset:'BTC', tf:'1H',  ca: -90 },
   { asset:'BTC', tf:'15m', ca: -60 },
@@ -347,7 +409,6 @@ const MARKETS = [
   { asset:'XRP', tf:'1H',  ca: 240 },
 ];
 
-// Asset group labels placed at midpoint of each group (outside ring)
 const ASSET_LABELS = [
   { name:'BTC', ca: -60 },
   { name:'ETH', ca:  30 },
@@ -355,7 +416,6 @@ const ASSET_LABELS = [
   { name:'XRP', ca: 210 },
 ];
 
-// Live data store — keyed as "ASSET-TF"
 const mktData = {};
 MARKETS.forEach(m => {
   mktData[`${m.asset}-${m.tf}`] = { score:0, dir:'NEUTRAL', mid:0.5 };
@@ -401,30 +461,76 @@ function updateListCell(asset, tf, score, dir, mid){
   fill.className = 'cbfill'+(score>=90?' hi':score>=75?' md':'');
   document.getElementById(`ls-${asset}-${tf}`).textContent = Math.round(score);
   const de = document.getElementById(`ld-${asset}-${tf}`);
-  if(dir==='BUY_YES'){ de.textContent='YES↑'; de.className='cdir yes'; cell.className='mcell cyes'; }
-  else if(dir==='BUY_NO'){ de.textContent='NO↑'; de.className='cdir no'; cell.className='mcell cno'; }
+  if(dir==='BUY_YES'){ de.textContent='YES'; de.className='cdir yes'; cell.className='mcell cyes'; }
+  else if(dir==='BUY_NO'){ de.textContent='NO'; de.className='cdir no'; cell.className='mcell cno'; }
   else { de.textContent='—'; de.className='cdir neu'; cell.className='mcell'; }
+}
+
+// ═══════════════════════════════════════════════════════
+//  V3 #1 — HOT MARKET PANEL
+// ═══════════════════════════════════════════════════════
+function updateHotMarket(){
+  let best = null;
+  for(const m of MARKETS){
+    const key = `${m.asset}-${m.tf}`;
+    const d = mktData[key];
+    if(d && d.score >= 85){
+      if(!best || d.score > best.score){
+        best = { asset:m.asset, tf:m.tf, score:d.score, dir:d.dir };
+      }
+    }
+  }
+
+  const txt   = document.getElementById('hot-market-text');
+  const score = document.getElementById('hot-score-text');
+
+  if(!best){
+    txt.textContent = 'NO TRADE READY';
+    txt.className   = 'hot-market none';
+    score.style.display = 'none';
+    return;
+  }
+
+  const isYes = best.dir === 'BUY_YES';
+  const isNo  = best.dir === 'BUY_NO';
+  const dirLabel = isYes ? 'YES' : isNo ? 'NO' : '—';
+  txt.textContent = `${best.asset} ${best.tf} ${dirLabel}`;
+  txt.className   = 'hot-market ' + (isYes ? 'yes' : isNo ? 'no' : 'none');
+  score.innerHTML = `SCORE&nbsp;<em>${Math.round(best.score)}</em>`;
+  score.style.display = 'block';
 }
 
 // ═══════════════════════════════════════════════════════
 //  RADAR CANVAS
 // ═══════════════════════════════════════════════════════
-let sweepAngle = -Math.PI/2; // start at top (canvas: top = -π/2)
+let sweepAngle = -Math.PI/2;
 let lastTs = 0;
 let raf;
 
 function degToRad(d){ return d * Math.PI / 180; }
 
-function nodeColor(score){
-  if(score >= 95) return { fill:'#00ff88', glow:'rgba(0,255,136,.9)', ring:'rgba(0,255,136,.35)' };
-  if(score >= 90) return { fill:'#00cc66', glow:'rgba(0,204,102,.8)', ring:'rgba(0,204,102,.3)' };
-  if(score >= 85) return { fill:'#2299ff', glow:'rgba(34,153,255,.8)', ring:'rgba(34,153,255,.3)' };
-  return { fill:'#1a2040', glow:'rgba(30,30,70,.4)', ring:'rgba(30,30,70,.1)' };
+// V3 #4 — Direction-aware node colors
+function nodeColor(score, dir){
+  if(score < 85) return { fill:'#1a2040', glow:'rgba(30,30,70,.4)', ring:'rgba(30,30,70,.1)' };
+  const isYes = dir === 'BUY_YES';
+  const isNo  = dir === 'BUY_NO';
+  if(isYes){
+    if(score >= 95) return { fill:'#00ff88', glow:'rgba(0,255,136,.95)', ring:'rgba(0,255,136,.4)' };
+    if(score >= 90) return { fill:'#00dd77', glow:'rgba(0,221,119,.85)', ring:'rgba(0,221,119,.3)' };
+    return              { fill:'#00bb66', glow:'rgba(0,187,102,.75)', ring:'rgba(0,187,102,.25)' };
+  }
+  if(isNo){
+    if(score >= 95) return { fill:'#ff006e', glow:'rgba(255,0,110,.95)', ring:'rgba(255,0,110,.4)' };
+    if(score >= 90) return { fill:'#dd0060', glow:'rgba(221,0,96,.85)',  ring:'rgba(221,0,96,.3)' };
+    return              { fill:'#bb0050', glow:'rgba(187,0,80,.75)',  ring:'rgba(187,0,80,.25)' };
+  }
+  // high-score NEUTRAL
+  return { fill:'#2299ff', glow:'rgba(34,153,255,.8)', ring:'rgba(34,153,255,.3)' };
 }
 
+// V3 #5 — Slightly larger base node size
 function nodeBaseRadius(score){
-  // 18px at score=0, 38px at score=100
-  return 18 + (score / 100) * 20;
+  return 20 + (score / 100) * 22;
 }
 
 function drawRadar(ts){
@@ -432,16 +538,16 @@ function drawRadar(ts){
   const ctx = cv.getContext('2d');
   const W = cv.width, H = cv.height;
   const cx = W/2, cy = H/2;
-  const R  = Math.min(W, H) * 0.38; // ring radius
+  // V3 #5 — Larger radar ring
+  const R  = Math.min(W, H) * 0.41;
 
-  // delta time
   const dt = lastTs ? (ts - lastTs) / 1000 : 0;
   lastTs = ts;
 
   ctx.clearRect(0, 0, W, H);
 
   // ── background rings ──
-  const ringColors = ['rgba(0,212,255,.04)','rgba(0,212,255,.03)','rgba(0,212,255,.02)','rgba(0,212,255,.015)'];
+  const ringColors = ['rgba(0,212,255,.05)','rgba(0,212,255,.04)','rgba(0,212,255,.025)','rgba(0,212,255,.015)'];
   for(let i=4;i>=1;i--){
     ctx.beginPath();
     ctx.arc(cx, cy, R*i/4, 0, Math.PI*2);
@@ -462,11 +568,10 @@ function drawRadar(ts){
   }
 
   // ── sweep ──
-  sweepAngle += dt * (Math.PI * 2 / 9); // full rotation in 9 seconds
+  sweepAngle += dt * (Math.PI * 2 / 9);
   if(sweepAngle > Math.PI * 2 - Math.PI / 2) sweepAngle -= Math.PI * 2;
 
-  // Trail: draw thin wedge
-  const trailArc = 1.1; // radians of trail
+  const trailArc = 1.1;
   const trailSteps = 24;
   for(let i=0;i<trailSteps;i++){
     const a1 = sweepAngle - trailArc*(i+1)/trailSteps;
@@ -475,23 +580,21 @@ function drawRadar(ts){
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, R, a1, a2);
     ctx.closePath();
-    ctx.fillStyle = `rgba(0,212,255,${0.045*(1-i/trailSteps)})`;
+    ctx.fillStyle = `rgba(0,212,255,${0.05*(1-i/trailSteps)})`;
     ctx.fill();
   }
-  // Sweep line glow
   const sx = cx + R*Math.cos(sweepAngle);
   const sy = cy + R*Math.sin(sweepAngle);
   const sg = ctx.createLinearGradient(cx, cy, sx, sy);
   sg.addColorStop(0, 'rgba(0,212,255,0)');
-  sg.addColorStop(1, 'rgba(0,212,255,0.7)');
+  sg.addColorStop(1, 'rgba(0,212,255,0.75)');
   ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy);
   ctx.strokeStyle = sg; ctx.lineWidth = 1.5; ctx.stroke();
 
   // ── asset group labels ──
-  const labelR = R * 1.25;
+  const labelR = R * 1.22;
   ctx.font = 'bold 9px Courier New';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.letterSpacing = '2px';
   for(const al of ASSET_LABELS){
     const rad = degToRad(al.ca);
     const lx = cx + labelR*Math.cos(rad);
@@ -500,97 +603,119 @@ function drawRadar(ts){
     ctx.fillText(al.name, lx, ly);
   }
 
-  // ── spoke lines to nodes (subtle) ──
+  // ── spoke lines ──
   const now = Date.now() / 1000;
   for(const m of MARKETS){
     const key   = `${m.asset}-${m.tf}`;
     const data  = mktData[key] || { score:0, dir:'NEUTRAL', mid:.5 };
     const score = data.score;
+    const dir   = data.dir;
     const rad   = degToRad(m.ca);
     const nx    = cx + R*Math.cos(rad);
     const ny    = cy + R*Math.sin(rad);
-    const col   = nodeColor(score);
+    const col   = nodeColor(score, dir);
 
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(nx, ny);
-    ctx.strokeStyle = score>=85 ? 'rgba(0,212,255,.06)' : 'rgba(30,30,70,.12)';
+    ctx.strokeStyle = score>=85 ? 'rgba(0,212,255,.07)' : 'rgba(30,30,70,.12)';
     ctx.lineWidth = 0.5;
     ctx.stroke();
 
     // ── node ──
     const pulseFreq = 0.4 + (score/100) * 1.6;
-    const pulseAmt  = score>=85 ? 0.10 : 0.03;
+    const pulseAmt  = score>=85 ? 0.09 : 0.03;
     const pulse     = 1 + pulseAmt * Math.sin(now * pulseFreq * Math.PI * 2);
     const nr        = nodeBaseRadius(score) * pulse;
 
     // outer glow ring
     if(score >= 85){
       ctx.beginPath();
-      ctx.arc(nx, ny, nr + 7, 0, Math.PI*2);
+      ctx.arc(nx, ny, nr + 8, 0, Math.PI*2);
       ctx.fillStyle = col.ring;
       ctx.fill();
     }
 
     // main circle
-    ctx.shadowColor = col.glow; ctx.shadowBlur = score>=85 ? 20 : 4;
+    ctx.shadowColor = col.glow; ctx.shadowBlur = score>=85 ? 22 : 4;
     ctx.beginPath(); ctx.arc(nx, ny, nr, 0, Math.PI*2);
-    ctx.fillStyle = score>=85
-      ? (score>=90 ? col.fill : '#0a1a30')
-      : '#070710';
+    // V3 #4 — fill color reflects direction for active nodes
+    if(score >= 85){
+      ctx.fillStyle = score >= 90 ? col.fill + '33' : '#0a1020';
+    } else {
+      ctx.fillStyle = '#070710';
+    }
     ctx.fill();
     ctx.strokeStyle = col.fill;
-    ctx.lineWidth   = score>=85 ? 1.5 : 0.6;
+    ctx.lineWidth   = score>=85 ? 1.8 : 0.6;
     ctx.stroke();
     ctx.shadowBlur  = 0;
 
-    // ── node text ──
-    const scoreVal = Math.round(score);
-    const dir      = data.dir;
-
-    // Asset label (small, top of node)
-    ctx.fillStyle = score>=85 ? '#d8eaff' : '#2a3555';
-    ctx.font = `bold ${Math.max(7, Math.round(nr*0.36))}px Courier New`;
+    // ── V3 #2 + #3 — node text: asset / tf / dir / score ──
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const lineH = nr * 0.34;
 
-    if(nr >= 28){
-      // 3 lines: asset / tf / score
+    if(nr >= 34){
+      // 4 lines: asset / tf / dir / score
+      const lh = nr * 0.27;
+      const topY = ny - lh * 1.5;
+
+      // asset
       ctx.fillStyle = score>=85 ? col.fill : '#4a6090';
-      ctx.font = `bold ${Math.max(7,Math.round(nr*0.28))}px Courier New`;
-      ctx.fillText(m.asset, nx, ny - lineH);
+      ctx.font = `bold ${Math.max(7, Math.round(nr*0.26))}px Courier New`;
+      ctx.fillText(m.asset, nx, topY);
+
+      // tf
       ctx.fillStyle = score>=85 ? '#9ab0d8' : '#3a5070';
-      ctx.font = `${Math.max(6,Math.round(nr*0.24))}px Courier New`;
-      ctx.fillText(m.tf, nx, ny);
-      ctx.fillStyle = score>=90 ? '#ffffff' : score>=85 ? '#b0d0ff' : '#3a5070';
-      ctx.font = `bold ${Math.max(7,Math.round(nr*0.30))}px Courier New`;
-      ctx.fillText(scoreVal, nx, ny + lineH);
-    } else {
-      // Compact: asset + tf
+      ctx.font = `${Math.max(6, Math.round(nr*0.21))}px Courier New`;
+      ctx.fillText(m.tf, nx, topY + lh);
+
+      // direction — bold, direction-colored
+      if(dir === 'BUY_YES'){
+        ctx.fillStyle = '#00ff88';
+        ctx.font = `bold ${Math.max(7, Math.round(nr*0.24))}px Courier New`;
+        ctx.fillText('YES', nx, topY + lh*2);
+      } else if(dir === 'BUY_NO'){
+        ctx.fillStyle = '#ff006e';
+        ctx.font = `bold ${Math.max(7, Math.round(nr*0.24))}px Courier New`;
+        ctx.fillText('NO', nx, topY + lh*2);
+      }
+
+      // score
+      ctx.fillStyle = score>=90 ? '#ffffff' : score>=85 ? '#c0d8ff' : '#3a5070';
+      ctx.font = `bold ${Math.max(7, Math.round(nr*0.28))}px Courier New`;
+      ctx.fillText(Math.round(score), nx, topY + lh*3);
+
+    } else if(nr >= 25){
+      // 3 lines: asset / dir+score / tf
+      const lh = nr * 0.32;
+
       ctx.fillStyle = score>=85 ? col.fill : '#4a6090';
-      ctx.font = `bold ${Math.max(7,Math.round(nr*0.32))}px Courier New`;
+      ctx.font = `bold ${Math.max(7, Math.round(nr*0.28))}px Courier New`;
+      ctx.fillText(m.asset, nx, ny - lh);
+
+      ctx.fillStyle = score>=85 ? '#9ab0d8' : '#364d6e';
+      ctx.font = `${Math.max(6, Math.round(nr*0.23))}px Courier New`;
+      ctx.fillText(m.tf, nx, ny);
+
+      ctx.fillStyle = score>=90 ? '#ffffff' : score>=85 ? '#c0d8ff' : '#3a5070';
+      ctx.font = `bold ${Math.max(7, Math.round(nr*0.28))}px Courier New`;
+      ctx.fillText(Math.round(score), nx, ny + lh);
+
+    } else {
+      // Compact: asset / tf
+      ctx.fillStyle = score>=85 ? col.fill : '#4a6090';
+      ctx.font = `bold ${Math.max(7, Math.round(nr*0.32))}px Courier New`;
       ctx.fillText(m.asset, nx, ny - nr*0.18);
       ctx.fillStyle = score>=85 ? '#9ab0d8' : '#364d6e';
-      ctx.font = `${Math.max(6,Math.round(nr*0.26))}px Courier New`;
+      ctx.font = `${Math.max(6, Math.round(nr*0.26))}px Courier New`;
       ctx.fillText(m.tf, nx, ny + nr*0.22);
-    }
-
-    // Direction badge on high-score nodes
-    if(score>=85 && dir !== 'NEUTRAL'){
-      const badgeText = dir==='BUY_YES' ? 'YES' : 'NO';
-      const badgeCol  = dir==='BUY_YES' ? '#00ff88' : '#ff006e';
-      ctx.fillStyle = badgeCol;
-      ctx.font = `bold ${Math.round(nr*0.22)}px Courier New`;
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(badgeText, nx, ny + nr + 12);
-      ctx.textBaseline = 'middle';
     }
   }
 
   // ── center dot ──
-  ctx.shadowColor = 'rgba(0,212,255,.8)'; ctx.shadowBlur = 8;
-  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(0,212,255,.9)'; ctx.fill();
+  ctx.shadowColor = 'rgba(0,212,255,.8)'; ctx.shadowBlur = 10;
+  ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,212,255,.95)'; ctx.fill();
   ctx.shadowBlur = 0;
 
   raf = requestAnimationFrame(drawRadar);
@@ -600,7 +725,7 @@ function initRadar(){
   cancelAnimationFrame(raf);
   const wrap = document.getElementById('radar-wrap');
   const cv   = document.getElementById('radar-cv');
-  const size = Math.min(wrap.clientWidth - 12, wrap.clientHeight - 12);
+  const size = Math.min(wrap.clientWidth - 8, wrap.clientHeight - 8);
   cv.width   = size;
   cv.height  = size;
   lastTs     = 0;
@@ -686,6 +811,9 @@ async function refresh(){
       updateListCell(pr.asset, pr.timeframe, score, dir, mid);
     });
   }
+
+  // V3 #1 — update hot market panel
+  updateHotMarket();
 
   // ── positions ──
   renderPositions(posOpen);
