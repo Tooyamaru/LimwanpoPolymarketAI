@@ -12,6 +12,7 @@ from app.core.logging import get_logger, setup_logging
 from app.core.redis import close_redis
 from app.workers.engine_workers import (
     run_execution_engine_loop,
+    run_exit_engine_loop,
     run_opportunity_engine_loop,
     run_position_tracking_loop,
     run_price_refresh_loop,
@@ -130,6 +131,20 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.OPPORTUNITY_ENGINE_RUN_ON_STARTUP,
         )
 
+    # ── Exit engine (every 30 s) — between Opportunity and Strategy ──────────
+    exit_task = None
+    if settings.EXIT_ENGINE_ENABLED:
+        from app.services.exit_engine import ExitEngine
+        exit_engine_instance = ExitEngine()
+        exit_task = asyncio.create_task(
+            run_exit_engine_loop(exit_engine_instance, universe_ready=universe_ready_event)
+        )
+        app.state.exit_engine = exit_engine_instance
+        logger.info(
+            "Exit engine started",
+            interval=settings.EXIT_ENGINE_INTERVAL_SECONDS,
+        )
+
     # ── Strategy engine (every 60 s) — Layer 6 ───────────────────────────────
     strategy_task = None
     if settings.STRATEGY_ENGINE_ENABLED:
@@ -200,6 +215,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         (price_task, "price"),
         (signal_task, "signal"),
         (opportunity_task, "opportunity"),
+        (exit_task, "exit"),
         (strategy_task, "strategy"),
         (risk_task, "risk"),
         (execution_task, "execution"),

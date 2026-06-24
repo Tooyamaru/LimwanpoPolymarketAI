@@ -202,6 +202,43 @@ async def run_opportunity_engine_loop(
             logger.error("Opportunity engine periodic run failed", error=str(exc))
 
 
+# ── Exit engine (between Opportunity and Strategy) ─────────────────────────────
+
+async def run_exit_engine_loop(
+    engine,
+    universe_ready: asyncio.Event | None = None,
+) -> None:
+    """
+    Exit engine background loop.
+
+    Evaluates all OPEN positions against exit triggers and emits
+    CLOSE_POSITION TradeDecision rows every EXIT_ENGINE_INTERVAL_SECONDS
+    (default 30 s).
+
+    Runs after the Opportunity Engine (needs fresh bid prices) and before
+    the Strategy Engine in the pipeline ordering.
+    """
+    async def _one_cycle():
+        from app.core.database import get_session_factory
+        factory = get_session_factory()
+        async with factory() as session:
+            await engine.run(session)
+
+    if universe_ready is not None:
+        await universe_ready.wait()
+    try:
+        await _one_cycle()
+    except Exception as exc:
+        logger.error("Exit engine startup run failed", error=str(exc))
+
+    while True:
+        await asyncio.sleep(settings.EXIT_ENGINE_INTERVAL_SECONDS)
+        try:
+            await _one_cycle()
+        except Exception as exc:
+            logger.error("Exit engine periodic run failed", error=str(exc))
+
+
 # ── Strategy engine (Layer 6) ──────────────────────────────────────────────────
 
 async def run_strategy_engine_loop(

@@ -54,8 +54,13 @@ class RiskEngine:
         """
         Run one full risk-check cycle.
 
-        Fetches all PENDING OPEN_LONG_* decisions, runs every rule, and
-        updates each decision's status to RISK_APPROVED or BLOCKED.
+        Pass 1 — Entry decisions (OPEN_LONG_YES / OPEN_LONG_NO):
+          Fetches all PENDING entry decisions, runs all five risk rules, and
+          marks each RISK_APPROVED or BLOCKED.
+
+        Pass 2 — Exit decisions (CLOSE_POSITION):
+          Fetches all PENDING exit decisions and auto-approves them without
+          evaluating any risk rules.  Exit decisions are never blocked.
 
         Returns
         -------
@@ -63,7 +68,7 @@ class RiskEngine:
         """
         started = datetime.now(timezone.utc)
 
-        # ── Fetch PENDING actionable decisions ─────────────────────────────────
+        # ── Pass 1: PENDING entry decisions ────────────────────────────────────
         result = await session.execute(
             select(TradeDecision)
             .where(
@@ -74,72 +79,110 @@ class RiskEngine:
         )
         pending: list[TradeDecision] = list(result.scalars().all())
 
-        if not pending:
-            logger.debug("Risk engine: no pending decisions to evaluate")
-            return {
-                "evaluated": 0,
-                "allowed": 0,
-                "blocked": 0,
-                "errors": 0,
-                "duration_ms": 0,
-            }
-
-        # ── Pre-fetch shared risk state (single DB round-trip per cycle) ───────
-        open_positions = await self._get_open_positions(session)
-        daily_trades = await self._get_daily_trades_count(session)
-        daily_loss = await self._get_daily_unrealized_loss(session)
-
         allowed = 0
         blocked = 0
         errors = 0
 
-        for td in pending:
+        if pending:
+            # ── Pre-fetch shared risk state (single DB round-trip per cycle) ─────
+            open_positions = await self._get_open_positions(session)
+            daily_trades = await self._get_daily_trades_count(session)
+            daily_loss = await self._get_daily_unrealized_loss(session)
+
+            for td in pending:
+                try:
+                    block_reason = self._check_rules(
+                        td=td,
+                        open_positions=open_positions,
+                        daily_trades=daily_trades,
+                        daily_loss=daily_loss,
+                    )
+
+                    if block_reason is None:
+                        result_val = "ALLOW"
+                        new_status = "RISK_APPROVED"
+                        allowed += 1
+                    else:
+                        result_val = "BLOCK"
+                        new_status = "BLOCKED"
+                        blocked += 1
+
+                    # ── Persist risk event ─────────────────────────────────────
+                    await risk_repo.create_risk_event(
+                        session,
+                        decision_id=td.id,
+                        condition_id=td.condition_id,
+                        asset=td.asset,
+                        timeframe=td.timeframe,
+                        result=result_val,
+                        reason=block_reason,
+                        open_positions_count=len(open_positions),
+                        daily_loss=daily_loss,
+                        daily_trades=daily_trades,
+                    )
+
+                    # ── Update trade decision status ───────────────────────────
+                    td.status = new_status
+
+                    logger.info(
+                        "Risk evaluation complete",
+                        decision_id=td.id,
+                        asset=td.asset,
+                        timeframe=td.timeframe,
+                        result=result_val,
+                        reason=block_reason,
+                    )
+
+                except Exception as exc:
+                    logger.error(
+                        "Risk engine error",
+                        decision_id=td.id,
+                        asset=td.asset,
+                        error=str(exc),
+                    )
+                    errors += 1
+        else:
+            logger.debug("Risk engine: no pending entry decisions")
+
+        # ── Pass 2: PENDING exit decisions (CLOSE_POSITION) ────────────────────
+        # Exit decisions are always approved — no risk rules are evaluated.
+        exit_result = await session.execute(
+            select(TradeDecision)
+            .where(
+                TradeDecision.decision == "CLOSE_POSITION",
+                TradeDecision.status == "PENDING",
+            )
+            .order_by(TradeDecision.decided_at)
+        )
+        pending_exits: list[TradeDecision] = list(exit_result.scalars().all())
+
+        exit_approved = 0
+        for td in pending_exits:
             try:
-                block_reason = self._check_rules(
-                    td=td,
-                    open_positions=open_positions,
-                    daily_trades=daily_trades,
-                    daily_loss=daily_loss,
-                )
-
-                if block_reason is None:
-                    result_val = "ALLOW"
-                    new_status = "RISK_APPROVED"
-                    allowed += 1
-                else:
-                    result_val = "BLOCK"
-                    new_status = "BLOCKED"
-                    blocked += 1
-
-                # ── Persist risk event ─────────────────────────────────────────
+                td.status = "RISK_APPROVED"
                 await risk_repo.create_risk_event(
                     session,
                     decision_id=td.id,
                     condition_id=td.condition_id,
                     asset=td.asset,
                     timeframe=td.timeframe,
-                    result=result_val,
-                    reason=block_reason,
-                    open_positions_count=len(open_positions),
-                    daily_loss=daily_loss,
-                    daily_trades=daily_trades,
+                    result="ALLOW",
+                    reason=None,
+                    open_positions_count=0,
+                    daily_loss=0.0,
+                    daily_trades=0,
                 )
-
-                # ── Update trade decision status ───────────────────────────────
-                td.status = new_status
-
+                exit_approved += 1
                 logger.info(
-                    "Risk evaluation complete",
+                    "Exit decision auto-approved",
                     decision_id=td.id,
                     asset=td.asset,
                     timeframe=td.timeframe,
-                    result=result_val,
-                    reason=block_reason,
+                    exit_reason=td.exit_reason,
                 )
-
             except Exception as exc:
                 logger.error(
-                    "Risk engine error",
+                    "Risk engine error (exit path)",
                     decision_id=td.id,
                     asset=td.asset,
                     error=str(exc),
@@ -157,6 +200,7 @@ class RiskEngine:
             evaluated=len(pending),
             allowed=allowed,
             blocked=blocked,
+            exit_approved=exit_approved,
             errors=errors,
             duration_ms=elapsed_ms,
         )
@@ -165,6 +209,7 @@ class RiskEngine:
             "evaluated": len(pending),
             "allowed": allowed,
             "blocked": blocked,
+            "exit_approved": exit_approved,
             "errors": errors,
             "duration_ms": elapsed_ms,
         }

@@ -94,6 +94,15 @@ class Settings(BaseSettings):
     MAX_DAILY_LOSS: float = -50.0
     MAX_DAILY_TRADES: int = 20
 
+    # Exit engine (Layer between Opportunity and Strategy)
+    EXIT_ENGINE_ENABLED: bool = True
+    EXIT_ENGINE_INTERVAL_SECONDS: int = 30
+    EXIT_PROFIT_TARGET_USDC: float = 0.10
+    EXIT_STOP_LOSS_USDC: float = -0.15
+    EXIT_SIGNAL_TIMEOUT_MINUTES: int = 30
+    EXIT_EXPIRY_BUFFER_MINUTES: float = 15.0
+    EXIT_FORCE_EXPIRY_MINUTES: float = 5.0
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def normalise_db_url(cls, v: str) -> str:

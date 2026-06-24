@@ -70,6 +70,16 @@ class TradeDecision(Base):
         comment="LOW_SCORE | HIGH_SPREAD | NEUTRAL_DIRECTION",
     )
 
+    # ── Exit engine fields (populated when decision == CLOSE_POSITION) ────────
+    target_position_id: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True,
+        comment="FK → positions.id; set for CLOSE_POSITION decisions",
+    )
+    exit_reason: Mapped[Optional[str]] = mapped_column(
+        String(64), nullable=True,
+        comment="EXPIRY_EXIT | STOP_LOSS | PROFIT_TARGET | SIGNAL_INVALIDATION",
+    )
+
     # ── Timestamps ────────────────────────────────────────────────────────────
     decided_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

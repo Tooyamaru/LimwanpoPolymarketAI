@@ -1,18 +1,27 @@
 """
 Execution Engine — Layer 7 (Paper Mode).
 
-Reads PENDING OPEN_LONG_YES / OPEN_LONG_NO TradeDecision rows, simulates
-an immediate market fill, persists an Order record, then marks the
-TradeDecision as EXECUTED.
+Reads RISK_APPROVED TradeDecision rows and executes them.
 
-Paper-mode fill logic (no slippage, instant fill):
-  OPEN_LONG_YES → side=LONG_YES, fill_price = yes_ask
-  OPEN_LONG_NO  → side=LONG_NO,  fill_price = 1.0 - yes_bid
+Entry path (OPEN_LONG_YES / OPEN_LONG_NO):
+  Simulates an immediate market fill, persists an Order record, then marks
+  the TradeDecision as EXECUTED.
 
-Both yes_ask and yes_bid come directly from the TradeDecision row, which
-was populated by the Opportunity Engine from the latest CLOB snapshot.
-If price data is missing the order is skipped (not failed) and retried
-on the next cycle.
+  Paper-mode fill logic (no slippage, instant fill):
+    OPEN_LONG_YES → side=LONG_YES, fill_price = yes_ask
+    OPEN_LONG_NO  → side=LONG_NO,  fill_price = 1.0 - yes_bid
+
+Exit path (CLOSE_POSITION):
+  Loads the target position, computes the executable exit price using live
+  opportunity data (bid-side only, never mid), calls
+  position_service.close_position(), and marks the TradeDecision EXECUTED.
+
+  Exit price:
+    LONG_YES → yes_bid
+    LONG_NO  → 1 - yes_ask
+
+If required price data is missing the decision is skipped (not failed) and
+retried on the next cycle.
 """
 
 from datetime import datetime, timezone
@@ -22,6 +31,8 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
+from app.models.opportunity import Opportunity
+from app.models.position import Position
 from app.models.trade_decision import TradeDecision
 from app.repositories import order_repository as order_repo
 
@@ -42,14 +53,17 @@ class ExecutionEngine:
         """
         Execute one full paper-mode cycle.
 
+        Entry path: processes RISK_APPROVED OPEN_LONG_YES / OPEN_LONG_NO decisions.
+        Exit path:  processes RISK_APPROVED CLOSE_POSITION decisions.
+
         Returns
         -------
         dict with cycle summary statistics.
         """
         started = datetime.now(timezone.utc)
 
-        # ── Fetch PENDING actionable decisions ─────────────────────────────────
-        result = await session.execute(
+        # ── Entry path: RISK_APPROVED OPEN_LONG decisions ──────────────────────
+        entry_result = await session.execute(
             select(TradeDecision)
             .where(
                 TradeDecision.decision.in_(["OPEN_LONG_YES", "OPEN_LONG_NO"]),
@@ -57,17 +71,7 @@ class ExecutionEngine:
             )
             .order_by(TradeDecision.decided_at)
         )
-        pending: list[TradeDecision] = list(result.scalars().all())
-
-        if not pending:
-            logger.debug("Execution engine: no pending decisions to process")
-            return {
-                "decisions_processed": 0,
-                "orders_filled": 0,
-                "orders_skipped": 0,
-                "errors": 0,
-                "duration_ms": 0,
-            }
+        pending: list[TradeDecision] = list(entry_result.scalars().all())
 
         filled = 0
         skipped = 0
@@ -75,14 +79,45 @@ class ExecutionEngine:
 
         for td in pending:
             try:
-                order, did_skip = await self._execute_decision(session, td)
+                _, did_skip = await self._execute_decision(session, td)
                 if did_skip:
                     skipped += 1
                 else:
                     filled += 1
             except Exception as exc:
                 logger.error(
-                    "Execution engine error",
+                    "Execution engine error (entry path)",
+                    decision_id=td.id,
+                    asset=td.asset,
+                    timeframe=td.timeframe,
+                    error=str(exc),
+                )
+                errors += 1
+
+        # ── Exit path: RISK_APPROVED CLOSE_POSITION decisions ──────────────────
+        exit_result = await session.execute(
+            select(TradeDecision)
+            .where(
+                TradeDecision.decision == "CLOSE_POSITION",
+                TradeDecision.status == "RISK_APPROVED",
+            )
+            .order_by(TradeDecision.decided_at)
+        )
+        pending_exits: list[TradeDecision] = list(exit_result.scalars().all())
+
+        exits_closed = 0
+        exits_skipped = 0
+
+        for td in pending_exits:
+            try:
+                did_skip = await self._execute_close_decision(session, td)
+                if did_skip:
+                    exits_skipped += 1
+                else:
+                    exits_closed += 1
+            except Exception as exc:
+                logger.error(
+                    "Execution engine error (exit path)",
                     decision_id=td.id,
                     asset=td.asset,
                     timeframe=td.timeframe,
@@ -96,22 +131,138 @@ class ExecutionEngine:
             (datetime.now(timezone.utc) - started).total_seconds() * 1000
         )
 
-        logger.info(
-            "Execution engine cycle complete",
-            decisions_processed=len(pending),
-            orders_filled=filled,
-            orders_skipped=skipped,
-            errors=errors,
-            duration_ms=elapsed_ms,
-        )
+        if not pending and not pending_exits:
+            logger.debug("Execution engine: no decisions to process")
+        else:
+            logger.info(
+                "Execution engine cycle complete",
+                decisions_processed=len(pending),
+                orders_filled=filled,
+                orders_skipped=skipped,
+                exits_closed=exits_closed,
+                exits_skipped=exits_skipped,
+                errors=errors,
+                duration_ms=elapsed_ms,
+            )
 
         return {
             "decisions_processed": len(pending),
             "orders_filled": filled,
             "orders_skipped": skipped,
+            "exits_closed": exits_closed,
+            "exits_skipped": exits_skipped,
             "errors": errors,
             "duration_ms": elapsed_ms,
         }
+
+    async def _execute_close_decision(
+        self,
+        session: AsyncSession,
+        td: TradeDecision,
+    ) -> bool:
+        """
+        Execute one CLOSE_POSITION TradeDecision.
+
+        Returns True (skipped) when the position is missing, already closed,
+        or the executable exit price is unavailable.  Returns False on success.
+        """
+        from app.services.position_service import PositionService
+
+        if td.target_position_id is None:
+            logger.warning(
+                "Close decision has no target_position_id, skipping",
+                decision_id=td.id,
+            )
+            await session.execute(
+                update(TradeDecision)
+                .where(TradeDecision.id == td.id)
+                .values(status="EXECUTED")
+            )
+            return True
+
+        # ── Load target position ───────────────────────────────────────────────
+        pos_result = await session.execute(
+            select(Position).where(Position.id == td.target_position_id)
+        )
+        pos = pos_result.scalar_one_or_none()
+
+        if pos is None:
+            logger.warning(
+                "Close decision target position not found, skipping",
+                decision_id=td.id,
+                target_position_id=td.target_position_id,
+            )
+            await session.execute(
+                update(TradeDecision)
+                .where(TradeDecision.id == td.id)
+                .values(status="EXECUTED")
+            )
+            return True
+
+        if pos.status != "OPEN":
+            logger.info(
+                "Close decision target position already closed, marking EXECUTED",
+                decision_id=td.id,
+                position_id=pos.id,
+                position_status=pos.status,
+            )
+            await session.execute(
+                update(TradeDecision)
+                .where(TradeDecision.id == td.id)
+                .values(status="EXECUTED")
+            )
+            return True
+
+        # ── Load fresh opportunity data for executable exit price ──────────────
+        opp_result = await session.execute(
+            select(Opportunity).where(Opportunity.condition_id == pos.condition_id)
+        )
+        opp = opp_result.scalar_one_or_none()
+
+        if pos.side == "LONG_YES":
+            if opp is None or opp.yes_bid is None:
+                logger.warning(
+                    "Close decision: yes_bid unavailable, retrying next cycle",
+                    decision_id=td.id,
+                    position_id=pos.id,
+                    side=pos.side,
+                )
+                return True
+            exit_price = round(opp.yes_bid, 6)
+        else:  # LONG_NO
+            if opp is None or opp.yes_ask is None:
+                logger.warning(
+                    "Close decision: yes_ask unavailable, retrying next cycle",
+                    decision_id=td.id,
+                    position_id=pos.id,
+                    side=pos.side,
+                )
+                return True
+            exit_price = round(1.0 - opp.yes_ask, 6)
+
+        # ── Close the position at executable bid price ─────────────────────────
+        pos_svc = PositionService()
+        await pos_svc.close_position(session, pos.id, closing_price=exit_price)
+
+        # ── Mark trade decision as EXECUTED ────────────────────────────────────
+        await session.execute(
+            update(TradeDecision)
+            .where(TradeDecision.id == td.id)
+            .values(status="EXECUTED")
+        )
+
+        logger.info(
+            "Position closed via exit decision",
+            decision_id=td.id,
+            position_id=pos.id,
+            asset=pos.asset,
+            timeframe=pos.timeframe,
+            side=pos.side,
+            exit_price=exit_price,
+            entry_price=pos.entry_price,
+            exit_reason=td.exit_reason,
+        )
+        return False
 
     async def _execute_decision(
         self,

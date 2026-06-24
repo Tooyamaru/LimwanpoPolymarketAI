@@ -167,6 +167,19 @@ async def init_db() -> None:
                 except Exception as col_exc:
                     logger.debug("Layer 9 migration skipped", stmt=stmt, error=str(col_exc))
 
+            # Exit engine: add target_position_id and exit_reason to trade_decisions.
+            # ADD COLUMN IF NOT EXISTS is a no-op when the column already exists.
+            exit_engine_migrations = [
+                "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS target_position_id INTEGER NULL",
+                "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS exit_reason VARCHAR(64) NULL",
+                "CREATE INDEX IF NOT EXISTS ix_td_target_position_id ON trade_decisions (target_position_id) WHERE target_position_id IS NOT NULL",
+            ]
+            for stmt in exit_engine_migrations:
+                try:
+                    await conn.execute(text(stmt))
+                except Exception as col_exc:
+                    logger.debug("Exit engine migration skipped", stmt=stmt, error=str(col_exc))
+
         logger.info("Database tables initialised")
     except Exception as exc:
         logger.warning("Database init skipped — DB not reachable at startup", error=str(exc))

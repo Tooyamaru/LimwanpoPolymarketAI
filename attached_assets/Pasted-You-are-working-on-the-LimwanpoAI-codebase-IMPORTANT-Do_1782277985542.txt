@@ -1,0 +1,378 @@
+You are working on the LimwanpoAI codebase.
+
+IMPORTANT:
+
+* Do NOT redesign the architecture.
+* Do NOT introduce additional features.
+* Do NOT change any logic outside the scope below.
+* Follow the implementation plan exactly.
+* Before coding, inspect existing implementations to match project conventions.
+* Keep changes minimal and consistent with the current architecture.
+* Preserve backward compatibility.
+* Generate production-ready code only.
+
+# TASK
+
+Implement the "Minimal Exit Decision Engine" exactly as specified below.
+
+## SCOPE
+
+Implement only:
+
+1. CLOSE_POSITION decision type
+2. PROFIT_TARGET trigger
+3. STOP_LOSS trigger
+4. SIGNAL_INVALIDATION trigger
+5. EXPIRY_EXIT trigger
+6. Full pipeline:
+   ExitEngine → RiskEngine → ExecutionEngine → PositionService.close_position()
+
+Explicitly DO NOT implement:
+
+* Portfolio Decision Framework
+* Health Score
+* Rotation Logic
+* ADD_TO_POSITION
+* REDUCE_POSITION
+* Capital Allocation
+* DUPLICATE_POSITION rule changes
+
+---
+
+# FILES TO CREATE
+
+backend/app/services/exit_engine.py
+
+Responsibilities:
+
+* Evaluate all OPEN positions
+* Apply exit triggers
+* Create CLOSE_POSITION TradeDecision rows
+* Prevent duplicate exit decisions
+
+Duplicate protection:
+
+Before creating CLOSE_POSITION:
+
+SELECT count(*)
+FROM trade_decisions
+WHERE target_position_id = position.id
+AND decision = 'CLOSE_POSITION'
+AND status IN ('PENDING', 'RISK_APPROVED')
+
+If count > 0:
+
+* Skip
+* Do not create another decision
+
+---
+
+# FILES TO MODIFY
+
+## 1. backend/app/core/database.py
+
+Add migration-safe columns using:
+
+ADD COLUMN IF NOT EXISTS
+
+New columns:
+
+trade_decisions.target_position_id INTEGER NULL
+
+trade_decisions.exit_reason VARCHAR(64) NULL
+
+---
+
+## 2. backend/app/models/trade_decision.py
+
+Add:
+
+target_position_id: Optional[int]
+
+exit_reason: Optional[str]
+
+Both nullable.
+
+---
+
+## 3. backend/app/services/risk_engine.py
+
+Keep existing OPEN_LONG logic unchanged.
+
+Add second evaluation pass:
+
+Process:
+
+decision == "CLOSE_POSITION"
+status == "PENDING"
+
+For every matching decision:
+
+status = "RISK_APPROVED"
+
+Insert risk_event:
+
+result="ALLOW"
+
+No risk rules are evaluated.
+
+Exit decisions are always approved.
+
+---
+
+## 4. backend/app/services/execution_engine.py
+
+Keep entry execution path unchanged.
+
+Add second execution path:
+
+decision == "CLOSE_POSITION"
+status == "RISK_APPROVED"
+
+Flow:
+
+1. Load target position using target_position_id
+2. Verify:
+
+   * position exists
+   * position.status == "OPEN"
+3. Load fresh opportunity data
+4. Compute executable exit price
+5. Call:
+
+position_service.close_position(
+session,
+position.id,
+closing_price=exit_price
+)
+
+6. Mark TradeDecision status = "EXECUTED"
+
+If executable price unavailable:
+
+skip current cycle
+
+retry later
+
+---
+
+## 5. backend/app/workers/engine_workers.py
+
+Create:
+
+run_exit_engine_loop()
+
+Requirements:
+
+* waits for universe_ready_event
+* interval from settings
+* follows existing engine loop patterns
+
+Register worker:
+
+AFTER:
+run_opportunity_engine_loop
+
+BEFORE:
+run_strategy_engine_loop
+
+---
+
+## 6. backend/app/config/settings.py
+
+Add:
+
+EXIT_ENGINE_ENABLED = True
+
+EXIT_ENGINE_INTERVAL_SECONDS = 30
+
+EXIT_PROFIT_TARGET_USDC = 0.10
+
+EXIT_STOP_LOSS_USDC = -0.15
+
+EXIT_SIGNAL_TIMEOUT_MINUTES = 30
+
+EXIT_EXPIRY_BUFFER_MINUTES = 15.0
+
+EXIT_FORCE_EXPIRY_MINUTES = 5.0
+
+---
+
+# EXIT PRICE RULES
+
+Use executable prices only.
+
+Never use mid price.
+
+LONG_YES:
+
+exit_price = yes_bid
+
+If yes_bid is None:
+
+skip
+
+LONG_NO:
+
+exit_price = 1 - yes_ask
+
+If yes_ask is None:
+
+skip
+
+These prices must be used for:
+
+* profit target
+* stop loss
+* actual close execution
+
+Do NOT use current_price or yes_mid.
+
+---
+
+# EXIT TRIGGERS
+
+Evaluate in this exact order.
+
+First match wins.
+
+---
+
+## PRIORITY 1
+
+EXPIRY_EXIT
+
+Soft exit:
+
+minutes_to_expiry < EXIT_EXPIRY_BUFFER_MINUTES
+
+AND
+
+exit_pnl_at_bid > 0
+
+Hard exit:
+
+minutes_to_expiry < EXIT_FORCE_EXPIRY_MINUTES
+
+Always exit.
+
+Reason:
+
+EXPIRY_EXIT
+
+---
+
+## PRIORITY 2
+
+STOP_LOSS
+
+Condition:
+
+exit_pnl_at_bid <= EXIT_STOP_LOSS_USDC
+
+Reason:
+
+STOP_LOSS
+
+---
+
+## PRIORITY 3
+
+PROFIT_TARGET
+
+Condition:
+
+exit_pnl_at_bid >= EXIT_PROFIT_TARGET_USDC
+
+Reason:
+
+PROFIT_TARGET
+
+---
+
+## PRIORITY 4
+
+SIGNAL_INVALIDATION
+
+Condition:
+
+signal_count_1h == 0
+
+AND
+
+position_age_minutes >
+EXIT_SIGNAL_TIMEOUT_MINUTES
+
+Reason:
+
+SIGNAL_INVALIDATION
+
+---
+
+# EXIT PNL CALCULATION
+
+Use executable exit price.
+
+exit_pnl_at_bid =
+position.quantity *
+(exit_price - position.entry_price)
+
+This value drives:
+
+* STOP_LOSS
+* PROFIT_TARGET
+* EXPIRY soft exit
+
+---
+
+# DATA SOURCES
+
+Positions:
+
+position_repository.get_open_positions()
+
+Opportunities:
+
+query by condition_id
+
+Reuse existing project query patterns.
+
+Avoid N+1 queries.
+
+Build:
+
+condition_id → opportunity map
+
+once per cycle.
+
+---
+
+# DO NOT CHANGE
+
+* position_service.close_position()
+* strategy engine logic
+* existing risk rules
+* quantity sizing
+* duplicate position rule
+* portfolio framework
+
+---
+
+# ACCEPTANCE CRITERIA
+
+1. Exit engine generates CLOSE_POSITION decisions.
+2. Duplicate exit decisions are prevented.
+3. Risk engine auto-approves exit decisions.
+4. Execution engine closes positions using executable bid pricing.
+5. Realized PnL uses bid-based exit prices.
+6. All four exit triggers work.
+7. Existing entry pipeline remains unchanged.
+8. No unrelated refactors.
+9. Code passes existing project style and architecture patterns.
+
+After implementation, provide:
+
+* list of modified files
+* schema changes
+* execution flow summary
+* potential migration notes
