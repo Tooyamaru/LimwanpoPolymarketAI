@@ -664,6 +664,102 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
 .ks-sub{font-size:6px;letter-spacing:1.5px;color:var(--tm);}
 
 /* ═══════════════════════════════════════════════════════
+   LEFT — THINKING FEED PANEL
+═══════════════════════════════════════════════════════ */
+#left-feed-panel{
+  flex-shrink:0;border-top:1px solid rgba(57,255,20,.07);
+  background:rgba(0,0,0,.22);display:flex;flex-direction:column;
+  max-height:80px;min-height:68px;
+}
+#left-feed-list{
+  flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 10px 3px;
+  display:flex;flex-direction:column;gap:1px;
+}
+#left-feed-list::-webkit-scrollbar{width:2px;}
+#left-feed-list::-webkit-scrollbar-thumb{background:var(--b2);}
+.lfeed-entry{
+  display:flex;align-items:baseline;gap:6px;
+  font-size:7px;letter-spacing:.2px;line-height:1.55;flex-shrink:0;
+  animation:feed-in .25s ease-out;
+}
+.lfeed-ts{color:#2a4a5a;flex-shrink:0;font-size:6.5px;}
+.lfeed-msg{color:rgba(57,255,20,.55);}
+.lfeed-msg.hl{color:rgba(57,255,20,.85);text-shadow:0 0 5px rgba(57,255,20,.25);}
+.lfeed-msg.warn{color:rgba(255,230,0,.65);}
+
+/* ═══════════════════════════════════════════════════════
+   RIGHT — SPLIT POSITION PANEL
+═══════════════════════════════════════════════════════ */
+#pos-split{display:grid;grid-template-columns:1fr 1px 1fr;min-height:0;overflow:hidden;}
+.pos-col{display:flex;flex-direction:column;padding:5px 10px;overflow:hidden;min-width:0;}
+.pos-col-hdr{
+  font-size:6px;letter-spacing:2.5px;color:var(--td);text-transform:uppercase;
+  padding-bottom:3px;margin-bottom:4px;border-bottom:1px solid var(--b1);flex-shrink:0;
+}
+.pos-divider{background:rgba(0,229,255,.05);}
+
+/* ═══════════════════════════════════════════════════════
+   BOTTOM — V5 EXPANDED (8 KPIs + feeds + capital)
+═══════════════════════════════════════════════════════ */
+#perf-section{
+  border-top:1px solid rgba(0,229,255,.08);
+  background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,.1) 100%),var(--panel);
+  padding:5px 14px 4px;display:flex;flex-direction:column;gap:4px;
+  box-shadow:inset 0 1px 0 rgba(0,229,255,.05);
+  position:relative;z-index:1;
+}
+.kpi-row-8{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;}
+.kpi-sm{
+  background:rgba(0,0,0,.35);border:1px solid var(--b2);border-radius:3px;
+  padding:4px 8px;display:flex;flex-direction:column;gap:1px;
+  transition:border-color .35s,box-shadow .35s;
+}
+.kpi-sm:hover{border-color:rgba(0,229,255,.2);box-shadow:0 0 10px rgba(0,229,255,.05);}
+.kpi-sm .kpi-l{font-size:6.5px;letter-spacing:1.5px;color:var(--tm);text-transform:uppercase;}
+.kpi-sm .kpi-v{font-size:17px;font-weight:bold;color:var(--nc);letter-spacing:1px;line-height:1.1;transition:color .4s,text-shadow .4s;}
+.kpi-sm .kpi-v.pos{color:var(--ng);text-shadow:0 0 10px rgba(57,255,20,.3);}
+.kpi-sm .kpi-v.neg{color:var(--red);text-shadow:0 0 8px rgba(255,51,85,.28);}
+.kpi-sm .kpi-bottom{display:flex;align-items:center;justify-content:space-between;gap:3px;}
+
+/* bottom row: feeds + capital */
+.bot-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;min-height:0;}
+.bot-feed{
+  background:rgba(0,0,0,.28);border:1px solid var(--b1);border-radius:2px;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.bot-feed-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:2px 10px;border-bottom:1px solid var(--b1);flex-shrink:0;
+  background:linear-gradient(90deg,rgba(0,0,0,.3),transparent);
+}
+.bot-feed-hdr .ptitle-left{font-size:6.5px;letter-spacing:2px;}
+.bot-feed-hdr .ptitle-right{font-size:6px;color:var(--ng);letter-spacing:1px;opacity:.7;}
+.bot-feed-body{flex:1;overflow-y:auto;padding:2px 10px 3px;display:flex;flex-direction:column;gap:1px;}
+.bot-feed-body::-webkit-scrollbar{width:2px;}
+.bot-feed-body::-webkit-scrollbar-thumb{background:var(--b2);}
+
+/* capital protection panel */
+.bot-cap{
+  background:rgba(0,0,0,.28);border:1px solid var(--b1);border-radius:2px;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.bot-cap-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:4px 10px;}
+.cap-item-v5{display:flex;flex-direction:column;gap:2px;}
+.cap-item-v5 .cap-lbl{font-size:6.5px;letter-spacing:1px;color:var(--tm);display:flex;justify-content:space-between;}
+.cap-item-v5 .cap-lbl span{color:#8ab0c8;}
+.cap-item-v5 .cap-track{height:3px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden;}
+.cap-item-v5 .cap-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,rgba(57,255,20,.7),var(--ng));transition:width .7s ease,background .45s;box-shadow:0 0 5px var(--ng);}
+.cap-item-v5 .cap-fill.w{background:linear-gradient(90deg,rgba(255,230,0,.7),var(--ny));box-shadow:0 0 5px var(--ny);}
+.cap-item-v5 .cap-fill.d{background:linear-gradient(90deg,rgba(255,51,85,.7),var(--red));box-shadow:0 0 5px var(--red);}
+.cap-item-v5 .cap-remain{font-size:6px;color:var(--tm);}
+.cap-item-v5 .cap-remain em{color:#8ab0c8;font-style:normal;font-weight:bold;}
+.cap-ks-row{display:flex;align-items:center;justify-content:space-between;margin-top:2px;padding-top:4px;border-top:1px solid var(--b1);}
+.cap-ks-badge{font-size:8px;font-weight:bold;letter-spacing:2px;display:flex;align-items:center;gap:5px;}
+.cap-ks-badge.ok{color:var(--ng);text-shadow:0 0 8px rgba(57,255,20,.3);}
+.cap-ks-badge.bad{color:var(--red);text-shadow:0 0 8px rgba(255,51,85,.35);}
+.cap-ks-sub{font-size:6px;letter-spacing:1px;color:var(--td);}
+
+/* ═══════════════════════════════════════════════════════
    FOOTER
 ═══════════════════════════════════════════════════════ */
 footer{
@@ -712,6 +808,13 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
   <div class="col">
     <div class="ptitle"><div class="ptitle-left">UNIVERSE&nbsp;//&nbsp;12&nbsp;MARKETS</div></div>
     <div id="mkt-list"></div>
+    <div id="left-feed-panel">
+      <div class="ptitle" style="padding:2px 10px 2px">
+        <div class="ptitle-left" style="font-size:6.5px;letter-spacing:2px;color:rgba(57,255,20,.6)">AI&nbsp;THINKING</div>
+        <div class="ptitle-right" style="font-size:5.5px;color:rgba(57,255,20,.4)">LIVE</div>
+      </div>
+      <div id="left-feed-list"></div>
+    </div>
   </div>
 
   <!-- ══ CENTER ══ -->
@@ -885,15 +988,6 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
       </div>
     </div>
 
-    <!-- AI THINKING FEED -->
-    <div id="feed-panel">
-      <div class="ptitle" style="padding:3px 12px 2px">
-        <div class="ptitle-left" style="font-size:7px;letter-spacing:2px">AI&nbsp;THINKING&nbsp;FEED</div>
-        <div class="ptitle-right" style="font-size:6px">LIVE</div>
-      </div>
-      <div id="feed-list"></div>
-    </div>
-
     <!-- HEATMAP -->
     <div id="heatmap-panel">
       <div class="ptitle"><div class="ptitle-left">MARKET&nbsp;OPPORTUNITY&nbsp;HEATMAP</div></div>
@@ -914,44 +1008,57 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
 
     <div id="pos-panel">
       <div class="ptitle">
-        <div class="ptitle-left">ACTIVE&nbsp;POSITION</div>
+        <div class="ptitle-left">POSITIONS</div>
         <div class="ptitle-right" id="pos-count-lbl"></div>
       </div>
-      <div id="pos-body">
-        <div class="pos-waiting" id="pos-waiting">
-          <div class="wait-ring-wrap">
-            <div class="wait-ring wr1"></div>
-            <div class="wait-ring wr2"></div>
-            <div class="wait-ring wr3"></div>
-            <div class="pos-wait-ic">◉</div>
+      <div id="pos-split">
+        <!-- LEFT: Active Position -->
+        <div class="pos-col">
+          <div class="pos-col-hdr">ACTIVE&nbsp;POSITION</div>
+          <div class="pos-waiting" id="pos-waiting">
+            <div class="wait-ring-wrap" style="width:38px;height:38px">
+              <div class="wait-ring wr1"></div>
+              <div class="wait-ring wr2"></div>
+              <div class="wait-ring wr3"></div>
+              <div class="pos-wait-ic" style="font-size:17px">◉</div>
+            </div>
+            <div class="pos-wait-tx" style="font-size:7px;letter-spacing:2.5px">WAITING</div>
+            <div class="pos-wait-sub" style="font-size:6px;text-align:center">MONITORING<br>ALL MARKETS</div>
           </div>
-          <div class="pos-wait-tx">WAITING&nbsp;FOR&nbsp;SIGNAL</div>
-          <div class="pos-wait-sub">AI&nbsp;IS&nbsp;MONITORING&nbsp;ALL&nbsp;MARKETS</div>
+          <div class="pos-active" id="pos-active" style="display:none">
+            <div class="pos-header">
+              <span class="pos-market" id="pos-market" style="font-size:12px">—</span>
+              <span class="pos-side yes" id="pos-side" style="font-size:9px">UP</span>
+            </div>
+            <div class="pos-grid" style="grid-template-columns:1fr 1fr;gap:3px 5px;margin-top:3px">
+              <div class="pos-row"><div class="pos-lbl">ENTRY</div><div class="pos-val" id="pos-entry" style="font-size:10px">—</div></div>
+              <div class="pos-row"><div class="pos-lbl">CURRENT</div><div class="pos-val" id="pos-current" style="font-size:10px">—</div></div>
+              <div class="pos-row"><div class="pos-lbl">SIZE</div><div class="pos-val" id="pos-qty" style="font-size:10px">—</div></div>
+              <div class="pos-row"><div class="pos-lbl">PnL&nbsp;%</div><div class="pos-val" id="pos-pnlpct" style="font-size:10px">—</div></div>
+            </div>
+            <div style="margin-top:3px"><div class="pos-lbl">PnL (USDC)</div><div class="pos-val" id="pos-pnl" style="font-size:10px">—</div></div>
+            <div style="margin-top:3px"><div class="pos-lbl">HOLDING</div><div class="pos-hold" id="pos-holding" style="font-size:11px;letter-spacing:1.5px">00:00:00</div></div>
+          </div>
         </div>
-        <div class="pos-active" id="pos-active" style="display:none">
-          <div class="pos-header">
-            <span class="pos-market" id="pos-market">—</span>
-            <span class="pos-side yes" id="pos-side">UP</span>
+        <!-- divider -->
+        <div class="pos-divider"></div>
+        <!-- RIGHT: Last Closed Trade -->
+        <div class="pos-col">
+          <div class="pos-col-hdr">LAST&nbsp;CLOSED</div>
+          <div id="pos-last-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:4px;opacity:.4">
+            <div style="font-size:18px;color:var(--td)">◌</div>
+            <div style="font-size:6.5px;letter-spacing:2px;color:var(--td)">NO TRADES YET</div>
           </div>
-          <div class="pos-grid">
-            <div class="pos-row"><div class="pos-lbl">ENTRY</div><div class="pos-val" id="pos-entry">—</div></div>
-            <div class="pos-row"><div class="pos-lbl">CURRENT</div><div class="pos-val" id="pos-current">—</div></div>
-            <div class="pos-row"><div class="pos-lbl">SIZE</div><div class="pos-val" id="pos-qty">—</div></div>
-            <div class="pos-row" style="grid-column:span 2"><div class="pos-lbl">PnL (USDC)</div><div class="pos-val" id="pos-pnl">—</div></div>
-            <div class="pos-row"><div class="pos-lbl">PnL %</div><div class="pos-val" id="pos-pnlpct">—</div></div>
-          </div>
-          <div><div class="pos-lbl">HOLDING</div><div class="pos-hold" id="pos-holding">00:00:00</div></div>
-        </div>
-        <div class="pos-last" id="pos-last" style="display:none">
-          <div class="pos-last-hdr">LAST&nbsp;CLOSED&nbsp;TRADE</div>
-          <div class="pos-header" style="margin-top:3px">
-            <span class="pos-last-market" id="lt-market">—</span>
-            <span class="pos-side" id="lt-side">—</span>
-          </div>
-          <div class="pos-last-grid" style="margin-top:4px">
-            <div class="pos-row"><div class="pos-lbl">PnL %</div><div class="pos-val" id="lt-pct">—</div></div>
-            <div class="pos-row"><div class="pos-lbl">PnL USDC</div><div class="pos-val" id="lt-pnl">—</div></div>
-            <div class="pos-row"><div class="pos-lbl">CLOSED</div><div class="pos-val pos-last-ago" id="lt-ago">—</div></div>
+          <div class="pos-last" id="pos-last" style="display:none;gap:3px">
+            <div class="pos-header" style="margin-top:0">
+              <span class="pos-last-market" id="lt-market" style="font-size:12px">—</span>
+              <span class="pos-side" id="lt-side" style="font-size:9px">—</span>
+            </div>
+            <div class="pos-last-grid" style="margin-top:3px;grid-template-columns:1fr 1fr;gap:2px 5px">
+              <div class="pos-row"><div class="pos-lbl">PnL %</div><div class="pos-val" id="lt-pct" style="font-size:10px">—</div></div>
+              <div class="pos-row"><div class="pos-lbl">PnL USDC</div><div class="pos-val" id="lt-pnl" style="font-size:10px">—</div></div>
+              <div class="pos-row" style="grid-column:span 2"><div class="pos-lbl">CLOSED</div><div class="pos-val pos-last-ago" id="lt-ago" style="font-size:10px">—</div></div>
+            </div>
           </div>
         </div>
       </div>
@@ -967,67 +1074,118 @@ footer span:first-child{color:var(--nc);text-shadow:0 0 10px rgba(0,229,255,.25)
 
 <!-- PERFORMANCE + CAPITAL -->
 <div id="perf-section">
-  <div class="kpi-row">
-    <div class="kpi">
+  <!-- Row 1: 8 KPIs -->
+  <div class="kpi-row-8">
+    <div class="kpi-sm">
       <div class="kpi-l">WIN&nbsp;RATE</div>
       <div class="kpi-v" id="k-wr">0.0%</div>
       <div class="kpi-bottom">
         <span class="kpi-delta neutral" id="kd-wr">—</span>
-        <svg class="kpi-spark" id="ks-wr" width="52" height="14" viewBox="0 0 52 14"></svg>
+        <svg class="kpi-spark" id="ks-wr" width="40" height="12" viewBox="0 0 40 12"></svg>
       </div>
     </div>
-    <div class="kpi">
+    <div class="kpi-sm">
       <div class="kpi-l">NET&nbsp;PNL&nbsp;(USDC)</div>
       <div class="kpi-v" id="k-pnl">+$0.00</div>
       <div class="kpi-bottom">
         <span class="kpi-delta neutral" id="kd-pnl">—</span>
-        <svg class="kpi-spark" id="ks-pnl" width="52" height="14" viewBox="0 0 52 14"></svg>
+        <svg class="kpi-spark" id="ks-pnl" width="40" height="12" viewBox="0 0 40 12"></svg>
       </div>
     </div>
-    <div class="kpi">
+    <div class="kpi-sm">
       <div class="kpi-l">TRADES</div>
       <div class="kpi-v" id="k-tr">0</div>
       <div class="kpi-bottom">
         <span class="kpi-delta neutral" id="kd-tr">—</span>
-        <svg class="kpi-spark" id="ks-tr" width="52" height="14" viewBox="0 0 52 14"></svg>
+        <svg class="kpi-spark" id="ks-tr" width="40" height="12" viewBox="0 0 40 12"></svg>
       </div>
     </div>
-    <div class="kpi">
+    <div class="kpi-sm">
       <div class="kpi-l">MAX&nbsp;DRAWDOWN</div>
       <div class="kpi-v" id="k-dd">$0.00</div>
       <div class="kpi-bottom">
         <span class="kpi-delta neutral" id="kd-dd">—</span>
-        <svg class="kpi-spark" id="ks-dd" width="52" height="14" viewBox="0 0 52 14"></svg>
+        <svg class="kpi-spark" id="ks-dd" width="40" height="12" viewBox="0 0 40 12"></svg>
+      </div>
+    </div>
+    <div class="kpi-sm">
+      <div class="kpi-l">EQUITY&nbsp;(USDC)</div>
+      <div class="kpi-v" id="k-eq">—</div>
+      <div class="kpi-bottom">
+        <span class="kpi-delta neutral" id="kd-eq">—</span>
+        <svg class="kpi-spark" id="ks-eq" width="40" height="12" viewBox="0 0 40 12"></svg>
+      </div>
+    </div>
+    <div class="kpi-sm">
+      <div class="kpi-l">DAILY&nbsp;PNL</div>
+      <div class="kpi-v" id="k-dpnl">$0.00</div>
+      <div class="kpi-bottom">
+        <span class="kpi-delta neutral" id="kd-dpnl">—</span>
+      </div>
+    </div>
+    <div class="kpi-sm">
+      <div class="kpi-l">WIN&nbsp;STREAK</div>
+      <div class="kpi-v" id="k-ws">0</div>
+      <div class="kpi-bottom">
+        <span class="kpi-delta neutral" id="kd-ws">—</span>
+      </div>
+    </div>
+    <div class="kpi-sm" id="ks-box" style="border-color:rgba(57,255,20,.18);background:rgba(0,0,0,.4);cursor:default">
+      <div class="kpi-l">KILL&nbsp;SWITCH</div>
+      <div class="kpi-v" id="ks-lbl" style="font-size:14px;letter-spacing:2px">ARMED</div>
+      <div class="kpi-bottom">
+        <span class="ks-icon" id="ks-icon" style="font-size:11px">⚡</span>
+        <span class="ks-sub" style="font-size:6px">CAPITAL&nbsp;GUARD</span>
       </div>
     </div>
   </div>
-  <div class="cap-section">
-    <div class="cap-metrics">
-      <div class="cap-item">
-        <div class="cap-lbl">DAILY&nbsp;LOSS<span id="cv-d">$0/$30</span></div>
-        <div class="cap-track"><div class="cap-fill" id="cb-d" style="width:0%"></div></div>
-        <div class="cap-remain">REMAINING:&nbsp;<em id="cr-d">$30</em></div>
+
+  <!-- Row 2: AI Thinking | AI Live | Capital Protection -->
+  <div class="bot-row">
+    <!-- AI THINKING FEED (bottom-left) -->
+    <div class="bot-feed">
+      <div class="bot-feed-hdr">
+        <div class="ptitle-left" style="font-size:6.5px;letter-spacing:2px">AI&nbsp;THINKING&nbsp;FEED</div>
+        <div class="ptitle-right" style="color:rgba(57,255,20,.55)">●&nbsp;LIVE</div>
       </div>
-      <div class="cap-item">
-        <div class="cap-lbl">WEEKLY&nbsp;LOSS<span id="cv-w">$0/$75</span></div>
-        <div class="cap-track"><div class="cap-fill" id="cb-w" style="width:0%"></div></div>
-        <div class="cap-remain">REMAINING:&nbsp;<em id="cr-w">$75</em></div>
-      </div>
-      <div class="cap-item">
-        <div class="cap-lbl">LOSS&nbsp;STREAK<span id="cv-s">0/5</span></div>
-        <div class="cap-track"><div class="cap-fill" id="cb-s" style="width:0%"></div></div>
-        <div class="cap-remain">REMAINING:&nbsp;<em id="cr-s">5</em></div>
-      </div>
-      <div class="cap-item">
-        <div class="cap-lbl">DRAWDOWN<span id="cv-dd">0%/20%</span></div>
-        <div class="cap-track"><div class="cap-fill" id="cb-dd" style="width:0%"></div></div>
-        <div class="cap-remain">REMAINING:&nbsp;<em id="cr-dd">20%</em></div>
-      </div>
+      <div class="bot-feed-body" id="feed-list"></div>
     </div>
-    <div class="kill-switch" id="ks-box">
-      <div class="ks-icon" id="ks-icon">⚡</div>
-      <div class="ks-lbl ok" id="ks-lbl">ARMED</div>
-      <div class="ks-sub">KILL&nbsp;SWITCH</div>
+    <!-- AI LIVE FEED (bottom-center) -->
+    <div class="bot-feed">
+      <div class="bot-feed-hdr">
+        <div class="ptitle-left" style="font-size:6.5px;letter-spacing:2px">AI&nbsp;LIVE&nbsp;FEED</div>
+        <div class="ptitle-right" style="color:rgba(0,229,255,.55)">●&nbsp;SIGNALS</div>
+      </div>
+      <div class="bot-feed-body" id="live-feed-list"></div>
+    </div>
+    <!-- CAPITAL PROTECTION -->
+    <div class="bot-cap">
+      <div class="bot-feed-hdr">
+        <div class="ptitle-left" style="font-size:6.5px;letter-spacing:2px">CAPITAL&nbsp;PROTECTION</div>
+        <div id="h-clbl-cap" class="ptitle-right" style="color:rgba(57,255,20,.55)">OK</div>
+      </div>
+      <div class="bot-cap-body">
+        <div class="cap-item-v5">
+          <div class="cap-lbl">DAILY&nbsp;LOSS<span id="cv-d">$0/$30</span></div>
+          <div class="cap-track"><div class="cap-fill" id="cb-d" style="width:0%"></div></div>
+          <div class="cap-remain">REMAINING:&nbsp;<em id="cr-d">$30</em></div>
+        </div>
+        <div class="cap-item-v5">
+          <div class="cap-lbl">WEEKLY&nbsp;LOSS<span id="cv-w">$0/$75</span></div>
+          <div class="cap-track"><div class="cap-fill" id="cb-w" style="width:0%"></div></div>
+          <div class="cap-remain">REMAINING:&nbsp;<em id="cr-w">$75</em></div>
+        </div>
+        <div class="cap-item-v5">
+          <div class="cap-lbl">LOSS&nbsp;STREAK<span id="cv-s">0/5</span></div>
+          <div class="cap-track"><div class="cap-fill" id="cb-s" style="width:0%"></div></div>
+          <div class="cap-remain">REMAINING:&nbsp;<em id="cr-s">5</em></div>
+        </div>
+        <div class="cap-item-v5">
+          <div class="cap-lbl">DRAWDOWN<span id="cv-dd">0%/20%</span></div>
+          <div class="cap-track"><div class="cap-fill" id="cb-dd" style="width:0%"></div></div>
+          <div class="cap-remain">REMAINING:&nbsp;<em id="cr-dd">20%</em></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1109,50 +1267,109 @@ let lastTopMarket=null;
 })();
 
 // ═══════════════════════════════════════════════════════
-//  THINKING FEED
+//  DUAL FEED SYSTEM (Thinking + Live)
 // ═══════════════════════════════════════════════════════
-const feedMsgs=[];
-const MAX_FEED=25;
+const feedMsgs=[];      // AI Thinking Feed (bottom-left + left column)
+const liveMsgs=[];      // AI Live Feed (bottom-center)
+const MAX_FEED=30;
+const MAX_LIVE=30;
+
 function feedTime(){
   const n=new Date();
   return`[${n.getUTCHours().toString().padStart(2,'0')}:${n.getUTCMinutes().toString().padStart(2,'0')}:${n.getUTCSeconds().toString().padStart(2,'0')}]`;
 }
+
 function pushFeed(msg,cls=''){
-  feedMsgs.unshift({ts:feedTime(),msg,cls});
+  const entry={ts:feedTime(),msg,cls};
+  feedMsgs.unshift(entry);
   if(feedMsgs.length>MAX_FEED) feedMsgs.pop();
   renderFeed();
+  renderLeftFeed();
 }
+
+function pushLive(msg,cls=''){
+  liveMsgs.unshift({ts:feedTime(),msg,cls});
+  if(liveMsgs.length>MAX_LIVE) liveMsgs.pop();
+  renderLiveFeed();
+}
+
+function _buildFeedEntry(f,small=false){
+  const div=document.createElement('div');
+  div.className=small?'lfeed-entry':'feed-entry';
+  if(small){
+    div.innerHTML=`<span class="lfeed-ts">${f.ts}</span><span class="lfeed-msg ${f.cls}">${f.msg}</span>`;
+  } else {
+    div.innerHTML=`<span class="feed-ts">${f.ts}</span><span class="feed-msg ${f.cls}">${f.msg}</span>`;
+  }
+  return div;
+}
+
 function renderFeed(){
   const list=document.getElementById('feed-list');
+  if(!list) return;
   list.innerHTML='';
-  for(const f of feedMsgs){
-    const div=document.createElement('div');div.className='feed-entry';
-    div.innerHTML=`<span class="feed-ts">${f.ts}</span><span class="feed-msg ${f.cls}">${f.msg}</span>`;
+  for(const f of feedMsgs){list.appendChild(_buildFeedEntry(f,false));}
+}
+
+function renderLeftFeed(){
+  const list=document.getElementById('left-feed-list');
+  if(!list) return;
+  list.innerHTML='';
+  for(const f of feedMsgs.slice(0,6)){
+    const div=document.createElement('div');
+    div.className='lfeed-entry';
+    const msgCls=f.cls==='highlight'||f.cls==='ready'?'hl':f.cls==='warn'?'warn':'';
+    div.innerHTML=`<span class="lfeed-ts">${f.ts}</span><span class="lfeed-msg ${msgCls}">${f.msg}</span>`;
     list.appendChild(div);
   }
 }
+
+function renderLiveFeed(){
+  const list=document.getElementById('live-feed-list');
+  if(!list) return;
+  list.innerHTML='';
+  for(const f of liveMsgs){list.appendChild(_buildFeedEntry(f,false));}
+}
+
 function generateFeed(ranked,sigN,oppN,strN,rskN,exN){
   const r=Math.random();
   if(ranked.length>0){
     const top=ranked[0];
     const sc=Math.round(top.score);
     const dist=Math.max(0,85-sc);
-    if(sc>=90) pushFeed(`${top.asset} ${top.tf} score=${sc} — TRADE READY → risk engine`,'ready');
-    else if(sc>=85) pushFeed(`${top.asset} ${top.tf} score=${sc} — above threshold, creating candidate`,'highlight');
-    else if(dist<=10) pushFeed(`${top.asset} ${top.tf} score=${sc} — ${dist}pts from threshold`,'warn');
-    else if(r<.3) pushFeed(`${top.asset} ${top.tf} score=${sc} — below threshold`,'');
-    else if(r<.5) pushFeed(`Scanning ${MARKETS.length} markets — best: ${top.asset} ${top.tf}`,'');
-    else if(r<.68) pushFeed(`Signal engine: ${sigN} fired · ${oppN} opportunities scored`,'');
-    else if(r<.82) pushFeed(`Universe synchronized — ${MARKETS.length} active markets`,'');
-    else pushFeed(`Watching ${top.asset} ${top.tf} · spread: ${(top.spread||0).toFixed(3)}`,'');
+    if(sc>=90){
+      pushFeed(`${top.asset} ${top.tf} score=${sc} — TRADE READY → risk engine`,'ready');
+      pushLive(`OPPORTUNITY DETECTED: ${top.asset} ${top.tf} @ ${top.mid.toFixed(3)} · score=${sc}`,'ready');
+    } else if(sc>=85){
+      pushFeed(`${top.asset} ${top.tf} score=${sc} — above threshold, candidate queued`,'highlight');
+      pushLive(`CANDIDATE: ${top.asset} ${top.tf} score=${sc} · spread=${((top.spread||0)).toFixed(3)}`,'highlight');
+    } else if(dist<=10){
+      pushFeed(`${top.asset} ${top.tf} score=${sc} — ${dist}pts from entry threshold`,'warn');
+      pushLive(`APPROACHING: ${top.asset} ${top.tf} needs ${dist} more pts · watching`,'warn');
+    } else if(r<.25) pushFeed(`${top.asset} ${top.tf} score=${sc} — monitoring`,'');
+    else if(r<.45) pushFeed(`Scanning ${MARKETS.length} markets — best: ${top.asset} ${top.tf}`,'');
+    else if(r<.62) pushFeed(`Signal engine: ${sigN} fired · ${oppN} opportunities scored`,'');
+    else if(r<.76) pushFeed(`Universe: ${MARKETS.length} markets active · pipeline nominal`,'');
+    else if(r<.88) pushFeed(`Watching ${top.asset} ${top.tf} · spread: ${(top.spread||0).toFixed(3)}`,'');
+    else pushFeed(`Risk gate: ${rskN} approved · ${strN} strategy candidates pending`,'');
+    if(r<.4&&oppN>0) pushLive(`SCORED: ${oppN} opportunities · best ${Math.round(top.score)}/100`,'');
+    else if(r<.6&&sigN>0) pushLive(`SIGNALS: ${sigN} fired across ${MARKETS.length} markets`,'');
+    else if(r<.75) pushLive(`SPREAD WATCH: ${top.asset} ${top.tf} @ ${(top.spread||0).toFixed(4)}`,'');
   } else {
-    if(r<.35) pushFeed(`Scanning ${MARKETS.length} markets`,'');
-    else if(r<.6) pushFeed(`No opportunity above threshold — monitoring`,'');
-    else if(r<.78) pushFeed(`Universe synchronized — ${MARKETS.length} markets`,'');
-    else pushFeed(`Signal engine: ${sigN} signals fired`,'');
+    if(r<.3) pushFeed(`Scanning ${MARKETS.length} markets — no signal above threshold`,'');
+    else if(r<.55) pushFeed(`No opportunity above threshold — monitoring all markets`,'');
+    else if(r<.72) pushFeed(`Universe: ${MARKETS.length} markets synchronized`,'');
+    else pushFeed(`Signal engine: ${sigN} signals processed`,'');
+    pushLive(`MONITORING ${MARKETS.length} markets · awaiting signal threshold`,'');
   }
-  if(exN>0) pushFeed(`${exN} order(s) filled — tracking position lifecycle`,'highlight');
-  if(strN>0&&rskN===0&&r<.4) pushFeed(`Strategy candidate pending risk gate`,'warn');
+  if(exN>0){
+    pushFeed(`${exN} order(s) filled — tracking position lifecycle`,'highlight');
+    pushLive(`EXECUTION: ${exN} order(s) filled → position tracking active`,'ready');
+  }
+  if(strN>0&&rskN===0&&r<.4){
+    pushFeed(`Strategy candidate pending risk gate evaluation`,'warn');
+    pushLive(`RISK GATE: strategy candidate queued — awaiting clearance`,'warn');
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1463,41 +1680,55 @@ function renderPosition(posOpen,closedPos){
   const waiting=document.getElementById('pos-waiting');
   const active=document.getElementById('pos-active');
   const last=document.getElementById('pos-last');
+  const lastEmpty=document.getElementById('pos-last-empty');
   const countLbl=document.getElementById('pos-count-lbl');
   const count=posOpen?.length??0;
-  countLbl.textContent=count>0?`TOTAL ${count}`:'';
+  countLbl.textContent=count>0?`${count} OPEN`:'';
+
+  // LEFT side: active position or waiting
   if(!posOpen||count===0){
     stopHoldingTimer();active.style.display='none';
-    if(closedPos){
-      waiting.style.display='none';last.style.display='flex';
-      const isY=closedPos.side==='LONG_YES';
-      document.getElementById('lt-market').textContent=`${closedPos.asset||'—'} ${closedPos.timeframe||''}`;
-      const ltS=document.getElementById('lt-side');ltS.textContent=isY?'LONG UP':'LONG DOWN';ltS.className='pos-side '+(isY?'yes':'no');
-      const pnl=closedPos.realized_pnl??closedPos.unrealized_pnl??0;
-      const cost=(closedPos.quantity||0)*(closedPos.entry_price||1);
+    waiting.style.display='flex';
+  } else {
+    const p=posOpen[0];
+    waiting.style.display='none';active.style.display='flex';
+    const isY=p.side==='LONG_YES';
+    document.getElementById('pos-market').textContent=`${p.asset||'—'} ${p.timeframe||''}`;
+    const sEl=document.getElementById('pos-side');sEl.textContent=isY?'UP':'DOWN';sEl.className='pos-side '+(isY?'yes':'no');
+    document.getElementById('pos-entry').textContent=p.entry_price?p.entry_price.toFixed(3):'—';
+    document.getElementById('pos-current').textContent=p.current_price?p.current_price.toFixed(3):(p.entry_price?p.entry_price.toFixed(3):'—');
+    document.getElementById('pos-qty').textContent=p.quantity?p.quantity.toFixed(2):'—';
+    const pnl=p.unrealized_pnl??0;
+    const pnlEl=document.getElementById('pos-pnl');
+    pnlEl.textContent=(pnl>=0?'+':'')+'$'+Math.abs(pnl).toFixed(2);
+    pnlEl.className='pos-val '+(pnl>0?'pnl-pos':pnl<0?'pnl-neg':'');
+    const cost=(p.quantity||0)*(p.entry_price||1);
+    const pnlpct=cost>0?((pnl/cost)*100):0;
+    const ppEl=document.getElementById('pos-pnlpct');
+    ppEl.textContent=(pnlpct>=0?'+':'')+pnlpct.toFixed(2)+'%';
+    ppEl.className='pos-val '+(pnlpct>0?'pnl-pos':pnlpct<0?'pnl-neg':'');
+    if(p.opened_at) startHoldingTimer(p.opened_at);
+  }
+
+  // RIGHT side: last closed trade (always visible)
+  if(closedPos){
+    if(lastEmpty) lastEmpty.style.display='none';
+    last.style.display='flex';
+    const isY=closedPos.side==='LONG_YES';
+    document.getElementById('lt-market').textContent=`${closedPos.asset||'—'} ${closedPos.timeframe||''}`;
+    const ltS=document.getElementById('lt-side');ltS.textContent=isY?'UP':'DOWN';ltS.className='pos-side '+(isY?'yes':'no');
+    const pnl=closedPos.realized_pnl??closedPos.unrealized_pnl??0;
+    const cost=(closedPos.quantity||0)*(closedPos.entry_price||1);
       const pct=cost>0?pnl/cost*100:0,sign=pnl>=0?'+':'';
       const pnlEl=document.getElementById('lt-pnl');
       pnlEl.textContent=sign+'$'+Math.abs(pnl).toFixed(2);pnlEl.className='pos-val '+(pnl>0?'pnl-pos':pnl<0?'pnl-neg':'');
       const pctEl=document.getElementById('lt-pct');
       pctEl.textContent=sign+pct.toFixed(2)+'%';pctEl.className='pos-val '+(pnl>0?'pnl-pos':pnl<0?'pnl-neg':'');
       document.getElementById('lt-ago').textContent=timeAgo(closedPos.closed_at);
-    } else {waiting.style.display='flex';last.style.display='none';}
-    return;
+  } else {
+    if(lastEmpty) lastEmpty.style.display='flex';
+    last.style.display='none';
   }
-  waiting.style.display='none';last.style.display='none';active.style.display='flex';
-  const p=posOpen[0],isY=p.side==='LONG_YES';
-  document.getElementById('pos-market').textContent=`${p.asset} ${p.timeframe}`;
-  const se=document.getElementById('pos-side');se.textContent=isY?'LONG UP':'LONG DOWN';se.className='pos-side '+(isY?'yes':'no');
-  document.getElementById('pos-entry').textContent=(p.entry_price||0).toFixed(3);
-  document.getElementById('pos-current').textContent=(p.current_price||p.entry_price||0).toFixed(3);
-  document.getElementById('pos-qty').textContent='$'+((p.quantity||0)*(p.entry_price||0)).toFixed(0);
-  const pnl=p.unrealized_pnl??0,cost=(p.quantity||0)*(p.entry_price||1);
-  const pct=cost>0?pnl/cost*100:0,sign=pnl>=0?'+':'';
-  const pnlEl=document.getElementById('pos-pnl');
-  pnlEl.textContent=sign+'$'+Math.abs(pnl).toFixed(2);pnlEl.className='pos-val '+(pnl>0?'pnl-pos':pnl<0?'pnl-neg':'');
-  const pctEl=document.getElementById('pos-pnlpct');
-  pctEl.textContent=sign+pct.toFixed(2)+'%';pctEl.className='pos-val '+(pnl>0?'pnl-pos':pnl<0?'pnl-neg':'');
-  if(p.opened_at) startHoldingTimer(p.opened_at);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1529,11 +1760,11 @@ function updateEngineCycles(){
 // ═══════════════════════════════════════════════════════
 function drawPerfSparkline(svgId,history){
   const svg=document.getElementById(svgId);if(!svg||history.length<2) return;
-  const w=52,h=12,min=Math.min(...history),max=Math.max(...history),rng=max-min||0.001;
+  const w=40,h=11,min=Math.min(...history),max=Math.max(...history),rng=max-min||0.001;
   const pts=history.map((v,i)=>`${((i/(history.length-1))*w).toFixed(1)},${(h-((v-min)/rng)*h).toFixed(1)}`).join(' ');
   const last=history[history.length-1],first=history[0];
   const color=last>=first?'rgba(57,255,20,.65)':'rgba(255,51,85,.65)';
-  svg.innerHTML=`<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.3" stroke-linejoin="round"/>`;
+  svg.innerHTML=`<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.2" stroke-linejoin="round"/>`;
 }
 
 function updatePerfDelta(kId,current,prev,fmt){
@@ -1617,13 +1848,21 @@ async function refresh(){
   updateLiveStatus(ranked,posOpen,rskBlocked);
 
   if(perf){
-    const pnl=perf.net_profit??0,wr=perf.win_rate??0,dd=perf.max_drawdown_usdc??0,t=perf.total_trades??0;
+    const pnl=perf.net_profit??0,wr=perf.win_rate??0,dd=perf.max_drawdown_usdc??0;
+    const t=perf.total_trades??0,eq=perf.equity??perf.current_equity??null;
+    const ws=perf.win_streak??perf.current_win_streak??0;
+
     const pe=document.getElementById('k-pnl');
     pe.textContent=(pnl>=0?'+':'')+'$'+Math.abs(pnl).toFixed(2);
     pe.className='kpi-v'+(pnl>0?' pos':pnl<0?' neg':'');
     document.getElementById('k-wr').textContent=wr.toFixed(1)+'%';
     document.getElementById('k-tr').textContent=t;
     document.getElementById('k-dd').textContent='$'+dd.toFixed(2);
+    const eqEl=document.getElementById('k-eq');
+    if(eqEl) eqEl.textContent=eq!=null?'$'+eq.toFixed(2):'—';
+    const wsEl=document.getElementById('k-ws');
+    if(wsEl){wsEl.textContent=ws;wsEl.className='kpi-v'+(ws>3?' pos':ws>0?' ':'');}
+
     perfHistory.wr.push(wr);if(perfHistory.wr.length>20)perfHistory.wr.shift();
     perfHistory.pnl.push(pnl);if(perfHistory.pnl.length>20)perfHistory.pnl.shift();
     perfHistory.tr.push(t);if(perfHistory.tr.length>20)perfHistory.tr.shift();
@@ -1632,6 +1871,11 @@ async function refresh(){
     drawPerfSparkline('ks-pnl',perfHistory.pnl);
     drawPerfSparkline('ks-tr',perfHistory.tr);
     drawPerfSparkline('ks-dd',perfHistory.dd);
+    if(eq!=null){
+      if(!perfHistory.eq) perfHistory.eq=[];
+      perfHistory.eq.push(eq);if(perfHistory.eq.length>20)perfHistory.eq.shift();
+      drawPerfSparkline('ks-eq',perfHistory.eq);
+    }
     updatePerfDelta('kd-wr',wr,perfPrev.wr,v=>v.toFixed(1)+'%');
     updatePerfDelta('kd-pnl',pnl,perfPrev.pnl,v=>'$'+Math.abs(v).toFixed(2));
     updatePerfDelta('kd-tr',t,perfPrev.tr,v=>Math.round(v)+'');
@@ -1641,28 +1885,44 @@ async function refresh(){
 
   if(capital){
     const ok=capital.allowed!==false;
+    const dailyPnl=capital.daily_pnl??0;
+
+    // Header pill
     document.getElementById('h-cdot').className='dot'+(ok?'':' bad');
     document.getElementById('h-clbl').textContent=ok?'CAPITAL OK':'CAPITAL BLOCKED';
-    document.getElementById('ks-icon').className='ks-icon'+(ok?'':' bad');
-    document.getElementById('ks-lbl').textContent=ok?'ARMED':'HALTED';
-    document.getElementById('ks-lbl').className='ks-lbl'+(ok?' ok':' bad');
-    document.getElementById('ks-box').className='kill-switch'+(ok?'':' bad');
-    function bar(vi,bi,ri,val,max,unit){
+
+    // Kill switch KPI box (row 1 slot 8)
+    const ksBox=document.getElementById('ks-box');
+    const ksLbl=document.getElementById('ks-lbl');
+    const ksIcon=document.getElementById('ks-icon');
+    if(ksLbl){ksLbl.textContent=ok?'ARMED':'HALTED';ksLbl.style.color=ok?'var(--ng)':'var(--red)';ksLbl.style.textShadow=ok?'0 0 10px rgba(57,255,20,.3)':'0 0 10px rgba(255,51,85,.4)';}
+    if(ksIcon){ksIcon.textContent=ok?'⚡':'⛔';ksIcon.style.color=ok?'var(--ng)':'var(--red)';}
+    if(ksBox){ksBox.style.borderColor=ok?'rgba(57,255,20,.18)':'rgba(255,51,85,.3)';ksBox.style.background=ok?'rgba(0,0,0,.4)':'rgba(255,51,85,.04)';}
+
+    // Daily PnL KPI
+    const dpEl=document.getElementById('k-dpnl');
+    if(dpEl){dpEl.textContent=(dailyPnl>=0?'+':'')+'$'+Math.abs(dailyPnl).toFixed(2);dpEl.className='kpi-v'+(dailyPnl>0?' pos':dailyPnl<0?' neg':'');}
+
+    // Capital protection status badge
+    const capBadge=document.getElementById('h-clbl-cap');
+    if(capBadge){capBadge.textContent=ok?'OK':'BLOCKED';capBadge.style.color=ok?'rgba(57,255,20,.55)':'rgba(255,51,85,.6)';}
+
+    function capBar(vi,bi,ri,val,max,unit){
       const abs=Math.abs(val),p=Math.min(100,abs/max*100),rem=Math.max(0,max-abs);
-      document.getElementById(vi).textContent=(unit==='$'?'$':'')+abs.toFixed(1)+'/'+(unit==='$'?'$':'')+max+(unit==='%'?'%':'');
-      const b=document.getElementById(bi);b.style.width=p+'%';b.className='cap-fill'+(p>80?' d':p>50?' w':'');
+      const vEl=document.getElementById(vi);if(vEl) vEl.textContent=(unit==='$'?'$':'')+abs.toFixed(1)+'/'+(unit==='$'?'$':'')+max+(unit==='%'?'%':'');
+      const b=document.getElementById(bi);if(b){b.style.width=p+'%';b.className='cap-fill'+(p>80?' d':p>50?' w':'');}
       const rEl=document.getElementById(ri);if(rEl) rEl.textContent=(unit==='$'?'$':'')+rem.toFixed(unit==='%'?1:0)+(unit==='%'?'%':'');
     }
-    bar('cv-d','cb-d','cr-d',capital.daily_pnl??0,30,'$');
-    bar('cv-w','cb-w','cr-w',capital.weekly_pnl??0,75,'$');
+    capBar('cv-d','cb-d','cr-d',capital.daily_pnl??0,30,'$');
+    capBar('cv-w','cb-w','cr-w',capital.weekly_pnl??0,75,'$');
     const cl=capital.consecutive_losses??0,sp=Math.min(100,cl/5*100);
-    document.getElementById('cv-s').textContent=cl+'/5';
-    const bs=document.getElementById('cb-s');bs.style.width=sp+'%';bs.className='cap-fill'+(sp>80?' d':sp>50?' w':'');
+    const cvS=document.getElementById('cv-s');if(cvS) cvS.textContent=cl+'/5';
+    const cbS=document.getElementById('cb-s');if(cbS){cbS.style.width=sp+'%';cbS.className='cap-fill'+(sp>80?' d':sp>50?' w':'');}
     const crS=document.getElementById('cr-s');if(crS) crS.textContent=Math.max(0,5-cl);
-    const dp=capital.drawdown_percent??0,dpp=Math.min(100,dp/20*100);
-    document.getElementById('cv-dd').textContent=dp.toFixed(1)+'%/20%';
-    const bd=document.getElementById('cb-dd');bd.style.width=dpp+'%';bd.className='cap-fill'+(dpp>80?' d':dpp>50?' w':'');
-    const crDD=document.getElementById('cr-dd');if(crDD) crDD.textContent=Math.max(0,20-dp).toFixed(1)+'%';
+    const dp2=capital.drawdown_percent??0,dpp=Math.min(100,dp2/20*100);
+    const cvDD=document.getElementById('cv-dd');if(cvDD) cvDD.textContent=dp2.toFixed(1)+'%/20%';
+    const cbDD=document.getElementById('cb-dd');if(cbDD){cbDD.style.width=dpp+'%';cbDD.className='cap-fill'+(dpp>80?' d':dpp>50?' w':'');}
+    const crDD=document.getElementById('cr-dd');if(crDD) crDD.textContent=Math.max(0,20-dp2).toFixed(1)+'%';
   }
 
   if(health){
