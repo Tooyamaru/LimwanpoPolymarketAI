@@ -1,4 +1,4 @@
-"""schemas/analytics.py — Pydantic response schemas for Layer 15: Performance Analytics."""
+"""schemas/analytics.py — Pydantic response schemas for Layers 15 & 16 Analytics."""
 
 from typing import Optional
 
@@ -42,3 +42,17 @@ class PerformanceAnalyticsResponse(BaseModel):
     # ── Breakdowns ────────────────────────────────────────────────────────────
     assets: dict[str, BreakdownEntry]
     timeframes: dict[str, BreakdownEntry]
+
+
+class CapitalStatusResponse(BaseModel):
+    """Layer 16: Capital management kill-switch status."""
+
+    # ── Gate ──────────────────────────────────────────────────────────────────
+    allowed: bool
+    reason: Optional[str]
+
+    # ── Metrics ───────────────────────────────────────────────────────────────
+    daily_pnl: float
+    weekly_pnl: float
+    consecutive_losses: int
+    drawdown_percent: float

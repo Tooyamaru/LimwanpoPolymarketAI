@@ -108,6 +108,13 @@ class Settings(BaseSettings):
     POSITION_SCORE_HIGH: float = 90.0
     POSITION_SCORE_MAX: float = 95.0
 
+    # Capital management (Layer 16)
+    CAPITAL_DAILY_LOSS_LIMIT_USDC: float = 30.0
+    CAPITAL_WEEKLY_LOSS_LIMIT_USDC: float = 75.0
+    CAPITAL_MAX_CONSECUTIVE_LOSSES: int = 5
+    CAPITAL_MAX_DRAWDOWN_PERCENT: float = 20.0
+    CAPITAL_ENABLE_KILL_SWITCH: bool = True
+
     # Exit engine (Layer between Opportunity and Strategy)
     EXIT_ENGINE_ENABLED: bool = True
     EXIT_ENGINE_INTERVAL_SECONDS: int = 30

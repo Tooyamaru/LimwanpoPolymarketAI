@@ -1,5 +1,5 @@
 """
-Risk Engine — Layers 9 + 14.
+Risk Engine — Layers 9 + 14 + 16.
 
 Screens PENDING OPEN_LONG_YES / OPEN_LONG_NO TradeDecision rows against a
 set of trade-level and portfolio-level risk rules before they reach the
@@ -10,7 +10,13 @@ Pipeline position:
   → Risk Engine   → [RISK_APPROVED | BLOCKED]
   → Execution Engine executes RISK_APPROVED decisions only
 
-Layer 9 rules (evaluated first; first failure wins):
+Layer 16 capital management gate (evaluated FIRST; short-circuits all other rules):
+  0. DAILY_LOSS_LIMIT   — today's realized PnL <= -CAPITAL_DAILY_LOSS_LIMIT_USDC
+  0. WEEKLY_LOSS_LIMIT  — this week's realized PnL <= -CAPITAL_WEEKLY_LOSS_LIMIT_USDC
+  0. LOSS_STREAK_LIMIT  — consecutive closing losses >= CAPITAL_MAX_CONSECUTIVE_LOSSES
+  0. MAX_DRAWDOWN_LIMIT — equity curve drawdown % >= CAPITAL_MAX_DRAWDOWN_PERCENT
+
+Layer 9 rules (evaluated after Layer 16 passes; first failure wins):
   1. DUPLICATE_POSITION  — an OPEN position for the same condition_id exists
   2. MAX_OPEN_POSITIONS  — total OPEN positions >= MAX_OPEN_POSITIONS
   3. MAX_EXPOSURE        — OPEN positions for this asset >= MAX_EXPOSURE_PER_ASSET
@@ -24,6 +30,11 @@ Layer 14 portfolio rules (evaluated after Layer 9; first failure wins):
   9. TIMEFRAME_POSITION_LIMIT       — open positions in this timeframe >= timeframe cap
 
 Settings (from config/settings.py):
+  CAPITAL_DAILY_LOSS_LIMIT_USDC         float default 30.0
+  CAPITAL_WEEKLY_LOSS_LIMIT_USDC        float default 75.0
+  CAPITAL_MAX_CONSECUTIVE_LOSSES        int   default 5
+  CAPITAL_MAX_DRAWDOWN_PERCENT          float default 20.0
+  CAPITAL_ENABLE_KILL_SWITCH            bool  default True
   MAX_OPEN_POSITIONS                    int   default 10
   MAX_EXPOSURE_PER_ASSET                int   default 3
   MAX_DAILY_LOSS                        float default -50.0
@@ -32,6 +43,8 @@ Settings (from config/settings.py):
   PORTFOLIO_MAX_OPEN_POSITIONS          int   default 5
   PORTFOLIO_MAX_PER_ASSET_USDC          float default 100.0
   PORTFOLIO_MAX_PER_TIMEFRAME_POSITIONS int   default 3
+
+CLOSE_POSITION decisions bypass ALL rules (Pass 2) — exits are never blocked.
 """
 
 from datetime import datetime, timezone
@@ -94,6 +107,11 @@ class RiskEngine:
         errors = 0
 
         if pending:
+            # ── Layer 16: Capital management gate (one check covers all decisions) ─
+            from app.services.capital_management_service import CapitalManagementService
+            capital_svc = CapitalManagementService()
+            capital_status = await capital_svc.evaluate(session)
+
             # ── Pre-fetch shared risk state (single DB round-trip per cycle) ─────
             open_positions = await self._get_open_positions(session)
             daily_trades = await self._get_daily_trades_count(session)
@@ -101,12 +119,16 @@ class RiskEngine:
 
             for td in pending:
                 try:
-                    block_reason = self._check_rules(
-                        td=td,
-                        open_positions=open_positions,
-                        daily_trades=daily_trades,
-                        daily_loss=daily_loss,
-                    )
+                    # Capital gate fires before all other rules
+                    if not capital_status.allowed:
+                        block_reason: Optional[str] = capital_status.reason
+                    else:
+                        block_reason = self._check_rules(
+                            td=td,
+                            open_positions=open_positions,
+                            daily_trades=daily_trades,
+                            daily_loss=daily_loss,
+                        )
 
                     if block_reason is None:
                         result_val = "ALLOW"
