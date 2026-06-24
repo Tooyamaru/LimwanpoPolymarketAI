@@ -1,6 +1,6 @@
 # UPDATED_FINAL_HYPOTHESIS.md
 
-**Generated:** 2026-06-23 13:46:10 UTC
+**Generated:** 2026-06-24 03:54:25 UTC
 **Audit:** #5 — Part 5
 **IMPORTANT:** All prior conclusions treated as open. Evidence evaluated independently.
 
@@ -8,10 +8,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Active replacement markets examined | 12 |
-| Markets seeded near mid≈0.505 at creation | 12/12 |
+| Active replacement markets examined | 8 |
+| Markets seeded near mid≈0.505 at creation | 8/8 |
 | 30-min monitoring rounds | 180 |
-| Total order book snapshots | 2160 |
+| Total order book snapshots | 1440 |
 | Mid-price changes (30-min, all markets) | 0 |
 | Depth-only changes (no mid move) | 0 |
 | LTP changes detected (5-min window) | 0 |
@@ -49,7 +49,7 @@
 *Price updates occur on a schedule (e.g., at rollover), not continuously.*
 
 ### Evidence Supporting
-- All 12 observed markets seeded identically at mid≈0.505 at creation
+- All 8 observed markets seeded identically at mid≈0.505 at creation
 - Markets roll on a strict schedule (5m / 15m / 1H windows)
 - Previous audits showed depth changes occurring in synchronized batches
 - Markets from prior audits showed identical AMM patterns
@@ -91,7 +91,7 @@
 
 ### Evidence Supporting
 - **Zero mid-price changes observed over 30 minutes** — strongest possible support
-- All 12 markets seeded identically at mid≈0.505
+- All 8 markets seeded identically at mid≈0.505
 - All markets show identical bid=0.50, ask=0.51 book structure at creation
 - Zero volume across most markets (confirmed by previous audits)
 
@@ -128,7 +128,7 @@ Evidence points most strongly to a **hybrid of H1 + H3**:
 
 ## Quality Control
 
-1. **Sample sizes:** 2160 total order book snapshots; 12 markets; 180 rounds
+1. **Sample sizes:** 1440 total order book snapshots; 8 markets; 180 rounds
 2. **Missing data:** Fetches that failed HTTP are marked `error`; excluded from all statistics
 3. **Expiry effects:** All markets confirmed active via Gamma API at collection time. Markets with remaining lifetime < observation window may have rolled mid-session.
 4. **Survivorship bias:** Discovery fetches only `active=true` from Gamma API, so expired markets are automatically excluded.
@@ -148,4 +148,4 @@ The most accurate model is: **fixed-seed prediction market with passive liquidit
 not an active AMM or a liquid trader-driven book.
 
 ---
-*Generated: 2026-06-23 13:46 UTC*
+*Generated: 2026-06-24 03:54 UTC*

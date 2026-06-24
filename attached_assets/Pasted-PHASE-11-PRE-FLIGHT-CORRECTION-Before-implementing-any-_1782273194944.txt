@@ -1,0 +1,116 @@
+PHASE 11 PRE-FLIGHT CORRECTION
+
+Before implementing any Layer 11 functionality, update project understanding using the following rules.
+
+PROJECT NAME
+LimwanpoPolymarketAI
+
+PROJECT TYPE
+Polymarket Quant Bot
+
+THIS PROJECT IS NOT
+
+* Crypto trading bot
+* Binance trading bot
+* Futures bot
+* Spot bot
+* Arbitrage bot
+* Market-making bot
+* Directional signal bot
+
+CORE BUSINESS MODEL
+
+LimwanpoPolymarketAI analyzes prediction markets on Polymarket and attempts to identify profitable opportunities in YES/NO contracts.
+
+BTC, ETH, SOL, and XRP are prediction targets only.
+
+The system does not trade BTC, ETH, SOL, or XRP directly.
+
+The actual traded instruments are:
+
+* YES contracts
+* NO contracts
+
+DATA SOURCES
+
+Binance:
+
+* Signal source only
+* Market sentiment input
+* Price action input
+* Volatility input
+
+Chainlink:
+
+* Reference data source
+* Validation source
+
+Neither Binance nor Chainlink are execution venues.
+
+All executions occur on Polymarket.
+
+QUANT PHILOSOPHY
+
+The objective is not merely to predict whether BTC will go up or down.
+
+The objective is to identify profitable opportunities through multi-factor quantitative analysis.
+
+Decision-making may include:
+
+* Price action
+* Trend analysis
+* Momentum
+* Volatility
+* Statistical models
+* Historical behavior
+* Confidence scoring
+* Opportunity scoring
+* Probability estimation
+* Market pricing analysis
+* Liquidity conditions
+* Order book information
+
+Probability mispricing is one signal among many.
+
+No single factor should be treated as the sole decision criterion.
+
+POSITION PHILOSOPHY
+
+Exposure management is more important than position count.
+
+Multiple entries may be valid.
+
+Multiple positions on the same market may be valid.
+
+Do not assume one-position-per-market unless explicitly required by business rules.
+
+EXIT PHILOSOPHY
+
+A position may be closed before market settlement.
+
+A position may be closed when:
+
+* Profit target achieved
+* Edge disappears
+* Confidence deteriorates
+* Better opportunity appears
+* Exposure must be reduced
+* Risk conditions change
+
+Do not assume that positions remain open until event resolution.
+
+LAYER 11 IMPLEMENTATION RULE
+
+Do not immediately implement CLOSE_POSITION using only fixed profit-target logic.
+
+First verify:
+
+1. Current decision lifecycle
+2. Existing exposure framework
+3. Existing risk framework
+4. Existing position management architecture
+5. Existing market-scoring architecture
+
+Then design a complete exit-decision framework consistent with the Quant Bot philosophy above.
+
+Deliver a design review before coding major Layer 11 changes.

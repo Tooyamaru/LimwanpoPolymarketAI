@@ -74,6 +74,8 @@ Decision-making draws from multiple inputs:
 | Opportunity scoring | Composite score across all signals |
 | Probability estimation | Model-estimated outcome probability |
 | Market pricing analysis | Polymarket implied probability from CLOB |
+| Liquidity conditions | Bid/ask depth, spread width, order book availability |
+| Order book information | Best bid, best ask, depth imbalance YES vs NO |
 
 **Probability mispricing is one important signal — it is NOT the only signal.**
 
@@ -113,15 +115,32 @@ That is a directional price-movement bot. LimwanpoPolymarketAI is a **Polymarket
 - Duplicate entries must NOT be automatically classified as bugs.
 - A finding must verify violation of an explicit exposure rule before being classified as a duplicate defect.
 
-### Profit-Taking Philosophy
+### Exit Philosophy
 
-Profit-taking before market settlement is **valid and expected**:
+A position may be closed at any time — market settlement is not required.
+
+Valid exit triggers include:
+
+| Trigger | Description |
+|---|---|
+| **Profit target achieved** | `unrealized_pnl` reaches a configurable threshold |
+| **Edge disappears** | Opportunity score for this market drops below minimum hold threshold |
+| **Confidence deteriorates** | Signal activity drops to zero — no recent quantitative confirmation |
+| **Better opportunity appears** | A higher-scoring market exists and exposure must be rotated |
+| **Exposure must be reduced** | Position count or per-asset exposure approaches limit |
+| **Risk conditions change** | Daily loss approaches threshold, spread widens, liquidity drops |
+
+Expected workflow:
 
 ```
-Open Position → Opportunity exists → Take profit → Close position
+Open Position
+  → Position becomes profitable  →  CLOSE (profit target)
+  → Opportunity score drops      →  CLOSE (edge disappeared)
+  → Better market found          →  CLOSE (exposure rotation)
+  → Risk limit approaching       →  CLOSE (risk reduction)
 ```
 
-The system does not require waiting until event resolution or market expiry. Audits must not classify early profit-taking as a defect.
+Audits must not classify any of these early exits as errors. The system is not designed to hold every position until market resolution.
 
 ### Audit Assumptions
 
