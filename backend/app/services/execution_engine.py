@@ -240,9 +240,37 @@ class ExecutionEngine:
                 return True
             exit_price = round(1.0 - opp.yes_ask, 6)
 
-        # ── Close the position at executable bid price ─────────────────────────
+        # ── Create exit order record (SELL_YES / SELL_NO) ─────────────────────
+        now = datetime.now(timezone.utc)
+        exit_side = "SELL_YES" if pos.side == "LONG_YES" else "SELL_NO"
+        close_order = await order_repo.create_order(
+            session,
+            decision_id=td.id,
+            condition_id=pos.condition_id,
+            asset=pos.asset,
+            timeframe=pos.timeframe,
+            side=exit_side,
+            order_type="MARKET",
+            quantity=pos.quantity,
+            requested_price=exit_price,
+            filled_price=exit_price,
+            status="FILLED",
+            created_at=now,
+            filled_at=now,
+        )
+        # Flush to obtain close_order.id before linking it to the position
+        await session.flush()
+
+        # ── Close the position with full audit trail ───────────────────────────
         pos_svc = PositionService()
-        await pos_svc.close_position(session, pos.id, closing_price=exit_price)
+        await pos_svc.close_position(
+            session,
+            pos.id,
+            closing_price=exit_price,
+            close_reason=td.exit_reason,
+            close_decision_id=td.id,
+            close_order_id=close_order.id,
+        )
 
         # ── Mark trade decision as EXECUTED ────────────────────────────────────
         await session.execute(
@@ -255,9 +283,11 @@ class ExecutionEngine:
             "Position closed via exit decision",
             decision_id=td.id,
             position_id=pos.id,
+            close_order_id=close_order.id,
             asset=pos.asset,
             timeframe=pos.timeframe,
             side=pos.side,
+            exit_side=exit_side,
             exit_price=exit_price,
             entry_price=pos.entry_price,
             exit_reason=td.exit_reason,

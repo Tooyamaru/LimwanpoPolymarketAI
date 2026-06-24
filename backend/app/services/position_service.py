@@ -83,13 +83,20 @@ class PositionService:
 
     async def create_position_from_fill(self, session: AsyncSession) -> int:
         """
-        Create Position rows for FILLED orders that don't yet have one.
+        Create Position rows for FILLED entry orders that don't yet have one.
+
+        Only entry orders (side LONG_YES / LONG_NO) create positions.
+        Exit orders (side SELL_YES / SELL_NO) are skipped — they are linked
+        back to existing positions via Position.close_order_id.
 
         Returns the number of new positions created.
         """
         filled_orders_stmt = (
             select(Order)
-            .where(Order.status == "FILLED")
+            .where(
+                Order.status == "FILLED",
+                Order.side.in_(["LONG_YES", "LONG_NO"]),
+            )
             .order_by(Order.filled_at)
         )
         result = await session.execute(filled_orders_stmt)
@@ -209,9 +216,17 @@ class PositionService:
         session: AsyncSession,
         position_id: int,
         closing_price: Optional[float] = None,
+        close_reason: Optional[str] = None,
+        close_decision_id: Optional[int] = None,
+        close_order_id: Optional[int] = None,
     ) -> Optional[object]:
         """
         Close a position: mark CLOSED, compute realized_pnl, clear unrealized.
+
+        Layer 12 audit trail:
+          close_reason      — why the position was closed
+          close_decision_id — TradeDecision.id that triggered the close
+          close_order_id    — Order.id of the exit fill
 
         If closing_price is None, uses current_price as the close price.
         Returns the updated Position or None if not found.
@@ -240,6 +255,11 @@ class PositionService:
                 unrealized_pnl=None,
                 realized_pnl=realized,
                 closed_at=now,
+                # Layer 12 audit trail
+                exit_price=close_px,
+                close_reason=close_reason,
+                close_decision_id=close_decision_id,
+                close_order_id=close_order_id,
             )
         )
         await session.commit()
@@ -251,7 +271,10 @@ class PositionService:
             timeframe=pos.timeframe,
             side=pos.side,
             entry_price=pos.entry_price,
-            close_price=close_px,
+            exit_price=close_px,
             realized_pnl=realized,
+            close_reason=close_reason,
+            close_decision_id=close_decision_id,
+            close_order_id=close_order_id,
         )
         return pos

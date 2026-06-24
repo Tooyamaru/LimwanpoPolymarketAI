@@ -21,6 +21,11 @@ class PositionResponse(BaseModel):
     status: str
     opened_at: datetime
     closed_at: Optional[datetime]
+    # Layer 12: exit audit trail
+    close_reason: Optional[str] = None
+    exit_price: Optional[float] = None
+    close_decision_id: Optional[int] = None
+    close_order_id: Optional[int] = None
 
     model_config = {"from_attributes": True}
 

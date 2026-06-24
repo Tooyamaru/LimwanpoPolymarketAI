@@ -1,8 +1,9 @@
 """
 Position model — Layer 8: Position Tracking.
 
-One row per FILLED order. Tracks the lifecycle of a paper-mode long position
-from open (entry_price = fill_price) through live PnL updates to close.
+One row per FILLED entry order. Tracks the lifecycle of a paper-mode long
+position from open (entry_price = fill_price) through live PnL updates to
+close.
 
 Status lifecycle:
   OPEN → CLOSED
@@ -12,7 +13,13 @@ PnL semantics (paper mode):
   LONG_NO:  current_price = 1 - yes_mid
 
   unrealized_pnl = quantity * (current_price - entry_price)
-  realized_pnl   = quantity * (close_price  - entry_price)  [set on CLOSED]
+  realized_pnl   = quantity * (exit_price    - entry_price)  [set on CLOSED]
+
+Layer 12 audit trail (all set on CLOSED):
+  close_reason      — WHY was it closed (EXIT_PROFIT_TARGET, EXIT_STOP_LOSS, …)
+  exit_price        — AT WHAT PRICE was it closed (bid-side, never mid)
+  close_decision_id — WHICH TradeDecision triggered the close
+  close_order_id    — WHICH Order executed the close
 """
 
 from datetime import datetime
@@ -38,7 +45,7 @@ class Position(Base):
 
     order_id: Mapped[int] = mapped_column(
         Integer, nullable=False, unique=True,
-        comment="FK → orders.id (one position per fill)",
+        comment="FK → orders.id (entry order; one position per fill)",
     )
     condition_id: Mapped[str] = mapped_column(String(256), nullable=False)
     asset: Mapped[str] = mapped_column(String(16), nullable=False)
@@ -68,12 +75,30 @@ class Position(Base):
     )
     realized_pnl: Mapped[Optional[float]] = mapped_column(
         Float, nullable=True,
-        comment="quantity * (close_price - entry_price), set on CLOSED",
+        comment="quantity * (exit_price - entry_price), set on CLOSED",
     )
 
     status: Mapped[str] = mapped_column(
         String(16), nullable=False, default="OPEN",
         comment="OPEN | CLOSED",
+    )
+
+    # ── Layer 12: exit audit trail ─────────────────────────────────────────────
+    close_reason: Mapped[Optional[str]] = mapped_column(
+        String(64), nullable=True,
+        comment="Why the position was closed (EXIT_PROFIT_TARGET, EXIT_STOP_LOSS, …)",
+    )
+    exit_price: Mapped[Optional[float]] = mapped_column(
+        Float, nullable=True,
+        comment="Executable bid-side price used to close (never mid)",
+    )
+    close_decision_id: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True,
+        comment="FK → trade_decisions.id of the CLOSE_POSITION decision",
+    )
+    close_order_id: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True,
+        comment="FK → orders.id of the exit SELL_YES / SELL_NO order",
     )
 
     opened_at: Mapped[datetime] = mapped_column(
