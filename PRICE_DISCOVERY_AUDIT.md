@@ -1,9 +1,9 @@
 # PRICE_DISCOVERY_AUDIT.md
 
-**Generated:** 2026-06-24 05:06:43 UTC
+**Generated:** 2026-06-24 06:39:59 UTC
 **Audit:** #5 — Part 2
 **Observation window:** 60 rounds × 5s = 5 minutes
-**Markets monitored:** 8
+**Markets monitored:** 12
 
 ## Methodology
 
@@ -24,7 +24,7 @@ whether the bid, ask, mid, or only depth was affected.
 | Mid changes | 0 |
 | Depth-only changes (no mid move) | 0 |
 
-### BTC/5m
+### BTC/1H
 
 | Metric | Count (5-min window) |
 |--------|----------------------|
@@ -34,7 +34,27 @@ whether the bid, ask, mid, or only depth was affected.
 | Mid changes | 0 |
 | Depth-only changes (no mid move) | 0 |
 
+### BTC/5m
+
+| Metric | Count (5-min window) |
+|--------|----------------------|
+| LTP changes detected | 0 |
+| Best bid changes | 0 |
+| Best ask changes | 0 |
+| Mid changes | 0 |
+| Depth-only changes (no mid move) | 5 |
+
 ### ETH/15m
+
+| Metric | Count (5-min window) |
+|--------|----------------------|
+| LTP changes detected | 0 |
+| Best bid changes | 0 |
+| Best ask changes | 0 |
+| Mid changes | 0 |
+| Depth-only changes (no mid move) | 0 |
+
+### ETH/1H
 
 | Metric | Count (5-min window) |
 |--------|----------------------|
@@ -64,6 +84,16 @@ whether the bid, ask, mid, or only depth was affected.
 | Mid changes | 0 |
 | Depth-only changes (no mid move) | 0 |
 
+### SOL/1H
+
+| Metric | Count (5-min window) |
+|--------|----------------------|
+| LTP changes detected | 0 |
+| Best bid changes | 0 |
+| Best ask changes | 0 |
+| Mid changes | 0 |
+| Depth-only changes (no mid move) | 0 |
+
 ### SOL/5m
 
 | Metric | Count (5-min window) |
@@ -75,6 +105,16 @@ whether the bid, ask, mid, or only depth was affected.
 | Depth-only changes (no mid move) | 0 |
 
 ### XRP/15m
+
+| Metric | Count (5-min window) |
+|--------|----------------------|
+| LTP changes detected | 0 |
+| Best bid changes | 0 |
+| Best ask changes | 0 |
+| Mid changes | 0 |
+| Depth-only changes (no mid move) | 0 |
+
+### XRP/1H
 
 | Metric | Count (5-min window) |
 |--------|----------------------|
@@ -101,10 +141,10 @@ whether the bid, ask, mid, or only depth was affected.
 | LTP changes | 0 |
 | Best bid changes | 0 |
 | Mid changes | 0 |
-| Depth-only changes | 0 |
+| Depth-only changes | 5 |
 
 **Conclusion:** No bid/ask price changes detected in 5-minute window.
 Order books are static. If LTP changes occurred, they did not move the NBBO.
 
 ---
-*Data fetched: 2026-06-24 05:06 UTC*
+*Data fetched: 2026-06-24 06:39 UTC*
