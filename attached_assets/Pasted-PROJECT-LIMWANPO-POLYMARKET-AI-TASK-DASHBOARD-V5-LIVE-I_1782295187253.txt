@@ -1,0 +1,558 @@
+PROJECT: LIMWANPO POLYMARKET AI
+
+TASK: DASHBOARD V5 — LIVE INTELLIGENCE PASS
+
+IMPORTANT
+
+THIS IS NOT A REDESIGN.
+
+DO NOT CHANGE LAYOUT.
+
+DO NOT MOVE PANELS.
+
+DO NOT REMOVE PANELS.
+
+DO NOT ADD SIDEBARS.
+
+DO NOT ADD MENUS.
+
+DO NOT TOUCH BACKEND.
+
+DO NOT TOUCH ENGINES.
+
+DO NOT TOUCH TRADING LOGIC.
+
+DO NOT TOUCH LAYERS 1–16.
+
+ONLY IMPROVE INFORMATION QUALITY, VISUAL HIERARCHY, LIVE FEEL, AND OPERATOR EXPERIENCE.
+
+The current V4.5 layout is FINAL.
+
+==================================================
+PRIMARY OBJECTIVE
+=================
+
+Current dashboard feels visually good but emotionally dead.
+
+Reason:
+
+When no trades exist, large areas become empty.
+
+Operator cannot easily understand:
+
+* what AI is focusing on
+* closest candidate to execution
+* why no trade exists
+* what market is strongest right now
+
+Goal:
+
+Make dashboard feel alive 24/7.
+
+Even when:
+
+* no positions open
+* no signals approved
+* no trades executed
+
+The AI must always appear to be working.
+
+==================================================
+SECTION 1
+AI CURRENT TARGET PANEL
+=======================
+
+Current state:
+
+WAITING FOR SIGNAL
+
+This is not enough.
+
+Replace logic.
+
+Always display the strongest market in the universe.
+
+Example:
+
+TOP MARKET RIGHT NOW
+
+BTC 15M
+
+SCORE 24
+
+DIRECTION YES
+
+THRESHOLD 85
+
+STATUS:
+NOT READY
+
+DISTANCE TO ENTRY:
+61 POINTS
+
+---
+
+If score >= 85:
+
+Display:
+
+BTC 15M YES
+
+SCORE 92
+
+STATUS:
+READY
+
+CONFIDENCE:
+HIGH
+
+---
+
+If score >= 90:
+
+Display:
+
+TRADE READY
+
+with dominant green glow.
+
+---
+
+Current Target panel must NEVER be empty.
+
+==================================================
+SECTION 2
+TOP OPPORTUNITY RANKING
+=======================
+
+Inside AI Current Target panel add:
+
+TOP 3 MARKETS
+
+#1 BTC 15M
+92
+
+#2 SOL 15M
+87
+
+#3 ETH 1H
+89
+
+Always sort by score descending.
+
+Update every refresh cycle.
+
+This allows operator to know exactly what AI is watching.
+
+==================================================
+SECTION 3
+AI THINKING FEED
+================
+
+Add a terminal-style feed.
+
+Location:
+
+directly below AI Decision Engine.
+
+Small height.
+
+Scrollable.
+
+Animated.
+
+---
+
+Examples:
+
+[09:44:11]
+BTC 15M score=24 below threshold
+
+[09:44:16]
+ETH 1H score=24 below threshold
+
+[09:44:21]
+No opportunity above 85
+
+[09:44:26]
+Scanning 12 markets
+
+[09:44:31]
+Universe synchronized
+
+---
+
+When opportunity exists:
+
+[09:45:12]
+BTC 15M reached score 86
+
+[09:45:13]
+Creating trade candidate
+
+[09:45:14]
+Sending to risk engine
+
+---
+
+Maximum 25 messages.
+
+Old messages automatically removed.
+
+This section should make AI feel alive.
+
+==================================================
+SECTION 4
+HEATMAP ENHANCEMENT
+===================
+
+Keep current heatmap.
+
+Add:
+
+direction indicator.
+
+Examples:
+
+92 ▲
+
+74 ▲
+
+61 ▼
+
+42 ▼
+
+---
+
+Direction colors:
+
+YES
+green
+
+NO
+magenta
+
+---
+
+Add:
+
+pulse animation
+
+for scores >= 85
+
+---
+
+Add:
+
+strong glow
+
+for scores >= 90
+
+---
+
+Heatmap should instantly reveal:
+
+where opportunities exist.
+
+==================================================
+SECTION 5
+PIPELINE ENHANCEMENT
+====================
+
+Keep current pipeline.
+
+Add labels below each stage.
+
+Example:
+
+MARKET
+12
+
+SIGNAL
+4
+
+OPPORTUNITY
+84
+
+STRATEGY
+0
+
+RISK
+0
+
+EXECUTION
+0
+
+---
+
+Add:
+
+conversion percentage.
+
+Example:
+
+4/12
+
+33%
+
+---
+
+Operator should instantly understand funnel efficiency.
+
+==================================================
+SECTION 6
+ACTIVE POSITION PANEL
+=====================
+
+Current state:
+
+WAITING FOR SIGNAL
+
+---
+
+When no position exists:
+
+Show:
+
+LAST CLOSED TRADE
+
+BTC 15M YES
+
++12.4%
+
++31.2 USDC
+
+14 MIN AGO
+
+---
+
+If no closed trades exist:
+
+keep current waiting state.
+
+==================================================
+SECTION 7
+SYSTEM HEALTH
+=============
+
+Keep existing layout.
+
+Add:
+
+Last Cycle Time
+
+Example:
+
+UNIVERSE
+OK
+1.2s
+
+SIGNAL
+OK
+0.4s
+
+RISK
+OK
+0.2s
+
+---
+
+This makes health panel useful.
+
+==================================================
+SECTION 8
+PERFORMANCE
+===========
+
+Keep:
+
+Win Rate
+
+Net PnL
+
+Trades
+
+Max Drawdown
+
+---
+
+Add:
+
+tiny sparklines.
+
+---
+
+Add:
+
+7-day delta.
+
+Example:
+
+WIN RATE
+
+61.7%
+
++3.4%
+
+---
+
+Makes panel feel active.
+
+==================================================
+SECTION 9
+CAPITAL PROTECTION
+==================
+
+Keep existing layout.
+
+Add:
+
+remaining capacity.
+
+Example:
+
+Daily Loss
+
+0 / 30
+
+Remaining:
+30
+
+---
+
+Weekly Loss
+
+0 / 75
+
+Remaining:
+75
+
+---
+
+This makes limits easier to understand.
+
+==================================================
+SECTION 10
+HEADER STATUS
+=============
+
+Add:
+
+LIVE MARKET STATUS
+
+Example:
+
+12 ACTIVE
+
+0 READY
+
+0 OPEN
+
+0 BLOCKED
+
+---
+
+Always visible.
+
+==================================================
+SECTION 11
+BACKGROUND ACTIVITY
+===================
+
+Add subtle cyberpunk motion.
+
+Requirements:
+
+Very light.
+
+No flashy effects.
+
+Examples:
+
+slow data particles
+
+scan lines
+
+terminal flicker
+
+soft pulse
+
+---
+
+Dashboard must feel alive.
+
+Never empty.
+
+==================================================
+SECTION 12
+VISUAL HIERARCHY
+================
+
+Most important:
+
+AI Current Target
+
+Second:
+
+Heatmap
+
+Third:
+
+Active Position
+
+Fourth:
+
+Pipeline
+
+Everything else secondary.
+
+Operator attention must naturally flow:
+
+TARGET
+→ HEATMAP
+→ POSITION
+→ PIPELINE
+
+==================================================
+FINAL RESULT
+============
+
+Dashboard should feel like:
+
+A real Polymarket AI command center.
+
+Even when:
+
+0 trades
+
+0 positions
+
+0 profit
+
+0 signals
+
+the system must still appear intelligent, active, and continuously evaluating:
+
+BTC 5M
+BTC 15M
+BTC 1H
+
+ETH 5M
+ETH 15M
+ETH 1H
+
+SOL 5M
+SOL 15M
+SOL 1H
+
+XRP 5M
+XRP 15M
+XRP 1H
+
+The operator should always understand:
+
+What AI is watching.
+What is closest to entry.
+Why no trade exists.
+What the strongest market is.
+How close the system is to execution.
