@@ -17,14 +17,12 @@ from app.workers.engine_workers import (
     run_position_tracking_loop,
     run_price_refresh_loop,
     run_risk_engine_loop,
-    run_scanner_loop,
     run_signal_engine_loop,
     run_strategy_engine_loop,
     run_universe_sync_loop,
 )
 
-# Import models so their tables are registered with Base.metadata before init_db()
-import app.models  # noqa: F401
+import app.models  # noqa: F401  — registers all ORM models before init_db()
 
 setup_logging()
 logger = get_logger(__name__)
@@ -39,32 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     )
     await init_db()
 
-    # ── Price collector (every 5 s) ───────────────────────────────────────────
-    collector_task = None
-    if settings.COLLECTOR_ENABLED:
-        from app.collector.scheduler import CollectorScheduler
-        scheduler = CollectorScheduler()
-        collector_task = asyncio.create_task(scheduler.run())
-        app.state.collector = scheduler
-        logger.info(
-            "Price collector started",
-            interval=settings.COLLECTOR_INTERVAL_SECONDS,
-        )
-
-    # ── Market scanner (every 300 s) ──────────────────────────────────────────
-    scanner_task = None
-    if settings.SCANNER_ENABLED:
-        from app.services.scanner import ScannerService
-        scanner = ScannerService()
-        scanner_task = asyncio.create_task(run_scanner_loop(scanner))
-        app.state.scanner = scanner
-        logger.info(
-            "Market scanner started",
-            interval=settings.SCANNER_INTERVAL_SECONDS,
-            run_on_startup=settings.SCANNER_RUN_ON_STARTUP,
-        )
-
-    # ── DEF-002 fix: gate that downstream engines wait on before their first
+    # DEF-002 fix: gate that downstream engines wait on before their first
     # cycle.  Set by universe sync after its startup run completes so that
     # market_universe already contains the current active condition IDs.
     universe_ready_event: asyncio.Event | None = None
@@ -131,7 +104,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             run_on_startup=settings.OPPORTUNITY_ENGINE_RUN_ON_STARTUP,
         )
 
-    # ── Exit engine (every 30 s) — between Opportunity and Strategy ──────────
+    # ── Exit engine (every 30 s) — Layer 11 ──────────────────────────────────
     exit_task = None
     if settings.EXIT_ENGINE_ENABLED:
         from app.services.exit_engine import ExitEngine
@@ -209,8 +182,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Shutting down Polymarket Quant Bot")
 
     for task, name in [
-        (collector_task, "collector"),
-        (scanner_task, "scanner"),
         (universe_task, "universe"),
         (price_task, "price"),
         (signal_task, "signal"),
@@ -228,13 +199,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             except asyncio.CancelledError:
                 pass
             logger.info(f"{name} task stopped")
-
-    if settings.COLLECTOR_ENABLED and hasattr(app.state, "collector"):
-        app.state.collector.stop()
-        await app.state.collector.close()
-
-    if settings.SCANNER_ENABLED and hasattr(app.state, "scanner"):
-        await app.state.scanner.close()
 
     if settings.UNIVERSE_SYNC_ENABLED and hasattr(app.state, "universe_service"):
         await app.state.universe_service.close()

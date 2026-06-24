@@ -40,15 +40,6 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: list[str] = ["*"]
 
-    # Collector (price ticks — Sprint 2)
-    COLLECTOR_INTERVAL_SECONDS: int = 5
-    COLLECTOR_ENABLED: bool = True
-
-    # Scanner (market universe discovery — Sprint 3/4)
-    SCANNER_INTERVAL_SECONDS: int = 300
-    SCANNER_ENABLED: bool = True
-    SCANNER_RUN_ON_STARTUP: bool = True
-
     # Universe sync (Gamma Series — Sprint 7)
     UNIVERSE_SYNC_INTERVAL_SECONDS: int = 60
     UNIVERSE_SYNC_ENABLED: bool = True
@@ -115,7 +106,7 @@ class Settings(BaseSettings):
     CAPITAL_MAX_DRAWDOWN_PERCENT: float = 20.0
     CAPITAL_ENABLE_KILL_SWITCH: bool = True
 
-    # Exit engine (Layer between Opportunity and Strategy)
+    # Exit engine (Layer 11)
     EXIT_ENGINE_ENABLED: bool = True
     EXIT_ENGINE_INTERVAL_SECONDS: int = 30
     EXIT_PROFIT_TARGET_USDC: float = 0.10

@@ -20,41 +20,7 @@ from app.core.logging import get_logger
 logger = get_logger(__name__)
 
 
-# ── helpers ────────────────────────────────────────────────────────────────────
-
-async def _with_session(service_coro):
-    """Run a coroutine that requires a DB session, creating one per call."""
-    from app.core.database import get_session_factory
-    factory = get_session_factory()
-    async with factory() as session:
-        await service_coro(session)
-
-
-# ── Scanner (Layer 2) ──────────────────────────────────────────────────────────
-
-async def run_scanner_loop(scanner) -> None:
-    """
-    Scanner background loop.
-
-    Optionally runs once on startup, then repeats every SCANNER_INTERVAL_SECONDS.
-    Discovery paginates ~20k Polymarket markets so the interval is much longer
-    than the price-collection tick (default 300 s vs 5 s).
-    """
-    if settings.SCANNER_RUN_ON_STARTUP:
-        try:
-            await scanner.run()
-        except Exception as exc:
-            logger.error("Scanner startup run failed", error=str(exc))
-
-    while True:
-        await asyncio.sleep(settings.SCANNER_INTERVAL_SECONDS)
-        try:
-            await scanner.run()
-        except Exception as exc:
-            logger.error("Scanner periodic run failed", error=str(exc))
-
-
-# ── Universe sync (Layer 3 / Sprint 7) ────────────────────────────────────────
+# ── Universe sync (Layer 3) ────────────────────────────────────────────────────
 
 async def run_universe_sync_loop(
     service,
@@ -95,7 +61,7 @@ async def run_universe_sync_loop(
             logger.error("Universe sync periodic run failed", error=str(exc))
 
 
-# ── Price refresh (Layer 3 / Sprint 9) ────────────────────────────────────────
+# ── Price refresh (Layer 3b) ───────────────────────────────────────────────────
 
 async def run_price_refresh_loop(
     service,
@@ -202,7 +168,7 @@ async def run_opportunity_engine_loop(
             logger.error("Opportunity engine periodic run failed", error=str(exc))
 
 
-# ── Exit engine (between Opportunity and Strategy) ─────────────────────────────
+# ── Exit engine (Layer 11) ─────────────────────────────────────────────────────
 
 async def run_exit_engine_loop(
     engine,
