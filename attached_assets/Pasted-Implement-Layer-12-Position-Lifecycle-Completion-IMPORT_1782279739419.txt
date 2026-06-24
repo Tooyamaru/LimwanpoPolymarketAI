@@ -1,0 +1,165 @@
+Implement Layer 12: Position Lifecycle Completion.
+
+IMPORTANT:
+Read and understand the existing architecture first before changing anything.
+
+Current system already has:
+
+* Market Collector
+* Scanner
+* Universe Sync
+* Price Refresh
+* Signal Engine
+* Opportunity Engine
+* Strategy Engine
+* Risk Engine
+* Execution Engine
+* Position Tracking
+* Portfolio Reporting
+* Exit Decision Engine
+
+Exit Engine is already implemented and producing CLOSE_POSITION decisions.
+
+Your task is NOT to redesign the Exit Engine.
+
+Your task is to complete the position lifecycle and make closed positions fully auditable.
+
+GOALS
+
+1. Add missing exit metadata to Position model:
+
+* close_reason VARCHAR(64)
+* exit_price FLOAT
+* close_decision_id INTEGER NULL
+* close_order_id INTEGER NULL
+
+2. Create automatic database migrations using existing migration pattern.
+
+Use:
+
+ALTER TABLE ... ADD COLUMN IF NOT EXISTS
+
+Do not create a new migration framework.
+
+3. Update PositionService.close_position()
+
+When a position is closed:
+
+* store exit_price
+* store close_reason
+* store close_decision_id
+* calculate realized_pnl using exit_price
+* preserve existing behavior
+
+Backward compatibility required.
+
+4. Create Close Order Records
+
+Current system creates Order records only for entries.
+
+Add support for exit orders.
+
+When a CLOSE_POSITION decision executes:
+
+Create a corresponding Order row.
+
+Requirements:
+
+LONG_YES exit:
+
+* side = SELL_YES
+
+LONG_NO exit:
+
+* side = SELL_NO
+
+Store:
+
+* condition_id
+* quantity
+* filled_price
+* status
+* execution timestamp
+
+The order must be linked back to Position.close_order_id.
+
+5. Execution Engine
+
+Extend _execute_close_decision().
+
+After close order creation:
+
+* save close_order_id
+* save close_decision_id
+* save exit_price
+
+Then mark TradeDecision status = EXECUTED.
+
+6. Portfolio Reporting
+
+Ensure closed positions still contribute correctly to:
+
+* realized_pnl
+* win rate
+* trade history
+
+Use exit_price instead of current_price.
+
+7. API Exposure
+
+Expose new fields in all relevant serializers/schemas:
+
+Position:
+
+* close_reason
+* exit_price
+* close_decision_id
+* close_order_id
+
+Do not break existing API responses.
+
+8. Audit Trail
+
+After implementation, every closed position must answer:
+
+WHY was it closed?
+→ close_reason
+
+WHICH decision closed it?
+→ close_decision_id
+
+WHICH order executed it?
+→ close_order_id
+
+AT WHAT PRICE?
+→ exit_price
+
+9. Constraints
+
+DO NOT modify:
+
+* Strategy logic
+* Risk rules
+* Opportunity scoring
+* Exit trigger logic
+
+Only implement lifecycle completion.
+
+10. Deliverables
+
+After implementation provide:
+
+A. Files modified
+B. Exact schema changes
+C. Example closed position JSON
+D. Example close order JSON
+E. Verification that:
+
+* realized_pnl still works
+* portfolio reporting still works
+* exit engine still works
+* no breaking changes introduced
+
+Work incrementally.
+Read code before modifying.
+Preserve existing architecture.
