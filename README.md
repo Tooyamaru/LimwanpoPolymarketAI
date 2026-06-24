@@ -59,27 +59,40 @@ These are prediction markets — not spot assets, not futures contracts, not per
 
 LimwanpoPolymarketAI is a **Quant Bot**, not a directional signal bot.
 
+The goal is NOT: *"Predict if BTC goes up."*  
+The goal IS: *"Detect probability mispricing."*
+
 The objective is to identify **pricing inefficiencies** between:
 
-- **(A)** The probability implied by current Polymarket prices
+- **(A)** The probability implied by current Polymarket market prices
 - **(B)** The probability estimated by LimwanpoPolymarketAI internal models
 
-**Example:**
+The system evaluates both directions of mispricing:
+
+**Example 1 — Market underprices YES (BUY YES opportunity):**
 
 ```
-Polymarket YES price implies:    40% probability
-Internal model estimates:        68% probability
-Edge:                           +28%
+Market YES implied probability:   40%
+Model estimated probability:      68%
+Edge:                            +28%  →  BUY YES
 ```
 
-This difference (+28%) is a candidate opportunity. The system buys the YES contract because the market is underpricing the outcome relative to the model's estimate.
+**Example 2 — Market overprices YES (BUY NO opportunity):**
+
+```
+Market YES implied probability:   95%
+Model estimated probability:      80%
+Edge:                            -15%  →  BUY NO
+```
+
+In Example 2, even though the model agrees the event is *likely* (80%), buying YES is still a **bad trade** — because the market has already priced in 95%. The model believes YES is *less likely* than the market implies, creating an edge on the NO side.
 
 **The system does NOT operate on simple directional logic such as:**
 
 > "BTC going up → BUY YES"  
 > "BTC going down → BUY NO"
 
-That would be a directional price-movement bot. LimwanpoPolymarketAI is a **probability mispricing engine** — it searches for markets where Polymarket's implied probability diverges meaningfully from the estimated true probability. The underlying asset direction is one input into that estimate, not the sole decision criterion.
+That is a directional price-movement bot. LimwanpoPolymarketAI is a **probability mispricing engine** — it searches for markets where Polymarket's implied probability diverges meaningfully from the model's estimated true probability. The underlying asset direction is one input into that probability estimate, not the sole decision criterion.
 
 ### Position & Exposure Philosophy
 
