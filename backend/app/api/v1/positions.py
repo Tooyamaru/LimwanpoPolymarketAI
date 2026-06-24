@@ -3,6 +3,7 @@ Positions router — Layer 8: Position Tracking.
 
 GET /positions           — all positions (newest first)
 GET /positions/open      — positions with status OPEN
+GET /positions/closed    — positions with status CLOSED (newest first)
 GET /positions/stats     — aggregate PnL and count statistics
 GET /positions/{id}      — single position detail
 """
@@ -45,6 +46,16 @@ async def get_open_positions(
 ):
     """Return all OPEN positions ordered by open time ascending."""
     rows = await repo.get_open_positions(session, limit=limit)
+    return [PositionResponse.model_validate(r) for r in rows]
+
+
+@router.get("/closed", response_model=list[PositionResponse])
+async def get_closed_positions(
+    limit: int = Query(default=100, ge=1, le=500),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Return CLOSED positions, newest first. Used by the dashboard last-trade widget."""
+    rows = await repo.get_positions(session, status_filter="CLOSED", limit=limit)
     return [PositionResponse.model_validate(r) for r in rows]
 
 

@@ -1,0 +1,407 @@
+PROJECT: LIMWANPO POLYMARKET AI
+
+POST-AUDIT CLEANUP, DASHBOARD POLISH & PAPER-TRADING PREPARATION
+
+IMPORTANT
+
+DO NOT:
+
+* Perform major refactors
+* Change architecture
+* Change trading logic
+* Change scoring logic
+* Change execution logic
+* Change risk logic
+* Change capital protection logic
+* Change Layer 1–16 functionality
+* Create new features
+* Create new layers
+* Redesign dashboard layout
+
+GOAL
+
+Prepare the project for paper trading while reducing maintenance complexity and improving dashboard usability.
+
+Objectives:
+
+1. Remove obsolete audit artifacts
+2. Remove genuinely unused dependencies
+3. Fix dashboard 422 API error
+4. Improve dashboard readability without changing layout
+5. Validate all live engines
+6. Produce final readiness report
+
+==================================================
+TASK 1
+REMOVE LEGACY AUDIT FILES
+=========================
+
+Delete only if confirmed unused:
+
+audit5_runner.py
+
+amm_reprice_chunk.py
+amm_reprice_collect.py
+
+depth_audit_collector.py
+depth_collect_chunk.py
+
+linkage_chunk.py
+linkage_full_run.py
+
+Before deletion:
+
+* Verify zero runtime references
+* Verify not imported anywhere
+* Verify not part of startup sequence
+
+==================================================
+TASK 2
+REMOVE AUDIT DATA FILES
+=======================
+
+Delete:
+
+amm_reprice_raw.json
+linkage_raw.json
+part_c_raw.json
+depth_audit_raw.json
+
+audit5_raw/
+
+amm_reprice_meta.json
+linkage_meta.json
+
+LimwanpoPolyAI.zip
+
+Only delete audit outputs.
+
+Do not remove production data.
+
+Do not remove live database files.
+
+==================================================
+TASK 3
+REMOVE UNUSED DEPENDENCIES
+==========================
+
+Review requirements.txt and requirements-dev.txt.
+
+Remove only if truly unused.
+
+Candidates:
+
+requirements.txt
+
+* alembic
+
+requirements-dev.txt
+
+* pytest-anyio
+* factory-boy
+
+Remove duplicate:
+
+* httpx
+
+Verify:
+
+* project starts successfully
+* all imports resolve
+* no runtime dependency errors
+
+==================================================
+TASK 4
+FIX DASHBOARD API ERROR
+=======================
+
+Audit identified:
+
+GET /positions/closed?limit=1
+
+returns:
+
+422
+
+Dashboard continuously calls this endpoint.
+
+Repository already contains:
+
+get_closed_positions()
+
+Create or repair endpoint:
+
+GET /positions/closed
+
+Requirements:
+
+* support limit parameter
+* return schema consistent with open positions endpoint
+* support dashboard usage
+* register router if missing
+
+Verify:
+
+HTTP 200
+
+No 422 responses
+
+Dashboard closed-position widget works correctly
+
+No console errors
+
+==================================================
+TASK 4.5
+DASHBOARD READABILITY POLISH
+============================
+
+IMPORTANT
+
+This is NOT a redesign.
+
+This is NOT a layout change.
+
+This is NOT a feature addition.
+
+Preserve the entire V5 dashboard structure.
+
+Goal:
+
+Increase readability while preserving the cyberpunk identity.
+
+---
+
+## TEXT READABILITY
+
+Audit all dashboard text.
+
+Improve elements that are:
+
+* too small
+* too dim
+* too thin
+* obscured by glow
+* difficult to read
+
+Improve subtly.
+
+Do not make dashboard bright.
+
+Do not remove cyberpunk styling.
+
+Target:
+
+Cleaner
+Sharper
+More professional
+
+---
+
+## FONT HIERARCHY
+
+LEVEL 1 (highest visibility)
+
+* Current Target Market
+* Current Score
+* Position PnL
+* Net PnL
+* Win Rate
+* Trades
+
+These must be visible immediately.
+
+LEVEL 2
+
+* Pipeline counts
+* Opportunity counts
+* Health statuses
+* Capital metrics
+
+LEVEL 3
+
+* Labels
+* Subtitles
+* Footnotes
+
+---
+
+## OPACITY REVIEW
+
+Slightly increase readability of:
+
+* panel titles
+* section headers
+* heatmap headers
+* footer labels
+* health labels
+
+Do not use pure white.
+
+---
+
+## HEATMAP READABILITY
+
+Ensure:
+
+* score values readable
+* direction indicators readable
+* asset labels readable
+* timeframe headers readable
+
+Keep existing hover effects.
+
+---
+
+## AI TARGET PANEL
+
+Improve readability of:
+
+* market name
+* score
+* confidence
+* threshold
+* distance to entry
+
+Score must remain dominant.
+
+---
+
+## PIPELINE READABILITY
+
+Improve visibility of:
+
+* stage counts
+* stage labels
+* conversion ratios
+
+Reduce glow if glow harms readability.
+
+---
+
+## SYSTEM HEALTH
+
+Ensure:
+
+* service names are clear
+* status indicators are clear
+* cycle times are readable
+
+---
+
+## PERFORMANCE PANELS
+
+Improve visibility of:
+
+* Win Rate
+* Net PnL
+* Trades
+* Drawdown
+
+Metrics should dominate labels.
+
+---
+
+## NO VISUAL OVERLOAD
+
+Do not add:
+
+* new widgets
+* new panels
+* new animations
+* new effects
+
+If readability conflicts with glow:
+
+reduce glow.
+
+---
+
+## FINAL STYLE TARGET
+
+Institutional Trading Terminal
+
+NOT
+
+Cyberpunk Art Project
+
+Preserve Limwanpo Polymarket AI identity.
+
+==================================================
+TASK 5
+VERIFY SYSTEM
+=============
+
+Run validation on all active production paths.
+
+Verify:
+
+Universe Engine
+
+Price Engine
+
+Signal Engine
+
+Opportunity Engine
+
+Strategy Engine
+
+Risk Engine
+
+Execution Engine
+
+Exit Engine
+
+Position Tracking
+
+Portfolio Reporting
+
+Performance Analytics
+
+Capital Management
+
+Checks:
+
+* startup success
+* no exceptions
+* no import failures
+* no broken routes
+* no dashboard errors
+* no browser console errors
+* no engine crashes
+* no scheduler failures
+
+Verify all loops start correctly.
+
+==================================================
+TASK 6
+FINAL PAPER-TRADING READINESS REPORT
+====================================
+
+Provide:
+
+1. Files deleted
+2. Files retained
+3. Dependencies removed
+4. Dashboard fixes completed
+5. Dashboard readability improvements completed
+6. API fixes completed
+7. Final project size
+8. Final dependency count
+9. Startup validation results
+10. Engine validation results
+11. Remaining known issues
+12. Paper-trading readiness assessment
+
+DO NOT:
+
+* add features
+* add layers
+* add dashboards
+* add engines
+* change strategy behaviour
+
+FINAL GOAL
+
+LIMWANPO POLYMARKET AI
+
+READY FOR PAPER TRADING.
