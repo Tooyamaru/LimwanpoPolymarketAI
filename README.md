@@ -55,6 +55,32 @@ Binance, Chainlink, and all external market/price feeds are used **exclusively**
 
 These are prediction markets — not spot assets, not futures contracts, not perpetual contracts.
 
+### Quant Philosophy — Probabilistic Edge
+
+LimwanpoPolymarketAI is a **Quant Bot**, not a directional signal bot.
+
+The objective is to identify **pricing inefficiencies** between:
+
+- **(A)** The probability implied by current Polymarket prices
+- **(B)** The probability estimated by LimwanpoPolymarketAI internal models
+
+**Example:**
+
+```
+Polymarket YES price implies:    40% probability
+Internal model estimates:        68% probability
+Edge:                           +28%
+```
+
+This difference (+28%) is a candidate opportunity. The system buys the YES contract because the market is underpricing the outcome relative to the model's estimate.
+
+**The system does NOT operate on simple directional logic such as:**
+
+> "BTC going up → BUY YES"  
+> "BTC going down → BUY NO"
+
+That would be a directional price-movement bot. LimwanpoPolymarketAI is a **probability mispricing engine** — it searches for markets where Polymarket's implied probability diverges meaningfully from the estimated true probability. The underlying asset direction is one input into that estimate, not the sole decision criterion.
+
 ### Position & Exposure Philosophy
 
 **Exposure Management > Position Count**

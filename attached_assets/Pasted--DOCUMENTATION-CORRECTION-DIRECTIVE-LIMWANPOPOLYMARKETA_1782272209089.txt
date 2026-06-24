@@ -1,0 +1,263 @@
+# DOCUMENTATION CORRECTION DIRECTIVE — LIMWANPOPOLYMARKETAI
+
+## Objective
+
+Review and correct all project documentation so that every future audit, development task, roadmap decision, architecture discussion, and AI Builder action is based on the actual business model of LimwanpoPolymarketAI.
+
+This task is documentation-only.
+
+Do NOT modify:
+
+* Source code
+* Database schema
+* API endpoints
+* Tests
+* Business logic
+* Layer numbering
+* Roadmap phases
+* Project status values
+* Version numbers
+
+Only correct documentation.
+
+---
+
+# IMPORTANT PROJECT IDENTITY
+
+LimwanpoPolymarketAI is a specialized project inside the broader LimwanpoAI ecosystem.
+
+LimwanpoPolymarketAI is a:
+
+**Polymarket Quant Bot**
+
+It is NOT:
+
+* A Binance trading bot
+* A Spot trading bot
+* A Futures trading bot
+* A Scalping bot
+* A Market making bot
+* An Arbitrage bot
+* A Copy trading bot
+
+The system exists to identify statistical and probabilistic opportunities in Polymarket prediction markets.
+
+---
+
+# CORE BUSINESS MODEL
+
+The purpose of LimwanpoPolymarketAI is NOT to trade BTC, ETH, SOL, or XRP.
+
+The purpose is to trade:
+
+* YES contracts
+* NO contracts
+
+on Polymarket prediction markets.
+
+BTC, ETH, SOL, and XRP are only market themes and prediction subjects.
+
+Examples:
+
+* Will BTC be above a specified price at a specified time?
+* Will ETH close above a specified level?
+* Will SOL exceed a target price?
+* Will XRP remain below a threshold?
+
+The traded instrument is always:
+
+YES or NO contracts.
+
+Never the underlying crypto asset.
+
+---
+
+# ROLE OF BINANCE AND CHAINLINK
+
+Binance and Chainlink are NOT trading venues.
+
+Binance and Chainlink are signal sources only.
+
+Their purpose is:
+
+* Price discovery
+* Trend analysis
+* Volatility analysis
+* Probability estimation
+* Quantitative signal generation
+
+The system must never be described as trading on Binance.
+
+The system must never execute orders on Binance.
+
+The final execution venue is Polymarket.
+
+---
+
+# QUANT PHILOSOPHY
+
+The system is a Quant Bot.
+
+The objective is to identify pricing inefficiencies between:
+
+A. The probability implied by Polymarket prices
+
+and
+
+B. The probability estimated by LimwanpoPolymarketAI models
+
+Example:
+
+Polymarket YES price implies:
+
+40% probability
+
+Internal model estimates:
+
+68% probability
+
+Edge:
+
++28%
+
+This difference creates a candidate opportunity.
+
+The system therefore searches for probabilistic edge, not simple directional price movement.
+
+Avoid reducing the project description to:
+
+"BTC naik → BUY YES"
+
+or
+
+"BTC turun → BUY NO"
+
+because that does not accurately describe the quantitative model.
+
+---
+
+# POSITION PHILOSOPHY
+
+Multiple positions may be valid.
+
+Position count alone is not the primary control mechanism.
+
+Exposure management is the primary control mechanism.
+
+Documentation must not assume:
+
+"One market = one position"
+
+unless explicitly stated by source code.
+
+Documentation must not classify multiple entries as bugs without verifying actual exposure-management rules.
+
+---
+
+# PROFIT-TAKING PHILOSOPHY
+
+LimwanpoPolymarketAI is not designed to hold every position until market settlement.
+
+Early exits are valid.
+
+Profit-taking before event resolution is valid.
+
+Closing positions before expiry is valid.
+
+A profitable exit before settlement should not be classified as an error.
+
+All future audits must evaluate position management using prediction-market logic.
+
+---
+
+# AUDIT RULES
+
+All future audits must use Polymarket prediction-market assumptions.
+
+Do NOT evaluate the project using:
+
+* Spot trading assumptions
+* Futures trading assumptions
+* Perpetual trading assumptions
+* Binance bot assumptions
+
+Any finding based solely on spot/futures logic should be considered invalid unless it clearly applies to prediction markets.
+
+---
+
+# TARGET MARKETS
+
+Current primary prediction categories:
+
+* BTC
+* ETH
+* SOL
+* XRP
+
+Documentation must consistently use XRP.
+
+Do not replace XRP with BNB unless project requirements explicitly change.
+
+---
+
+# DOCUMENT STRUCTURE REQUIREMENTS
+
+README.md
+
+Must become the single source of truth for:
+
+* Project identity
+* Business model
+* Quant philosophy
+* Exposure philosophy
+* Position philosophy
+* Audit assumptions
+* Market mechanics
+
+PROJECT_STATUS.md
+
+Keep concise.
+
+Include a short project identity summary.
+
+Reference README.md for complete business-model details.
+
+ROADMAP_NEXT_PHASE.md
+
+Keep concise.
+
+Include a reminder that all future layers must follow Polymarket prediction-market mechanics.
+
+Reference README.md.
+
+NEXT_BUILD_TASKS.md
+
+Keep concise.
+
+Include mandatory development constraints.
+
+Reference README.md.
+
+---
+
+# VALIDATION CHECKLIST
+
+After editing, verify:
+
+[ ] Project name is LimwanpoPolymarketAI everywhere.
+[ ] XRP is used consistently.
+[ ] README.md is the single source of truth.
+[ ] Documentation clearly states that YES/NO contracts are the traded instruments.
+[ ] Documentation clearly states that BTC/ETH/SOL/XRP are prediction subjects, not traded assets.
+[ ] Documentation clearly states that Binance and Chainlink are signal sources only.
+[ ] Documentation clearly states that the project is a Polymarket Quant Bot.
+[ ] Documentation clearly explains probabilistic edge and market mispricing concepts.
+[ ] Documentation explains that profit-taking before settlement is valid.
+[ ] Documentation explains that exposure management is more important than raw position count.
+[ ] No roadmap items changed.
+[ ] No code changed.
+[ ] No database changes.
+[ ] No API changes.
+[ ] No test changes.
+
+Produce a complete summary of all modifications after completion.
