@@ -1145,6 +1145,22 @@ footer{color:#6b8fa8!important;}
   .bot-row{grid-template-columns:1fr 1fr 1fr;}
   footer{font-size:6px;padding:0 10px;}
 }
+
+/* ── DIAGNOSTIC BADGE (remove after audit) ─────────── */
+#dbg-badge{
+  position:fixed;top:50px;right:8px;z-index:99999;
+  background:rgba(0,0,0,.95);border:2px solid #ffe600;
+  color:#ffe600;font-family:monospace;font-size:11px;
+  padding:8px 12px;line-height:1.8;border-radius:4px;
+  pointer-events:none;letter-spacing:.5px;
+}
+#dbg-badge b{display:block;font-size:9px;color:rgba(255,230,0,.6);margin-bottom:2px;}
+/* Portrait active: red border on hero, green on watchlist */
+@media(max-width:1100px)and(orientation:portrait){
+  #target-panel{outline:4px solid #ff2200!important;outline-offset:2px;}
+  .col:nth-child(1) #mkt-list{outline:4px solid #00ff44!important;outline-offset:2px;}
+  #dbg-badge{border-color:#ff2200!important;color:#ff2200!important;}
+}
 </style>
 </head>
 <body>
@@ -2492,6 +2508,33 @@ function updatePortraitAdaptive(ranked){
 window.matchMedia('(orientation:portrait)').addEventListener('change',()=>{
   _hmUserToggled=false;
 });
+
+// ── DIAGNOSTIC: breakpoint + dimension badge ────────
+function updateDbg(){
+  const w=window.innerWidth,h=window.innerHeight;
+  const mqPortrait=window.matchMedia('(max-width:1100px) and (orientation:portrait)');
+  const mqTabLand=window.matchMedia('(min-width:768px) and (max-width:1100px) and (orientation:landscape)');
+  const mqMobile=window.matchMedia('(max-width:640px)');
+  const portraitActive=mqPortrait.matches;
+  const tabLandActive=mqTabLand.matches;
+  const mobileActive=mqMobile.matches;
+  let bp='DESKTOP';
+  if(mobileActive) bp='MOBILE';
+  else if(portraitActive) bp='TABLET PORTRAIT ✓';
+  else if(tabLandActive) bp='TABLET LANDSCAPE';
+  const badge=document.getElementById('dbg-badge');
+  if(!badge) return;
+  badge.innerHTML=
+    '<b>ACTIVE BREAKPOINT</b>'+bp+
+    '<b>DIMENSIONS</b>'+w+' × '+h+' px'+
+    '<b>orientation:portrait MQ</b>'+portraitActive+
+    '<b>orientation:landscape MQ</b>'+tabLandActive;
+}
+updateDbg();
+window.addEventListener('resize',updateDbg);
+window.addEventListener('orientationchange',updateDbg);
 </script>
+
+<div id="dbg-badge"><b>ACTIVE BREAKPOINT</b>loading…</div>
 </body>
 </html>
