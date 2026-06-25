@@ -2536,5 +2536,45 @@ window.addEventListener('orientationchange',updateDbg);
 </script>
 
 <div id="dbg-badge"><b>ACTIVE BREAKPOINT</b>loading…</div>
+
+<div id="__debug_panel__" style="position:fixed;bottom:0;right:0;z-index:999999;background:#000;color:#0f0;font-family:monospace;font-size:11px;line-height:1.6;padding:10px 14px;border:1px solid #0f0;max-width:320px;white-space:pre;pointer-events:none;"></div>
+<script>
+(function(){
+  function measure(){
+    var winW = window.innerWidth;
+    var winH = window.innerHeight;
+    var bodyScroll = document.body.scrollHeight;
+    var docScroll = document.documentElement.scrollHeight;
+    var overflow = docScroll - winH;
+
+    function elH(sel){
+      var el = document.querySelector(sel);
+      return el ? Math.round(el.getBoundingClientRect().height)+'px' : 'not found';
+    }
+
+    var lines = [
+      '=== DEBUG MEASUREMENTS ===',
+      'window.innerWidth:       '+winW,
+      'window.innerHeight:      '+winH,
+      '',
+      'body.scrollHeight:       '+bodyScroll,
+      'docEl.scrollHeight:      '+docScroll,
+      '',
+      'overflow_px:             '+overflow,
+      '  (docScroll - winH)',
+      '',
+      'main container(body):    '+elH('body'),
+      'watchlist(#mkt-list):    '+elH('#mkt-list'),
+      'hero(#target-panel):     '+elH('#target-panel'),
+      'heatmap(#heatmap-panel): '+elH('#heatmap-panel'),
+      'perf(#perf-section):     '+elH('#perf-section'),
+      'footer:                  '+elH('footer'),
+    ];
+    document.getElementById('__debug_panel__').textContent = lines.join('\n');
+  }
+  measure();
+  window.addEventListener('resize', measure);
+})();
+</script>
 </body>
 </html>
