@@ -906,9 +906,10 @@ footer{color:#6b8fa8!important;}
 }
 
 /* ═══════════════════════════════════════════════════════
-   RESPONSIVE — iPad Portrait V6.9 768–1100px
+   RESPONSIVE — iPad Portrait V6.10 768–1100px
 ═══════════════════════════════════════════════════════ */
 @media(max-width:1100px)and(orientation:portrait){
+
   /* ── Base layout ─────────────────────────────────── */
   html,body{height:auto;overflow-y:auto;overflow-x:hidden;}
   body{grid-template-rows:42px auto auto 22px;height:auto;min-height:100vh;}
@@ -920,108 +921,131 @@ footer{color:#6b8fa8!important;}
     border-right:none;border-bottom:1px solid rgba(0,229,255,.07);
     overflow:visible;flex-shrink:0;min-height:0;height:auto;
   }
-  .col:nth-child(1){order:2;}   /* Markets — secondary, below fold */
+  .col:nth-child(1){order:2;}        /* Markets — below fold */
   .col:nth-child(2){order:1;background:none;} /* Center — hero first */
-  .col:nth-child(3){display:none;} /* Right col — KPI/feeds in perf-section */
+  .col:nth-child(3){display:none!important;}  /* Right col hidden */
 
-  /* ── Markets watchlist — compressed scanner ────────── */
+  /* ── Markets watchlist — scanner mode ─────────────
+     Grid is 52px 30px 28px 44px 46px in base CSS.
+     Override to 3-col (sym/dir/score); hidden items
+     (spark, price) exit grid flow via display:none.    */
   #mkt-list{max-height:220px;overflow-y:auto;flex:none;}
-  #left-feed-panel{display:none;}
-  .mrow{padding:3px 12px;gap:5px;}
-  .mr-spark{display:none;}
-  .mr-price{display:none;}
-  .mgrp-hdr{font-size:7px;padding:3px 12px 2px;letter-spacing:1.5px;}
-  .mr-asset{font-size:9px;letter-spacing:.5px;}
-  .mr-tf{font-size:7.5px;}
-  .mr-score{font-size:11px;}
-  .mr-dir{font-size:7px;min-width:20px;}
+  #left-feed-panel{display:none!important;}
+  .mrow{
+    grid-template-columns:1fr 28px 32px!important;
+    padding:4px 12px!important;gap:4px!important;
+  }
+  .mr-spark{display:none!important;}
+  .mr-price{display:none!important;}
+  .mgrp-hdr{font-size:7px!important;padding:4px 12px 3px!important;letter-spacing:1.5px;}
+  .mr-asset{font-size:9px!important;letter-spacing:.5px;}
+  .mr-tf{font-size:7.5px!important;}
+  .mr-score{font-size:11px!important;}
+  .mr-dir{font-size:7px!important;min-width:26px;text-align:center;}
 
-  /* ── TARGET PANEL — DOMINANT HERO (~40% viewport) ── */
-  #target-panel{flex-shrink:0;overflow:visible;min-height:320px;}
-  #target-body{padding:16px 20px 10px;}
-  .tgt-top-row{flex-wrap:nowrap;align-items:flex-start;gap:16px;}
-  .tgt-radar{width:80px;flex-shrink:0;}
+  /* ── HERO TARGET — Visual center of the application
+     Targets: name clamp(64-96px), score clamp(84-128px)
+     direction clamp(32-44px), conf-bar 8px, min-h 340px  */
+  #target-panel{
+    flex-shrink:0;overflow:visible;
+    min-height:340px!important;
+  }
+  #target-body{padding:18px 22px 12px!important;}
+  .tgt-top-row{flex-wrap:nowrap;align-items:flex-start;gap:18px!important;}
+  .tgt-radar{width:82px;flex-shrink:0;}
   .tgt-main{flex:0 0 auto;min-width:0;}
   .tgt-market{
-    font-size:clamp(56px,7vw,84px)!important;
-    letter-spacing:clamp(2px,.4vw,5px)!important;
+    font-size:clamp(64px,8vw,96px)!important;
+    letter-spacing:clamp(2px,.4vw,6px)!important;
     white-space:nowrap;line-height:1;
+    margin-bottom:6px!important;
   }
-  .tgt-dir-row{gap:16px;margin-top:10px;align-items:center;}
+  .tgt-dir-row{gap:18px!important;margin-top:12px!important;align-items:center;}
   .tgt-dir{
-    font-size:clamp(28px,4vw,40px)!important;
-    padding:8px 22px;letter-spacing:2px!important;
+    font-size:clamp(32px,4vw,44px)!important;
+    padding:10px 24px!important;letter-spacing:2px!important;
   }
-  .tgt-score-num{font-size:clamp(72px,10vw,110px)!important;letter-spacing:1px;}
-  .conf-wrap{margin-top:6px!important;}
-  .conf-track{height:6px;}
-  .conf-lbl{font-size:8px;letter-spacing:1px;margin-bottom:3px;}
+  .tgt-score-num{
+    font-size:clamp(84px,12vw,128px)!important;
+    letter-spacing:1px;line-height:1;
+  }
+  .conf-wrap{margin-top:10px!important;gap:5px!important;}
+  .conf-track{height:8px!important;border-radius:4px!important;}
+  .conf-lbl{font-size:8px!important;letter-spacing:1px;margin-bottom:2px!important;}
   .tgt-dist{font-size:11px;font-weight:bold;letter-spacing:1px;color:var(--nc);}
   .tgt-status-badge{font-size:9px;letter-spacing:2px;padding:5px 14px;}
   .tgt-right{flex:1;min-width:140px;}
-  .tgt-stats-row{grid-template-columns:1fr 1fr 1fr!important;gap:5px 10px!important;}
+  .tgt-stats-row{grid-template-columns:1fr 1fr 1fr!important;gap:6px 12px!important;}
   .ts-l{font-size:8px;letter-spacing:.5px;}
   .ts-v{font-size:12px;}
   #tgt-reasons{
-    gap:6px;padding:7px 20px 10px;
+    gap:6px;padding:8px 22px 12px!important;
     overflow:visible;flex-wrap:wrap;max-height:none;
   }
-  .reason-item{font-size:10px;padding:5px 12px;white-space:nowrap;}
+  .reason-item{font-size:10px!important;padding:5px 12px!important;white-space:nowrap;}
 
-  /* ── TOP 3 — directly below hero ─────────────────── */
+  /* ── TOP 3 — #2 priority below hero ──────────────── */
   #tgt-ranking{padding:8px 20px;gap:6px;}
   .rank-lbl{font-size:8px;letter-spacing:2px;}
-  .rank-item{padding:6px 14px;min-height:32px;}
+  .rank-item{padding:7px 14px;min-height:34px;}
   .rank-mkt{font-size:12px;letter-spacing:1px;}
   .rank-score{font-size:14px;}
   .rank-1{
-    border-color:rgba(0,229,255,.4);
-    box-shadow:0 0 20px rgba(0,229,255,.15),inset 0 0 8px rgba(0,229,255,.04);
+    border-color:rgba(0,229,255,.45)!important;
+    box-shadow:0 0 22px rgba(0,229,255,.18),inset 0 0 10px rgba(0,229,255,.05)!important;
   }
 
-  /* ── AI DECISION PIPELINE — 30% compressed ────────── */
+  /* ── AI DECISION PIPELINE — #3 priority, 30% compressed */
   #pipeline-panel .ptitle{padding:3px 12px;}
-  .pipeline{flex-wrap:wrap;gap:4px;padding:5px 12px 4px;}
-  .stage{flex:1 1 calc(33% - 4px);min-width:72px;max-width:none;padding:5px 4px;}
-  .connector{display:none;}
+  .pipeline{flex-wrap:wrap;gap:4px!important;padding:5px 12px 4px!important;}
+  .stage{flex:1 1 calc(33% - 4px);min-width:72px;max-width:none;padding:5px 4px!important;}
+  .connector{display:none!important;}
   .stage-icon{font-size:12px;}
   .stage-n{font-size:28px!important;line-height:1;}
-  .stage-lbl{font-size:7px;letter-spacing:1px;margin-top:1px;}
-  .stage-sub{font-size:7px;opacity:.75;}
+  .stage-lbl{font-size:7px!important;letter-spacing:1px;margin-top:1px;}
+  .stage-sub{font-size:7px!important;opacity:.75;}
   .stage-bar-wrap{margin-top:2px;}
   .stage-bar-track{height:2px;}
   .stage-pct{font-size:5.5px;}
   .stage-conv{font-size:5.5px;}
-  .pipeline-footer{padding:3px 12px 4px;}
+  .pipeline-footer{padding:3px 12px 4px!important;}
   #sys-thinking{font-size:7px;}
   .pipeline-ts{font-size:6px;}
 
-  /* ── COMPACT SCANNER — default when max score < 70 ─ */
-  #hm-compact-panel{display:flex;flex-direction:column;border-bottom:1px solid var(--b1);}
-  #heatmap-panel{display:none;}
-  body.hm-expanded #hm-compact-panel{display:none;}
-  body.hm-expanded #heatmap-panel{display:flex;overflow:hidden;}
+  /* ── COMPACT SCANNER — default (score<70 = collapsed)
+     !important ensures override of base display:none      */
+  #hm-compact-panel{
+    display:flex!important;flex-direction:column;
+    border-bottom:1px solid var(--b1);
+  }
+  #heatmap-panel{display:none!important;}
+  body.hm-expanded #hm-compact-panel{display:none!important;}
+  body.hm-expanded #heatmap-panel{
+    display:flex!important;overflow:hidden;
+  }
   body.hm-expanded #heatmap-grid{
     grid-template-columns:44px 1fr 1fr;
     grid-template-rows:24px repeat(4,minmax(90px,1fr));
     overflow:hidden;gap:3px;
   }
-  body.hm-expanded #heatmap-grid > div:nth-child(4n){display:none;}
+  body.hm-expanded #heatmap-grid > div:nth-child(4n){display:none!important;}
 
-  /* ── KPI PRIORITY — 4 primary + 4 secondary ─────── */
+  /* ── KPI PRIORITY — #4: 4 primary + 4 secondary ─── */
   #perf-section{position:static;}
   .kpi-row-8{grid-template-columns:1fr 1fr;gap:5px;padding:7px 14px;}
-  /* Un-hide all 8 */
+  /* Un-hide all 8 KPIs */
   .kpi-row-8 .kpi-sm:nth-child(7),
-  .kpi-row-8 .kpi-sm:nth-child(8){display:flex;}
-  /* Primary 4: Win Rate · Net PnL · Trades · Max DD */
-  .kpi-row-8 .kpi-sm:nth-child(-n+4){padding:10px 14px;}
+  .kpi-row-8 .kpi-sm:nth-child(8){display:flex!important;}
+  /* Primary 4 — Win Rate · Net PnL · Trades · Max DD */
+  .kpi-row-8 .kpi-sm:nth-child(-n+4){
+    padding:10px 14px;opacity:1!important;
+  }
   .kpi-row-8 .kpi-sm:nth-child(-n+4) .kpi-l{font-size:11px;letter-spacing:1px;}
   .kpi-row-8 .kpi-sm:nth-child(-n+4) .kpi-v{font-size:28px!important;letter-spacing:1px;}
   .kpi-row-8 .kpi-sm:nth-child(-n+4) .kpi-bottom{margin-top:4px;}
-  /* Secondary 4: Equity · Daily PnL · Win Streak · Kill Switch */
+  /* Secondary 4 — Equity · Daily PnL · Win Streak · Kill Switch */
   .kpi-row-8 .kpi-sm:nth-child(n+5){
-    padding:7px 12px;opacity:.72;border-color:rgba(0,229,255,.07);
+    padding:7px 12px;opacity:.70;border-color:rgba(0,229,255,.07);
   }
   .kpi-row-8 .kpi-sm:nth-child(n+5) .kpi-l{font-size:9px;letter-spacing:1px;}
   .kpi-row-8 .kpi-sm:nth-child(n+5) .kpi-v{font-size:18px!important;}
