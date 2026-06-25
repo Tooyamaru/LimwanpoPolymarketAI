@@ -840,6 +840,43 @@ footer{color:#6b8fa8!important;}
 .ptitle-right{color:#7faec8!important;opacity:.9;}
 
 /* ═══════════════════════════════════════════════════════
+   COMPACT SCANNER — Portrait adaptive (hidden on desktop)
+═══════════════════════════════════════════════════════ */
+#hm-compact-panel{display:none;}
+#hm-compact-list{overflow-y:auto;max-height:148px;flex:1;}
+#hm-compact-list::-webkit-scrollbar{width:2px;}
+#hm-compact-list::-webkit-scrollbar-thumb{background:var(--b2);}
+.hm-cr-row{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 14px;border-bottom:1px solid rgba(0,229,255,.04);
+  transition:background .2s;
+}
+.hm-cr-row:hover{background:rgba(0,229,255,.03);}
+.hm-cr-label{
+  font-size:9.5px;letter-spacing:.8px;color:#6b8fa8;
+  flex:1;font-weight:bold;
+}
+.hm-cr-score{
+  font-size:15px;font-weight:bold;color:var(--td);
+  width:32px;text-align:center;line-height:1;
+}
+.hm-cr-dir{font-size:9px;font-weight:bold;width:34px;text-align:right;letter-spacing:.5px;}
+.hm-cr-dir.up{color:var(--ng);text-shadow:0 0 6px rgba(57,255,20,.5);}
+.hm-cr-dir.dn{color:var(--nm);text-shadow:0 0 6px rgba(255,45,149,.5);}
+.hm-cr-dir.neut{color:var(--td);opacity:.5;}
+#hm-expand-btn{
+  display:block;width:100%;
+  background:rgba(0,229,255,.03);
+  border:none;border-top:1px solid rgba(0,229,255,.08);
+  color:rgba(0,229,255,.6);font-size:7.5px;letter-spacing:2.5px;
+  padding:8px;cursor:pointer;text-transform:uppercase;
+  font-family:inherit;transition:background .2s,color .2s;
+  flex-shrink:0;
+}
+#hm-expand-btn:hover{background:rgba(0,229,255,.07);color:var(--nc);}
+#hm-expand-btn:active{background:rgba(0,229,255,.12);}
+
+/* ═══════════════════════════════════════════════════════
    FLUID OVERRIDES + POLISH V6.6
 ═══════════════════════════════════════════════════════ */
 .kpi-row-8{align-items:stretch;}
@@ -869,7 +906,7 @@ footer{color:#6b8fa8!important;}
 }
 
 /* ═══════════════════════════════════════════════════════
-   RESPONSIVE — iPad Portrait V6.7 768–1100px
+   RESPONSIVE — iPad Portrait V6.8 768–1100px
 ═══════════════════════════════════════════════════════ */
 @media(max-width:1100px)and(orientation:portrait){
   /* ── Base layout ─────────────────────────────────── */
@@ -883,74 +920,103 @@ footer{color:#6b8fa8!important;}
     border-right:none;border-bottom:1px solid rgba(0,229,255,.07);
     overflow:visible;flex-shrink:0;min-height:0;height:auto;
   }
-  /* Column order: Center (Target/Pipeline/Heatmap) → Markets watchlist */
-  .col:nth-child(1){order:2;}   /* Markets watchlist — secondary */
-  .col:nth-child(2){order:1;background:none;} /* CENTER — hero */
-  .col:nth-child(3){display:none;} /* RIGHT col hidden — KPI/feeds in perf-section below */
+  /* Column order: Center (hero) first, Markets watchlist last */
+  .col:nth-child(1){order:2;}
+  .col:nth-child(2){order:1;background:none;}
+  .col:nth-child(3){display:none;}
 
-  /* ── Markets watchlist (moved to bottom) ─────────── */
-  #mkt-list{max-height:260px;overflow-y:auto;flex:none;}
-  #left-feed-panel{display:none;} /* AI Thinking shown in bot-row below */
+  /* ── Markets watchlist (secondary — below feeds) ──── */
+  #mkt-list{max-height:220px;overflow-y:auto;flex:none;}
+  #left-feed-panel{display:none;}
 
-  /* ── TARGET PANEL — HERO ─────────────────────────── */
-  #target-panel{flex-shrink:0;overflow:visible;}
-  #target-body{padding:14px 18px 10px;}
-  .tgt-top-row{flex-wrap:nowrap;align-items:flex-start;gap:14px;}
-  .tgt-radar{width:72px;flex-shrink:0;}
+  /* ── TARGET PANEL — DOMINANT HERO ───────────────── */
+  #target-panel{flex-shrink:0;overflow:visible;min-height:260px;}
+  #target-body{padding:16px 20px 12px;}
+  .tgt-top-row{flex-wrap:nowrap;align-items:flex-start;gap:16px;}
+  .tgt-radar{width:78px;flex-shrink:0;}
   .tgt-main{flex:0 0 auto;min-width:0;}
   .tgt-market{
-    font-size:clamp(42px,5.5vw,64px)!important;
-    letter-spacing:clamp(2px,.4vw,4px)!important;
+    font-size:clamp(48px,6vw,72px)!important;
+    letter-spacing:clamp(2px,.4vw,5px)!important;
     white-space:nowrap;line-height:1;
   }
-  .tgt-dir-row{gap:14px;margin-top:8px;align-items:center;}
-  .tgt-dir{font-size:clamp(20px,2.8vw,28px)!important;padding:6px 18px;letter-spacing:2px!important;}
-  .tgt-score-num{font-size:clamp(52px,7vw,80px)!important;letter-spacing:1px;}
-  .conf-track{height:4px;}
-  .tgt-right{flex:1;min-width:140px;}
-  .tgt-stats-row{grid-template-columns:1fr 1fr 1fr!important;gap:4px 8px!important;}
-  #tgt-reasons{gap:5px;padding:5px 18px 7px;overflow:visible;}
-  .reason-item{font-size:7.5px;padding:3px 10px;white-space:nowrap;}
+  .tgt-dir-row{gap:16px;margin-top:10px;align-items:center;}
+  .tgt-dir{
+    font-size:clamp(22px,3vw,32px)!important;
+    padding:7px 20px;letter-spacing:2px!important;
+  }
+  .tgt-score-num{font-size:clamp(64px,8vw,96px)!important;letter-spacing:1px;}
+  .conf-track{height:5px;}
+  .tgt-dist{font-size:10px;font-weight:bold;letter-spacing:1px;color:var(--nc);}
+  .tgt-status-badge{font-size:8px;letter-spacing:2px;padding:4px 12px;}
+  .tgt-right{flex:1;min-width:150px;}
+  .tgt-stats-row{grid-template-columns:1fr 1fr 1fr!important;gap:5px 10px!important;}
+  .ts-l{font-size:7px;}
+  .ts-v{font-size:11px;}
+  #tgt-reasons{
+    gap:6px;padding:6px 20px 9px;
+    overflow:visible;flex-wrap:wrap;
+  }
+  .reason-item{
+    font-size:8px;padding:4px 11px;
+    white-space:nowrap;
+  }
 
   /* ── TOP 3 ───────────────────────────────────────── */
-  #tgt-ranking{padding:7px 18px;}
-  .rank-lbl{font-size:7px;letter-spacing:2px;}
-  .rank-item{padding:5px 12px;min-height:30px;}
-  .rank-mkt{font-size:11px;}
-  .rank-score{font-size:13px;}
+  #tgt-ranking{padding:9px 20px;gap:8px;}
+  .rank-lbl{font-size:8px;letter-spacing:2px;}
+  .rank-item{padding:6px 14px;min-height:34px;}
+  .rank-mkt{font-size:12px;letter-spacing:1px;}
+  .rank-score{font-size:14px;}
+  .rank-1{border-color:rgba(0,229,255,.35);box-shadow:0 0 18px rgba(0,229,255,.12);}
 
   /* ── AI DECISION PIPELINE ────────────────────────── */
-  .pipeline{flex-wrap:wrap;gap:5px;padding:8px 14px;}
-  .stage{flex:1 1 calc(33% - 5px);min-width:72px;max-width:none;padding:8px 5px;}
+  .pipeline{flex-wrap:wrap;gap:6px;padding:10px 16px;}
+  .stage{flex:1 1 calc(33% - 6px);min-width:76px;max-width:none;padding:9px 6px;}
   .connector{display:none;}
-  .stage-n{font-size:clamp(18px,2.5vw,26px)!important;}
-  .stage-lbl{font-size:7px;}
-  .stage-sub{font-size:7px;}
+  .stage-n{font-size:clamp(20px,2.8vw,28px)!important;}
+  .stage-lbl{font-size:7.5px;letter-spacing:1.5px;}
+  .stage-sub{font-size:7.5px;opacity:.8;}
+  .pipeline-footer{padding:4px 14px 6px;}
 
-  /* ── HEATMAP — 2 timeframes (5M + 15M visible) ───── */
-  #heatmap-panel{overflow:hidden;}
-  #heatmap-grid{
+  /* ── COMPACT SCANNER — default portrait heatmap view ── */
+  #hm-compact-panel{
+    display:flex;flex-direction:column;
+    border-bottom:1px solid var(--b1);
+  }
+  /* Full heatmap hidden by default in portrait; shown when .hm-expanded */
+  #heatmap-panel{display:none;}
+  body.hm-expanded #hm-compact-panel{display:none;}
+  body.hm-expanded #heatmap-panel{
+    display:flex;overflow:hidden;
+  }
+  body.hm-expanded #heatmap-grid{
     grid-template-columns:44px 1fr 1fr;
     grid-template-rows:24px repeat(4,minmax(90px,1fr));
     overflow:hidden;gap:3px;
   }
-  /* Hide 4th cell of every group-of-4 = 1H column */
-  #heatmap-grid > div:nth-child(4n){display:none;}
+  /* When expanded, hide 1H column (4th cell in each row of 4) */
+  body.hm-expanded #heatmap-grid > div:nth-child(4n){display:none;}
 
-  /* ── KPI ROW — 2 × 3 layout ─────────────────────── */
+  /* ── KPI ROW — 2 columns, larger values ─────────── */
   #perf-section{position:static;}
-  .kpi-row-8{grid-template-columns:1fr 1fr;gap:5px;padding:6px 12px;}
-  /* Hide WIN STREAK (7th) and KILL SWITCH (8th) — show only 6 primary KPIs */
+  .kpi-row-8{
+    grid-template-columns:1fr 1fr;
+    gap:6px;padding:8px 14px;
+  }
   .kpi-row-8 .kpi-sm:nth-child(7),
   .kpi-row-8 .kpi-sm:nth-child(8){display:none;}
-  .kpi-sm{padding:8px 12px;}
-  .kpi-sm .kpi-l{font-size:7px;letter-spacing:1.5px;}
-  .kpi-sm .kpi-v{font-size:clamp(16px,2vw,22px)!important;}
+  .kpi-sm{padding:10px 14px;}
+  .kpi-sm .kpi-l{font-size:11px;letter-spacing:1px;}
+  .kpi-sm .kpi-v{font-size:28px!important;letter-spacing:1px;}
+  .kpi-sm .kpi-bottom{margin-top:4px;}
 
-  /* ── FEEDS — 25% taller ──────────────────────────── */
-  .bot-row{grid-template-columns:1fr 1fr;gap:6px;}
-  .bot-feed,.bot-cap{min-height:112px;}
-  .bot-feed-body{line-height:1.7;font-size:8px;}
+  /* ── FEEDS — minimum 140px height ───────────────── */
+  .bot-row{grid-template-columns:1fr 1fr;gap:8px;padding:8px 14px;}
+  .bot-feed,.bot-cap{min-height:140px;}
+  .bot-feed-body{line-height:1.8;font-size:8.5px;}
+  .feed-entry{font-size:8px;}
+  .feed-ts{font-size:7.5px;}
   .feed-msg{font-size:8px;}
 
   /* ── FOOTER / HEADER ─────────────────────────────── */
@@ -1255,6 +1321,16 @@ footer{color:#6b8fa8!important;}
         </div>
         <span class="pipeline-ts" id="pipe-ts">LAST UPDATE: —</span>
       </div>
+    </div>
+
+    <!-- PORTRAIT COMPACT SCANNER (adaptive, hidden on desktop) -->
+    <div id="hm-compact-panel">
+      <div class="ptitle" style="flex-shrink:0">
+        <div class="ptitle-left">MARKET&nbsp;SCANNER</div>
+        <div class="ptitle-right" id="hm-mode-lbl">COMPACT</div>
+      </div>
+      <div id="hm-compact-list"></div>
+      <button id="hm-expand-btn" onclick="toggleHeatmap()">⊞&nbsp;EXPAND&nbsp;HEATMAP</button>
     </div>
 
     <!-- HEATMAP -->
@@ -2003,6 +2079,8 @@ function updateHeatmap(ranked){
       tiEl.textContent=tTxt;tiEl.className='hm-tier '+tCls;tiEl.style.display='';
     } else if(tiEl){tiEl.style.display='none';}
   }
+  // Portrait adaptive — populate compact scanner + auto-expand logic
+  updatePortraitAdaptive(ranked);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2302,6 +2380,78 @@ window.addEventListener('load',()=>{
   pushFeed('System initialized — loading market universe','highlight');
   pushFeed(`Monitoring ${MARKETS.length} markets across 4 assets`,'');
   refresh();setInterval(refresh,REFRESH);
+});
+
+// ═══════════════════════════════════════════════════════
+//  PORTRAIT ADAPTIVE — V6.8
+// ═══════════════════════════════════════════════════════
+let _hmUserToggled=false;
+
+function toggleHeatmap(){
+  _hmUserToggled=true;
+  document.body.classList.toggle('hm-expanded');
+  const expanded=document.body.classList.contains('hm-expanded');
+  const btn=document.getElementById('hm-expand-btn');
+  const lbl=document.getElementById('hm-mode-lbl');
+  if(btn) btn.textContent=expanded?'⊟\u00a0COLLAPSE\u00a0HEATMAP':'⊞\u00a0EXPAND\u00a0HEATMAP';
+  if(lbl) lbl.textContent=expanded?'FULL':'COMPACT';
+}
+
+function updatePortraitAdaptive(ranked){
+  const isPortrait=window.innerWidth<=1100&&
+    window.matchMedia('(orientation:portrait)').matches;
+  const compList=document.getElementById('hm-compact-list');
+  if(!isPortrait||!compList) return;
+
+  // Compute aggregate stats
+  let topScore=0,hasDir=false;
+  const markets=Array.isArray(ranked)?ranked:[];
+  markets.forEach(m=>{
+    const sc=m.score||0;
+    if(sc>topScore) topScore=sc;
+    const d=m.latest_data||{};
+    const dir=m.direction||d.direction||null;
+    if(dir==='BUY_YES'||dir==='BUY_NO') hasDir=true;
+  });
+
+  // Populate compact scanner rows
+  const rows=markets.map(m=>{
+    const sc=m.score||0;
+    const d=m.latest_data||{};
+    const dir=m.direction||d.direction||null;
+    const dirTxt=dir==='BUY_YES'?'▲ UP':dir==='BUY_NO'?'▼ DN':'—';
+    const dirCls=dir==='BUY_YES'?'up':dir==='BUY_NO'?'dn':'neut';
+    const scColor=sc>=90?'var(--ng)':sc>=85?'#22ee55':sc>=70?'var(--ny)':'#4d6e8a';
+    return `<div class="hm-cr-row">
+      <span class="hm-cr-label">${m.asset}&nbsp;${m.tf}</span>
+      <span class="hm-cr-score" style="color:${scColor}">${sc||'—'}</span>
+      <span class="hm-cr-dir ${dirCls}">${dirTxt}</span>
+    </div>`;
+  }).join('');
+  compList.innerHTML=rows||'<div class="hm-cr-row"><span class="hm-cr-label" style="color:var(--td)">Awaiting data…</span></div>';
+
+  // Auto-expand when score >= 70 or any direction — unless user manually toggled
+  if(!_hmUserToggled){
+    const shouldExpand=topScore>=70||hasDir;
+    if(shouldExpand&&!document.body.classList.contains('hm-expanded')){
+      document.body.classList.add('hm-expanded');
+      const btn=document.getElementById('hm-expand-btn');
+      const lbl=document.getElementById('hm-mode-lbl');
+      if(btn) btn.textContent='⊟\u00a0COLLAPSE\u00a0HEATMAP';
+      if(lbl) lbl.textContent='FULL';
+    } else if(!shouldExpand&&document.body.classList.contains('hm-expanded')){
+      document.body.classList.remove('hm-expanded');
+      const btn=document.getElementById('hm-expand-btn');
+      const lbl=document.getElementById('hm-mode-lbl');
+      if(btn) btn.textContent='⊞\u00a0EXPAND\u00a0HEATMAP';
+      if(lbl) lbl.textContent='COMPACT';
+    }
+  }
+}
+
+// Reset user toggle on orientation change (so auto-logic resumes)
+window.matchMedia('(orientation:portrait)').addEventListener('change',()=>{
+  _hmUserToggled=false;
 });
 </script>
 </body>

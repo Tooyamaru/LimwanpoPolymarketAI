@@ -1,0 +1,208 @@
+V6.8 FINAL PORTRAIT OPTIMIZATION
+
+IMPORTANT:
+
+* DO NOT TOUCH BACKEND
+* DO NOT CHANGE TRADING LOGIC
+* DO NOT CHANGE API CONTRACTS
+* UI / CSS / LAYOUT ONLY
+
+GOAL:
+
+Transform portrait mode into an institutional-grade trading dashboard.
+
+Desktop and landscape layouts must remain unchanged.
+
+=========================================
+
+1. ADAPTIVE INFORMATION DENSITY
+    =========================================
+
+Current issue:
+
+Dashboard shows all panels equally even when there is no actionable signal.
+
+Implement adaptive display rules:
+
+IF:
+
+score < 70
+direction == none
+
+THEN:
+
+compact mode
+
+Display priority:
+
+1. Current Target
+2. Top 3
+3. Pipeline
+4. KPI
+5. Feeds
+
+Heatmap becomes collapsed.
+
+=========================================
+2. COLLAPSIBLE HEATMAP
+
+Portrait mode only.
+
+When score < 70:
+
+Replace full heatmap with compact scanner.
+
+Example:
+
+BTC 15m   24
+BTC 1H    24
+ETH 5m    24
+ETH 15m   24
+SOL 5m    24
+XRP 1H    24
+
+Maximum height:
+
+160px
+
+Add:
+
+[ EXPAND HEATMAP ]
+
+button.
+
+When expanded:
+
+show full heatmap.
+
+When score >= 70:
+
+auto-expand heatmap.
+
+=========================================
+3. HERO TARGET CARD
+
+Current target must become dominant visual focus.
+
+Target card:
+
+min-height: 260px
+
+Target name:
+
+font-size:
+clamp(48px,6vw,72px)
+
+Target score:
+
+font-size:
+clamp(64px,8vw,96px)
+
+Direction badge:
+
+font-size:
+clamp(22px,3vw,32px)
+
+Distance-to-entry:
+
+increase weight and contrast.
+
+Reason pills:
+
+wrap cleanly
+no clipping
+equal spacing
+
+=========================================
+4. TOP 3 OPPORTUNITIES
+
+Move directly below hero target.
+
+Increase visibility.
+
+Rank #1:
+
+strong glow
+strong border
+
+Display:
+
+symbol
+timeframe
+score
+direction
+
+Always visible.
+
+=========================================
+5. KPI UPGRADE
+
+Portrait mode:
+
+2 columns
+
+Increase KPI values:
+
+28px
+
+Increase KPI labels:
+
+11px
+
+Equal card height.
+
+=========================================
+6. FEED PRIORITY
+
+Increase feed visibility.
+
+Minimum height:
+
+140px
+
+Improve readability.
+
+No clipped rows.
+
+Auto-scroll remains unchanged.
+
+=========================================
+7. MARKETS WATCHLIST
+
+Move below feeds.
+
+Treat as secondary panel.
+
+max-height: 220px
+
+overflow-y: auto
+
+Do not dominate screen.
+
+=========================================
+8. PORTRAIT SPACING PASS
+
+Reduce unused empty space.
+
+Improve vertical rhythm.
+
+Increase spacing between major sections.
+
+Maintain professional trading-terminal appearance.
+
+=========================================
+9. FINAL VALIDATION
+
+Verify:
+
+* No overflow
+* No clipping
+* No horizontal scrolling
+* No broken grids
+* No desktop regressions
+* No landscape regressions
+
+Portrait mode should feel intentionally designed,
+not a scaled-down desktop layout.
+
+END OF V6.8
