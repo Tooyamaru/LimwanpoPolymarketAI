@@ -2572,51 +2572,137 @@ window.addEventListener('orientationchange',updateDbg);
 
 <div id="dbg-badge"><b>ACTIVE BREAKPOINT</b>loading…</div>
 
-<div id="__debug_panel__" style="position:fixed;bottom:0;right:0;z-index:999999;background:#000;color:#0f0;font-family:monospace;font-size:11px;line-height:1.6;padding:10px 14px;border:1px solid #0f0;max-width:320px;white-space:pre;pointer-events:none;"></div>
+<div id="__debug_panel__" style="position:fixed;top:0;right:0;z-index:999999;background:rgba(0,0,0,.97);color:#0f0;font-family:monospace;font-size:10px;line-height:1.55;padding:10px 13px;border:1px solid #0f0;border-top:none;max-width:370px;white-space:pre;pointer-events:none;max-height:100vh;overflow:hidden;"></div>
 <script>
 (function(){
+  function px(n){ return Math.round(n)+'px'; }
+  function pad(s,n){ s=String(s); while(s.length<n)s=' '+s; return s; }
+
   function measure(){
     var winW = window.innerWidth;
     var winH = window.innerHeight;
-    var bodyScroll = document.body.scrollHeight;
     var docScroll = document.documentElement.scrollHeight;
-    var overflow = docScroll - winH;
+    var overflow  = docScroll - winH;
+    var lines = [];
 
-    function elH(sel){
-      var el = document.querySelector(sel);
-      return el ? Math.round(el.getBoundingClientRect().height)+'px' : 'not found';
+    /* ── 0. The 100vh vs innerHeight test ─────────────── */
+    var bodyBCR   = document.body.getBoundingClientRect().height;
+    var bodyOff   = document.body.offsetHeight;
+    var htmlOff   = document.documentElement.offsetHeight;
+    var cssVhDiff = Math.round(bodyBCR - winH);
+
+    lines.push('=== ROOT CAUSE ANALYSIS ===');
+    lines.push('viewport:   '+winW+'x'+winH);
+    lines.push('docScroll:  '+docScroll+'px');
+    lines.push('overflow:   '+overflow+'px  <-- TARGET');
+    lines.push('');
+    lines.push('── 100vh vs innerHeight TEST ──────────');
+    lines.push('window.innerHeight:    '+winH+'px');
+    lines.push('body.getBCR().height:  '+Math.round(bodyBCR)+'px  (=100vh)');
+    lines.push('body.offsetHeight:     '+bodyOff+'px');
+    lines.push('html.offsetHeight:     '+htmlOff+'px');
+    lines.push('cssVh - innerH DELTA:  '+cssVhDiff+'px  <-- SHOULD BE 45');
+    lines.push('');
+
+    /* ── 1. Every direct child of body ───────────────── */
+    lines.push('── BODY DIRECT CHILDREN ──────────────');
+    lines.push(pad('element',22)+pad('offH',6)+pad('scrH',6)+pad('mT',5)+pad('mB',5)+' pos');
+    var children = document.body.children;
+    var cumulative = 0;
+    var flowChildren = [];
+    for(var i=0;i<children.length;i++){
+      var el = children[i];
+      var cs  = window.getComputedStyle(el);
+      var pos = cs.position;
+      var offH = el.offsetHeight;
+      var scrH = el.scrollHeight;
+      var mT   = Math.round(parseFloat(cs.marginTop)||0);
+      var mB   = Math.round(parseFloat(cs.marginBottom)||0);
+      var tag  = (el.tagName.toLowerCase()+(el.id?'#'+el.id:el.className?'.'+el.className.trim().split(' ')[0]:'')).slice(0,21);
+      lines.push(pad(tag,22)+pad(offH,6)+pad(scrH,6)+pad(mT,5)+pad(mB,5)+'  '+pos);
+      if(pos!=='fixed'&&pos!=='absolute'){
+        flowChildren.push({tag:tag,offH:offH,mT:mT,mB:mB});
+        cumulative += offH + mT + mB;
+      }
+    }
+    lines.push('');
+
+    /* ── 2. Cumulative flow height ────────────────────── */
+    lines.push('── CUMULATIVE FLOW HEIGHT ────────────');
+    var running = 0;
+    for(var j=0;j<flowChildren.length;j++){
+      var fc = flowChildren[j];
+      var contrib = fc.offH + fc.mT + fc.mB;
+      running += contrib;
+      lines.push(pad(fc.tag,22)+' += '+pad(contrib,4)+'  total='+running);
+    }
+    lines.push('');
+    lines.push('sum of flow children: '+running+'px');
+    lines.push('winH:                 '+winH+'px');
+    lines.push('delta (run-winH):     '+(running-winH)+'px');
+    lines.push('');
+
+    /* ── 3. Key element deep-dive ────────────────────── */
+    lines.push('── KEY ELEMENTS ──────────────────────');
+    var targets = [
+      ['body',         document.body],
+      ['main',         document.querySelector('main')],
+      ['#perf-section',document.querySelector('#perf-section')],
+      ['#heatmap-panel',document.querySelector('#heatmap-panel')],
+      ['#mkt-list',    document.querySelector('#mkt-list')],
+      ['header',       document.querySelector('header')],
+      ['footer',       document.querySelector('footer')],
+    ];
+    for(var k=0;k<targets.length;k++){
+      var name=targets[k][0], el2=targets[k][1];
+      if(!el2){lines.push(pad(name,17)+' not found');continue;}
+      var cs2=window.getComputedStyle(el2);
+      var rect=el2.getBoundingClientRect();
+      var mT2=Math.round(parseFloat(cs2.marginTop)||0);
+      var mB2=Math.round(parseFloat(cs2.marginBottom)||0);
+      var pT2=Math.round(parseFloat(cs2.paddingTop)||0);
+      var pB2=Math.round(parseFloat(cs2.paddingBottom)||0);
+      var minH=cs2.minHeight;
+      lines.push(pad(name,17)+
+        ' h='+pad(Math.round(rect.height),4)+
+        ' mT='+pad(mT2,3)+' mB='+pad(mB2,3)+
+        ' pT='+pad(pT2,3)+' pB='+pad(pB2,3)+
+        ' minH='+minH);
     }
 
-    var wH   = parseInt(elH('#mkt-list'))      || 0;
-    var hH   = parseInt(elH('#target-panel'))  || 0;
-    var hmH  = parseInt(elH('#heatmap-panel')) || 0;
-    var pH   = parseInt(elH('#perf-section'))  || 0;
-    var fH   = parseInt(elH('footer'))         || 0;
-    var total = wH + hH + hmH + pH + fH;
+    /* ── 4. perf-section children breakdown ─────────── */
+    lines.push('');
+    lines.push('── #perf-section CHILDREN ────────────');
+    var perf=document.querySelector('#perf-section');
+    if(perf){
+      var pChildren=perf.children;
+      var pSum=0;
+      var pcs=window.getComputedStyle(perf);
+      var pgap=Math.round(parseFloat(pcs.rowGap||pcs.gap)||0);
+      for(var m=0;m<pChildren.length;m++){
+        var pc=pChildren[m];
+        var pcs2=window.getComputedStyle(pc);
+        var ph=Math.round(pc.getBoundingClientRect().height);
+        var pmT=Math.round(parseFloat(pcs2.marginTop)||0);
+        var pmB=Math.round(parseFloat(pcs2.marginBottom)||0);
+        var ptag=(pc.tagName.toLowerCase()+(pc.id?'#'+pc.id:pc.className?'.'+pc.className.trim().split(' ')[0]:'')).slice(0,20);
+        lines.push('  '+pad(ptag,20)+'h='+pad(ph,4)+' mT='+pmT+' mB='+pmB);
+        pSum+=ph+pmT+pmB;
+      }
+      var pPadT=Math.round(parseFloat(pcs.paddingTop)||0);
+      var pPadB=Math.round(parseFloat(pcs.paddingBottom)||0);
+      var gaps=(pChildren.length-1)*pgap;
+      lines.push('  gap='+pgap+'px x'+(pChildren.length-1)+'='+gaps+
+                 '  padT='+pPadT+' padB='+pPadB);
+      lines.push('  children sum='+pSum+' +gaps='+gaps+
+                 ' +pad='+(pPadT+pPadB));
+      lines.push('  total perf content='+(pSum+gaps+pPadT+pPadB)+'px');
+      lines.push('  getBCR height='+Math.round(perf.getBoundingClientRect().height)+'px');
+    }
 
-    var lines = [
-      '=== DEBUG MEASUREMENTS ===',
-      'window.innerWidth:       '+winW,
-      'window.innerHeight:      '+winH,
-      '',
-      'body.scrollHeight:       '+bodyScroll,
-      'docEl.scrollHeight:      '+docScroll,
-      '',
-      'overflow_px:             '+overflow,
-      '  (docScroll - winH)',
-      '',
-      'main container(body):    '+elH('body'),
-      'watchlist(#mkt-list):    '+wH+'px',
-      'hero(#target-panel):     '+hH+'px',
-      'heatmap(#heatmap-panel): '+hmH+'px',
-      'perf(#perf-section):     '+pH+'px',
-      'footer:                  '+fH+'px',
-      '',
-      'total_visible_sections:  '+total+'px',
-      '  (w+h+hm+p+f)',
-    ];
     document.getElementById('__debug_panel__').textContent = lines.join('\n');
   }
+
   measure();
   window.addEventListener('resize', measure);
 })();
