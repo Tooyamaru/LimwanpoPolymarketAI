@@ -1,0 +1,207 @@
+# LIMWANPO POLYMARKET AI — POST UI FREEZE DEVELOPMENT
+
+## IMPORTANT
+
+UI FREEZE is now officially in effect.
+
+The dashboard is considered visually complete.
+
+From this point onward:
+
+* DO NOT redesign the dashboard.
+* DO NOT move panels.
+* DO NOT change layout.
+* DO NOT change theme.
+* DO NOT replace the visual identity.
+* DO NOT make cosmetic improvements unless they directly support a newly implemented feature.
+
+All future development must focus on the intelligence of LIMWANPO POLYMARKET AI.
+
+---
+
+## Minor UI improvements allowed
+
+### 1. MARKET UNIVERSE
+
+The subtitle currently says:
+
+"4 ASSETS • 12 STREAMS"
+
+Replace it with a more user-friendly description.
+
+Preferred examples:
+
+* 4 Assets | 3 TF
+* BTC • ETH • SOL • XRP
+
+Avoid technical developer terms like "Streams".
+
+---
+
+### 2. Scanner Score
+
+The number currently displayed beside every asset (currently "24") is only a placeholder and is confusing.
+
+Do NOT leave anonymous numbers in the interface.
+
+Once the Market Scanner is implemented, replace it with a real metric such as:
+
+Scanner Score
+
+or
+
+Rank
+
+Example:
+
+BTC
+
+82
+
+Scanner Score
+
+The displayed value must come from the scanner, not a placeholder.
+
+---
+
+### 3. Market Opportunity Heatmap
+
+The current heatmap still shows placeholder values.
+
+After the Opportunity Ranking engine is implemented:
+
+Replace the placeholder cells with real ranking data.
+
+Example:
+
+BTC 5m
+
+█████████
+
+92
+
+Color intensity should reflect ranking.
+
+Higher-ranked opportunities should stand out naturally.
+
+---
+
+### 4. Decision Engine
+
+The dashboard should eventually show what the AI is actually doing.
+
+Instead of static stage names only, each stage should display live status.
+
+Example:
+
+Universe
+
+Scanning 12 markets
+
+↓
+
+Signal
+
+4 candidates found
+
+↓
+
+Risk
+
+2 approved
+
+↓
+
+Execution
+
+Waiting
+
+This should update dynamically according to the AI pipeline.
+
+---
+
+### 5. AI Current Target
+
+When the Decision Engine becomes active, explain WHY the target was selected.
+
+Example:
+
+Reason
+
+Momentum ↑
+
+Spread OK
+
+Confidence Rising
+
+Risk Acceptable
+
+The dashboard should explain the decision, not only display the selected market.
+
+---
+
+### 6. AI Feed
+
+Transform the AI Feed into the main activity timeline.
+
+Instead of mostly technical logs, show meaningful AI decisions.
+
+Example:
+
+Universe scan completed
+
+BTC ranked #1
+
+Confidence increased
+
+Risk approved
+
+Paper trade opened
+
+Paper trade closed
+
+PnL updated
+
+Scanner recalculated
+
+The feed should tell the story of what the AI is doing.
+
+---
+
+### 7. Timeframe selector readability
+
+The timeframe selector:
+
+5m | 15m | 1H
+
+is currently too faint.
+
+Increase its readability slightly by:
+
+* increasing font weight a little,
+* increasing opacity slightly,
+* keeping the same minimalist style.
+
+Do NOT make it bright or oversized.
+
+It should remain subtle but immediately readable.
+
+---
+
+## DEVELOPMENT PRIORITY
+
+After UI Freeze, ALL development must focus on the following engines only:
+
+1. Market Scanner Engine
+2. Opportunity Ranking Engine
+3. Confidence Engine
+4. Decision Engine
+5. Risk Engine
+6. Paper Trading Engine
+7. Performance Analytics
+
+Avoid adding unnecessary complexity such as Machine Learning, Deep Learning, Neural Networks, or Self-Learning systems until the core trading engine has been fully validated and consistently profitable.
+
+The goal of LIMWANPO POLYMARKET AI is not to build the most complicated AI.
+
+The goal is to build the most profitable YES/NO trading system on Polymarket using Bid, Ask, Spread, Liquidity, Odds Movement, and disciplined risk management.
