@@ -1872,7 +1872,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;}
 /* Rank scores */
 .rank-score{font-size:14px!important;font-weight:700!important;}
 /* Health percentages */
-.eng-ok{font-size:13px!important;font-weight:700!important;color:#c8dff0!important;}
+.eng-ok{font-size:13px!important;font-weight:700!important;color:#c8dff0!important;min-width:46px!important;}
 /* Heatmap scores */
 .hm-score{font-size:clamp(14px,1.9vw,20px)!important;font-weight:700!important;}
 /* Confidence tier */
@@ -2847,6 +2847,7 @@ function updateRanking(ranked){
     const mEl=document.getElementById(s.mkt);
     const scEl=document.getElementById(s.sc);
     const dEl=document.getElementById(s.dir);
+    if(!mEl||!scEl||!dEl) continue;
     mEl.textContent='Waiting...';
     scEl.textContent='';
     scEl.className='rank-score s0';
@@ -3152,7 +3153,7 @@ function renderPosition(posOpen,closedPos){
   const lastEmpty=document.getElementById('pos-last-empty');
   const countLbl=document.getElementById('pos-count-lbl');
   const count=posOpen?.length??0;
-  countLbl.textContent=count>0?`${count} OPEN`:'';
+  if(countLbl) countLbl.textContent=count>0?`${count} OPEN`:'';
 
   // LEFT side: active position or waiting
   if(!posOpen||count===0){
@@ -3213,8 +3214,7 @@ function buildHealth(){
       const seqCls=`seq-${idx%5}`;
       const uptime=ENGINE_UPTIMES[n]||99.0;
       const pct=uptime.toFixed(1)+'%';
-      const barCls=uptime>=99?'':'uptime<97?\'bad\':\'warn\'';
-      const r=document.createElement('div');r.className='eng-row';
+          const r=document.createElement('div');r.className='eng-row';
       r.innerHTML=`<div class="eng-dot ${seqCls}" id="ed-${n}"></div><div class="eng-name">${n}</div><div class="eng-pct-wrap"><div class="eng-pct-bar ${uptime<97?'bad':uptime<99?'warn':''}" id="eb-${n}" style="width:${uptime.toFixed(0)}%"></div></div><div class="eng-ok" id="es-${n}">${pct}</div><div class="eng-cycle" id="ec-${n}">—</div>`;
       grid.appendChild(r);idx++;
     }
@@ -3261,10 +3261,10 @@ function updatePerfDelta(kId,current,prev,fmt){
 //  HEADER LIVE STATUS
 // ═══════════════════════════════════════════════════════
 function updateLiveStatus(ranked,posOpen,blocked){
-  document.getElementById('lm-active').textContent=ASSETS.length*TFS.length;
-  document.getElementById('lm-ready').textContent=ranked.filter(m=>m.score>=85).length;
-  document.getElementById('lm-open').textContent=posOpen?.length??0;
-  document.getElementById('lm-blocked').textContent=blocked||0;
+  const lmA=document.getElementById('lm-active');if(lmA) lmA.textContent=ASSETS.length*TFS.length;
+  const lmR=document.getElementById('lm-ready');if(lmR) lmR.textContent=ranked.filter(m=>m.score>=85).length;
+  const lmO=document.getElementById('lm-open');if(lmO) lmO.textContent=posOpen?.length??0;
+  const lmB=document.getElementById('lm-blocked');if(lmB) lmB.textContent=blocked||0;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3411,7 +3411,7 @@ async function refresh(){
   }
 
   updateEngineCycles();
-  document.getElementById('f-ts').textContent='REFRESHED '+new Date().toISOString().split('T')[1].split('.')[0]+' UTC';
+  const fTs=document.getElementById('f-ts');if(fTs) fTs.textContent='REFRESHED '+new Date().toISOString().split('T')[1].split('.')[0]+' UTC';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3462,7 +3462,8 @@ async function fetchTicker(){
 // ═══════════════════════════════════════════════════════
 function tick(){
   const m=new Date().toUTCString().match(/(\d\d:\d\d:\d\d)/);
-  if(m) document.getElementById('h-clock').textContent=m[1]+' UTC';
+  const hClk=document.getElementById('h-clock');
+  if(m&&hClk) hClk.textContent=m[1]+' UTC';
 }
 
 window.addEventListener('load',()=>{
