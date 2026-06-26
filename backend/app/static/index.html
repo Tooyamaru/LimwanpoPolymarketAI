@@ -1745,8 +1745,11 @@ footer{font-size:8.5px!important;letter-spacing:1.5px!important;}
 .tgt-score-num{font-size:clamp(17px,2.1vw,27px)!important;}
 .ts-v{font-size:15px!important;font-weight:600!important;}
 
-/* ── TASK 3: BTC Chart — breathing room (+7px padding) ─ */
-#btc-chart-body{padding:7px!important;}
+/* ── TASK 3: BTC Chart — breathing room ─────────────── */
+/* Safe: pad the outer card, not the chart body (avoids clientWidth mismatch) */
+#btc-chart-card{padding:7px 7px 0 7px!important;}
+#btc-chart-card .ptitle{margin:-7px -7px 0!important;}
+#btc-chart-body{padding:0!important;}
 
 /* ── TASK 4: AI Decision Engine — hierarchy ─────────── */
 /* Primary stages: stronger presence */
@@ -1754,23 +1757,27 @@ footer{font-size:8.5px!important;letter-spacing:1.5px!important;}
   border-color:rgba(0,229,255,.16)!important;
   background:rgba(0,229,255,.018)!important;
 }
+/* Primary labels — brighter in idle state */
 #st-market .stage-lbl,#st-signal .stage-lbl,
 #st-risk .stage-lbl,#st-exec .stage-lbl{
   color:#7faec8!important;opacity:.95!important;font-weight:600!important;
 }
+/* Primary stage numbers — slightly highlighted idle */
 #st-market .stage-n,#st-signal .stage-n,
 #st-risk .stage-n,#st-exec .stage-n{
   color:#9dcce2!important;
 }
-/* Active primary — preserve color overrides */
+/* Active primary — restore semantic colors (must override with !important) */
+#st-market.active .stage-n,#st-signal.active .stage-n,
+#st-risk.active .stage-n,#st-exec.active .stage-n{color:var(--nc)!important;}
+#st-market.active-g .stage-n,#st-signal.active-g .stage-n,
+#st-risk.active-g .stage-n,#st-exec.active-g .stage-n{color:var(--ng)!important;}
+#st-market.active-r .stage-n,#st-signal.active-r .stage-n,
+#st-risk.active-r .stage-n,#st-exec.active-r .stage-n{color:var(--red)!important;}
 #st-market.active .stage-lbl,#st-signal.active .stage-lbl,
-#st-risk.active .stage-lbl,#st-exec.active .stage-lbl{
-  color:var(--nc)!important;
-}
+#st-risk.active .stage-lbl,#st-exec.active .stage-lbl{color:var(--nc)!important;}
 #st-market.active-g .stage-lbl,#st-signal.active-g .stage-lbl,
-#st-risk.active-g .stage-lbl,#st-exec.active-g .stage-lbl{
-  color:var(--ng)!important;
-}
+#st-risk.active-g .stage-lbl,#st-exec.active-g .stage-lbl{color:var(--ng)!important;}
 /* Secondary stages: subdued */
 #st-opp,#st-strat{opacity:.58!important;}
 /* Stage count numbers — slightly larger */
