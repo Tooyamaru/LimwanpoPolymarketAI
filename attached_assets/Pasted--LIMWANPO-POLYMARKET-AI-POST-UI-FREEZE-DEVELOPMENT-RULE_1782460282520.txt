@@ -1,0 +1,478 @@
+# LIMWANPO POLYMARKET AI — POST UI FREEZE DEVELOPMENT RULES (FINAL)
+
+## IMPORTANT
+
+The dashboard has now entered **UI FREEZE**.
+
+The current dashboard is considered visually complete.
+
+From this point forward, **95% of development must focus on AI intelligence and analytical capabilities**, NOT visual redesign.
+
+Future UI changes are only allowed if they are required to display new functionality produced by the AI engines.
+
+Do NOT redesign layouts.
+
+Do NOT move panels.
+
+Do NOT create a new visual style.
+
+Do NOT change colors unless absolutely necessary.
+
+Only improve readability when a real usability issue exists.
+
+---
+
+# Remaining UI Adjustments (Last Minor Polish)
+
+These are the final allowed UI refinements before all UI work ends.
+
+## 1. MARKET UNIVERSE Header
+
+Current:
+
+MARKET UNIVERSE     BTC • ETH • SOL • XRP | 3 TF
+
+This feels cramped.
+
+Instead create a proper hierarchy.
+
+Example:
+
+MARKET UNIVERSE
+
+BTC • ETH • SOL • XRP
+
+5m • 15m • 1H
+
+or
+
+MARKET UNIVERSE
+
+4 Assets
+
+3 Timeframes
+
+The subtitle must NOT compete with the panel title.
+
+Smaller.
+
+Cleaner.
+
+Better spacing.
+
+---
+
+## 2. Timeframe Labels
+
+Current:
+
+5M | 15M | 1H
+
+They are still too weak visually.
+
+Increase only slightly:
+
+* +0.5~1px font size
+* slightly stronger weight
+* slightly higher opacity
+* slightly more spacing
+
+Do NOT make them bold.
+
+Do NOT make them bright.
+
+Maintain the institutional appearance.
+
+---
+
+## 3. Placeholder Numbers
+
+Values such as
+
+24
+
+currently have no meaning.
+
+Do NOT invent fake numbers.
+
+Until the Scanner Engine is complete, replace meaningless placeholders with neutral placeholders.
+
+Examples:
+
+--
+
+Waiting
+
+Initializing
+
+Pending
+
+Once real data exists, replace them immediately.
+
+---
+
+## 4. No Decorative UI Changes
+
+Do not add animations.
+
+Do not add glows.
+
+Do not redesign cards.
+
+Do not redesign spacing.
+
+Do not redesign borders.
+
+UI work is finished.
+
+---
+
+# Development Priority
+
+From this point forward development focuses entirely on intelligence.
+
+Development order:
+
+1.
+
+Market Scanner Engine
+
+↓
+
+2.
+
+Market Evaluation Engine
+
+↓
+
+3.
+
+Opportunity Ranking Engine
+
+↓
+
+4.
+
+Confidence Engine
+
+↓
+
+5.
+
+Decision Engine
+
+↓
+
+6.
+
+Risk Engine
+
+↓
+
+7.
+
+Paper Trading Engine
+
+↓
+
+8.
+
+Performance Analytics
+
+↓
+
+9.
+
+Continuous AI Learning
+
+---
+
+# Engine Responsibilities
+
+## Market Scanner
+
+Collect raw market data.
+
+Examples:
+
+* Best Bid
+* Best Ask
+* Spread
+* Liquidity
+* Orderbook
+* Recent Odds Changes
+* Market Activity
+
+Scanner DOES NOT make decisions.
+
+---
+
+## Market Evaluation
+
+Convert raw data into standardized scores.
+
+Examples:
+
+Spread Score
+
+Liquidity Score
+
+Momentum Score
+
+Execution Score
+
+Odds Stability Score
+
+Market Quality Score
+
+↓
+
+Scanner Score
+
+Every market receives a real evaluation.
+
+---
+
+## Opportunity Ranking
+
+Sort every monitored market.
+
+Example:
+
+BTC 5m
+
+92
+
+ETH 15m
+
+87
+
+SOL 1H
+
+81
+
+This engine powers:
+
+* Heatmap
+* Top Market
+* Rankings
+
+---
+
+## Confidence Engine
+
+Estimate probability that an opportunity is worth trading.
+
+Produces:
+
+Confidence Score
+
+Confidence Trend
+
+Confidence Change
+
+Confidence Reason
+
+---
+
+## Decision Engine
+
+Makes the trading decision.
+
+Produces:
+
+Selected Market
+
+Reason
+
+Entry Readiness
+
+Wait / Skip / Enter
+
+This engine should also explain WHY.
+
+Example:
+
+Momentum Rising
+
+Spread Acceptable
+
+Liquidity Good
+
+Risk Acceptable
+
+Confidence Increasing
+
+---
+
+## Risk Engine
+
+Calculate:
+
+Maximum Position
+
+Maximum Loss
+
+Risk Score
+
+Position Size
+
+Stop Conditions
+
+Capital Protection
+
+---
+
+## Paper Trading Engine
+
+Execute simulated trades.
+
+Track:
+
+Entry
+
+Exit
+
+PnL
+
+Fees
+
+Win Rate
+
+Holding Time
+
+Risk
+
+Everything must behave like a real trader.
+
+---
+
+## Performance Analytics
+
+Generate statistics.
+
+Examples:
+
+Win Rate
+
+Average Return
+
+Drawdown
+
+Sharpe-like Metrics
+
+Strategy Comparison
+
+Market Comparison
+
+Timeframe Comparison
+
+Confidence Accuracy
+
+Decision Accuracy
+
+---
+
+## Continuous AI Learning
+
+Continuously improve from paper trading history.
+
+Learn:
+
+Which setups work.
+
+Which setups fail.
+
+Improve ranking.
+
+Improve confidence.
+
+Improve decision quality.
+
+---
+
+# Dashboard Evolution Rule
+
+Never wait until an engine is completely finished.
+
+As soon as an engine produces useful information, immediately replace the corresponding placeholder.
+
+Examples:
+
+Scanner finished
+
+↓
+
+Scanner Score becomes live.
+
+Ranking finished
+
+↓
+
+Heatmap becomes live.
+
+Confidence finished
+
+↓
+
+Confidence becomes live.
+
+Decision finished
+
+↓
+
+Reason panel becomes live.
+
+Paper Trading finished
+
+↓
+
+PnL becomes live.
+
+The dashboard must evolve together with the AI.
+
+---
+
+# AI Feed
+
+The AI Feed should eventually become the main activity timeline.
+
+Instead of technical logs, display meaningful AI events.
+
+Examples:
+
+Universe Scan Completed
+
+BTC ranked #1
+
+Confidence increased to 91%
+
+Risk approved
+
+Paper Trade Opened
+
+Trailing Stop Updated
+
+Position Closed
+
+Trade Won
+
+Trade Lost
+
+Model Updated
+
+The feed should explain what the AI is doing in real time.
+
+---
+
+# Final Rule
+
+Every future improvement must satisfy one question:
+
+"Does this make LIMWANPO POLYMARKET AI smarter?"
+
+If the answer is NO,
+
+do not build it.
+
+The value of LIMWANPO POLYMARKET AI is its intelligence, decision quality, risk management, and learning capability—not additional visual redesign.

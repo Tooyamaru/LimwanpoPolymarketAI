@@ -1847,7 +1847,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;}
 /* ── TASK 1+2: Panel titles — stronger weight ────────── */
 .ptitle-left{font-weight:700!important;color:#c8dff0!important;opacity:1!important;}
 .ptitle-right{font-size:8px!important;font-weight:600!important;opacity:.75!important;color:#7faec8!important;}
-#universe-counts{color:var(--nc)!important;opacity:.85!important;}
+/* #universe-counts removed — element replaced by .mu-sub structure */
 
 /* ── TASK 2: Labels — +10% contrast ─────────────────── */
 /* Stat labels in target panel */
@@ -1907,8 +1907,27 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;}
 footer{font-size:9px!important;letter-spacing:1.5px!important;color:#7faec8!important;}
 footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;font-weight:700!important;}
 
+/* ── Market Universe subtitle ────────────────────────── */
+.mu-sub{
+  display:flex;flex-direction:column;gap:2px;
+  padding:4px 19px 5px;
+  border-bottom:1px solid rgba(0,229,255,.05);
+  background:rgba(0,0,0,.08);
+  flex-shrink:0;
+}
+.mu-assets{
+  font-size:8px!important;letter-spacing:2px!important;
+  color:#7faec8!important;font-weight:600!important;
+  text-transform:uppercase!important;
+}
+.mu-tfs{
+  font-size:7.5px!important;letter-spacing:1.5px!important;
+  color:#4d7a96!important;font-weight:500!important;
+  text-transform:uppercase!important;
+}
+
 /* ── TASK 7: Footer TF selector — subtle but readable ── */
-.f-tf{font-weight:600!important;opacity:.82!important;letter-spacing:1.5px!important;color:#9dcce2!important;}
+.f-tf{font-size:10px!important;font-weight:600!important;opacity:.88!important;letter-spacing:2px!important;color:#9dcce2!important;}
 
 /* ── TASK 11: Final sweep — remaining thin text ──────── */
 /* Market group headers */
@@ -1964,7 +1983,11 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
 
   <!-- ══ LEFT ══ -->
   <div class="col">
-    <div class="ptitle"><div class="ptitle-left">MARKET&nbsp;UNIVERSE</div><div class="ptitle-right" id="universe-counts">BTC&nbsp;·&nbsp;ETH&nbsp;·&nbsp;SOL&nbsp;·&nbsp;XRP&nbsp;&nbsp;|&nbsp;&nbsp;3&nbsp;TF</div></div>
+    <div class="ptitle"><div class="ptitle-left">MARKET&nbsp;UNIVERSE</div></div>
+    <div class="mu-sub">
+      <span class="mu-assets">BTC&nbsp;·&nbsp;ETH&nbsp;·&nbsp;SOL&nbsp;·&nbsp;XRP</span>
+      <span class="mu-tfs">5m&nbsp;·&nbsp;15m&nbsp;·&nbsp;1H</span>
+    </div>
     <div id="mkt-list"></div>
   </div>
 
@@ -2605,10 +2628,11 @@ function updateMarketRow(asset,tf,score,dir,mid){
   const priceEl=document.getElementById(`mp-${asset}-${tf}`);
   const sparkEl=document.getElementById(`sp-${asset}-${tf}`);
   priceEl.textContent=mid.toFixed(3);
-  scoreEl.textContent=Math.round(score);
-  let sc='';
-  if(score>=95)sc='s95';else if(score>=90)sc='s90';else if(score>=85)sc='s85';else if(score>=70)sc='s70';
-  scoreEl.className='mr-score'+(sc?' '+sc:'');
+  // Score display: suppressed until Market Scanner Engine is built.
+  // Once scanner produces real scores, restore: scoreEl.textContent=Math.round(score)
+  // and re-enable the threshold class logic below.
+  scoreEl.textContent='—';
+  scoreEl.className='mr-score'; // no colour class — avoids misleading intensity hints on placeholder
   if(dir==='BUY_YES'){dirEl.textContent='UP';dirEl.className='mr-dir yes';row.className='mrow m-yes';}
   else if(dir==='BUY_NO'){dirEl.textContent='DN';dirEl.className='mr-dir no';row.className='mrow m-no';}
   else{dirEl.textContent='—';dirEl.className='mr-dir';row.className='mrow';}
