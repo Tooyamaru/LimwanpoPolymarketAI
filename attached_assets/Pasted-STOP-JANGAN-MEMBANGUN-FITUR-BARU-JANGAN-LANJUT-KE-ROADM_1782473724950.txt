@@ -1,0 +1,159 @@
+STOP.
+
+JANGAN MEMBANGUN FITUR BARU.
+JANGAN LANJUT KE ROADMAP.
+JANGAN MENAMBAHKAN ENGINE BARU.
+
+Sekarang fokus 100% pada STABILIZATION & CLEAN UP.
+
+==================================================
+PHASE 1 — FIX ALL REMAINING ERRORS
+==================================================
+
+Masih terdapat error yang menyebabkan preview / artifact tidak stabil.
+
+Lakukan audit sampai benar-benar bersih.
+
+Yang harus dilakukan:
+
+1.
+Cari seluruh JavaScript error.
+
+2.
+Cari seluruh Promise Rejection.
+
+3.
+Cari seluruh async function yang belum aman.
+
+4.
+Cari seluruh DOM reference yang mungkin null.
+
+5.
+Cari seluruh timer / setInterval yang berpotensi error.
+
+6.
+Cari seluruh fetch yang belum memiliki error handling.
+
+7.
+Cari seluruh warning browser.
+
+8.
+Cari seluruh console error.
+
+9.
+Cari seluruh resource yang gagal load.
+
+10.
+Jangan menyembunyikan error.
+
+Perbaiki akar penyebabnya.
+
+Target:
+
+- 0 Console Error
+- 0 Promise Rejection
+- 0 Runtime Error
+- 0 Broken Reference
+- 0 Artifact Error
+
+==================================================
+PHASE 2 — RESTORE TOP HEADER
+==================================================
+
+Header / Navbar bagian atas dashboard HILANG.
+
+Kembalikan seperti sebelumnya.
+
+Yang harus ada:
+
+LIMWANPO // POLYMARKET AI
+
+Paper Mode
+
+Engines Live
+
+Markets
+
+Signals
+
+Open
+
+Blocked
+
+Capital OK
+
+Uptime
+
+UTC Clock
+
+Layout harus sama seperti dashboard versi sebelumnya.
+
+JANGAN mengubah posisi.
+
+JANGAN mengubah ukuran.
+
+JANGAN mengubah style.
+
+JANGAN mengubah warna.
+
+JANGAN mengubah typography.
+
+Header tersebut merupakan identitas utama dashboard dan WAJIB kembali.
+
+==================================================
+PHASE 3 — KEEP THE NEW FOOTER
+==================================================
+
+Footer ticker Binance yang baru
+
+BTC
+ETH
+SOL
+XRP
+
+TETAP DIPAKAI.
+
+JANGAN dikembalikan ke footer lama.
+
+==================================================
+PHASE 4 — UI VALIDATION
+==================================================
+
+Setelah selesai lakukan audit penuh.
+
+Desktop
+Laptop
+Tablet Landscape
+Tablet Portrait
+Mobile Landscape
+Mobile Portrait
+
+Pastikan:
+
+Tidak ada text terpotong.
+
+Tidak ada overlap.
+
+Tidak ada panel bergeser.
+
+Tidak ada font terlalu kecil.
+
+Tidak ada panel keluar layar.
+
+Tidak ada scrollbar horizontal.
+
+==================================================
+PHASE 5 — FINAL REPORT
+==================================================
+
+Berikan laporan:
+
+✔ Error diperbaiki
+✔ Header berhasil dikembalikan
+✔ Footer ticker tetap aktif
+✔ Console bersih
+✔ Browser bersih
+✔ Responsive lolos
+✔ Tidak ada perubahan layout selain yang diminta
+
+JANGAN mulai roadmap sebelum seluruh poin di atas selesai.
