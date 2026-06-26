@@ -6,7 +6,7 @@ description: Fullscreen cyberpunk trading dashboard served as FastAPI static fil
 # Dashboard setup
 
 **File**: `backend/app/static/index.html` — single self-contained HTML/CSS/JS, no build step.
-**Current version**: V12.3 (UI FREEZE COMPLETE — all placeholders removed, no fake scores, feed shows neutral messages only, score slots show Analyzing.../Waiting..., heatmap scores blank until Scanner Engine built)
+**Current version**: V12.4 (UI FREEZE FINAL — poly-id subtitle removed from header; WAITING FOR SCANNER small text via scanner-wait CSS class (guarded in all 5 responsive breakpoints); TOP 3 shows Waiting...; positions panel sentence-case text, font raised; Last Closed circle removed → "No trades yet"; generateFeed neutral messages only)
 
 **FastAPI mount** (in `create_application()` in `main.py`):
 ```python
