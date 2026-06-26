@@ -1907,6 +1907,73 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;}
 footer{font-size:9px!important;letter-spacing:1.5px!important;color:#7faec8!important;}
 footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;font-weight:700!important;}
 
+/* ══════════════════════════════════════════════════════
+   SCANNER UNIVERSE — Grouped Asset×TF Panel (Final)
+   4 asset groups, each with 3 TF child rows.
+   Score column is a reserved slot — empty until Market
+   Scanner Engine is built; then fill in-place.
+══════════════════════════════════════════════════════ */
+#mkt-list{flex:1;overflow:hidden;display:flex;flex-direction:column;background:transparent;}
+
+.sg-group{
+  flex:1;display:flex;flex-direction:column;
+  border-bottom:1px solid rgba(0,229,255,.055);
+  min-height:0;
+}
+.sg-group:last-child{border-bottom:none;}
+
+.sg-asset-hdr{
+  display:flex;align-items:center;gap:7px;
+  padding:4px 12px 3px;
+  background:rgba(0,0,0,.26);
+  border-bottom:1px solid rgba(0,229,255,.07);
+  flex-shrink:0;
+}
+.sg-icon{font-size:12px;color:var(--tm);width:14px;text-align:center;flex-shrink:0;opacity:.75;}
+.sg-name{font-size:10.5px;font-weight:700;color:var(--tw);letter-spacing:1px;}
+
+.sg-tf-row{
+  flex:1;display:grid;
+  grid-template-columns:26px 26px 1fr 28px 44px;
+  align-items:center;gap:3px;
+  padding:0 8px 0 24px;
+  border-bottom:1px solid rgba(11,19,32,.75);
+  min-height:0;
+  transition:background .2s;cursor:default;
+}
+.sg-tf-row:last-child{border-bottom:none;}
+.sg-tf-row:hover{background:rgba(0,229,255,.04)!important;}
+.sg-tf-row.m-yes{background:rgba(57,255,20,.022);}
+.sg-tf-row.m-yes:hover{background:rgba(57,255,20,.055)!important;}
+.sg-tf-row.m-no{background:rgba(255,45,149,.022);}
+.sg-tf-row.m-no:hover{background:rgba(255,45,149,.055)!important;}
+
+.sg-tf-lbl{
+  font-size:8px;font-weight:600;letter-spacing:1px;
+  color:#4d7a96;text-transform:uppercase;
+}
+.sg-tf-dir{
+  font-size:6px;font-weight:700;padding:1px 2px;border-radius:1px;
+  text-align:center;border:1px solid transparent;
+  color:transparent;transition:color .35s,border-color .35s;
+}
+.sg-tf-dir.yes{color:var(--ng);border-color:rgba(57,255,20,.38);}
+.sg-tf-dir.no{color:var(--nm);border-color:rgba(255,45,149,.38);}
+.sg-tf-price{
+  font-size:8.5px;font-weight:600;color:#7faec8;
+  text-align:center;
+}
+.sg-tf-score{
+  font-size:10px;font-weight:700;color:var(--td);
+  text-align:right;
+  /* Reserved — Scanner Score fills this slot once engine is built */
+}
+.sg-tf-score.s95{color:var(--ng);}
+.sg-tf-score.s90{color:#22ee55;}
+.sg-tf-score.s85{color:var(--nc);}
+.sg-tf-score.s70{color:var(--ny);}
+.sg-spark{display:block;}
+
 /* ── Market Universe subtitle ────────────────────────── */
 .mu-sub{
   display:flex;flex-direction:column;gap:2px;
@@ -2587,7 +2654,8 @@ function generateFeed(ranked,sigN,oppN,strN,rskN,exN){
 }
 
 // ═══════════════════════════════════════════════════════
-//  LEFT — 12 MARKET ROWS V8.0 (4 assets × 3 timeframes)
+//  LEFT — SCANNER UNIVERSE (4 asset groups × 3 TF rows)
+//  Score column reserved; filled by Market Scanner Engine.
 // ═══════════════════════════════════════════════════════
 function buildMarketList(){
   const wrap=document.getElementById('mkt-list');
@@ -2595,23 +2663,23 @@ function buildMarketList(){
   wrap.innerHTML='';
   for(const a of ASSETS){
     const grp=document.createElement('div');
-    grp.className='mgrp-hdr';
-    grp.innerHTML=`<span style="font-size:11px;color:var(--tm)">${ASSET_ICONS[a]||''}</span><span>${a}</span>`;
-    wrap.appendChild(grp);
+    grp.className='sg-group';
+    const hdr=document.createElement('div');
+    hdr.className='sg-asset-hdr';
+    hdr.innerHTML=`<span class="sg-icon">${ASSET_ICONS[a]||''}</span><span class="sg-name">${a}</span>`;
+    grp.appendChild(hdr);
     for(const tf of TFS){
       const row=document.createElement('div');
-      row.className='mrow';row.id=`mr-${a}-${tf}`;
+      row.className='sg-tf-row';row.id=`mr-${a}-${tf}`;
       row.innerHTML=`
-        <div class="mr-sym">
-          <span class="mr-asset">${a}</span>
-          <span class="mr-tf">${tf}</span>
-        </div>
-        <div class="mr-dir" id="md-${a}-${tf}">—</div>
-        <div class="mr-score" id="ms-${a}-${tf}">—</div>
-        <div class="mr-price" id="mp-${a}-${tf}">—</div>
-        <svg class="mr-spark" id="sp-${a}-${tf}" width="44" height="12" viewBox="0 0 44 12"></svg>`;
-      wrap.appendChild(row);
+        <span class="sg-tf-lbl">${tf}</span>
+        <span class="sg-tf-dir" id="md-${a}-${tf}"></span>
+        <span class="sg-tf-price" id="mp-${a}-${tf}">—</span>
+        <span class="sg-tf-score" id="ms-${a}-${tf}"></span>
+        <svg class="sg-spark" id="sp-${a}-${tf}" width="44" height="12" viewBox="0 0 44 12"></svg>`;
+      grp.appendChild(row);
     }
+    wrap.appendChild(grp);
   }
 }
 
@@ -2628,14 +2696,13 @@ function updateMarketRow(asset,tf,score,dir,mid){
   const priceEl=document.getElementById(`mp-${asset}-${tf}`);
   const sparkEl=document.getElementById(`sp-${asset}-${tf}`);
   priceEl.textContent=mid.toFixed(3);
-  // Score display: suppressed until Market Scanner Engine is built.
-  // Once scanner produces real scores, restore: scoreEl.textContent=Math.round(score)
-  // and re-enable the threshold class logic below.
-  scoreEl.textContent='—';
-  scoreEl.className='mr-score'; // no colour class — avoids misleading intensity hints on placeholder
-  if(dir==='BUY_YES'){dirEl.textContent='UP';dirEl.className='mr-dir yes';row.className='mrow m-yes';}
-  else if(dir==='BUY_NO'){dirEl.textContent='DN';dirEl.className='mr-dir no';row.className='mrow m-no';}
-  else{dirEl.textContent='—';dirEl.className='mr-dir';row.className='mrow';}
+  // Score: reserved slot — empty until Market Scanner Engine is built.
+  // To activate: scoreEl.textContent=Math.round(score); + restore class logic.
+  scoreEl.textContent='';
+  scoreEl.className='sg-tf-score';
+  if(dir==='BUY_YES'){dirEl.textContent='UP';dirEl.className='sg-tf-dir yes';row.className='sg-tf-row m-yes';}
+  else if(dir==='BUY_NO'){dirEl.textContent='DN';dirEl.className='sg-tf-dir no';row.className='sg-tf-row m-no';}
+  else{dirEl.textContent='';dirEl.className='sg-tf-dir';row.className='sg-tf-row';}
   const k=`${asset}-${tf}`;
   const h=priceHistory[k];h.push(mid);if(h.length>20)h.shift();
   const sparkColor=dir==='BUY_YES'?'rgba(57,255,20,.55)':dir==='BUY_NO'?'rgba(255,45,149,.55)':'rgba(0,229,255,.55)';
