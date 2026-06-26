@@ -2051,10 +2051,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
   <!-- ══ LEFT ══ -->
   <div class="col">
     <div class="ptitle"><div class="ptitle-left">MARKET&nbsp;UNIVERSE</div></div>
-    <div class="mu-sub">
-      <span class="mu-assets">BTC&nbsp;·&nbsp;ETH&nbsp;·&nbsp;SOL&nbsp;·&nbsp;XRP</span>
-      <span class="mu-tfs">5m&nbsp;·&nbsp;15m&nbsp;·&nbsp;1H</span>
-    </div>
+
     <div id="mkt-list"></div>
   </div>
 
@@ -2613,43 +2610,24 @@ const renderLiveFeed=_renderLiveFeed;
 const renderLeftFeed=_renderLeftFeed;
 
 function generateFeed(ranked,sigN,oppN,strN,rskN,exN){
+  // Scanner Engine not yet built — use neutral activity messages only
   const r=Math.random();
-  if(ranked.length>0){
-    const top=ranked[0];
-    const sc=Math.round(top.score);
-    const dist=Math.max(0,85-sc);
-    if(sc>=90){
-      pushFeed(`${top.asset} ${top.tf} score=${sc} — TRADE READY → risk engine`,'ready');
-      pushLive(`OPPORTUNITY DETECTED: ${top.asset} ${top.tf} @ ${top.mid.toFixed(3)} · score=${sc}`,'ready');
-    } else if(sc>=85){
-      pushFeed(`${top.asset} ${top.tf} score=${sc} — above threshold, candidate queued`,'signal');
-      pushLive(`CANDIDATE: ${top.asset} ${top.tf} score=${sc} · spread=${((top.spread||0)).toFixed(3)}`,'signal');
-    } else if(dist<=10){
-      pushFeed(`${top.asset} ${top.tf} score=${sc} — ${dist}pts from entry threshold`,'watch');
-      pushLive(`APPROACHING: ${top.asset} ${top.tf} needs ${dist} more pts · watching`,'watch');
-    } else if(r<.25) pushFeed(`${top.asset} ${top.tf} score=${sc} — monitoring`,'sys');
-    else if(r<.42) pushFeed(`Scanning ${ASSETS.length} assets — best: ${top.asset} ${top.tf}`,'sys');
-    else if(r<.57) pushFeed(`Signal engine: ${sigN} fired · ${oppN} opportunities scored`,'signal');
-    else if(r<.70) pushFeed(`Universe: ${ASSETS.length} assets active · pipeline nominal`,'sys');
-    else if(r<.84) pushFeed(`Watching ${top.asset} ${top.tf} · spread: ${(top.spread||0).toFixed(3)}`,'watch');
-    else           pushFeed(`Risk gate: ${rskN} approved · ${strN} strategy candidates pending`,'highlight');
-    if(r<.38&&oppN>0)   pushLive(`SCORED: ${oppN} opportunities · best ${Math.round(top.score)}/100`,'signal');
-    else if(r<.60&&sigN>0) pushLive(`SIGNALS: ${sigN} fired across ${ASSETS.length} assets`,'signal');
-    else if(r<.78) pushLive(`SPREAD WATCH: ${top.asset} ${top.tf} @ ${(top.spread||0).toFixed(4)}`,'watch');
-  } else {
-    if(r<.30)      pushFeed(`Scanning ${ASSETS.length} assets — no signal above threshold`,'sys');
-    else if(r<.55) pushFeed(`No opportunity above threshold — monitoring all assets`,'sys');
-    else if(r<.72) pushFeed(`Universe: ${ASSETS.length} assets synchronized`,'sys');
-    else           pushFeed(`Signal engine: ${sigN} signals processed`,'signal');
-    pushLive(`MONITORING ${ASSETS.length} assets · awaiting signal threshold`,'sys');
-  }
+  if(r<.20)      pushFeed('Universe scanning — awaiting Scanner Engine...','sys');
+  else if(r<.38) pushFeed(`Monitoring ${ASSETS.length} assets across ${TFS.length} timeframes`,'sys');
+  else if(r<.54) pushFeed('Scanner initialized — building signal pipeline','sys');
+  else if(r<.68) pushFeed('Market universe active — Scanner Engine pending','sys');
+  else if(r<.82) pushFeed('Waiting for Scanner Engine output...','sys');
+  else           pushFeed(`Pipeline active — ${ASSETS.length * TFS.length} markets monitored`,'sys');
+  if(r<.35) pushLive('SCANNER: Waiting for Engine...','sys');
+  else if(r<.65) pushLive(`UNIVERSE: ${ASSETS.length} assets · ${TFS.length} timeframes active`,'sys');
+  else      pushLive('MARKET SCANNER: initialization pending','sys');
   if(exN>0){
     pushFeed(`${exN} order(s) filled — position lifecycle active`,'execution');
     pushLive(`EXECUTION: ${exN} order(s) filled → position tracking active`,'execution');
   }
   if(strN>0&&rskN===0&&r<.4){
-    pushFeed(`Strategy candidate pending risk gate evaluation`,'warn');
-    pushLive(`RISK GATE: strategy candidate queued — awaiting clearance`,'warn');
+    pushFeed('Strategy candidate pending risk gate evaluation','warn');
+    pushLive('RISK GATE: strategy candidate queued — awaiting clearance','warn');
   }
 }
 
@@ -2766,10 +2744,9 @@ function updateTarget(ranked){
   dirEl.className='tgt-dir '+(isYes?'yes':isNo?'no':'neutral');
 
   const snEl=document.getElementById('tgt-score-n');
-  snEl.textContent=Math.round(best.score);
-  snEl.className='tgt-score-num '+(isYes?'yes':isNo?'no':'neutral');
+  snEl.textContent='Analyzing...';
+  snEl.className='tgt-score-num neutral';
 
-  const _scEl=document.getElementById('tgt-score');if(_scEl)_scEl.textContent=Math.round(best.score);
   const _bid=best.bid??Math.max(0,best.mid-(best.spread||0)/2);
   const _ask=best.ask??Math.min(1,best.mid+(best.spread||0)/2);
   let _edge='',_edgeCls='ts-v';
@@ -2831,37 +2808,21 @@ function updateTarget(ranked){
 }
 
 function updateRanking(ranked){
+  // Opportunity Ranking Engine not yet built — always show waiting state
   const slots=[
     {mkt:'r1-mkt',sc:'r1-score',dir:'r1-dir'},
     {mkt:'r2-mkt',sc:'r2-score',dir:'r2-dir'},
     {mkt:'r3-mkt',sc:'r3-score',dir:'r3-dir'},
   ];
   for(let i=0;i<3;i++){
-    const m=ranked[i],s=slots[i];
+    const s=slots[i];
     const mEl=document.getElementById(s.mkt);
     const scEl=document.getElementById(s.sc);
     const dEl=document.getElementById(s.dir);
-    if(!m){
-      mEl.textContent='Waiting for Scanner';scEl.textContent='';scEl.className='rank-score s0';
-      dEl.style.display='none';continue;
-    }
-    mEl.textContent=`${m.asset} ${m.tf}`;
-    const sc=Math.round(m.score);
-    scEl.textContent=sc;
-    scEl.className='rank-score '+(sc>=95?'s95':sc>=90?'s90':sc>=85?'s85':sc>=70?'s70':'s0');
-    const isY=m.dir==='BUY_YES',isN=m.dir==='BUY_NO';
-    // ── Task 5: always show direction, inline with score ─
-    if(isY||isN){
-      dEl.style.display='inline-flex';
-      dEl.textContent=isY?'▲ UP':'▼ DN';
-      dEl.className='rank-dir '+(isY?'yes':'no');
-    } else if(sc>0){
-      dEl.style.display='inline-flex';
-      dEl.textContent='·';
-      dEl.className='rank-dir';
-    } else {
-      dEl.style.display='none';
-    }
+    mEl.textContent='Waiting...';
+    scEl.textContent='';
+    scEl.className='rank-score s0';
+    dEl.style.display='none';
   }
 }
 
@@ -3059,7 +3020,7 @@ function updateHeatmap(ranked){
     const dEl=document.getElementById(`hd-${m.asset}-${m.tf}`);
     const aEl=document.getElementById(`ha-${m.asset}-${m.tf}`);
     if(!cell) continue;
-    sEl.textContent=sc>0?Math.round(sc):'';
+    sEl.textContent='';
 
     const isTop=k===topKey&&sc>0;
     if(sc>=95){
