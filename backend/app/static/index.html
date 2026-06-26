@@ -2088,27 +2088,27 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
 
             <!-- market name + dir + score -->
             <div class="tgt-main">
-              <div class="tgt-market" id="tgt-market">—</div>
+              <div class="tgt-market" id="tgt-market"></div>
               <div class="tgt-dir-row">
-                <div class="tgt-dir neutral" id="tgt-dir">—</div>
-                <div class="tgt-score-num neutral" id="tgt-score-n">—</div>
+                <div class="tgt-dir neutral" id="tgt-dir"></div>
+                <div class="tgt-score-num neutral" id="tgt-score-n"></div>
               </div>
             </div>
 
             <!-- right stats -->
             <div class="tgt-right">
               <div class="tgt-stats-row" style="grid-template-columns:1fr 1fr 1fr;gap:4px 8px">
-                <div class="ts"><div class="ts-l">ODDS</div><div class="ts-v" id="tgt-price">—</div></div>
-                <div class="ts"><div class="ts-l">SPREAD</div><div class="ts-v" id="tgt-spread">—</div></div>
-                <div class="ts"><div class="ts-l">EDGE</div><div class="ts-v" id="tgt-edge">—</div></div>
-                <div class="ts"><div class="ts-l">BEST&nbsp;BID</div><div class="ts-v" id="tgt-bid">—</div></div>
-                <div class="ts"><div class="ts-l">BEST&nbsp;ASK</div><div class="ts-v" id="tgt-ask">—</div></div>
-                <div class="ts"><div class="ts-l">EXP&nbsp;MIN</div><div class="ts-v" id="tgt-expiry">—</div></div>
+                <div class="ts"><div class="ts-l">ODDS</div><div class="ts-v" id="tgt-price"></div></div>
+                <div class="ts"><div class="ts-l">SPREAD</div><div class="ts-v" id="tgt-spread"></div></div>
+                <div class="ts"><div class="ts-l">EDGE</div><div class="ts-v" id="tgt-edge"></div></div>
+                <div class="ts"><div class="ts-l">BEST&nbsp;BID</div><div class="ts-v" id="tgt-bid"></div></div>
+                <div class="ts"><div class="ts-l">BEST&nbsp;ASK</div><div class="ts-v" id="tgt-ask"></div></div>
+                <div class="ts"><div class="ts-l">EXP&nbsp;MIN</div><div class="ts-v" id="tgt-expiry"></div></div>
               </div>
               <div class="conf-wrap" style="margin-top:4px">
                 <div class="conf-lbl">
                   <span>CONFIDENCE</span>
-                  <span class="conf-tier" id="conf-tier">—</span>
+                  <span class="conf-tier" id="conf-tier">SCANNING</span>
                 </div>
                 <div class="conf-track"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
               </div>
@@ -2117,7 +2117,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
           <!-- status row -->
           <div class="tgt-status-row" id="tgt-status-row">
             <div class="tgt-status-badge tsb-wait" id="tgt-status-badge">SCANNING</div>
-            <div class="tgt-dist" id="tgt-dist">—</div>
+            <div class="tgt-dist" id="tgt-dist">SCANNING...</div>
           </div>
           <!-- reason summary -->
           <div id="tgt-reasons" class="hidden"></div>
@@ -2170,7 +2170,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
         <div class="connector"><div class="fp"></div><div class="fp fp2"></div><div class="fp fp3"></div></div>
         <div class="stage" id="st-signal">
           <div class="stage-icon">≋</div>
-          <div class="stage-n" id="sn-signal">—</div>
+          <div class="stage-n" id="sn-signal">0</div>
           <div class="stage-lbl">SIGNALS</div>
           <div class="stage-sub" id="ss-signal">0 found</div>
           <div class="stage-bar-wrap">
@@ -2182,7 +2182,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
         <div class="connector"><div class="fp"></div><div class="fp fp2"></div><div class="fp fp3"></div></div>
         <div class="stage" id="st-opp">
           <div class="stage-icon">⊕</div>
-          <div class="stage-n" id="sn-opp">—</div>
+          <div class="stage-n" id="sn-opp">0</div>
           <div class="stage-lbl">OPPS</div>
           <div class="stage-sub" id="ss-opp">0 scored</div>
           <div class="stage-bar-wrap">
@@ -2194,7 +2194,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
         <div class="connector"><div class="fp"></div><div class="fp fp2"></div><div class="fp fp3"></div></div>
         <div class="stage" id="st-strat">
           <div class="stage-icon">⬡</div>
-          <div class="stage-n" id="sn-strat">—</div>
+          <div class="stage-n" id="sn-strat">0</div>
           <div class="stage-lbl">STRATEGY</div>
           <div class="stage-sub" id="ss-strat">0 selected</div>
           <div class="stage-bar-wrap">
@@ -2206,7 +2206,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
         <div class="connector"><div class="fp"></div><div class="fp fp2"></div><div class="fp fp3"></div></div>
         <div class="stage" id="st-risk">
           <div class="stage-icon">⊗</div>
-          <div class="stage-n" id="sn-risk">—</div>
+          <div class="stage-n" id="sn-risk">0</div>
           <div class="stage-lbl">RISK</div>
           <div class="stage-sub" id="ss-risk">0 approved</div>
           <div class="stage-bar-wrap">
@@ -2218,7 +2218,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
         <div class="connector"><div class="fp"></div><div class="fp fp2"></div><div class="fp fp3"></div></div>
         <div class="stage" id="st-exec">
           <div class="stage-icon">⚡</div>
-          <div class="stage-n" id="sn-exec">—</div>
+          <div class="stage-n" id="sn-exec">0</div>
           <div class="stage-lbl">EXECUTION</div>
           <div class="stage-sub" id="ss-exec">0 filled</div>
           <div class="stage-bar-wrap">
@@ -2288,16 +2288,16 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
           </div>
           <div class="pos-active" id="pos-active" style="display:none">
             <div class="pos-header">
-              <span class="pos-market" id="pos-market" style="font-size:12px">—</span>
+              <span class="pos-market" id="pos-market" style="font-size:12px"></span>
               <span class="pos-side yes" id="pos-side" style="font-size:9px">UP</span>
             </div>
             <div class="pos-grid" style="grid-template-columns:1fr 1fr;gap:3px 5px;margin-top:3px">
-              <div class="pos-row"><div class="pos-lbl">ENTRY</div><div class="pos-val" id="pos-entry" style="font-size:10px">—</div></div>
-              <div class="pos-row"><div class="pos-lbl">CURRENT</div><div class="pos-val" id="pos-current" style="font-size:10px">—</div></div>
-              <div class="pos-row"><div class="pos-lbl">SIZE</div><div class="pos-val" id="pos-qty" style="font-size:10px">—</div></div>
-              <div class="pos-row"><div class="pos-lbl">PnL&nbsp;%</div><div class="pos-val" id="pos-pnlpct" style="font-size:10px">—</div></div>
+              <div class="pos-row"><div class="pos-lbl">ENTRY</div><div class="pos-val" id="pos-entry" style="font-size:10px"></div></div>
+              <div class="pos-row"><div class="pos-lbl">CURRENT</div><div class="pos-val" id="pos-current" style="font-size:10px"></div></div>
+              <div class="pos-row"><div class="pos-lbl">SIZE</div><div class="pos-val" id="pos-qty" style="font-size:10px"></div></div>
+              <div class="pos-row"><div class="pos-lbl">PnL&nbsp;%</div><div class="pos-val" id="pos-pnlpct" style="font-size:10px"></div></div>
             </div>
-            <div style="margin-top:3px"><div class="pos-lbl">PnL (USDC)</div><div class="pos-val" id="pos-pnl" style="font-size:10px">—</div></div>
+            <div style="margin-top:3px"><div class="pos-lbl">PnL (USDC)</div><div class="pos-val" id="pos-pnl" style="font-size:10px"></div></div>
             <div style="margin-top:3px"><div class="pos-lbl">HOLDING</div><div class="pos-hold" id="pos-holding" style="font-size:11px;letter-spacing:1.5px">00:00:00</div></div>
           </div>
         </div>
@@ -2312,13 +2312,13 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
           </div>
           <div class="pos-last" id="pos-last" style="display:none;gap:3px">
             <div class="pos-header" style="margin-top:0">
-              <span class="pos-last-market" id="lt-market" style="font-size:12px">—</span>
-              <span class="pos-side" id="lt-side" style="font-size:9px">—</span>
+              <span class="pos-last-market" id="lt-market" style="font-size:12px"></span>
+              <span class="pos-side" id="lt-side" style="font-size:9px"></span>
             </div>
             <div class="pos-last-grid" style="margin-top:3px;grid-template-columns:1fr 1fr;gap:2px 5px">
-              <div class="pos-row"><div class="pos-lbl">PnL %</div><div class="pos-val" id="lt-pct" style="font-size:10px">—</div></div>
-              <div class="pos-row"><div class="pos-lbl">PnL USDC</div><div class="pos-val" id="lt-pnl" style="font-size:10px">—</div></div>
-              <div class="pos-row" style="grid-column:span 2"><div class="pos-lbl">CLOSED</div><div class="pos-val pos-last-ago" id="lt-ago" style="font-size:10px">—</div></div>
+              <div class="pos-row"><div class="pos-lbl">PnL %</div><div class="pos-val" id="lt-pct" style="font-size:10px"></div></div>
+              <div class="pos-row"><div class="pos-lbl">PnL USDC</div><div class="pos-val" id="lt-pnl" style="font-size:10px"></div></div>
+              <div class="pos-row" style="grid-column:span 2"><div class="pos-lbl">CLOSED</div><div class="pos-val pos-last-ago" id="lt-ago" style="font-size:10px"></div></div>
             </div>
           </div>
         </div>
@@ -2341,7 +2341,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
       <div class="kpi-l">WIN&nbsp;RATE</div>
       <div class="kpi-v" id="k-wr">0.0%</div>
       <div class="kpi-bottom">
-        <span class="kpi-delta neutral" id="kd-wr">—</span>
+        <span class="kpi-delta neutral" id="kd-wr"></span>
         <svg class="kpi-spark" id="ks-wr" width="40" height="12" viewBox="0 0 40 12"></svg>
       </div>
     </div>
@@ -2349,7 +2349,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
       <div class="kpi-l">NET&nbsp;PNL&nbsp;(USDC)</div>
       <div class="kpi-v" id="k-pnl">+$0.00</div>
       <div class="kpi-bottom">
-        <span class="kpi-delta neutral" id="kd-pnl">—</span>
+        <span class="kpi-delta neutral" id="kd-pnl"></span>
         <svg class="kpi-spark" id="ks-pnl" width="40" height="12" viewBox="0 0 40 12"></svg>
       </div>
     </div>
@@ -2357,7 +2357,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
       <div class="kpi-l">TRADES</div>
       <div class="kpi-v" id="k-tr">0</div>
       <div class="kpi-bottom">
-        <span class="kpi-delta neutral" id="kd-tr">—</span>
+        <span class="kpi-delta neutral" id="kd-tr"></span>
         <svg class="kpi-spark" id="ks-tr" width="40" height="12" viewBox="0 0 40 12"></svg>
       </div>
     </div>
@@ -2365,15 +2365,15 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
       <div class="kpi-l">MAX&nbsp;DRAWDOWN</div>
       <div class="kpi-v" id="k-dd">$0.00</div>
       <div class="kpi-bottom">
-        <span class="kpi-delta neutral" id="kd-dd">—</span>
+        <span class="kpi-delta neutral" id="kd-dd"></span>
         <svg class="kpi-spark" id="ks-dd" width="40" height="12" viewBox="0 0 40 12"></svg>
       </div>
     </div>
     <div class="kpi-sm">
       <div class="kpi-l">EQUITY&nbsp;(USDC)</div>
-      <div class="kpi-v" id="k-eq">—</div>
+      <div class="kpi-v" id="k-eq"></div>
       <div class="kpi-bottom">
-        <span class="kpi-delta neutral" id="kd-eq">—</span>
+        <span class="kpi-delta neutral" id="kd-eq"></span>
         <svg class="kpi-spark" id="ks-eq" width="40" height="12" viewBox="0 0 40 12"></svg>
       </div>
     </div>
@@ -2381,14 +2381,14 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
       <div class="kpi-l">DAILY&nbsp;PNL</div>
       <div class="kpi-v" id="k-dpnl">$0.00</div>
       <div class="kpi-bottom">
-        <span class="kpi-delta neutral" id="kd-dpnl">—</span>
+        <span class="kpi-delta neutral" id="kd-dpnl"></span>
       </div>
     </div>
     <div class="kpi-sm">
       <div class="kpi-l">WIN&nbsp;STREAK</div>
       <div class="kpi-v" id="k-ws">0</div>
       <div class="kpi-bottom">
-        <span class="kpi-delta neutral" id="kd-ws">—</span>
+        <span class="kpi-delta neutral" id="kd-ws"></span>
       </div>
     </div>
     <div class="kpi-sm" id="ks-box" style="border-color:rgba(57,255,20,.18);background:rgba(0,0,0,.4);cursor:default">
@@ -2674,7 +2674,7 @@ function buildMarketList(){
       row.innerHTML=`
         <span class="sg-tf-lbl">${tf}</span>
         <span class="sg-tf-dir" id="md-${a}-${tf}"></span>
-        <span class="sg-tf-price" id="mp-${a}-${tf}">—</span>
+        <span class="sg-tf-price" id="mp-${a}-${tf}"></span>
         <span class="sg-tf-score" id="ms-${a}-${tf}"></span>
         <svg class="sg-spark" id="sp-${a}-${tf}" width="44" height="12" viewBox="0 0 44 12"></svg>`;
       grp.appendChild(row);
@@ -2762,7 +2762,7 @@ function updateTarget(ranked){
   mktEl.className='tgt-market '+(isYes?'c-yes':isNo?'c-no':'');
 
   const dirEl=document.getElementById('tgt-dir');
-  dirEl.textContent=isYes?'UP':isNo?'DOWN':'—';
+  dirEl.textContent=isYes?'UP':isNo?'DOWN':'';
   dirEl.className='tgt-dir '+(isYes?'yes':isNo?'no':'neutral');
 
   const snEl=document.getElementById('tgt-score-n');
@@ -2772,12 +2772,12 @@ function updateTarget(ranked){
   const _scEl=document.getElementById('tgt-score');if(_scEl)_scEl.textContent=Math.round(best.score);
   const _bid=best.bid??Math.max(0,best.mid-(best.spread||0)/2);
   const _ask=best.ask??Math.min(1,best.mid+(best.spread||0)/2);
-  let _edge='—',_edgeCls='ts-v';
+  let _edge='',_edgeCls='ts-v';
   if(isYes&&_ask>0){const e=(0.5-_ask)/_ask*100;_edge=(e>=0?'+':'')+e.toFixed(1)+'%';_edgeCls='ts-v '+(e>=0?'pos':'neg');}
   else if(isNo&&_bid>0&&_bid<1){const nA=1-_bid;const e=(0.5-nA)/nA*100;_edge=(e>=0?'+':'')+e.toFixed(1)+'%';_edgeCls='ts-v '+(e>=0?'pos':'neg');}
   document.getElementById('tgt-price').textContent=best.mid.toFixed(3);
-  document.getElementById('tgt-spread').textContent=best.spread?best.spread.toFixed(3):'—';
-  document.getElementById('tgt-expiry').textContent=best.minutesToExpiry!=null?Math.round(best.minutesToExpiry):'—';
+  document.getElementById('tgt-spread').textContent=best.spread?best.spread.toFixed(3):'';
+  document.getElementById('tgt-expiry').textContent=best.minutesToExpiry!=null?Math.round(best.minutesToExpiry):'';
   const _eEl=document.getElementById('tgt-edge');if(_eEl){_eEl.textContent=_edge;_eEl.className=_edgeCls;}
   const _bEl=document.getElementById('tgt-bid');if(_bEl)_bEl.textContent=_bid.toFixed(3);
   const _aEl=document.getElementById('tgt-ask');if(_aEl)_aEl.textContent=_ask.toFixed(3);
@@ -2888,7 +2888,7 @@ function updatePipeline(signal,opp,strat,risk,exec){
     const convEl=document.getElementById(`sc-${s.id}`);
     if(!el||!nEl) continue;
     const val=s.n??0;
-    nEl.textContent=s.id==='market'?ASSETS.length:(val>0?val:'—');
+    nEl.textContent=s.id==='market'?ASSETS.length:val;
     const pct=Math.min(100,Math.max(0,s.pct||0));
     if(fillEl) fillEl.style.width=pct+'%';
     if(pctEl)  pctEl.textContent=pct+'%';
@@ -3038,7 +3038,7 @@ function buildHeatmap(){
     html+=`<div class="hm-cell hm-asset"><div class="hm-asset-inner">${ASSET_ICONS[a]||''}&nbsp;${a}</div></div>`;
     for(const tf of TFS)
       html+=`<div class="hm-cell hm-data" id="hc-${a}-${tf}">
-        <div class="hm-score" id="hs-${a}-${tf}">—</div>
+        <div class="hm-score" id="hs-${a}-${tf}"></div>
         <div class="hm-dir-row" id="hdr-${a}-${tf}" style="display:none">
           <div class="hm-arrow" id="ha-${a}-${tf}"></div>
           <div class="hm-dir" id="hd-${a}-${tf}"></div>
@@ -3059,7 +3059,7 @@ function updateHeatmap(ranked){
     const dEl=document.getElementById(`hd-${m.asset}-${m.tf}`);
     const aEl=document.getElementById(`ha-${m.asset}-${m.tf}`);
     if(!cell) continue;
-    sEl.textContent=sc>0?Math.round(sc):'—';
+    sEl.textContent=sc>0?Math.round(sc):'';
 
     const isTop=k===topKey&&sc>0;
     if(sc>=95){
@@ -3260,9 +3260,9 @@ function drawPerfSparkline(svgId,history){
 
 function updatePerfDelta(kId,current,prev,fmt){
   const el=document.getElementById(kId);if(!el) return;
-  if(prev===null){el.textContent='—';el.className='kpi-delta neutral';return;}
+  if(prev===null){el.textContent='';el.className='kpi-delta neutral';return;}
   const diff=current-prev;
-  if(Math.abs(diff)<0.001){el.textContent='—';el.className='kpi-delta neutral';return;}
+  if(Math.abs(diff)<0.001){el.textContent='';el.className='kpi-delta neutral';return;}
   const sign=diff>0?'+':'';
   el.innerHTML=(diff>0?'▲&nbsp;':'▼&nbsp;')+sign+fmt(diff);
   el.className='kpi-delta '+(diff>0?'pos':'neg');
@@ -3350,10 +3350,9 @@ async function refresh(){
     document.getElementById('k-tr').textContent=t;
     document.getElementById('k-dd').textContent='$'+dd.toFixed(2);
     const eqEl=document.getElementById('k-eq');
-    if(eqEl) eqEl.textContent=eq!=null?'$'+eq.toFixed(2):'—';
+    if(eqEl) eqEl.textContent=eq!=null?'$'+eq.toFixed(2):'';
     const wsEl=document.getElementById('k-ws');
     if(wsEl){wsEl.textContent=ws;wsEl.className='kpi-v'+(ws>3?' pos':ws>0?' ':'');}
-
     perfHistory.wr.push(wr);if(perfHistory.wr.length>20)perfHistory.wr.shift();
     perfHistory.pnl.push(pnl);if(perfHistory.pnl.length>20)perfHistory.pnl.shift();
     perfHistory.tr.push(t);if(perfHistory.tr.length>20)perfHistory.tr.shift();
