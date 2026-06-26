@@ -1837,6 +1837,97 @@ footer{font-size:8.5px!important;letter-spacing:1.5px!important;}
 /* Footer */
 footer{font-size:8.5px!important;letter-spacing:1.5px!important;color:#6b8fa8!important;}
 footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;}
+
+/* ═══════════════════════════════════════════════════════
+   V12.2 — MICRO TYPOGRAPHY (UI FREEZE)
+   Only readability. No layout, no color, no structure.
+   Tasks: labels · numbers · panel titles · feeds · footer
+═══════════════════════════════════════════════════════ */
+
+/* ── TASK 1+2: Panel titles — stronger weight ────────── */
+.ptitle-left{font-weight:700!important;color:#c8dff0!important;opacity:1!important;}
+.ptitle-right{font-size:8px!important;font-weight:600!important;opacity:.75!important;color:#7faec8!important;}
+#universe-counts{color:var(--nc)!important;opacity:.85!important;}
+
+/* ── TASK 2: Labels — +10% contrast ─────────────────── */
+/* Stat labels in target panel */
+.ts-l{font-size:9px!important;font-weight:600!important;opacity:.92!important;color:#8ab0c8!important;letter-spacing:.5px!important;}
+/* KPI labels */
+.kpi-l,.kpi-sm .kpi-l{font-size:9px!important;font-weight:600!important;opacity:.92!important;color:#8ab0c8!important;}
+/* Position labels */
+.pos-lbl{font-size:9px!important;font-weight:600!important;opacity:.92!important;color:#8ab0c8!important;}
+/* Confidence label */
+.conf-lbl{opacity:.92!important;color:#8ab0c8!important;}
+/* Capital labels */
+.cap-item-v5 .cap-lbl{font-size:8.5px!important;font-weight:600!important;opacity:.9!important;color:#8ab0c8!important;}
+
+/* ── TASK 3: Important numbers — bolder, clearer ─────── */
+/* Target panel stats (ODDS, SPREAD, EDGE, etc.) */
+.ts-v{font-size:15px!important;font-weight:700!important;line-height:1.15!important;}
+/* KPI card values */
+.kpi-sm .kpi-v{font-size:18px!important;font-weight:700!important;}
+/* Market score in list */
+.mr-score{font-size:13px!important;font-weight:700!important;}
+/* Rank scores */
+.rank-score{font-size:14px!important;font-weight:700!important;}
+/* Health percentages */
+.eng-ok{font-size:13px!important;font-weight:700!important;color:#c8dff0!important;}
+/* Heatmap scores */
+.hm-score{font-size:clamp(14px,1.9vw,20px)!important;font-weight:700!important;}
+/* Confidence tier */
+.conf-tier{font-size:12px!important;font-weight:700!important;letter-spacing:.5px!important;}
+/* Pipeline stage counts */
+.stage-n{font-size:clamp(15px,1.85vw,22px)!important;font-weight:700!important;}
+
+/* ── TASK 5: Current Target — hierarchy ──────────────── */
+.tgt-market{font-size:clamp(17px,2.1vw,27px)!important;font-weight:700!important;}
+.tgt-score-num{font-size:clamp(17px,2.1vw,27px)!important;font-weight:700!important;}
+.tgt-dir{font-size:clamp(10px,1.15vw,13px)!important;font-weight:700!important;}
+.tgt-status-badge{font-size:8px!important;font-weight:700!important;letter-spacing:1.2px!important;}
+
+/* ── TASK 6: Decision Engine labels ─────────────────── */
+.stage-lbl{font-size:8px!important;font-weight:600!important;opacity:.92!important;}
+#st-market .stage-lbl,#st-signal .stage-lbl,
+#st-risk .stage-lbl,#st-exec .stage-lbl{color:#8ab0c8!important;opacity:1!important;}
+
+/* ── TASK 7: System Health — names + % stronger ──────── */
+.eng-name{font-size:9px!important;font-weight:600!important;color:#8ab0c8!important;opacity:1!important;}
+
+/* ── TASK 8: KPI Cards — labels brighter ────────────── */
+.kpi-delta{font-size:7px!important;font-weight:600!important;opacity:.85!important;}
+
+/* ── TASK 9: AI Feeds — message-first ───────────────── */
+.feed-msg{font-size:10.5px!important;font-weight:600!important;line-height:1.45!important;}
+.lfeed-msg{font-size:10px!important;font-weight:600!important;line-height:1.4!important;}
+.feed-ts{font-size:7.5px!important;opacity:.4!important;}
+.lfeed-ts{font-size:7px!important;opacity:.4!important;}
+.feed-tag{font-size:6.5px!important;font-weight:600!important;opacity:.85!important;}
+
+/* ── TASK 10: Footer — readability ───────────────────── */
+footer{font-size:9px!important;letter-spacing:1.5px!important;color:#7faec8!important;}
+footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;font-weight:700!important;}
+
+/* ── TASK 11: Final sweep — remaining thin text ──────── */
+/* Market group headers */
+.mgrp-hdr{font-size:7px!important;font-weight:700!important;color:#6b8fa8!important;letter-spacing:2px!important;}
+/* Asset name in market rows */
+.mr-asset{font-size:11px!important;font-weight:700!important;color:var(--tw)!important;}
+/* Timeframe slightly clearer */
+.mr-tf{font-size:8px!important;font-weight:500!important;opacity:.5!important;}
+/* Heatmap headers */
+.hm-header{font-size:9px!important;font-weight:600!important;color:#8ab0c8!important;}
+/* Heatmap asset */
+.hm-asset-inner{font-size:clamp(9px,1.1vw,12px)!important;font-weight:700!important;color:#9dcce2!important;}
+/* Rank market name */
+.rank-mkt{font-size:10px!important;font-weight:600!important;color:var(--tw)!important;}
+/* Position market name */
+.pos-market{font-size:14px!important;font-weight:700!important;letter-spacing:2px!important;}
+/* Position value */
+.pos-val{font-size:13px!important;font-weight:700!important;}
+/* Engine dot slightly more visible */
+.eng-dot{width:5px!important;height:5px!important;}
+/* Thinking status */
+#sys-thinking{font-size:8px!important;font-weight:600!important;opacity:.85!important;}
 </style>
 </head>
 <body>
@@ -1870,7 +1961,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;}
 
   <!-- ══ LEFT ══ -->
   <div class="col">
-    <div class="ptitle"><div class="ptitle-left">12&nbsp;MARKETS&nbsp;MONITORED</div><div class="ptitle-right">POLYMARKET</div></div>
+    <div class="ptitle"><div class="ptitle-left">MARKET&nbsp;UNIVERSE</div><div class="ptitle-right" id="universe-counts">4&nbsp;ASSETS&nbsp;·&nbsp;12&nbsp;STREAMS</div></div>
     <div id="mkt-list"></div>
   </div>
 
