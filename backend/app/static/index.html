@@ -943,6 +943,10 @@ footer{color:#6b8fa8!important;}
   .mr-score{font-size:11px!important;}
   .mr-dir{font-size:7px!important;min-width:26px;text-align:center;}
 
+  /* ── BTC CHART — hidden on portrait ─────────────────── */
+  #center-top-row{grid-template-columns:1fr!important;}
+  #btc-chart-card{display:none!important;}
+
   /* ── HERO TARGET — Visual center of the application
      Targets: name clamp(64-96px), score clamp(84-128px)
      direction clamp(32-44px), conf-bar 8px, min-h 340px  */
@@ -1146,21 +1150,6 @@ footer{color:#6b8fa8!important;}
   footer{font-size:6px;padding:0 10px;}
 }
 
-/* ── DIAGNOSTIC BADGE (remove after audit) ─────────── */
-#dbg-badge{
-  position:fixed;top:50px;right:8px;z-index:99999;
-  background:rgba(0,0,0,.95);border:2px solid #ffe600;
-  color:#ffe600;font-family:monospace;font-size:11px;
-  padding:8px 12px;line-height:1.8;border-radius:4px;
-  pointer-events:none;letter-spacing:.5px;
-}
-#dbg-badge b{display:block;font-size:9px;color:rgba(255,230,0,.6);margin-bottom:2px;}
-/* Portrait active: red border on hero, green on watchlist */
-@media(max-width:1100px)and(orientation:portrait){
-  #target-panel{outline:4px solid #ff2200!important;outline-offset:2px;}
-  .col:nth-child(1) #mkt-list{outline:4px solid #00ff44!important;outline-offset:2px;}
-  #dbg-badge{border-color:#ff2200!important;color:#ff2200!important;}
-}
 
 /* ═══════════════════════════════════════════════════════
    HEIGHT OPTIMIZATION — V6.10.2
@@ -1196,6 +1185,52 @@ footer{color:#6b8fa8!important;}
   .pipeline{padding:4px 10px 4px;}
   .pipeline-footer{padding:1px 12px 2px;}
 }
+
+/* ═══════════════════════════════════════════════════════
+   ASSET CARDS — V7.0 (4-asset left sidebar)
+═══════════════════════════════════════════════════════ */
+#mkt-list{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:4px;padding:6px 8px;background:rgba(0,0,0,.08);}
+.asset-card{
+  flex:1;display:flex;align-items:center;gap:10px;min-height:0;
+  padding:6px 10px;
+  background:rgba(6,12,22,.7);border:1px solid rgba(0,229,255,.08);border-radius:3px;
+  transition:background .25s,border-color .25s,box-shadow .25s;cursor:default;
+}
+.asset-card:hover{background:rgba(0,229,255,.04);border-color:rgba(0,229,255,.15);transform:translateX(2px);}
+.asset-card.ac-yes{background:rgba(57,255,20,.03);border-color:rgba(57,255,20,.22);box-shadow:inset 3px 0 0 rgba(57,255,20,.4);}
+.asset-card.ac-no{background:rgba(255,45,149,.03);border-color:rgba(255,45,149,.22);box-shadow:inset 3px 0 0 rgba(255,45,149,.4);}
+.ac-icon-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;width:30px;}
+.ac-icon{font-size:15px;color:var(--tm);line-height:1;}
+.ac-name{font-size:6.5px;letter-spacing:1.5px;font-weight:bold;color:var(--tw);}
+.ac-score-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:38px;}
+.ac-score{font-size:22px;font-weight:bold;color:var(--td);line-height:1;transition:color .35s,text-shadow .35s;}
+.ac-score.s95{color:var(--ng);text-shadow:0 0 10px rgba(57,255,20,.45);}
+.ac-score.s90{color:#22ee55;text-shadow:0 0 7px rgba(34,238,85,.4);}
+.ac-score.s85{color:var(--nc);text-shadow:0 0 7px rgba(0,229,255,.4);}
+.ac-score.s70{color:var(--ny);}
+.ac-score-lbl{font-size:5.5px;letter-spacing:1.5px;color:var(--td);margin-top:1px;}
+.ac-mid{display:flex;flex-direction:column;flex:1;gap:4px;min-width:0;}
+.ac-dir-badge{font-size:7.5px;font-weight:bold;letter-spacing:2px;padding:2px 7px;border-radius:2px;border:1px solid var(--b2);color:var(--td);display:inline-block;transition:all .3s;}
+.ac-dir-badge.yes{color:var(--ng);border-color:rgba(57,255,20,.38);background:rgba(57,255,20,.06);text-shadow:0 0 5px var(--ng);}
+.ac-dir-badge.no{color:var(--nm);border-color:rgba(255,45,149,.38);background:rgba(255,45,149,.06);text-shadow:0 0 5px var(--nm);}
+.ac-detail-row{display:flex;align-items:center;gap:6px;}
+.ac-tf-chip{font-size:6px;letter-spacing:1px;color:var(--td);padding:1px 4px;border-radius:1px;border:1px solid var(--b1);}
+.ac-tf-chip.best{color:var(--nc);border-color:rgba(0,229,255,.22);}
+.ac-odds-val{font-size:8.5px;font-weight:bold;color:var(--tw);}
+#left-feed-panel{display:none!important;}
+
+/* ═══════════════════════════════════════════════════════
+   CENTER TOP ROW — Target + BTC Chart
+═══════════════════════════════════════════════════════ */
+#center-top-row{display:grid;grid-template-columns:1fr 250px;flex-shrink:0;border-bottom:1px solid rgba(0,229,255,.1);overflow:hidden;}
+#center-top-row #target-panel{border-bottom:none!important;}
+#btc-chart-card{
+  display:flex;flex-direction:column;overflow:hidden;
+  border-left:1px solid rgba(0,229,255,.06);
+  background:linear-gradient(180deg,rgba(0,229,255,.012) 0%,transparent 40%),var(--panel);
+}
+#btc-chart-body{flex:1;min-height:0;overflow:hidden;}
+.tradingview-widget-container,.tradingview-widget-container__widget{height:100%!important;width:100%!important;}
 </style>
 </head>
 <body>
@@ -1211,17 +1246,17 @@ footer{color:#6b8fa8!important;}
     <div class="pill pill-mode">PAPER&nbsp;MODE</div>
     <div class="pill"><div class="dot"></div><span>9&nbsp;ENGINES&nbsp;LIVE</span></div>
     <div class="pill-live">
-      <div class="lm-item"><span class="lm-n active" id="lm-active">12</span>&nbsp;<span class="lm-lbl">ACTIVE</span></div>
+      <div class="lm-item"><span class="lm-n active" id="lm-active">4</span>&nbsp;<span class="lm-lbl">ASSETS</span></div>
       <span class="lm-sep">·</span>
-      <div class="lm-item"><span class="lm-n ready" id="lm-ready">0</span>&nbsp;<span class="lm-lbl">READY</span></div>
+      <div class="lm-item"><span class="lm-n ready" id="lm-ready">0</span>&nbsp;<span class="lm-lbl">SIGNALS</span></div>
       <span class="lm-sep">·</span>
       <div class="lm-item"><span class="lm-n open" id="lm-open">0</span>&nbsp;<span class="lm-lbl">OPEN</span></div>
       <span class="lm-sep">·</span>
       <div class="lm-item"><span class="lm-n blocked" id="lm-blocked">0</span>&nbsp;<span class="lm-lbl">BLOCKED</span></div>
     </div>
+    <div class="pill"><div class="dot" id="h-cdot"></div><span id="h-clbl">CAPITAL&nbsp;OK</span></div>
     <div class="pill"><span id="h-uptime">UPTIME&nbsp;0s</span></div>
     <div class="pill"><span id="h-clock">--:--:--&nbsp;UTC</span></div>
-    <div class="pill"><div class="dot" id="h-cdot"></div><span id="h-clbl">CAPITAL&nbsp;OK</span></div>
   </div>
 </header>
 
@@ -1229,20 +1264,14 @@ footer{color:#6b8fa8!important;}
 
   <!-- ══ LEFT ══ -->
   <div class="col">
-    <div class="ptitle"><div class="ptitle-left">UNIVERSE&nbsp;//&nbsp;12&nbsp;MARKETS</div></div>
+    <div class="ptitle"><div class="ptitle-left">4&nbsp;ASSETS&nbsp;MONITORED</div><div class="ptitle-right">POLYMARKET</div></div>
     <div id="mkt-list"></div>
-    <div id="left-feed-panel">
-      <div class="ptitle" style="padding:2px 10px 2px">
-        <div class="ptitle-left" style="font-size:6.5px;letter-spacing:2px;color:rgba(57,255,20,.6)">AI&nbsp;THINKING</div>
-        <div class="ptitle-right" style="font-size:5.5px;color:rgba(57,255,20,.4)">LIVE</div>
-      </div>
-      <div id="left-feed-list"></div>
-    </div>
   </div>
 
   <!-- ══ CENTER ══ -->
   <div class="col">
 
+    <div id="center-top-row">
     <div id="target-panel">
       <div id="tgt-scan"></div>
       <div class="ptitle">
@@ -1327,6 +1356,18 @@ footer{color:#6b8fa8!important;}
         </div>
       </div>
     </div>
+    <div id="btc-chart-card">
+      <div class="ptitle"><div class="ptitle-left">BTC&nbsp;//&nbsp;LIVE</div><div class="ptitle-right">BINANCE:BTCUSDT</div></div>
+      <div id="btc-chart-body">
+        <div class="tradingview-widget-container" style="height:100%;width:100%">
+          <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {"symbol":"BINANCE:BTCUSDT","width":"100%","height":"100%","locale":"en","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}
+          </script>
+        </div>
+      </div>
+    </div>
+    </div>
 
     <!-- AI DECISION ENGINE -->
     <div id="pipeline-panel">
@@ -1334,9 +1375,9 @@ footer{color:#6b8fa8!important;}
       <div class="pipeline">
         <div class="stage active" id="st-market">
           <div class="stage-icon">◎</div>
-          <div class="stage-n" id="sn-market">12</div>
+          <div class="stage-n" id="sn-market">4</div>
           <div class="stage-lbl">UNIVERSE</div>
-          <div class="stage-sub" id="ss-market">12 scanned</div>
+          <div class="stage-sub" id="ss-market">4 assets</div>
           <div class="stage-bar-wrap">
             <div class="stage-bar-track"><div class="stage-bar-fill" id="sf-market" style="width:100%"></div></div>
             <div class="stage-pct" id="sp-market">100%</div>
@@ -1627,8 +1668,8 @@ footer{color:#6b8fa8!important;}
 
 <footer>
   <span>LIMWANPO&nbsp;//&nbsp;POLYMARKET&nbsp;AI</span>
-  <span>UNIVERSE:&nbsp;BTC&nbsp;|&nbsp;ETH&nbsp;|&nbsp;SOL&nbsp;|&nbsp;XRP&nbsp;&nbsp;·&nbsp;&nbsp;TIMEFRAMES:&nbsp;5M&nbsp;|&nbsp;15M&nbsp;|&nbsp;1H&nbsp;&nbsp;·&nbsp;&nbsp;MARKETS:&nbsp;12</span>
-  <span id="f-ts">VERSION&nbsp;0.10.0</span>
+  <span>BTC&nbsp;·&nbsp;ETH&nbsp;·&nbsp;SOL&nbsp;·&nbsp;XRP&nbsp;&nbsp;·&nbsp;&nbsp;5M&nbsp;|&nbsp;15M&nbsp;|&nbsp;1H&nbsp;&nbsp;·&nbsp;&nbsp;PAPER&nbsp;MODE</span>
+  <span id="f-ts">REFRESHED&nbsp;—</span>
 </footer>
 
 <script>
@@ -1782,20 +1823,20 @@ function generateFeed(ranked,sigN,oppN,strN,rskN,exN){
       pushFeed(`${top.asset} ${top.tf} score=${sc} — ${dist}pts from entry threshold`,'warn');
       pushLive(`APPROACHING: ${top.asset} ${top.tf} needs ${dist} more pts · watching`,'warn');
     } else if(r<.25) pushFeed(`${top.asset} ${top.tf} score=${sc} — monitoring`,'');
-    else if(r<.45) pushFeed(`Scanning ${MARKETS.length} markets — best: ${top.asset} ${top.tf}`,'');
+    else if(r<.45) pushFeed(`Scanning ${ASSETS.length} assets — best: ${top.asset} ${top.tf}`,'');
     else if(r<.62) pushFeed(`Signal engine: ${sigN} fired · ${oppN} opportunities scored`,'');
-    else if(r<.76) pushFeed(`Universe: ${MARKETS.length} markets active · pipeline nominal`,'');
+    else if(r<.76) pushFeed(`Universe: ${ASSETS.length} assets active · pipeline nominal`,'');
     else if(r<.88) pushFeed(`Watching ${top.asset} ${top.tf} · spread: ${(top.spread||0).toFixed(3)}`,'');
     else pushFeed(`Risk gate: ${rskN} approved · ${strN} strategy candidates pending`,'');
     if(r<.4&&oppN>0) pushLive(`SCORED: ${oppN} opportunities · best ${Math.round(top.score)}/100`,'');
-    else if(r<.6&&sigN>0) pushLive(`SIGNALS: ${sigN} fired across ${MARKETS.length} markets`,'');
+    else if(r<.6&&sigN>0) pushLive(`SIGNALS: ${sigN} fired across ${ASSETS.length} assets`,'');
     else if(r<.75) pushLive(`SPREAD WATCH: ${top.asset} ${top.tf} @ ${(top.spread||0).toFixed(4)}`,'');
   } else {
-    if(r<.3) pushFeed(`Scanning ${MARKETS.length} markets — no signal above threshold`,'');
-    else if(r<.55) pushFeed(`No opportunity above threshold — monitoring all markets`,'');
-    else if(r<.72) pushFeed(`Universe: ${MARKETS.length} markets synchronized`,'');
+    if(r<.3) pushFeed(`Scanning ${ASSETS.length} assets — no signal above threshold`,'');
+    else if(r<.55) pushFeed(`No opportunity above threshold — monitoring all assets`,'');
+    else if(r<.72) pushFeed(`Universe: ${ASSETS.length} assets synchronized`,'');
     else pushFeed(`Signal engine: ${sigN} signals processed`,'');
-    pushLive(`MONITORING ${MARKETS.length} markets · awaiting signal threshold`,'');
+    pushLive(`MONITORING ${ASSETS.length} assets · awaiting signal threshold`,'');
   }
   if(exN>0){
     pushFeed(`${exN} order(s) filled — tracking position lifecycle`,'highlight');
@@ -1808,23 +1849,63 @@ function generateFeed(ranked,sigN,oppN,strN,rskN,exN){
 }
 
 // ═══════════════════════════════════════════════════════
-//  LEFT — MARKET LIST
+//  LEFT — ASSET CARDS (V7.0)
 // ═══════════════════════════════════════════════════════
+const ASSET_ICONS={BTC:'₿',ETH:'Ξ',SOL:'◎',XRP:'✕'};
+
 function buildMarketList(){
-  const wrap=document.getElementById('mkt-list');wrap.innerHTML='';
+  const wrap=document.getElementById('mkt-list');
+  if(!wrap) return;
+  wrap.innerHTML='';
   for(const a of ASSETS){
-    const hdr=document.createElement('div');hdr.className='mgrp-hdr';
-    hdr.textContent=`// ${a}`;wrap.appendChild(hdr);
+    const card=document.createElement('div');
+    card.className='asset-card';card.id=`ac-${a}`;
+    card.innerHTML=`
+      <div class="ac-icon-wrap">
+        <span class="ac-icon">${ASSET_ICONS[a]||a[0]}</span>
+        <span class="ac-name">${a}</span>
+      </div>
+      <div class="ac-score-wrap">
+        <div class="ac-score" id="acs-${a}">—</div>
+        <div class="ac-score-lbl">SCORE</div>
+      </div>
+      <div class="ac-mid">
+        <div class="ac-dir-badge" id="acd-${a}">—</div>
+        <div class="ac-detail-row">
+          <span class="ac-tf-chip best" id="actf-${a}">—</span>
+          <span class="ac-odds-val" id="aco-${a}">0.500</span>
+        </div>
+      </div>`;
+    wrap.appendChild(card);
+  }
+}
+
+function updateAssetCards(){
+  for(const a of ASSETS){
+    let bestScore=0,bestDir='NEUTRAL',bestMid=0.5,bestTf=null;
     for(const tf of TFS){
-      const row=document.createElement('div');row.className='mrow';row.id=`mr-${a}-${tf}`;
-      row.innerHTML=`
-        <div class="mr-sym"><span class="mr-asset">${a}</span><span class="mr-tf">${tf}</span></div>
-        <div class="mr-dir" id="md-${a}-${tf}">—</div>
-        <div class="mr-score" id="ms-${a}-${tf}">0</div>
-        <svg class="mr-spark" id="sp-${a}-${tf}" width="42" height="14" viewBox="0 0 42 14"></svg>
-        <span class="mr-price" id="mp-${a}-${tf}">0.500</span>`;
-      wrap.appendChild(row);
+      const d=mktData[`${a}-${tf}`];
+      if(d&&d.score>bestScore){bestScore=d.score;bestDir=d.dir;bestMid=d.mid;bestTf=tf;}
     }
+    const card=document.getElementById(`ac-${a}`);if(!card)continue;
+    const scoreEl=document.getElementById(`acs-${a}`);
+    const dirEl=document.getElementById(`acd-${a}`);
+    const oddsEl=document.getElementById(`aco-${a}`);
+    const tfEl=document.getElementById(`actf-${a}`);
+    const sc=Math.round(bestScore);
+    if(scoreEl){
+      scoreEl.textContent=sc>0?sc:'—';
+      let cls='ac-score';
+      if(sc>=95)cls+=' s95';else if(sc>=90)cls+=' s90';else if(sc>=85)cls+=' s85';else if(sc>=70)cls+=' s70';
+      scoreEl.className=cls;
+    }
+    if(dirEl){
+      if(bestDir==='BUY_YES'){dirEl.textContent='▲ UP';dirEl.className='ac-dir-badge yes';card.className='asset-card ac-yes';}
+      else if(bestDir==='BUY_NO'){dirEl.textContent='▼ DOWN';dirEl.className='ac-dir-badge no';card.className='asset-card ac-no';}
+      else{dirEl.textContent='—';dirEl.className='ac-dir-badge';card.className='asset-card';}
+    }
+    if(oddsEl)oddsEl.textContent=bestMid.toFixed(3);
+    if(tfEl&&bestTf){tfEl.textContent=bestTf.toUpperCase();tfEl.className='ac-tf-chip best';}
   }
 }
 
@@ -2031,7 +2112,7 @@ function updatePipeline(signal,opp,strat,risk,exec){
     const convEl=document.getElementById(`sc-${s.id}`);
     if(!el||!nEl) continue;
     const val=s.n??0;
-    nEl.textContent=s.id==='market'?BASE:(val>0?val:'—');
+    nEl.textContent=s.id==='market'?ASSETS.length:(val>0?val:'—');
     const pct=Math.min(100,Math.max(0,s.pct||0));
     if(fillEl) fillEl.style.width=pct+'%';
     if(pctEl)  pctEl.textContent=pct+'%';
@@ -2041,7 +2122,7 @@ function updatePipeline(signal,opp,strat,risk,exec){
   }
   // ── Descriptive sub-labels (Task 3) ──────────────────
   const subMap={
-    market:`${BASE} scanned`,
+    market:`${ASSETS.length} assets`,
     signal:signal>0?`${signal} found`:'0 found',
     opp:opp>0?`${opp} scored`:'0 scored',
     strat:strat>0?`${strat} selected`:'0 selected',
@@ -2302,7 +2383,7 @@ function updatePerfDelta(kId,current,prev,fmt){
 //  HEADER LIVE STATUS
 // ═══════════════════════════════════════════════════════
 function updateLiveStatus(ranked,posOpen,blocked){
-  document.getElementById('lm-active').textContent=MARKETS.length;
+  document.getElementById('lm-active').textContent=ASSETS.length;
   document.getElementById('lm-ready').textContent=ranked.filter(m=>m.score>=85).length;
   document.getElementById('lm-open').textContent=posOpen?.length??0;
   document.getElementById('lm-blocked').textContent=blocked||0;
@@ -2362,6 +2443,7 @@ async function refresh(){
   const exN=ordStats?.filled??0;
   updatePipeline(sigN,oppN,strN,rskN,exN);
   generateFeed(ranked,sigN,oppN,strN,rskN,exN);
+  updateAssetCards();
 
   const closedArr=Array.isArray(closedPos)?closedPos:(closedPos?[closedPos]:[]);
   if(closedArr.length>0) lastClosedPos=closedArr[0];
@@ -2544,193 +2626,8 @@ window.matchMedia('(orientation:portrait)').addEventListener('change',()=>{
   _hmUserToggled=false;
 });
 
-// ── DIAGNOSTIC: breakpoint + dimension badge ────────
-function updateDbg(){
-  const w=window.innerWidth,h=window.innerHeight;
-  const mqPortrait=window.matchMedia('(max-width:1100px) and (orientation:portrait)');
-  const mqTabLand=window.matchMedia('(min-width:768px) and (max-width:1100px) and (orientation:landscape)');
-  const mqMobile=window.matchMedia('(max-width:640px)');
-  const portraitActive=mqPortrait.matches;
-  const tabLandActive=mqTabLand.matches;
-  const mobileActive=mqMobile.matches;
-  let bp='DESKTOP';
-  if(mobileActive) bp='MOBILE';
-  else if(portraitActive) bp='TABLET PORTRAIT ✓';
-  else if(tabLandActive) bp='TABLET LANDSCAPE';
-  const badge=document.getElementById('dbg-badge');
-  if(!badge) return;
-  badge.innerHTML=
-    '<b>ACTIVE BREAKPOINT</b>'+bp+
-    '<b>DIMENSIONS</b>'+w+' × '+h+' px'+
-    '<b>orientation:portrait MQ</b>'+portraitActive+
-    '<b>orientation:landscape MQ</b>'+tabLandActive;
-}
-updateDbg();
-window.addEventListener('resize',updateDbg);
-window.addEventListener('orientationchange',updateDbg);
+
 </script>
 
-<div id="dbg-badge"><b>ACTIVE BREAKPOINT</b>loading…</div>
-
-<div id="__debug_panel__" style="position:fixed;top:0;right:0;z-index:999999;background:rgba(0,0,0,.97);color:#0f0;font-family:monospace;font-size:10px;line-height:1.55;padding:10px 13px;border:1px solid #0f0;border-top:none;max-width:370px;white-space:pre;pointer-events:none;max-height:100vh;overflow:hidden;"></div>
-<script>
-(function(){
-  function px(n){ return Math.round(n)+'px'; }
-  function pad(s,n){ s=String(s); while(s.length<n)s=' '+s; return s; }
-
-  function measure(){
-    var winW = window.innerWidth;
-    var winH = window.innerHeight;
-    var docScroll = document.documentElement.scrollHeight;
-    var overflow  = docScroll - winH;
-    var lines = [];
-
-    /* ── 0. The 100vh vs innerHeight test ─────────────── */
-    var bodyBCR   = document.body.getBoundingClientRect().height;
-    var bodyOff   = document.body.offsetHeight;
-    var htmlOff   = document.documentElement.offsetHeight;
-    var cssVhDiff = Math.round(bodyBCR - winH);
-
-    lines.push('=== ROOT CAUSE ANALYSIS ===');
-    lines.push('viewport:   '+winW+'x'+winH);
-    lines.push('docScroll:  '+docScroll+'px');
-    lines.push('overflow:   '+overflow+'px  <-- TARGET');
-    lines.push('');
-    lines.push('── 100vh vs innerHeight TEST ──────────');
-    lines.push('window.innerHeight:    '+winH+'px');
-    lines.push('body.getBCR().height:  '+Math.round(bodyBCR)+'px  (=100vh)');
-    lines.push('body.offsetHeight:     '+bodyOff+'px');
-    lines.push('html.offsetHeight:     '+htmlOff+'px');
-    lines.push('cssVh - innerH DELTA:  '+cssVhDiff+'px  <-- SHOULD BE 45');
-    lines.push('');
-
-    /* ── 1. Every direct child of body ───────────────── */
-    lines.push('── BODY DIRECT CHILDREN ──────────────');
-    lines.push(pad('element',22)+pad('offH',6)+pad('scrH',6)+pad('mT',5)+pad('mB',5)+' pos');
-    var children = document.body.children;
-    var cumulative = 0;
-    var flowChildren = [];
-    for(var i=0;i<children.length;i++){
-      var el = children[i];
-      var cs  = window.getComputedStyle(el);
-      var pos = cs.position;
-      var offH = el.offsetHeight;
-      var scrH = el.scrollHeight;
-      var mT   = Math.round(parseFloat(cs.marginTop)||0);
-      var mB   = Math.round(parseFloat(cs.marginBottom)||0);
-      var tag  = (el.tagName.toLowerCase()+(el.id?'#'+el.id:el.className?'.'+el.className.trim().split(' ')[0]:'')).slice(0,21);
-      lines.push(pad(tag,22)+pad(offH,6)+pad(scrH,6)+pad(mT,5)+pad(mB,5)+'  '+pos);
-      if(pos!=='fixed'&&pos!=='absolute'){
-        flowChildren.push({tag:tag,offH:offH,mT:mT,mB:mB});
-        cumulative += offH + mT + mB;
-      }
-    }
-    lines.push('');
-
-    /* ── 2. Cumulative flow height ────────────────────── */
-    lines.push('── CUMULATIVE FLOW HEIGHT ────────────');
-    var running = 0;
-    for(var j=0;j<flowChildren.length;j++){
-      var fc = flowChildren[j];
-      var contrib = fc.offH + fc.mT + fc.mB;
-      running += contrib;
-      lines.push(pad(fc.tag,22)+' += '+pad(contrib,4)+'  total='+running);
-    }
-    lines.push('');
-    lines.push('sum of flow children: '+running+'px');
-    lines.push('winH:                 '+winH+'px');
-    lines.push('delta (run-winH):     '+(running-winH)+'px');
-    lines.push('');
-
-    /* ── 3. Key element deep-dive ────────────────────── */
-    lines.push('── KEY ELEMENTS ──────────────────────');
-    var targets = [
-      ['body',         document.body],
-      ['main',         document.querySelector('main')],
-      ['#perf-section',document.querySelector('#perf-section')],
-      ['#heatmap-panel',document.querySelector('#heatmap-panel')],
-      ['#mkt-list',    document.querySelector('#mkt-list')],
-      ['header',       document.querySelector('header')],
-      ['footer',       document.querySelector('footer')],
-    ];
-    for(var k=0;k<targets.length;k++){
-      var name=targets[k][0], el2=targets[k][1];
-      if(!el2){lines.push(pad(name,17)+' not found');continue;}
-      var cs2=window.getComputedStyle(el2);
-      var rect=el2.getBoundingClientRect();
-      var mT2=Math.round(parseFloat(cs2.marginTop)||0);
-      var mB2=Math.round(parseFloat(cs2.marginBottom)||0);
-      var pT2=Math.round(parseFloat(cs2.paddingTop)||0);
-      var pB2=Math.round(parseFloat(cs2.paddingBottom)||0);
-      var minH=cs2.minHeight;
-      lines.push(pad(name,17)+
-        ' h='+pad(Math.round(rect.height),4)+
-        ' mT='+pad(mT2,3)+' mB='+pad(mB2,3)+
-        ' pT='+pad(pT2,3)+' pB='+pad(pB2,3)+
-        ' minH='+minH);
-    }
-
-    /* ── 4. perf-section children breakdown ─────────── */
-    lines.push('');
-    lines.push('── #perf-section CHILDREN ────────────');
-    var perf=document.querySelector('#perf-section');
-    if(perf){
-      var pChildren=perf.children;
-      var pSum=0;
-      var pcs=window.getComputedStyle(perf);
-      var pgap=Math.round(parseFloat(pcs.rowGap||pcs.gap)||0);
-      for(var m=0;m<pChildren.length;m++){
-        var pc=pChildren[m];
-        var pcs2=window.getComputedStyle(pc);
-        var ph=Math.round(pc.getBoundingClientRect().height);
-        var pmT=Math.round(parseFloat(pcs2.marginTop)||0);
-        var pmB=Math.round(parseFloat(pcs2.marginBottom)||0);
-        var ptag=(pc.tagName.toLowerCase()+(pc.id?'#'+pc.id:pc.className?'.'+pc.className.trim().split(' ')[0]:'')).slice(0,20);
-        lines.push('  '+pad(ptag,20)+'h='+pad(ph,4)+' mT='+pmT+' mB='+pmB);
-        pSum+=ph+pmT+pmB;
-      }
-      var pPadT=Math.round(parseFloat(pcs.paddingTop)||0);
-      var pPadB=Math.round(parseFloat(pcs.paddingBottom)||0);
-      var gaps=(pChildren.length-1)*pgap;
-      lines.push('  gap='+pgap+'px x'+(pChildren.length-1)+'='+gaps+
-                 '  padT='+pPadT+' padB='+pPadB);
-      lines.push('  children sum='+pSum+' +gaps='+gaps+
-                 ' +pad='+(pPadT+pPadB));
-      lines.push('  total perf content='+(pSum+gaps+pPadT+pPadB)+'px');
-      lines.push('  getBCR height='+Math.round(perf.getBoundingClientRect().height)+'px');
-    }
-
-    /* ── 5. Feed panel deep-dive ─────────────────────── */
-    lines.push('');
-    lines.push('── FEED PANEL METRICS ────────────────────');
-    var feedTargets = [
-      ['BODY',                document.body],
-      ['MAIN',                document.querySelector('main')],
-      ['BOT ROW',             document.querySelector('.bot-row')],
-      ['AI THINKING FEED',    document.querySelector('.bot-row .bot-feed:first-child')],
-      ['AI LIVE FEED',        document.querySelector('.bot-row .bot-feed:nth-child(2)')],
-      ['CAPITAL PROTECTION',  document.querySelector('.bot-cap')],
-      ['FEED LOG #feed-list', document.querySelector('#feed-list')],
-      ['LIVE #live-feed-list',document.querySelector('#live-feed-list')],
-    ];
-    var htmlLines = lines.map(function(l){ return l.replace(/&/g,'&amp;').replace(/</g,'&lt;'); });
-    htmlLines.push('');
-    for(var fi=0;fi<feedTargets.length;fi++){
-      var fname=feedTargets[fi][0],fel=feedTargets[fi][1];
-      if(!fel){htmlLines.push('  '+fname+': <span style="color:#ff4">not found</span>');continue;}
-      var fcH=fel.clientHeight,fsH=fel.scrollHeight;
-      var over=fsH>fcH+2;
-      var col=over?'color:#f55':'color:#0f0';
-      var flag=over?' &#x26A0; OVERFLOW':'';
-      htmlLines.push('  <span style="color:#7df">'+fname+'</span>');
-      htmlLines.push('    clientH=<b>'+fcH+'</b>px  scrollH=<b>'+fsH+'</b>px<span style="'+col+'">'+flag+'</span>');
-    }
-    document.getElementById('__debug_panel__').innerHTML = htmlLines.join('\n');
-  }
-
-  measure();
-  window.addEventListener('resize', measure);
-})();
-</script>
 </body>
 </html>

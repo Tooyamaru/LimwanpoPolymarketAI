@@ -16,4 +16,4 @@
 - [Portfolio Reporting Layer 10](portfolio-layer10.md) — Layer 10 complete; 5 read-only endpoints; repository/service/schemas/router pattern; 35 tests pass; version bumped to 0.10.0
 - [Polymarket business model](polymarket-business-model.md) — LimwanpoAI: prediction market only; CLOSE_POSITION valid decision type; BNB target asset (settings shows XRP); multiple entries per market allowed by exposure rules not position count
 - [Exit Engine design](exit-engine-design.md) — Layer 11 complete; ExitEngine→RiskEngine auto-approve→ExecutionEngine close path; 4 triggers; exit price = bid never mid
-- [Dashboard V6.7](dashboard.md) — single-file backend/app/static/index.html; V6.7: hero target panel (clamp 42-80px fonts), heatmap 2-TF portrait (nth-child(4n) hides 1H), KPI 2×3 grid hides streak/killswitch, right col hidden in portrait, feeds +25% height; 4 full responsive breakpoints; StaticFiles at /static
+- [Dashboard V7.0](dashboard.md) — V7.0 institutional refactor: 4 asset cards (left), BTC live chart (TradingView widget beside AI Target), debug panels removed, "4 ASSETS" throughout, updateAssetCards() aggregates best TF per asset
