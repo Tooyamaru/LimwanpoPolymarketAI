@@ -1628,6 +1628,95 @@ body::after{animation-duration:20s!important;}
 /* ── Footer readability ──────────────────────────────── */
 footer{font-size:7.5px!important;letter-spacing:1.8px!important;padding:0 18px!important;gap:16px!important;}
 footer span:first-child{text-shadow:none!important;}
+
+/* ═══════════════════════════════════════════════════════
+   V11.1 — TYPOGRAPHY & READABILITY POLISH
+   Layout frozen. Only font size / weight / spacing / opacity.
+   Scale: Hero 16px/700 · Primary 14px/600 · Secondary 12px/600
+           Panel Title 10px/600 · Label 9px/500 · Micro 8px/500
+═══════════════════════════════════════════════════════ */
+
+/* ── PANEL TITLES — 10px / weight 600 / 1px tracking / 90% ── */
+.ptitle{font-size:10px!important;font-weight:600!important;letter-spacing:1px!important;opacity:.9;}
+.ptitle-left{font-size:10px!important;font-weight:600!important;letter-spacing:1px!important;}
+.bot-feed-hdr .ptitle-left{font-size:10px!important;font-weight:600!important;letter-spacing:1px!important;opacity:.9;}
+
+/* ── LABELS — 9px / weight 500 / 75% opacity ─────────── */
+.ts-l{font-size:9px!important;font-weight:500!important;letter-spacing:normal!important;opacity:.75;}
+.kpi-l{font-size:9px!important;font-weight:500!important;letter-spacing:normal!important;opacity:.75;}
+.kpi-sm .kpi-l{font-size:9px!important;font-weight:500!important;letter-spacing:normal!important;opacity:.75;}
+.pos-lbl{font-size:9px!important;font-weight:500!important;letter-spacing:normal!important;opacity:.75;}
+.conf-lbl{font-size:9px!important;font-weight:500!important;letter-spacing:normal!important;opacity:.75;}
+.cap-lbl{font-size:9px!important;font-weight:500!important;opacity:.75;}
+.cap-item-v5 .cap-lbl{font-size:9px!important;font-weight:500!important;opacity:.75;}
+
+/* ── MICRO LABELS — 8px / weight 500 / 60% opacity ───── */
+.feed-ts{font-size:8px!important;font-weight:500!important;opacity:.6;}
+.lfeed-ts{font-size:8px!important;font-weight:500!important;opacity:.6;}
+.pipeline-ts{font-size:8px!important;font-weight:500!important;opacity:.6;}
+.ptitle-right{font-size:8px!important;font-weight:500!important;opacity:.6;}
+.bot-feed-hdr .ptitle-right{font-size:8px!important;font-weight:500!important;opacity:.6;}
+.rank-lbl{font-size:8px!important;font-weight:500!important;opacity:.6;}
+.rank-pos{font-size:8px!important;font-weight:500!important;opacity:.6;}
+.stage-lbl{font-size:8px!important;font-weight:500!important;opacity:.65;}
+.pos-col-hdr{font-size:8px!important;font-weight:500!important;opacity:.6;}
+.cap-remain,.cap-item-v5 .cap-remain{font-size:8px!important;font-weight:500!important;opacity:.6;}
+
+/* ── HERO VALUES — 16px / weight 700 ─────────────────── */
+.kpi-sm .kpi-v{font-size:16px!important;font-weight:700!important;letter-spacing:normal!important;line-height:1.15!important;}
+.tgt-market{font-size:clamp(16px,2vw,26px)!important;font-weight:700!important;}
+.tgt-score-num{font-size:clamp(16px,2vw,26px)!important;font-weight:700!important;}
+.mr-score{font-size:14px!important;font-weight:700!important;}
+
+/* ── PRIMARY VALUES — 14px / weight 600 ──────────────── */
+.ts-v{font-size:14px!important;font-weight:600!important;line-height:1.2!important;}
+.pos-val{font-size:14px!important;font-weight:600!important;}
+.rank-score{font-size:14px!important;font-weight:600!important;}
+.hm-score{font-size:clamp(14px,1.8vw,18px)!important;font-weight:600!important;}
+.pos-market{font-size:14px!important;font-weight:700!important;}
+
+/* ── SECONDARY VALUES — 12px / weight 600 ────────────── */
+.eng-ok{font-size:12px!important;font-weight:600!important;min-width:38px!important;}
+.conf-tier{font-size:12px!important;font-weight:600!important;}
+.hm-dir{font-size:11px!important;font-weight:600!important;}
+.hm-arrow{font-size:12px!important;font-weight:700!important;}
+.stage-n{font-size:clamp(14px,1.7vw,20px)!important;font-weight:700!important;}
+
+/* ── MARKET LIST — asset name bolder, tf slightly smaller ── */
+.mr-asset{font-size:11px!important;font-weight:700!important;letter-spacing:.5px!important;}
+.mr-tf{font-size:9px!important;font-weight:600!important;opacity:.55!important;}
+.mgrp-hdr{
+  font-size:8px!important;font-weight:600!important;
+  letter-spacing:1px!important;color:#7faec8!important;
+  opacity:1!important;
+}
+
+/* ── SYSTEM HEALTH — names 500, percentages 600 ───────── */
+.eng-name{font-size:9px!important;font-weight:500!important;letter-spacing:.5px!important;opacity:.75;}
+
+/* ── FEEDS — timestamp 8px, message 10px / weight 500 ─── */
+.feed-msg{font-size:10px!important;font-weight:500!important;line-height:1.35!important;letter-spacing:.1px!important;}
+.lfeed-msg{font-size:10px!important;font-weight:500!important;line-height:1.35!important;}
+.feed-entry{line-height:1.35!important;gap:5px!important;}
+.lfeed-entry{line-height:1.35!important;gap:5px!important;}
+.feed-tag{font-size:6px!important;font-weight:600!important;letter-spacing:.5px!important;}
+
+/* ── PIPELINE — stage labels cleaner ─────────────────── */
+.stage-sub{font-size:7px!important;font-weight:500!important;opacity:.6;}
+#sys-thinking{font-size:8px!important;font-weight:600!important;}
+
+/* ── POSITIONS PANEL — empty state + active ──────────── */
+.pos-wait-tx{font-size:9px!important;font-weight:600!important;letter-spacing:2px!important;}
+.pos-wait-sub{font-size:8px!important;font-weight:500!important;letter-spacing:1.5px!important;opacity:.7;}
+.pos-side{font-size:11px!important;font-weight:700!important;}
+
+/* ── TARGET — stats + confidence ─────────────────────── */
+.tgt-status-badge{font-size:8px!important;font-weight:600!important;letter-spacing:1.5px!important;}
+.tgt-dist{font-size:8px!important;font-weight:500!important;}
+.rank-mkt{font-size:9.5px!important;font-weight:600!important;}
+
+/* ── FOOTER — slightly larger ─────────────────────────── */
+footer{font-size:8.5px!important;letter-spacing:1.5px!important;}
 </style>
 </head>
 <body>
