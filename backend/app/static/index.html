@@ -1954,8 +1954,8 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
 .sg-tf-row.m-no:hover{background:rgba(255,45,149,.055)!important;}
 
 .sg-tf-lbl{
-  font-size:8px;font-weight:600;letter-spacing:1px;
-  color:#4d7a96;text-transform:uppercase;
+  font-size:8px;font-weight:700;letter-spacing:1px;
+  color:#6b9eb8;text-transform:uppercase;
 }
 .sg-tf-dir{
   font-size:6px;font-weight:700;padding:1px 2px;border-radius:1px;
@@ -1979,24 +1979,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
 .sg-tf-score.s70{color:var(--ny);}
 .sg-spark{display:block;}
 
-/* ── Market Universe subtitle ────────────────────────── */
-.mu-sub{
-  display:flex;flex-direction:column;gap:2px;
-  padding:4px 19px 5px;
-  border-bottom:1px solid rgba(0,229,255,.05);
-  background:rgba(0,0,0,.08);
-  flex-shrink:0;
-}
-.mu-assets{
-  font-size:8px!important;letter-spacing:2px!important;
-  color:#7faec8!important;font-weight:600!important;
-  text-transform:uppercase!important;
-}
-.mu-tfs{
-  font-size:7.5px!important;letter-spacing:1.5px!important;
-  color:#4d7a96!important;font-weight:500!important;
-  text-transform:uppercase!important;
-}
+/* ── Market Universe subtitle removed (UI Freeze item 1) */
 
 /* ── TASK 7: Footer TF selector — subtle but readable ── */
 .f-tf{font-size:10px!important;font-weight:600!important;opacity:.88!important;letter-spacing:2px!important;color:#9dcce2!important;}
@@ -2022,6 +2005,37 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
 .eng-dot{width:5px!important;height:5px!important;}
 /* Thinking status */
 #sys-thinking{font-size:8px!important;font-weight:600!important;opacity:.85!important;}
+
+/* ── LIVE MARKET TICKER (UI Freeze items 6-8) ─────── */
+footer{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;overflow:hidden;
+}
+.ticker-wrap{
+  flex:1;overflow:hidden;position:relative;
+  mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 95%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 95%,transparent 100%);
+}
+.ticker-track{
+  display:flex;align-items:center;gap:28px;
+  white-space:nowrap;
+  animation:ticker-scroll 28s linear infinite;
+  will-change:transform;
+}
+.ticker-track:hover{animation-play-state:paused;}
+@keyframes ticker-scroll{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
+}
+.ticker-item{
+  font-size:9px;font-weight:600;letter-spacing:1px;
+  color:#7aaec8;display:inline-flex;align-items:baseline;gap:5px;
+}
+.ticker-asset{color:#9dcce2;font-weight:700;}
+.ticker-price{color:#a8c8d8;}
+.ticker-up{color:rgba(57,255,20,.85);}
+.ticker-dn{color:rgba(255,45,149,.8);}
+.ticker-sep{color:rgba(0,229,255,.25);font-size:9px;}
 </style>
 </head>
 <body>
@@ -2282,10 +2296,10 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
               <div class="wait-ring wr3"></div>
               <div class="pos-wait-ic" style="font-size:17px">◉</div>
             </div>
-            <div class="pos-wait-tx" style="font-size:8px;letter-spacing:2.5px">NO ACTIVE POSITION</div>
-            <div class="pos-wait-sub" style="font-size:7.5px;text-align:center;letter-spacing:1px;text-transform:none">AI is scanning markets</div>
-            <div class="pos-wait-sub" style="font-size:7px;text-align:center;letter-spacing:0.8px;margin-top:1px;opacity:.72;text-transform:none">Waiting for confidence threshold</div>
-            <div class="pos-wait-mode" style="text-transform:none;font-size:7px;letter-spacing:1.5px;opacity:.6">Paper Mode Active</div>
+            <div class="pos-wait-tx" style="font-size:9px;letter-spacing:2px;line-height:1.5;opacity:.82">NO ACTIVE POSITION</div>
+            <div class="pos-wait-sub" style="font-size:9px;text-align:center;letter-spacing:0.3px;text-transform:none;line-height:1.6;opacity:.75">AI is scanning markets</div>
+            <div class="pos-wait-sub" style="font-size:8.5px;text-align:center;letter-spacing:0.3px;margin-top:1px;opacity:.70;text-transform:none;line-height:1.6">Waiting for confidence threshold</div>
+            <div class="pos-wait-mode" style="text-transform:none;font-size:8px;letter-spacing:0.5px;opacity:.65;line-height:1.6">Paper Mode Active</div>
           </div>
           <div class="pos-active" id="pos-active" style="display:none">
             <div class="pos-header">
@@ -2307,8 +2321,8 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
         <!-- RIGHT: Last Closed Trade -->
         <div class="pos-col">
           <div class="pos-col-hdr">LAST&nbsp;CLOSED</div>
-          <div id="pos-last-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:4px;opacity:.55">
-            <div style="font-size:8px;letter-spacing:1.5px;color:var(--td);text-transform:none">No trades yet</div>
+          <div id="pos-last-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:4px;opacity:.65">
+            <div style="font-size:10px;color:var(--td);text-transform:none;letter-spacing:0.3px">No trades yet</div>
           </div>
           <div class="pos-last" id="pos-last" style="display:none;gap:3px">
             <div class="pos-header" style="margin-top:0">
@@ -2452,9 +2466,27 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
 </div>
 
 <footer>
-  <span>LIMWANPO&nbsp;//&nbsp;POLYMARKET&nbsp;AI</span>
-  <span>BTC&nbsp;·&nbsp;ETH&nbsp;·&nbsp;SOL&nbsp;·&nbsp;XRP&nbsp;&nbsp;·&nbsp;&nbsp;<span class="f-tf">5M&nbsp;|&nbsp;15M&nbsp;|&nbsp;1H</span>&nbsp;&nbsp;·&nbsp;&nbsp;PAPER&nbsp;MODE</span>
-  <span id="f-ts">REFRESHED&nbsp;—</span>
+  <span style="flex-shrink:0">LIMWANPO&nbsp;//&nbsp;POLYMARKET&nbsp;AI</span>
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="ticker-track">
+      <span class="ticker-item"><span class="ticker-asset">BTC</span><span class="ticker-price" id="tk-btc-p">—</span><span id="tk-btc-c">—</span></span>
+      <span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="ticker-asset">ETH</span><span class="ticker-price" id="tk-eth-p">—</span><span id="tk-eth-c">—</span></span>
+      <span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="ticker-asset">SOL</span><span class="ticker-price" id="tk-sol-p">—</span><span id="tk-sol-c">—</span></span>
+      <span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="ticker-asset">XRP</span><span class="ticker-price" id="tk-xrp-p">—</span><span id="tk-xrp-c">—</span></span>
+      <span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="ticker-asset">BTC</span><span class="ticker-price" id="tk-btc-p2">—</span><span id="tk-btc-c2">—</span></span>
+      <span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="ticker-asset">ETH</span><span class="ticker-price" id="tk-eth-p2">—</span><span id="tk-eth-c2">—</span></span>
+      <span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="ticker-asset">SOL</span><span class="ticker-price" id="tk-sol-p2">—</span><span id="tk-sol-c2">—</span></span>
+      <span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="ticker-asset">XRP</span><span class="ticker-price" id="tk-xrp-p2">—</span><span id="tk-xrp-c2">—</span></span>
+    </div>
+  </div>
+  <span id="f-ts" style="flex-shrink:0">REFRESHED&nbsp;—</span>
 </footer>
 
 <script>
@@ -2720,11 +2752,11 @@ function updateTarget(ranked){
     ['tgt-market','tgt-dir','tgt-score-n','tgt-price','tgt-spread','tgt-edge','tgt-bid','tgt-ask','tgt-expiry']
       .forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='';});
     document.getElementById('tgt-dir').className='tgt-dir neutral';
-    document.getElementById('tgt-score-n').className='tgt-score-num neutral scanner-wait';
-    document.getElementById('tgt-score-n').textContent='WAITING FOR SCANNER';
-    document.getElementById('tgt-status-badge').textContent='SCANNING';
+    document.getElementById('tgt-score-n').className='tgt-score-num neutral';
+    document.getElementById('tgt-score-n').textContent='';
+    document.getElementById('tgt-status-badge').textContent='INITIALIZING';
     document.getElementById('tgt-status-badge').className='tgt-status-badge tsb-wait';
-    document.getElementById('tgt-dist').textContent='SCANNING...';
+    document.getElementById('tgt-dist').innerHTML='<span style="font-size:8px;opacity:.65;letter-spacing:.5px;font-weight:500">Waiting for scanner&#8230;</span>';
     document.getElementById('tgt-ptitle-right').textContent='TOP MARKET';
     document.getElementById('conf-tier').textContent='SCANNING';
     document.getElementById('conf-fill').style.width='0%';
@@ -2748,8 +2780,8 @@ function updateTarget(ranked){
   dirEl.className='tgt-dir '+(isYes?'yes':isNo?'no':'neutral');
 
   const snEl=document.getElementById('tgt-score-n');
-  snEl.textContent='WAITING FOR SCANNER';
-  snEl.className='tgt-score-num neutral scanner-wait';
+  snEl.textContent='';
+  snEl.className='tgt-score-num neutral';
 
   const _bid=best.bid??Math.max(0,best.mid-(best.spread||0)/2);
   const _ask=best.ask??Math.min(1,best.mid+(best.spread||0)/2);
@@ -3391,6 +3423,49 @@ async function refresh(){
 }
 
 // ═══════════════════════════════════════════════════════
+//  LIVE MARKET TICKER (UI Freeze item 7-8)
+// ═══════════════════════════════════════════════════════
+const TICKER_SYMBOLS={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'};
+const TICKER_DECIMALS={BTC:0,ETH:1,SOL:2,XRP:4};
+
+function fmtTickerPrice(sym,price){
+  const dec=TICKER_DECIMALS[sym]??2;
+  const n=parseFloat(price);
+  return n>=1000?n.toLocaleString('en',{maximumFractionDigits:dec}):n.toFixed(dec);
+}
+
+function updateTickerItem(suffix,sym,price,pct){
+  const p=document.getElementById('tk-'+sym.toLowerCase()+'-p'+suffix);
+  const c=document.getElementById('tk-'+sym.toLowerCase()+'-c'+suffix);
+  if(p) p.textContent=fmtTickerPrice(sym,price);
+  if(c){
+    const v=parseFloat(pct);
+    const up=v>=0;
+    c.textContent=(up?'▲':'▼')+Math.abs(v).toFixed(2)+'%';
+    c.className=up?'ticker-up':'ticker-dn';
+  }
+}
+
+async function fetchTicker(){
+  try{
+    const symbols=encodeURIComponent(JSON.stringify(['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT']));
+    const r=await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols='+symbols);
+    if(!r.ok) return;
+    const data=await r.json();
+    const map={};
+    data.forEach(d=>{
+      const sym=Object.keys(TICKER_SYMBOLS).find(k=>TICKER_SYMBOLS[k]===d.symbol);
+      if(sym) map[sym]={price:d.lastPrice,pct:d.priceChangePercent};
+    });
+    ['BTC','ETH','SOL','XRP'].forEach(sym=>{
+      if(!map[sym]) return;
+      updateTickerItem('',sym,map[sym].price,map[sym].pct);
+      updateTickerItem('2',sym,map[sym].price,map[sym].pct);
+    });
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════
 //  CLOCK + INIT
 // ═══════════════════════════════════════════════════════
 function tick(){
@@ -3405,6 +3480,7 @@ window.addEventListener('load',()=>{
   pushFeed(`Monitoring ${MARKETS.length} markets across ${ASSETS.length} assets`,'');
   refresh();setInterval(refresh,REFRESH);
   initBtcChart();
+  fetchTicker();setInterval(fetchTicker,30000);
 });
 
 // ═══════════════════════════════════════════════════════
