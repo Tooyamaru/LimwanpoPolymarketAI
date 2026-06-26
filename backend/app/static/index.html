@@ -1496,6 +1496,138 @@ body::after{animation-duration:14s!important;background:repeating-linear-gradien
 /* ── Footer ──────────────────────────────────────────── */
 footer{font-size:7px!important;letter-spacing:1.5px!important;padding:0 20px!important;border-top-color:rgba(0,229,255,.06)!important;}
 footer span:first-child{letter-spacing:3px!important;text-shadow:0 0 7px rgba(0,229,255,.18)!important;}
+
+/* ═══════════════════════════════════════════════════════
+   V11.0 — INSTITUTIONAL DESIGN FREEZE
+   Bloomberg Terminal · TradingView Pro · Reuters Eikon
+═══════════════════════════════════════════════════════ */
+
+/* ── Typography fixed scale ──────────────────────────── */
+.ptitle{font-size:8px!important;letter-spacing:2px!important;}
+.ptitle-left{font-size:8px!important;}
+.ptitle-right{font-size:6px!important;opacity:.6!important;}
+.kpi-l{font-size:6px!important;letter-spacing:1.8px!important;color:var(--td)!important;}
+.ts-l{font-size:6px!important;letter-spacing:1.5px!important;color:#5e8099!important;}
+.pos-lbl,.rank-lbl,.stage-lbl,.eng-name,.pos-col-hdr{font-size:6px!important;}
+.feed-ts,.lfeed-ts,.pipeline-ts{font-size:6px!important;}
+.kpi-sm .kpi-v{font-size:18px!important;letter-spacing:.5px!important;}
+.ts-v{font-size:11px!important;font-weight:bold;}
+.pos-val,.rank-score,.eng-ok,.conf-tier{font-size:11px!important;}
+
+/* ── Glow 70% reduction (keep only READY/EXEC/ALERT) ─── */
+.logo{text-shadow:none!important;}
+.dot{box-shadow:0 0 3px var(--ng)!important;}
+.dot.bad{box-shadow:0 0 3px var(--red)!important;}
+.eng-dot{box-shadow:0 0 2px rgba(57,255,20,.6)!important;animation:none!important;}
+.eng-dot.seq-0,.eng-dot.seq-1,.eng-dot.seq-2,.eng-dot.seq-3,.eng-dot.seq-4{animation:none!important;}
+.kpi-v.pos,.kpi-sm .kpi-v.pos{text-shadow:none!important;}
+.kpi-v.neg,.kpi-sm .kpi-v.neg{text-shadow:none!important;}
+.tgt-market.c-yes,.tgt-market.c-no{text-shadow:none!important;}
+.tgt-score-num.yes{text-shadow:0 0 5px rgba(57,255,20,.1)!important;}
+.tgt-score-num.no{text-shadow:0 0 5px rgba(255,45,149,.1)!important;}
+.conf-fill.yes{box-shadow:0 0 3px rgba(57,255,20,.4)!important;}
+.conf-fill.no{box-shadow:0 0 3px rgba(255,45,149,.4)!important;}
+.mr-score.s95{text-shadow:none!important;}
+.mr-dir.yes,.mr-dir.no{box-shadow:none!important;}
+.rank-score.s95{text-shadow:none!important;}
+.stage.active{box-shadow:none!important;}
+.stage.active-g{box-shadow:none!important;border-color:rgba(57,255,20,.2)!important;}
+.mrow:hover{box-shadow:inset 2px 0 0 rgba(0,229,255,.5)!important;transform:translateX(2px)!important;}
+.mrow.m-yes:hover{box-shadow:inset 2px 0 0 var(--ng)!important;}
+.mrow.m-no:hover{box-shadow:inset 2px 0 0 var(--nm)!important;}
+.pill-mode{box-shadow:none!important;}
+.cap-fill{box-shadow:none!important;}
+.cap-fill.w{box-shadow:0 0 3px rgba(255,230,0,.3)!important;}
+.cap-fill.d{box-shadow:0 0 3px rgba(255,51,85,.3)!important;}
+.ptitle-left::before{box-shadow:0 0 3px var(--nc)!important;}
+.ks-lbl.ok{text-shadow:none!important;}
+.ks-icon{animation:ks-armed 8s ease-in-out infinite!important;}
+.pnl-pos,.pnl-neg{text-shadow:none!important;}
+.hm-data.hm-hot,.hm-data.hm-good{animation:none!important;}
+.hm-data.hm-top{box-shadow:0 0 6px rgba(57,255,20,.12)!important;}
+/* Preserved glows: READY/EXEC states only */
+.tsb-ready{box-shadow:0 0 8px rgba(57,255,20,.2)!important;}
+.tsb-exec{box-shadow:0 0 8px rgba(0,229,255,.2)!important;}
+#st-market.active-g,#st-signal.active-g,#st-risk.active-g,#st-exec.active-g{
+  box-shadow:0 0 5px rgba(57,255,20,.07)!important;
+}
+.pos-wait-ic{text-shadow:none!important;color:rgba(192,0,255,.4)!important;}
+.wait-ring-wrap{opacity:.45!important;}
+
+/* ── Market Universe — group visual separation ────────── */
+.mgrp-hdr{
+  padding:5px 10px 3px!important;font-size:6px!important;letter-spacing:2.5px!important;
+  font-weight:bold!important;color:#5e8099!important;
+  background:rgba(0,0,0,.32)!important;
+  border-top:1px solid rgba(0,229,255,.07)!important;
+  border-bottom:1px solid rgba(0,229,255,.03)!important;
+}
+.mgrp-hdr:first-child{border-top:none!important;}
+.mrow{padding:2.5px 8px 2.5px 12px!important;}
+
+/* ── System Health — thin progress bar ───────────────── */
+.eng-pct-wrap{
+  flex:1;height:2px;background:rgba(255,255,255,.04);border-radius:1px;
+  overflow:hidden;margin:0 7px;align-self:center;flex-shrink:0;
+}
+.eng-pct-bar{
+  height:100%;border-radius:1px;
+  background:linear-gradient(90deg,rgba(57,255,20,.35),rgba(57,255,20,.65));
+  transition:width 1.4s ease;
+}
+.eng-pct-bar.warn{background:linear-gradient(90deg,rgba(255,230,0,.35),rgba(255,230,0,.65));}
+.eng-pct-bar.bad{background:linear-gradient(90deg,rgba(255,51,85,.35),rgba(255,51,85,.65));}
+.eng-name{min-width:62px!important;letter-spacing:.6px!important;}
+.eng-ok{min-width:34px!important;font-size:8px!important;font-weight:bold!important;text-align:right!important;}
+
+/* ── KPI Cards — uniform geometry ───────────────────── */
+.kpi-sm{
+  padding:5px 10px!important;border:1px solid var(--b2)!important;
+  border-radius:2px!important;background:rgba(0,0,0,.3)!important;
+  box-shadow:none!important;
+}
+.kpi-sm:hover{border-color:rgba(0,229,255,.14)!important;box-shadow:none!important;}
+.kpi-row-8 .kpi-sm:nth-child(-n+3){border-color:rgba(0,229,255,.1)!important;}
+.kpi-row-8 .kpi-sm:nth-child(n+4){opacity:.72;border-color:var(--b1)!important;}
+.kpi-row-8 .kpi-sm:nth-child(n+4):hover{opacity:1!important;}
+
+/* ── Feed tags 40% smaller ───────────────────────────── */
+.feed-tag{font-size:3.5px!important;padding:0 2.5px!important;letter-spacing:0!important;border-radius:1px!important;opacity:.65;}
+.feed-msg{font-size:8px!important;line-height:1.55!important;}
+.feed-entry{gap:4px!important;}
+.bot-feed-body{gap:1px!important;}
+
+/* ── Pipeline — cleaner flow ─────────────────────────── */
+.connector .fp{opacity:.4!important;}
+#sys-thinking{color:rgba(57,255,20,.5)!important;}
+
+/* ── Position Panel empty state ──────────────────────── */
+.pos-wait-tx{text-shadow:none!important;color:#8ab0c8!important;}
+.pos-wait-sub{text-shadow:none!important;color:var(--tm)!important;}
+.pos-wait-mode{letter-spacing:2px!important;border-color:rgba(0,229,255,.07)!important;color:var(--td)!important;}
+
+/* ── Spacing consistency ─────────────────────────────── */
+#perf-section{padding:5px 12px!important;gap:5px!important;}
+.kpi-row-8{gap:4px!important;}
+.bot-row{gap:5px!important;}
+
+/* ── Animation — ambience only ───────────────────────── */
+@keyframes ks-armed{0%,100%{text-shadow:none;box-shadow:none;}50%{text-shadow:0 0 7px rgba(57,255,20,.12);box-shadow:none;}}
+.dot{animation-duration:5s!important;}
+.wait-ring{animation-duration:5.5s!important;}
+.radar-sweep{animation-duration:6s!important;}
+.rr2{animation-duration:5s!important;}
+.rr3{animation-duration:5.5s!important;}
+body::after{animation-duration:20s!important;}
+.thinking-dot{animation-duration:6s!important;}
+.hm-data{animation:none!important;}
+
+/* ── BTC Chart — minimum height ──────────────────────── */
+#center-top-row{min-height:220px!important;}
+
+/* ── Footer readability ──────────────────────────────── */
+footer{font-size:7.5px!important;letter-spacing:1.8px!important;padding:0 18px!important;gap:16px!important;}
+footer span:first-child{text-shadow:none!important;}
 </style>
 </head>
 <body>
@@ -1756,9 +1888,10 @@ footer span:first-child{letter-spacing:3px!important;text-shadow:0 0 7px rgba(0,
               <div class="wait-ring wr3"></div>
               <div class="pos-wait-ic" style="font-size:17px">◉</div>
             </div>
-            <div class="pos-wait-tx" style="font-size:7px;letter-spacing:2.5px">NO ACTIVE TRADES</div>
-            <div class="pos-wait-sub" style="font-size:6px;text-align:center;letter-spacing:1.5px">WAITING FOR AI CONFIRMATION</div>
-            <div class="pos-wait-mode">PAPER MODE</div>
+            <div class="pos-wait-tx" style="font-size:7px;letter-spacing:2.5px">NO ACTIVE POSITION</div>
+            <div class="pos-wait-sub" style="font-size:6px;text-align:center;letter-spacing:1.5px">AI IS SCANNING MARKETS</div>
+            <div class="pos-wait-sub" style="font-size:5.5px;text-align:center;letter-spacing:1.2px;margin-top:1px;opacity:.6">WAITING FOR CONFIDENCE&nbsp;&gt;&nbsp;THRESHOLD</div>
+            <div class="pos-wait-mode">PAPER MODE ACTIVE</div>
           </div>
           <div class="pos-active" id="pos-active" style="display:none">
             <div class="pos-header">
@@ -2433,11 +2566,13 @@ function initBtcChart(){
     wickUpColor:'rgba(57,255,20,.45)',wickDownColor:'rgba(255,45,149,.45)',
     priceLineVisible:false,lastValueVisible:false,
   });
-  // Volume overlay (lower 22% of chart)
+  // Volume overlay (lower 20% of chart)
   btcVolSeries=btcChart.addHistogramSeries({
     color:'rgba(0,229,255,.12)',
     priceFormat:{type:'volume'},
     priceScaleId:'vol',
+    lastValueVisible:false,
+    priceLineVisible:false,
   });
   btcChart.priceScale('vol').applyOptions({
     scaleMargins:{top:.80,bottom:0},
@@ -2693,9 +2828,11 @@ function buildHealth(){
   for(const pair of ENGINES){
     for(const n of pair){
       const seqCls=`seq-${idx%5}`;
-      const pct=(ENGINE_UPTIMES[n]||99.0).toFixed(1)+'%';
+      const uptime=ENGINE_UPTIMES[n]||99.0;
+      const pct=uptime.toFixed(1)+'%';
+      const barCls=uptime>=99?'':'uptime<97?\'bad\':\'warn\'';
       const r=document.createElement('div');r.className='eng-row';
-      r.innerHTML=`<div class="eng-dot ${seqCls}" id="ed-${n}"></div><div class="eng-name">${n}</div><div class="eng-ok" id="es-${n}" style="color:var(--ng);font-size:7.5px">${pct}</div><div class="eng-cycle" id="ec-${n}">—</div>`;
+      r.innerHTML=`<div class="eng-dot ${seqCls}" id="ed-${n}"></div><div class="eng-name">${n}</div><div class="eng-pct-wrap"><div class="eng-pct-bar ${uptime<97?'bad':uptime<99?'warn':''}" id="eb-${n}" style="width:${uptime.toFixed(0)}%"></div></div><div class="eng-ok" id="es-${n}">${pct}</div><div class="eng-cycle" id="ec-${n}">—</div>`;
       grid.appendChild(r);idx++;
     }
   }

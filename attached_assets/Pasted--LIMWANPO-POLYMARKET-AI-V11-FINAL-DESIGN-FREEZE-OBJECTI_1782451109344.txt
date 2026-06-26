@@ -1,0 +1,598 @@
+# LIMWANPO POLYMARKET AI — V11 FINAL DESIGN FREEZE
+
+## OBJECTIVE
+
+Mulai saat ini dashboard memasuki fase **Design Freeze**.
+
+Artinya:
+
+* Jangan membuat layout baru.
+* Jangan mengganti posisi panel.
+* Jangan mengubah workflow dashboard.
+* Jangan menambahkan fitur baru yang tidak diminta.
+* Jangan menghapus komponen AI yang sudah ada.
+* Jangan melakukan redesign besar.
+
+Tugas hanya:
+
+* memperhalus
+* merapikan
+* menyempurnakan
+* meningkatkan UX
+* meningkatkan readability
+* meningkatkan professional feeling
+
+Target dashboard adalah **Institutional Trading Terminal**, bukan dashboard crypto biasa.
+
+Referensi visual:
+
+* Bloomberg Terminal
+* TradingView Professional
+* Reuters Eikon
+* Quant Trading Desk
+
+Prioritas utama adalah **user experience trader profesional**.
+
+---
+
+# DESIGN PRINCIPLE
+
+Semua keputusan UI harus mengikuti urutan prioritas berikut.
+
+1. Readability
+2. Information Hierarchy
+3. Consistency
+4. Professional Feel
+5. Performance
+6. Animation
+
+Jika sebuah perubahan membuat UI lebih keren tetapi mengurangi readability, JANGAN dilakukan.
+
+---
+
+# LAYOUT (LOCKED)
+
+Layout sekarang sudah final.
+
+JANGAN memindahkan posisi panel.
+
+Harus tetap seperti berikut:
+
+LEFT
+
+Market Universe
+
+CENTER TOP
+
+AI Current Target
+
+CENTER RIGHT
+
+BTC Candlestick
+
+RIGHT
+
+Positions
+System Health
+
+CENTER
+
+AI Decision Engine
+
+BOTTOM
+
+Statistics
+
+BOTTOM LEFT
+
+AI Thinking Feed
+
+BOTTOM CENTER
+
+AI Live Feed
+
+BOTTOM RIGHT
+
+Capital Projection
+
+Footer
+
+Layout ini sudah final.
+
+---
+
+# MARKET UNIVERSE
+
+Tetap menggunakan
+
+12 Market
+
+yang terdiri dari
+
+BTC
+
+5m
+
+15m
+
+1H
+
+ETH
+
+5m
+
+15m
+
+1H
+
+SOL
+
+5m
+
+15m
+
+1H
+
+XRP
+
+5m
+
+15m
+
+1H
+
+JANGAN diubah menjadi hanya 4 market.
+
+Group asset harus jelas.
+
+Contoh
+
+BTC
+
+5m
+
+15m
+
+1H
+
+ETH
+
+5m
+
+15m
+
+1H
+
+jarak antar asset lebih besar.
+
+jarak antar timeframe lebih kecil.
+
+Supaya mata mudah scanning.
+
+---
+
+# AI CURRENT TARGET
+
+Panel ini adalah pusat dashboard.
+
+Harus menjadi panel paling menarik.
+
+Kurangi ruang kosong.
+
+Susunan informasi harus lebih vertikal.
+
+Prioritas informasi:
+
+Market
+
+Timeframe
+
+Score
+
+Confidence
+
+Entry Distance
+
+Spread
+
+Best Bid
+
+Best Ask
+
+Expected Edge
+
+Execution Status
+
+Status menggunakan badge.
+
+READY
+
+SCANNING
+
+WAITING
+
+EXECUTING
+
+Tidak boleh ada area kosong besar.
+
+---
+
+# BTC CHART
+
+Gunakan Lightweight Charts.
+
+JANGAN gunakan TradingView iframe.
+
+Chart harus menyatu dengan dashboard.
+
+Harus memiliki:
+
+Candlestick
+
+Volume
+
+Current Price Line
+
+Crosshair
+
+Timeframe mengikuti AI Current Target.
+
+Chart sekitar 20% lebih tinggi daripada sekarang.
+
+Background chart sama dengan dashboard.
+
+Tidak boleh terlihat seperti widget terpisah.
+
+---
+
+# AI DECISION ENGINE
+
+Pertahankan pipeline.
+
+Jangan diubah.
+
+Namun visual hierarchy diperbaiki.
+
+Primary:
+
+Universe
+
+Signal
+
+Risk
+
+Execution
+
+Secondary:
+
+Opportunity
+
+Strategy
+
+Primary harus lebih terang.
+
+Secondary lebih redup.
+
+Pipeline terasa mengalir.
+
+---
+
+# SYSTEM HEALTH
+
+Sederhanakan.
+
+Hanya tampilkan
+
+Engine
+
+Status %
+
+Hilangkan informasi yang tidak penting.
+
+Contoh
+
+UNIVERSE
+
+99%
+
+SIGNAL
+
+99%
+
+EXECUTION
+
+99%
+
+Gunakan progress indicator tipis.
+
+---
+
+# POSITION PANEL
+
+Jika kosong tampilkan
+
+NO ACTIVE POSITION
+
+AI is scanning markets
+
+Waiting for confidence > threshold
+
+Paper Mode Active
+
+Jangan hanya kosong.
+
+Harus terasa AI sedang bekerja.
+
+---
+
+# KPI CARDS
+
+Prioritaskan
+
+Win Rate
+
+PnL
+
+Trades
+
+Equity
+
+Daily PnL
+
+Semua card memiliki
+
+padding sama
+
+border sama
+
+radius sama
+
+height sama
+
+margin sama
+
+Typography konsisten.
+
+---
+
+# AI THINKING FEED
+
+Feed memiliki tinggi tetap.
+
+Tidak boleh memperbesar layout.
+
+Scroll internal.
+
+Auto scroll hanya ketika user berada di bawah.
+
+Jika user scroll ke atas
+
+jangan auto scroll.
+
+Log terbaru tetap masuk.
+
+Tag kecil.
+
+Contoh
+
+INFO
+
+SIG
+
+WATCH
+
+EXEC
+
+READY
+
+SYSTEM
+
+Tag sekitar 40% lebih kecil.
+
+Fokus pada isi pesan.
+
+Timestamp kecil.
+
+---
+
+# AI LIVE FEED
+
+Aturan sama seperti Thinking Feed.
+
+Feed harus terasa seperti terminal profesional.
+
+---
+
+# TYPOGRAPHY
+
+Gunakan hierarchy tetap.
+
+Panel Title
+
+8px
+
+Section Label
+
+6px
+
+Value
+
+18px
+
+Small Value
+
+11px
+
+Timestamp
+
+6px
+
+Gunakan satu font.
+
+Tidak boleh ada ukuran acak.
+
+---
+
+# GLOW
+
+Kurangi glow sekitar 70%.
+
+Glow hanya digunakan pada:
+
+READY
+
+ENTRY
+
+EXECUTION
+
+ALERT
+
+Signal
+
+Komponen lain menggunakan border biasa.
+
+---
+
+# COLOR
+
+Gunakan maksimal:
+
+Cyan
+
+Green
+
+Yellow
+
+Red
+
+Purple
+
+Jangan menambah warna lain.
+
+Dashboard harus tenang.
+
+---
+
+# SPACING
+
+Gunakan spacing konsisten.
+
+Padding
+
+Margin
+
+Gap
+
+Border
+
+Radius
+
+Harus sama di seluruh dashboard.
+
+Tidak boleh ada card yang padding berbeda.
+
+---
+
+# HEADER
+
+Header tidak diubah.
+
+Hanya dirapikan.
+
+Semua badge memiliki tinggi sama.
+
+Spacing sama.
+
+Indicator sejajar.
+
+---
+
+# FOOTER
+
+Naikkan readability.
+
+Sedikit lebih besar.
+
+Jarak antar item konsisten.
+
+---
+
+# ANIMATION
+
+Semua animasi diperlambat.
+
+Tidak boleh berkedip cepat.
+
+Animation hanya sebagai ambience.
+
+Bukan fokus utama.
+
+---
+
+# RESPONSIVE
+
+Dashboard tidak boleh bergeser.
+
+Feed bertambah panjang
+
+Layout tetap.
+
+Chart update
+
+Layout tetap.
+
+Market berubah
+
+Layout tetap.
+
+Tidak boleh ada panel yang berubah ukuran.
+
+---
+
+# PERFORMANCE
+
+Jangan menambah library baru kecuali benar-benar diperlukan.
+
+Prioritaskan:
+
+60 FPS
+
+Low CPU
+
+Low Memory
+
+Smooth scrolling
+
+---
+
+# DESIGN GOAL
+
+Ketika user membuka dashboard, kesan pertama harus:
+
+"Ini terlihat seperti terminal trading institusi."
+
+Bukan
+
+"Ini dashboard crypto biasa."
+
+---
+
+# IMPORTANT
+
+Sebelum mengubah kode:
+
+1. Analisis seluruh dashboard.
+2. Buat daftar perubahan.
+3. Pastikan perubahan tidak mengubah layout.
+4. Eksekusi hanya perubahan visual.
+5. Setelah selesai lakukan self-review.
+6. Perbaiki inkonsistensi yang ditemukan.
+7. Hentikan setelah dashboard benar-benar rapi.
+
+Jangan membuat redesign baru.
+
+Jangan mengubah workflow.
+
+Jangan mengubah struktur dashboard.
+
+Fokus hanya pada polishing hingga mencapai kualitas production.
