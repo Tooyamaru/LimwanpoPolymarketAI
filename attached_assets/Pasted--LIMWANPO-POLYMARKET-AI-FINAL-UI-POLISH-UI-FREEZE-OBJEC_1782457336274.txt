@@ -1,0 +1,257 @@
+# LIMWANPO POLYMARKET AI — FINAL UI POLISH (UI FREEZE)
+
+## OBJECTIVE
+
+This is the LAST visual polish before UI Freeze.
+
+After this task, the dashboard UI is considered FINAL.
+
+No more redesign.
+
+No more layout changes.
+
+No more visual experiments.
+
+The goal is only to improve readability and visual comfort while preserving 100% of the current V11 dashboard.
+
+---
+
+# VERY IMPORTANT
+
+DO NOT
+
+* redesign anything
+* move panels
+* resize panels
+* create new layout
+* replace colors
+* change branding
+* modify HTML structure
+* rewrite JavaScript
+* add new widgets
+* remove widgets
+
+Everything must stay exactly where it is.
+
+Only polish.
+
+---
+
+# TASK 1 — Improve Typography
+
+Current dashboard is already good.
+
+Only improve readability.
+
+Rules:
+
+* Make all important numbers easier to read.
+* Increase font-weight where text looks too thin.
+* Slightly increase contrast of labels.
+* Keep hierarchy consistent.
+* Never make text oversized.
+
+---
+
+# TASK 2 — AI CURRENT TARGET
+
+Keep the exact layout.
+
+Only:
+
+* reduce empty feeling
+* improve alignment
+* improve spacing
+* slightly enlarge the BTC title
+* slightly enlarge important values
+
+Radar remains exactly where it is.
+
+No redesign.
+
+---
+
+# TASK 3 — BTC Chart
+
+Keep everything.
+
+Only add breathing room.
+
+Increase internal padding around the chart by approximately 6–8px.
+
+Do not resize the panel.
+
+Do not change chart colors.
+
+---
+
+# TASK 4 — AI Decision Engine
+
+Current pipeline is acceptable.
+
+Improve hierarchy only.
+
+Primary stages:
+
+* Universe
+* Signal
+* Risk
+* Execution
+
+must receive stronger emphasis.
+
+Secondary stages:
+
+* Opportunities
+* Strategy
+
+must remain visible but less dominant.
+
+Do not move anything.
+
+---
+
+# TASK 5 — Market List
+
+Current layout is correct.
+
+Improve readability only.
+
+Asset names:
+
+slightly bolder
+
+Timeframes:
+
+slightly lighter
+
+Scores:
+
+slightly clearer
+
+Keep spacing exactly the same.
+
+---
+
+# TASK 6 — KPI Cards
+
+Do not resize.
+
+Improve typography only.
+
+Numbers:
+
+more readable
+
+Labels:
+
+slightly brighter
+
+Nothing else.
+
+---
+
+# TASK 7 — AI Feed
+
+Current feed is good.
+
+Only improve reading comfort.
+
+Timestamp
+
+↓
+
+less dominant
+
+Message
+
+↓
+
+primary focus
+
+Tag
+
+↓
+
+small but readable
+
+Do not change colors.
+
+---
+
+# TASK 8 — Position Panel
+
+Keep layout.
+
+Improve line spacing.
+
+Improve typography.
+
+Nothing else.
+
+---
+
+# TASK 9 — System Health
+
+Keep layout.
+
+Increase readability.
+
+Engine names
+
+slightly bolder
+
+Percentages
+
+slightly larger
+
+Do not redesign.
+
+---
+
+# TASK 10 — Logo
+
+Reduce excessive letter spacing slightly.
+
+Keep the exact same logo.
+
+---
+
+# TASK 11 — Final Review
+
+Review the entire dashboard.
+
+Find every place where text feels:
+
+* too small
+* too thin
+* difficult to read
+
+Fix only those issues.
+
+Do NOT touch anything that already looks good.
+
+---
+
+# FINAL RULE
+
+After completing this task:
+
+The dashboard enters
+
+## UI FREEZE
+
+No further visual redesigns are allowed.
+
+Future development must focus on:
+
+* AI Decision Engine
+* Market Scanner
+* Signal Generator
+* Risk Engine
+* Portfolio Management
+* Paper Trading
+* Performance Analytics
+* Strategy Improvement
+
+The dashboard is now considered visually complete.

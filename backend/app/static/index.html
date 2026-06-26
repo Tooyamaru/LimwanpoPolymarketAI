@@ -1717,6 +1717,119 @@ footer span:first-child{text-shadow:none!important;}
 
 /* ── FOOTER — slightly larger ─────────────────────────── */
 footer{font-size:8.5px!important;letter-spacing:1.5px!important;}
+
+/* ═══════════════════════════════════════════════════════
+   V12.0 — FINAL UI POLISH · UI FREEZE
+   Readability · Comfort · Hierarchy · Breathing Room
+   LAYOUT FROZEN. Typography + spacing only.
+   Tasks: logo · typography · target · chart · pipeline
+          market-list · kpi · feed · positions · health
+═══════════════════════════════════════════════════════ */
+
+/* ── TASK 10: Logo — reduce excessive letter spacing ─── */
+.logo{letter-spacing:5px!important;}
+
+/* ── TASK 1 + 6: Global labels — slightly brighter ───── */
+.kpi-l,.kpi-sm .kpi-l{font-size:9.5px!important;opacity:.88!important;color:#8ab0c8!important;}
+.ts-l{opacity:.85!important;color:#7faec8!important;}
+.pos-lbl{opacity:.85!important;color:#7faec8!important;}
+.conf-lbl{opacity:.85!important;}
+
+/* ── TASK 6: KPI Cards — numbers more readable ───────── */
+.kpi-sm .kpi-v{font-size:17px!important;}
+.kpi-sm .kpi-v.pos{color:var(--ng)!important;}
+.kpi-sm .kpi-v.neg{color:var(--red)!important;}
+
+/* ── TASK 2: AI Current Target — enlarge key values ──── */
+.tgt-market{font-size:clamp(17px,2.1vw,27px)!important;}
+.tgt-score-num{font-size:clamp(17px,2.1vw,27px)!important;}
+.ts-v{font-size:15px!important;font-weight:600!important;}
+
+/* ── TASK 3: BTC Chart — breathing room (+7px padding) ─ */
+#btc-chart-body{padding:7px!important;}
+
+/* ── TASK 4: AI Decision Engine — hierarchy ─────────── */
+/* Primary stages: stronger presence */
+#st-market,#st-signal,#st-risk,#st-exec{
+  border-color:rgba(0,229,255,.16)!important;
+  background:rgba(0,229,255,.018)!important;
+}
+#st-market .stage-lbl,#st-signal .stage-lbl,
+#st-risk .stage-lbl,#st-exec .stage-lbl{
+  color:#7faec8!important;opacity:.95!important;font-weight:600!important;
+}
+#st-market .stage-n,#st-signal .stage-n,
+#st-risk .stage-n,#st-exec .stage-n{
+  color:#9dcce2!important;
+}
+/* Active primary — preserve color overrides */
+#st-market.active .stage-lbl,#st-signal.active .stage-lbl,
+#st-risk.active .stage-lbl,#st-exec.active .stage-lbl{
+  color:var(--nc)!important;
+}
+#st-market.active-g .stage-lbl,#st-signal.active-g .stage-lbl,
+#st-risk.active-g .stage-lbl,#st-exec.active-g .stage-lbl{
+  color:var(--ng)!important;
+}
+/* Secondary stages: subdued */
+#st-opp,#st-strat{opacity:.58!important;}
+/* Stage count numbers — slightly larger */
+.stage-n{font-size:clamp(15px,1.85vw,22px)!important;font-weight:700!important;}
+.stage-lbl{font-size:8px!important;font-weight:500!important;}
+
+/* ── TASK 5: Market List — asset bolder, tf lighter ──── */
+.mr-asset{font-size:11px!important;font-weight:700!important;color:var(--tw)!important;letter-spacing:.5px!important;}
+.mr-tf{font-size:8px!important;font-weight:500!important;opacity:.42!important;}
+.mr-score{font-size:13px!important;font-weight:700!important;}
+.mgrp-hdr{color:#6b8fa8!important;letter-spacing:2px!important;font-size:7px!important;}
+
+/* ── TASK 7: AI Feed — timestamp de-emphasised ─────────  */
+.feed-ts{font-size:7.5px!important;opacity:.42!important;min-width:52px!important;}
+.feed-msg{font-size:10.5px!important;font-weight:500!important;line-height:1.45!important;}
+.feed-tag{font-size:6.5px!important;font-weight:600!important;opacity:.82!important;}
+.feed-entry{gap:5px!important;}
+
+/* ── TASK 8: Position Panel — line spacing + typography ─ */
+.pos-row{gap:3px!important;}
+.pos-lbl{font-size:9px!important;letter-spacing:.8px!important;}
+.pos-val{font-size:14px!important;font-weight:600!important;line-height:1.2!important;}
+.pos-col-hdr{font-size:8px!important;letter-spacing:2px!important;padding-bottom:4px!important;margin-bottom:5px!important;}
+.pos-col{gap:4px!important;}
+.pos-active{gap:6px!important;}
+.pos-last{gap:5px!important;}
+
+/* ── TASK 9: System Health — names bolder, pct larger ── */
+.eng-name{font-size:9px!important;font-weight:600!important;color:#7faec8!important;opacity:.92!important;}
+.eng-ok{font-size:13px!important;font-weight:700!important;min-width:40px!important;}
+
+/* ── TASK 11: Final readability sweep ────────────────── */
+/* Top-3 ranking bar */
+.rank-mkt{font-size:10px!important;font-weight:600!important;}
+.rank-score{font-size:14px!important;font-weight:700!important;}
+.rank-pos{font-size:8px!important;opacity:.65!important;}
+/* Heatmap */
+.hm-score{font-size:clamp(14px,1.9vw,20px)!important;font-weight:700!important;}
+.hm-asset-inner{font-size:clamp(9px,1.1vw,12px)!important;font-weight:700!important;color:#9dcce2!important;}
+.hm-header{font-size:9px!important;font-weight:600!important;letter-spacing:2px!important;color:#7faec8!important;}
+/* Confidence */
+.conf-tier{font-size:12px!important;font-weight:700!important;}
+.conf-lbl span:first-child{font-size:8.5px!important;font-weight:500!important;}
+/* Target status */
+.tgt-status-badge{font-size:8px!important;font-weight:600!important;letter-spacing:1.2px!important;}
+.tgt-dist{font-size:8px!important;font-weight:500!important;}
+/* Pipeline footer */
+#sys-thinking{opacity:.8!important;font-size:8px!important;}
+.thinking-dot{opacity:.75!important;}
+/* Capital protection labels */
+.cap-item-v5 .cap-lbl{font-size:8.5px!important;opacity:.85!important;}
+.cap-item-v5 .cap-remain{font-size:8px!important;opacity:.7!important;}
+.cap-ks-badge{font-size:8px!important;font-weight:700!important;}
+/* Position empty state */
+.pos-wait-tx{font-size:9px!important;font-weight:600!important;letter-spacing:2px!important;color:#8ab0c8!important;}
+.pos-wait-sub{font-size:8px!important;font-weight:500!important;letter-spacing:1.5px!important;opacity:.72!important;}
+/* Footer */
+footer{font-size:8.5px!important;letter-spacing:1.5px!important;color:#6b8fa8!important;}
+footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;}
 </style>
 </head>
 <body>
