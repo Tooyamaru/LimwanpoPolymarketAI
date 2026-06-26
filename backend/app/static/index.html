@@ -485,7 +485,7 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
 /* ═══════════════════════════════════════════════════════
    HEATMAP (upgraded glow + animated top cell)
 ═══════════════════════════════════════════════════════ */
-#heatmap-panel{flex:1;display:flex;flex-direction:column;min-height:0;}
+#heatmap-panel{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
 #heatmap-grid{
   flex:1;min-height:0;
   display:grid;
@@ -712,7 +712,7 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
   background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,.1) 100%),var(--panel);
   padding:5px 14px 4px;display:flex;flex-direction:column;gap:4px;
   box-shadow:inset 0 1px 0 rgba(0,229,255,.05);
-  position:relative;z-index:1;
+  position:relative;z-index:1;overflow:hidden;
 }
 .kpi-row-8{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;}
 .kpi-sm{
@@ -728,7 +728,7 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
 .kpi-sm .kpi-bottom{display:flex;align-items:center;justify-content:space-between;gap:3px;}
 
 /* bottom row: feeds + capital */
-.bot-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;min-height:0;}
+.bot-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;min-height:0;height:108px;overflow:hidden;align-items:stretch;}
 .bot-feed{
   background:rgba(0,0,0,.28);border:1px solid var(--b1);border-radius:2px;
   display:flex;flex-direction:column;overflow:hidden;
@@ -740,7 +740,7 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
 }
 .bot-feed-hdr .ptitle-left{font-size:6.5px;letter-spacing:2px;}
 .bot-feed-hdr .ptitle-right{font-size:6px;color:var(--ng);letter-spacing:1px;opacity:.7;}
-.bot-feed-body{flex:1;overflow-y:auto;padding:2px 10px 3px;display:flex;flex-direction:column;gap:1px;}
+.bot-feed-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2px 10px 3px;display:flex;flex-direction:column;gap:1px;}
 .bot-feed-body::-webkit-scrollbar{width:2px;}
 .bot-feed-body::-webkit-scrollbar-thumb{background:var(--b2);}
 
@@ -749,7 +749,7 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
   background:rgba(0,0,0,.28);border:1px solid var(--b1);border-radius:2px;
   display:flex;flex-direction:column;overflow:hidden;
 }
-.bot-cap-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:4px 10px;}
+.bot-cap-body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:4px 10px;}
 .cap-item-v5{display:flex;flex-direction:column;gap:2px;}
 .cap-item-v5 .cap-lbl{font-size:6.5px;letter-spacing:1px;color:var(--tm);display:flex;justify-content:space-between;}
 .cap-item-v5 .cap-lbl span{color:#8ab0c8;}
@@ -885,7 +885,7 @@ footer{color:#6b8fa8!important;}
 .reason-item{white-space:nowrap;}
 .hm-asset-inner{font-size:clamp(8px,1vw,11px);}
 .bot-feed-body{line-height:1.6;}
-.bot-feed,.bot-cap{min-height:90px;}
+.bot-feed,.bot-cap{min-height:0;overflow:hidden;}
 .eng-row{min-height:26px;}
 .rank-item{min-height:28px;}
 .stage{transition:border-color .45s,box-shadow .45s,background .45s,transform .1s;}
@@ -1051,7 +1051,7 @@ footer{color:#6b8fa8!important;}
   .kpi-row-8 .kpi-sm:nth-child(n+5) .kpi-v{font-size:18px!important;}
 
   /* ── FEEDS — 140px minimum ───────────────────────── */
-  .bot-row{grid-template-columns:1fr 1fr;gap:8px;padding:8px 14px;}
+  .bot-row{grid-template-columns:1fr 1fr;gap:8px;padding:8px 14px;height:auto;}
   .bot-feed,.bot-cap{min-height:140px;}
   .bot-feed-body{line-height:1.8;font-size:8.5px;}
   .feed-entry{font-size:8px;}
@@ -1111,7 +1111,7 @@ footer{color:#6b8fa8!important;}
   #perf-section{position:static;padding:4px 8px;}
   .kpi-row-8{grid-template-columns:repeat(4,1fr);gap:3px;}
   .kpi-sm{padding:3px 6px;}
-  .bot-row{grid-template-columns:1fr;gap:4px;}
+  .bot-row{grid-template-columns:1fr;gap:4px;height:auto;}
   .bot-feed,.bot-cap{min-height:75px;}
   footer{font-size:6px;padding:0 10px;letter-spacing:1px;}
   #tgt-reasons{gap:4px;}
@@ -1142,7 +1142,7 @@ footer{color:#6b8fa8!important;}
   #heatmap-grid{min-height:160px;}
   #perf-section{position:static;padding:3px 10px;}
   .kpi-row-8{grid-template-columns:repeat(8,1fr);}
-  .bot-row{grid-template-columns:1fr 1fr 1fr;}
+  .bot-row{grid-template-columns:1fr 1fr 1fr;height:auto;}
   footer{font-size:6px;padding:0 10px;}
 }
 
@@ -1187,7 +1187,7 @@ footer{color:#6b8fa8!important;}
   /* 4. Feed panel minimum height −20% */
   #feed-panel{min-height:50px;max-height:59px;}
   #left-feed-panel{min-height:54px;max-height:64px;}
-  .bot-row{gap:3px;}
+  .bot-row{height:90px;gap:3px;}
 
   /* 5. Footer height −20% (grid row 22px→18px) */
   body{grid-template-rows:42px 1fr auto 18px;}
@@ -2700,7 +2700,32 @@ window.addEventListener('orientationchange',updateDbg);
       lines.push('  getBCR height='+Math.round(perf.getBoundingClientRect().height)+'px');
     }
 
-    document.getElementById('__debug_panel__').textContent = lines.join('\n');
+    /* ── 5. Feed panel deep-dive ─────────────────────── */
+    lines.push('');
+    lines.push('── FEED PANEL METRICS ────────────────────');
+    var feedTargets = [
+      ['BODY',                document.body],
+      ['MAIN',                document.querySelector('main')],
+      ['BOT ROW',             document.querySelector('.bot-row')],
+      ['AI THINKING FEED',    document.querySelector('.bot-row .bot-feed:first-child')],
+      ['AI LIVE FEED',        document.querySelector('.bot-row .bot-feed:nth-child(2)')],
+      ['CAPITAL PROTECTION',  document.querySelector('.bot-cap')],
+      ['FEED LOG #feed-list', document.querySelector('#feed-list')],
+      ['LIVE #live-feed-list',document.querySelector('#live-feed-list')],
+    ];
+    var htmlLines = lines.map(function(l){ return l.replace(/&/g,'&amp;').replace(/</g,'&lt;'); });
+    htmlLines.push('');
+    for(var fi=0;fi<feedTargets.length;fi++){
+      var fname=feedTargets[fi][0],fel=feedTargets[fi][1];
+      if(!fel){htmlLines.push('  '+fname+': <span style="color:#ff4">not found</span>');continue;}
+      var fcH=fel.clientHeight,fsH=fel.scrollHeight;
+      var over=fsH>fcH+2;
+      var col=over?'color:#f55':'color:#0f0';
+      var flag=over?' &#x26A0; OVERFLOW':'';
+      htmlLines.push('  <span style="color:#7df">'+fname+'</span>');
+      htmlLines.push('    clientH=<b>'+fcH+'</b>px  scrollH=<b>'+fsH+'</b>px<span style="'+col+'">'+flag+'</span>');
+    }
+    document.getElementById('__debug_panel__').innerHTML = htmlLines.join('\n');
   }
 
   measure();

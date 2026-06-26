@@ -1,0 +1,287 @@
+# LIMWANPO POLYMARKET AI — FINAL LAYOUT FIX (V6.10.x)
+
+## OBJECTIVE
+
+Perbaiki seluruh layout dashboard tanpa mengubah design visual sedikit pun.
+
+Yang diperbaiki hanyalah behaviour layout.
+
+Dashboard harus responsive pada seluruh viewport desktop, tablet landscape, tablet portrait, dan mobile landscape.
+
+---
+
+# 1. AI THINKING FEED & AI LIVE FEED (CRITICAL)
+
+Saat log bertambah banyak, panel AI THINKING FEED dan AI LIVE FEED ikut membesar.
+
+INI TIDAK BOLEH TERJADI.
+
+Yang harus membesar hanyalah area scroll log.
+
+Target behaviour:
+
+```
++----------------------+
+| AI THINKING FEED     |
++----------------------+
+| log                  |
+| log                  |
+| log                  |
+| log                  |
+| log                  |
+| log                  |
+|        scroll        |
++----------------------+
+```
+
+BUKAN
+
+```
++----------------------+
+| AI THINKING FEED     |
++----------------------+
+| log                  |
+| log                  |
+| log                  |
+| log                  |
+| log                  |
+| log                  |
+| log                  |
+| log                  |
+| log                  |
+| log                  |
++----------------------+
+```
+
+Semua panel feed harus memiliki tinggi tetap.
+
+Yang boleh scroll hanyalah isi log.
+
+Pastikan:
+
+* bot-feed memakai flex column
+* tinggi panel tidak mengikuti scrollHeight child
+* feed-log memakai flex:1
+* feed-log memakai min-height:0
+* feed-log memakai overflow-y:auto
+* parent memakai overflow:hidden
+
+---
+
+# 2. CAPITAL PROTECTION
+
+Capital Protection harus mengikuti tinggi AI Thinking Feed dan AI Live Feed.
+
+Tidak boleh lebih tinggi.
+
+Tidak boleh lebih pendek.
+
+Ketiga panel bawah harus selalu memiliki tinggi identik.
+
+---
+
+# 3. BOT ROW
+
+Pastikan:
+
+bot-row
+
+tidak pernah bertambah tinggi karena isi child.
+
+Gunakan:
+
+* align-items:stretch
+* min-height:0
+* overflow:hidden
+
+Tidak boleh ada child yang memaksa bot-row bertambah tinggi.
+
+---
+
+# 4. MAIN GRID
+
+Main grid harus selalu mengisi ruang yang tersedia.
+
+Tidak boleh mendorong footer.
+
+Tidak boleh menyebabkan body bertambah tinggi.
+
+Pastikan seluruh panel utama memakai:
+
+min-height:0
+
+supaya CSS Grid/Flex dapat melakukan shrinking.
+
+---
+
+# 5. TARGET PANEL
+
+Target Panel harus responsive.
+
+Hilangkan seluruh min-height tetap yang tidak diperlukan.
+
+Jangan gunakan:
+
+```
+min-height:340px !important;
+```
+
+kecuali memang benar-benar diperlukan.
+
+Target panel harus mengikuti tinggi area tengah.
+
+---
+
+# 6. HEATMAP PANEL
+
+Heatmap panel tidak boleh menentukan tinggi parent.
+
+Heatmap panel harus:
+
+* flex:1
+* min-height:0
+* overflow:hidden
+
+Grid di dalam heatmap harus scroll jika memang diperlukan.
+
+---
+
+# 7. KPI SECTION
+
+Pastikan perubahan jumlah kolom KPI tidak menyebabkan parent membesar.
+
+Saat berubah dari:
+
+8 kolom
+
+menjadi
+
+4 kolom
+
+tinggi perf-section harus tetap proporsional.
+
+Jika memang perlu 2 baris KPI, ruang tersebut harus diambil dari area tengah, bukan menambah tinggi body.
+
+---
+
+# 8. BODY
+
+Body tidak boleh pernah overflow.
+
+Target:
+
+```
+scrollHeight == innerHeight
+```
+
+pada desktop.
+
+Overflow harus selalu:
+
+0px
+
+---
+
+# 9. DEBUG
+
+Pertahankan Debug Panel.
+
+Tambahkan informasi berikut:
+
+BODY
+
+* clientHeight
+* scrollHeight
+* offsetHeight
+
+MAIN
+
+* clientHeight
+* scrollHeight
+
+BOT ROW
+
+* clientHeight
+* scrollHeight
+
+AI THINKING FEED
+
+* clientHeight
+* scrollHeight
+
+AI LIVE FEED
+
+* clientHeight
+* scrollHeight
+
+CAPITAL PROTECTION
+
+* clientHeight
+* scrollHeight
+
+FEED LOG
+
+* clientHeight
+* scrollHeight
+
+Jika ada parent yang membesar mengikuti child, tampilkan indikator merah.
+
+---
+
+# 10. CSS CLEANUP
+
+Cari dan hilangkan seluruh penyebab berikut:
+
+* height:auto yang tidak diperlukan
+* min-height berlebihan
+* flex item tanpa min-height:0
+* overflow:visible pada panel
+* child yang memaksa parent membesar
+* grid yang tidak bisa shrinking
+
+Gunakan layout modern berbasis Flex + Grid dengan prinsip:
+
+Parent = fixed height
+
+Child = scroll
+
+Bukan
+
+Parent = auto height
+
+Child = expand
+
+---
+
+# 11. REQUIREMENT
+
+JANGAN mengubah:
+
+* warna
+* font
+* animasi
+* border
+* neon effect
+* spacing visual
+* ukuran icon
+* desain dashboard
+
+Yang diperbaiki hanya behaviour layout.
+
+Hasil akhir:
+
+✓ Tidak ada overflow body
+
+✓ Footer tetap di bawah
+
+✓ AI Thinking Feed tetap tinggi
+
+✓ AI Live Feed tetap tinggi
+
+✓ Capital Protection tetap tinggi
+
+✓ Log yang scroll, bukan panel
+
+✓ Responsive di seluruh resolusi desktop dan tablet
+
+✓ Debug menunjukkan overflow = 0
