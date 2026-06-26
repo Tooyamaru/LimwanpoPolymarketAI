@@ -6,7 +6,7 @@ description: Fullscreen cyberpunk trading dashboard served as FastAPI static fil
 # Dashboard setup
 
 **File**: `backend/app/static/index.html` — single self-contained HTML/CSS/JS, no build step.
-**Current version**: V7.0 (institutional refactor — no debug panels, 4 asset cards, BTC chart)
+**Current version**: V9.0 (FINAL DESIGN FREEZE — log tags, smart scroll, typography polish)
 
 **FastAPI mount** (in `create_application()` in `main.py`):
 ```python

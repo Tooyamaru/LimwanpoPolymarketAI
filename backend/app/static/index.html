@@ -1211,6 +1211,104 @@ footer{color:#6b8fa8!important;}
 }
 #btc-chart-body{flex:1;min-height:0;overflow:hidden;position:relative;}
 #btc-chart-body canvas{display:block!important;}
+
+/* ═══════════════════════════════════════════════════════
+   V9.0 — FINAL DESIGN FREEZE
+   Typography · Spacing · Log Colors · Smart Feeds
+═══════════════════════════════════════════════════════ */
+
+/* ── Log type tags ───────────────────────────────────── */
+.feed-entry{align-items:center!important;gap:5px!important;}
+.feed-tag{
+  font-size:6px;letter-spacing:.8px;font-weight:bold;padding:1px 4px;
+  border-radius:1px;flex-shrink:0;line-height:1.4;border:1px solid transparent;
+  font-family:inherit;white-space:nowrap;
+}
+.feed-tag.signal   {color:var(--nc);border-color:rgba(0,229,255,.32);background:rgba(0,229,255,.07);}
+.feed-tag.execution{color:var(--np);border-color:rgba(192,0,255,.32);background:rgba(192,0,255,.07);}
+.feed-tag.error    {color:var(--red);border-color:rgba(255,51,85,.32);background:rgba(255,51,85,.06);}
+.feed-tag.ready,.feed-tag.success{color:var(--ng);border-color:rgba(57,255,20,.32);background:rgba(57,255,20,.05);}
+.feed-tag.warn,.feed-tag.watch{color:var(--ny);border-color:rgba(255,230,0,.3);background:rgba(255,230,0,.04);}
+.feed-tag.highlight{color:var(--nc);border-color:rgba(0,229,255,.22);background:rgba(0,229,255,.04);}
+.feed-tag.sys      {color:var(--td);border-color:var(--b2);}
+
+/* ── Log message colors (enhanced) ──────────────────── */
+.feed-msg.signal   {color:var(--nc);text-shadow:0 0 5px rgba(0,229,255,.25);}
+.feed-msg.execution{color:#b060f0;}
+.feed-msg.error    {color:var(--red);}
+.feed-msg.success,.feed-msg.ready{color:var(--ng);text-shadow:0 0 5px rgba(57,255,20,.22);}
+.feed-msg.watch    {color:var(--ny);}
+.feed-msg.sys      {color:var(--td);font-style:normal;}
+.feed-ts{font-size:6.5px!important;color:#2a4a5e!important;min-width:65px;flex-shrink:0;}
+.feed-msg{font-size:7.5px!important;line-height:1.45;letter-spacing:.15px;}
+
+/* ── Market rows — enhanced readability ──────────────── */
+.mr-asset{font-size:10px!important;font-weight:bold;letter-spacing:.6px;}
+.mr-tf{font-size:6.5px!important;letter-spacing:1.5px;opacity:.6;}
+.mr-score{font-size:12px!important;font-weight:bold;}
+.mr-price{font-size:8px!important;color:#7faec8!important;}
+.mr-dir{font-size:6.5px!important;padding:1px 3px!important;letter-spacing:.5px!important;}
+.mgrp-hdr{
+  font-size:6.5px!important;letter-spacing:2.5px!important;
+  color:#5e8099!important;padding:4px 10px 3px!important;
+  border-bottom:1px solid rgba(0,229,255,.05)!important;
+  background:rgba(0,0,0,.2)!important;
+}
+
+/* ── Bottom KPI cards — cleaner hierarchy ────────────── */
+.kpi-sm{padding:4px 10px!important;}
+.kpi-sm .kpi-l{font-size:6px!important;letter-spacing:1.8px!important;opacity:.75;}
+.kpi-sm .kpi-v{font-size:clamp(13px,1.55vw,17px)!important;letter-spacing:.5px;}
+.kpi-sm .kpi-bottom{margin-top:1px;}
+
+/* ── System Health rows ──────────────────────────────── */
+.eng-row{padding:4px 8px!important;gap:5px!important;}
+.eng-name{font-size:7px!important;letter-spacing:.5px;flex:1;}
+.eng-ok{font-size:7px!important;min-width:36px;text-align:right;letter-spacing:.5px;}
+.eng-cycle{font-size:6.5px!important;min-width:30px;text-align:right;opacity:.65;}
+
+/* ── BTC chart embedded look ─────────────────────────── */
+#btc-chart-card{background:linear-gradient(180deg,rgba(0,229,255,.012) 0%,transparent 35%),var(--panel)!important;}
+
+/* ── Header pill polish ──────────────────────────────── */
+.pill{padding:3px 9px!important;font-size:8.5px!important;letter-spacing:1.2px!important;}
+.pill-live{padding:3px 10px!important;gap:7px!important;}
+.lm-n{font-size:10px!important;font-weight:bold;}
+.lm-lbl{font-size:6.5px!important;letter-spacing:.8px!important;}
+
+/* ── Bot feed header ─────────────────────────────────── */
+.bot-feed-hdr{padding:3px 10px!important;}
+.bot-feed-hdr .ptitle-left{font-size:7px!important;letter-spacing:2px!important;}
+.bot-feed-hdr .ptitle-right{font-size:6.5px!important;}
+
+/* ── Pipeline stage cards ────────────────────────────── */
+.stage{padding:6px 5px 5px!important;}
+.pipeline{padding:6px 8px 3px!important;}
+.pipeline-footer{padding:3px 12px 4px!important;}
+#sys-thinking{font-size:7.5px!important;letter-spacing:1.5px!important;}
+.pipeline-ts{font-size:6.5px!important;opacity:.75;}
+.stage-lbl{font-size:6px!important;letter-spacing:1.2px!important;}
+.stage-sub{font-size:6px!important;opacity:.65;}
+.stage-icon{font-size:13px!important;}
+
+/* ── Positions empty state ───────────────────────────── */
+.pos-wait-tx{font-size:8px!important;letter-spacing:3px!important;color:var(--tw)!important;text-shadow:none!important;}
+.pos-wait-sub{font-size:6.5px!important;letter-spacing:2px!important;color:var(--tm)!important;}
+
+/* ── Panel title consistency ─────────────────────────── */
+.ptitle{padding:5px 12px 4px!important;}
+
+/* ── Scrollbar global polish ─────────────────────────── */
+::-webkit-scrollbar{width:2px;height:2px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,229,255,.1);border-radius:1px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,229,255,.22);}
+
+/* ── Reduce glow in non-critical areas ───────────────── */
+.stage.active{animation-duration:5s!important;}
+.stage.active-g{animation-duration:3.5s!important;}
+#target-panel{animation-duration:8s!important;}
+.eng-dot{box-shadow:0 0 4px var(--ng),0 0 7px rgba(57,255,20,.18)!important;}
 </style>
 </head>
 <body>
@@ -1717,69 +1815,89 @@ let lastTopMarket=null;
 })();
 
 // ═══════════════════════════════════════════════════════
-//  DUAL FEED SYSTEM (Thinking + Live)
+//  DUAL FEED SYSTEM V9.0 (Smart scroll · Tags · Colors)
 // ═══════════════════════════════════════════════════════
-const feedMsgs=[];      // AI Thinking Feed (bottom-left + left column)
-const liveMsgs=[];      // AI Live Feed (bottom-center)
-const MAX_FEED=30;
-const MAX_LIVE=30;
+const feedMsgs=[];
+const liveMsgs=[];
+const MAX_FEED=80;
+const MAX_LIVE=80;
+
+// Tag labels per log class
+const TAG_LABEL={
+  signal:'SIG',execution:'EXEC',error:'ERR',ready:'READY',
+  success:'OK',warn:'WARN',watch:'WATCH',highlight:'INFO',sys:'SYS',
+};
 
 function feedTime(){
   const n=new Date();
-  return`[${n.getUTCHours().toString().padStart(2,'0')}:${n.getUTCMinutes().toString().padStart(2,'0')}:${n.getUTCSeconds().toString().padStart(2,'0')}]`;
+  return`${n.getUTCHours().toString().padStart(2,'0')}:${n.getUTCMinutes().toString().padStart(2,'0')}:${n.getUTCSeconds().toString().padStart(2,'0')}`;
+}
+
+// Is the scrollable element within threshold px of the bottom?
+function _atBottom(el,threshold=32){
+  if(!el) return true;
+  return el.scrollHeight-el.scrollTop-el.clientHeight<threshold;
 }
 
 function pushFeed(msg,cls=''){
-  const entry={ts:feedTime(),msg,cls};
-  feedMsgs.unshift(entry);
-  if(feedMsgs.length>MAX_FEED) feedMsgs.pop();
-  renderFeed();
-  renderLeftFeed();
+  feedMsgs.push({ts:feedTime(),msg,cls});
+  if(feedMsgs.length>MAX_FEED) feedMsgs.shift();
+  _renderFeed();
+  _renderLeftFeed();
 }
 
 function pushLive(msg,cls=''){
-  liveMsgs.unshift({ts:feedTime(),msg,cls});
-  if(liveMsgs.length>MAX_LIVE) liveMsgs.pop();
-  renderLiveFeed();
+  liveMsgs.push({ts:feedTime(),msg,cls});
+  if(liveMsgs.length>MAX_LIVE) liveMsgs.shift();
+  _renderLiveFeed();
 }
 
 function _buildFeedEntry(f,small=false){
   const div=document.createElement('div');
   div.className=small?'lfeed-entry':'feed-entry';
+  const tag=f.cls&&TAG_LABEL[f.cls]?`<span class="feed-tag ${f.cls}">${TAG_LABEL[f.cls]}</span>`:'';
   if(small){
-    div.innerHTML=`<span class="lfeed-ts">${f.ts}</span><span class="lfeed-msg ${f.cls}">${f.msg}</span>`;
+    div.innerHTML=`<span class="lfeed-ts">${f.ts}</span>${tag}<span class="lfeed-msg ${f.cls}">${f.msg}</span>`;
   } else {
-    div.innerHTML=`<span class="feed-ts">${f.ts}</span><span class="feed-msg ${f.cls}">${f.msg}</span>`;
+    div.innerHTML=`<span class="feed-ts">${f.ts}</span>${tag}<span class="feed-msg ${f.cls}">${f.msg}</span>`;
   }
   return div;
 }
 
-function renderFeed(){
+function _renderFeed(){
   const list=document.getElementById('feed-list');
   if(!list) return;
+  const wasBot=_atBottom(list);
   list.innerHTML='';
-  for(const f of feedMsgs){list.appendChild(_buildFeedEntry(f,false));}
+  for(const f of feedMsgs) list.appendChild(_buildFeedEntry(f,false));
+  if(wasBot) list.scrollTop=list.scrollHeight;
 }
 
-function renderLeftFeed(){
+function _renderLeftFeed(){
   const list=document.getElementById('left-feed-list');
   if(!list) return;
   list.innerHTML='';
-  for(const f of feedMsgs.slice(0,6)){
-    const div=document.createElement('div');
-    div.className='lfeed-entry';
-    const msgCls=f.cls==='highlight'||f.cls==='ready'?'hl':f.cls==='warn'?'warn':'';
-    div.innerHTML=`<span class="lfeed-ts">${f.ts}</span><span class="lfeed-msg ${msgCls}">${f.msg}</span>`;
+  for(const f of feedMsgs.slice(-6)){
+    const div=document.createElement('div');div.className='lfeed-entry';
+    const mc=f.cls==='highlight'||f.cls==='ready'||f.cls==='signal'?'hl':f.cls==='warn'||f.cls==='watch'?'warn':'';
+    div.innerHTML=`<span class="lfeed-ts">${f.ts}</span><span class="lfeed-msg ${mc}">${f.msg}</span>`;
     list.appendChild(div);
   }
 }
 
-function renderLiveFeed(){
+function _renderLiveFeed(){
   const list=document.getElementById('live-feed-list');
   if(!list) return;
+  const wasBot=_atBottom(list);
   list.innerHTML='';
-  for(const f of liveMsgs){list.appendChild(_buildFeedEntry(f,false));}
+  for(const f of liveMsgs) list.appendChild(_buildFeedEntry(f,false));
+  if(wasBot) list.scrollTop=list.scrollHeight;
 }
+
+// Legacy aliases (called from other places)
+const renderFeed=_renderFeed;
+const renderLiveFeed=_renderLiveFeed;
+const renderLeftFeed=_renderLeftFeed;
 
 function generateFeed(ranked,sigN,oppN,strN,rskN,exN){
   const r=Math.random();
@@ -1791,30 +1909,30 @@ function generateFeed(ranked,sigN,oppN,strN,rskN,exN){
       pushFeed(`${top.asset} ${top.tf} score=${sc} — TRADE READY → risk engine`,'ready');
       pushLive(`OPPORTUNITY DETECTED: ${top.asset} ${top.tf} @ ${top.mid.toFixed(3)} · score=${sc}`,'ready');
     } else if(sc>=85){
-      pushFeed(`${top.asset} ${top.tf} score=${sc} — above threshold, candidate queued`,'highlight');
-      pushLive(`CANDIDATE: ${top.asset} ${top.tf} score=${sc} · spread=${((top.spread||0)).toFixed(3)}`,'highlight');
+      pushFeed(`${top.asset} ${top.tf} score=${sc} — above threshold, candidate queued`,'signal');
+      pushLive(`CANDIDATE: ${top.asset} ${top.tf} score=${sc} · spread=${((top.spread||0)).toFixed(3)}`,'signal');
     } else if(dist<=10){
-      pushFeed(`${top.asset} ${top.tf} score=${sc} — ${dist}pts from entry threshold`,'warn');
-      pushLive(`APPROACHING: ${top.asset} ${top.tf} needs ${dist} more pts · watching`,'warn');
-    } else if(r<.25) pushFeed(`${top.asset} ${top.tf} score=${sc} — monitoring`,'');
-    else if(r<.45) pushFeed(`Scanning ${ASSETS.length} assets — best: ${top.asset} ${top.tf}`,'');
-    else if(r<.62) pushFeed(`Signal engine: ${sigN} fired · ${oppN} opportunities scored`,'');
-    else if(r<.76) pushFeed(`Universe: ${ASSETS.length} assets active · pipeline nominal`,'');
-    else if(r<.88) pushFeed(`Watching ${top.asset} ${top.tf} · spread: ${(top.spread||0).toFixed(3)}`,'');
-    else pushFeed(`Risk gate: ${rskN} approved · ${strN} strategy candidates pending`,'');
-    if(r<.4&&oppN>0) pushLive(`SCORED: ${oppN} opportunities · best ${Math.round(top.score)}/100`,'');
-    else if(r<.6&&sigN>0) pushLive(`SIGNALS: ${sigN} fired across ${ASSETS.length} assets`,'');
-    else if(r<.75) pushLive(`SPREAD WATCH: ${top.asset} ${top.tf} @ ${(top.spread||0).toFixed(4)}`,'');
+      pushFeed(`${top.asset} ${top.tf} score=${sc} — ${dist}pts from entry threshold`,'watch');
+      pushLive(`APPROACHING: ${top.asset} ${top.tf} needs ${dist} more pts · watching`,'watch');
+    } else if(r<.25) pushFeed(`${top.asset} ${top.tf} score=${sc} — monitoring`,'sys');
+    else if(r<.42) pushFeed(`Scanning ${ASSETS.length} assets — best: ${top.asset} ${top.tf}`,'sys');
+    else if(r<.57) pushFeed(`Signal engine: ${sigN} fired · ${oppN} opportunities scored`,'signal');
+    else if(r<.70) pushFeed(`Universe: ${ASSETS.length} assets active · pipeline nominal`,'sys');
+    else if(r<.84) pushFeed(`Watching ${top.asset} ${top.tf} · spread: ${(top.spread||0).toFixed(3)}`,'watch');
+    else           pushFeed(`Risk gate: ${rskN} approved · ${strN} strategy candidates pending`,'highlight');
+    if(r<.38&&oppN>0)   pushLive(`SCORED: ${oppN} opportunities · best ${Math.round(top.score)}/100`,'signal');
+    else if(r<.60&&sigN>0) pushLive(`SIGNALS: ${sigN} fired across ${ASSETS.length} assets`,'signal');
+    else if(r<.78) pushLive(`SPREAD WATCH: ${top.asset} ${top.tf} @ ${(top.spread||0).toFixed(4)}`,'watch');
   } else {
-    if(r<.3) pushFeed(`Scanning ${ASSETS.length} assets — no signal above threshold`,'');
-    else if(r<.55) pushFeed(`No opportunity above threshold — monitoring all assets`,'');
-    else if(r<.72) pushFeed(`Universe: ${ASSETS.length} assets synchronized`,'');
-    else pushFeed(`Signal engine: ${sigN} signals processed`,'');
-    pushLive(`MONITORING ${ASSETS.length} assets · awaiting signal threshold`,'');
+    if(r<.30)      pushFeed(`Scanning ${ASSETS.length} assets — no signal above threshold`,'sys');
+    else if(r<.55) pushFeed(`No opportunity above threshold — monitoring all assets`,'sys');
+    else if(r<.72) pushFeed(`Universe: ${ASSETS.length} assets synchronized`,'sys');
+    else           pushFeed(`Signal engine: ${sigN} signals processed`,'signal');
+    pushLive(`MONITORING ${ASSETS.length} assets · awaiting signal threshold`,'sys');
   }
   if(exN>0){
-    pushFeed(`${exN} order(s) filled — tracking position lifecycle`,'highlight');
-    pushLive(`EXECUTION: ${exN} order(s) filled → position tracking active`,'ready');
+    pushFeed(`${exN} order(s) filled — position lifecycle active`,'execution');
+    pushLive(`EXECUTION: ${exN} order(s) filled → position tracking active`,'execution');
   }
   if(strN>0&&rskN===0&&r<.4){
     pushFeed(`Strategy candidate pending risk gate evaluation`,'warn');
