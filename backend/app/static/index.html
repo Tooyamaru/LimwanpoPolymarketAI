@@ -1309,6 +1309,193 @@ footer{color:#6b8fa8!important;}
 .stage.active-g{animation-duration:3.5s!important;}
 #target-panel{animation-duration:8s!important;}
 .eng-dot{box-shadow:0 0 4px var(--ng),0 0 7px rgba(57,255,20,.18)!important;}
+
+/* ═══════════════════════════════════════════════════════
+   V10.0 — FINAL UI POLISH (DESIGN FREEZE)
+   Institutional · Calm · Readable · Professional
+═══════════════════════════════════════════════════════ */
+
+/* ── Glow reduction ~20% globally ────────────────────── */
+:root{
+  --glow-g:0 0 10px rgba(57,255,20,.28),0 0 24px rgba(57,255,20,.09);
+  --glow-c:0 0 10px rgba(0,229,255,.28),0 0 24px rgba(0,229,255,.09);
+  --glow-m:0 0 10px rgba(255,45,149,.28),0 0 24px rgba(255,45,149,.09);
+  --glow-r:0 0 10px rgba(255,51,85,.28),0 0 24px rgba(255,51,85,.09);
+}
+
+/* ── Slower decorative animations ────────────────────── */
+@keyframes panel-breathe{0%,100%{box-shadow:0 0 0px rgba(0,229,255,0);}50%{box-shadow:0 0 14px rgba(0,229,255,.025);}}
+@keyframes stage-pulse-c{0%,100%{box-shadow:0 0 4px rgba(0,229,255,.04);}50%{box-shadow:0 0 12px rgba(0,229,255,.12),inset 0 0 6px rgba(0,229,255,.03);}}
+@keyframes stage-pulse-g{0%,100%{box-shadow:0 0 5px rgba(57,255,20,.07);}50%{box-shadow:0 0 16px rgba(57,255,20,.18);}}
+@keyframes hm-pulse-good{0%,100%{box-shadow:inset 0 0 5px rgba(0,229,255,.03);}50%{box-shadow:inset 0 0 12px rgba(0,229,255,.07),0 0 8px rgba(0,229,255,.08);}}
+@keyframes hm-pulse-hot{0%,100%{box-shadow:inset 0 0 7px rgba(57,255,20,.04);}50%{box-shadow:inset 0 0 16px rgba(57,255,20,.1),0 0 14px rgba(57,255,20,.13);}}
+@keyframes ks-armed{0%,100%{text-shadow:0 0 7px var(--ng);box-shadow:0 0 8px rgba(57,255,20,.08);}50%{text-shadow:0 0 16px var(--ng),0 0 32px rgba(57,255,20,.12);box-shadow:0 0 18px rgba(57,255,20,.12);}}
+@keyframes ring-expand-sm{0%{transform:scale(.6);opacity:.4;}100%{transform:scale(2);opacity:0;}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.22;}}
+@keyframes radar-sweep{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+.stage.active{animation-duration:6s!important;}
+.stage.active-g{animation-duration:4s!important;}
+#target-panel{animation-duration:10s!important;}
+.wait-ring{animation-duration:4.5s!important;}
+.rr2{animation-duration:4.5s!important;}
+.rr3{animation-duration:4.5s!important;}
+.radar-sweep{animation-duration:5s!important;}
+.dot{animation-duration:4s!important;}
+body::after{animation-duration:14s!important;background:repeating-linear-gradient(transparent,transparent 2px,rgba(0,0,0,.016) 2px,rgba(0,0,0,.016) 4px)!important;}
+
+/* ── Header — consistent, calm indicators ────────────── */
+.hbar{gap:6px!important;}
+.pill{padding:4px 11px!important;font-size:8.5px!important;letter-spacing:1.2px!important;gap:6px!important;border-color:rgba(0,229,255,.09)!important;}
+.pill-mode{border-color:rgba(0,229,255,.22)!important;box-shadow:0 0 6px rgba(0,229,255,.04)!important;}
+.pill-live{padding:4px 12px!important;gap:8px!important;border-color:rgba(0,229,255,.09)!important;}
+.lm-n{font-size:11px!important;}
+.lm-sep{margin:0 2px!important;opacity:.3!important;}
+.lm-lbl{font-size:7px!important;letter-spacing:.8px!important;}
+.dot{width:5px!important;height:5px!important;box-shadow:0 0 5px var(--ng),0 0 9px rgba(57,255,20,.18)!important;}
+.logo{font-size:14px!important;letter-spacing:6px!important;text-shadow:0 0 10px var(--nc),0 0 22px rgba(0,229,255,.14)!important;}
+
+/* ── BTC Chart — ~20% wider, sharper ────────────────── */
+#center-top-row{grid-template-columns:1fr 285px!important;}
+#btc-chart-card{background:var(--panel)!important;border-left-color:rgba(0,229,255,.05)!important;}
+
+/* ── AI Current Target — reduced empty space ─────────── */
+#target-body{padding:8px 14px 6px!important;}
+.tgt-always{gap:4px!important;}
+.tgt-top-row{gap:10px!important;}
+.tgt-radar{width:58px!important;}
+.radar-rings{width:52px!important;height:52px!important;}
+.rr1{width:52px!important;height:52px!important;}
+.rr2{width:36px!important;height:36px!important;}
+.rr3{width:22px!important;height:22px!important;}
+.rr4{width:9px!important;height:9px!important;}
+.radar-sweep-wrap{width:52px!important;height:52px!important;}
+.radar-sweep{width:26px!important;}
+.tgt-main{gap:2px!important;}
+.tgt-market{font-size:clamp(15px,1.9vw,23px)!important;letter-spacing:clamp(1px,.35vw,3.5px)!important;}
+.tgt-dir-row{gap:6px!important;margin-top:1px!important;}
+.tgt-dir{font-size:clamp(10px,1.15vw,13px)!important;padding:2px 9px!important;}
+.tgt-score-num{font-size:clamp(15px,1.9vw,23px)!important;}
+.ts-l{font-size:6px!important;letter-spacing:1.5px!important;color:#5e8099!important;}
+.ts-v{font-size:11.5px!important;font-weight:bold;}
+.conf-wrap{margin-top:2px!important;gap:2px!important;}
+.conf-lbl{font-size:6.5px!important;}
+.conf-track{height:2px!important;}
+.tgt-status-row{padding-top:3px!important;margin-top:1px!important;gap:8px!important;}
+.tgt-status-badge{font-size:7px!important;letter-spacing:1.8px!important;padding:2px 8px!important;}
+.tgt-dist{font-size:7px!important;letter-spacing:.8px!important;}
+#tgt-ranking{padding:3px 14px 4px!important;gap:5px!important;}
+.rank-lbl{font-size:6px!important;letter-spacing:1.5px!important;}
+.rank-item{padding:2px 7px!important;min-height:24px!important;}
+.rank-mkt{font-size:8.5px!important;letter-spacing:.4px!important;}
+.rank-score{font-size:10px!important;}
+.rank-pos{font-size:6px!important;}
+
+/* ── AI Decision Engine — primary vs secondary ────────── */
+#st-market,#st-signal,#st-risk,#st-exec{
+  border-color:rgba(0,229,255,.14)!important;background:rgba(0,229,255,.015)!important;
+}
+#st-market.active,#st-signal.active,#st-risk.active,#st-exec.active{border-color:rgba(0,229,255,.26)!important;}
+#st-market.active-g,#st-signal.active-g,#st-risk.active-g,#st-exec.active-g{border-color:rgba(57,255,20,.28)!important;}
+#st-opp,#st-strat{opacity:.72;border-color:var(--b1)!important;background:rgba(0,0,0,.12)!important;}
+.stage-n{font-size:clamp(13px,1.6vw,19px)!important;}
+.stage-icon{font-size:12px!important;opacity:.7;}
+.stage-lbl{font-size:6px!important;letter-spacing:1px!important;color:#5e8099!important;}
+.stage-sub{font-size:5.5px!important;opacity:.5;}
+.stage-bar-track{height:2px!important;}
+.stage-pct{font-size:5.5px!important;opacity:.65;}
+.stage-conv{display:none!important;}
+.thinking-dot{width:4px!important;height:4px!important;background:rgba(57,255,20,.65)!important;box-shadow:0 0 4px rgba(57,255,20,.35)!important;}
+#sys-thinking{font-size:7px!important;letter-spacing:1.5px!important;color:rgba(57,255,20,.55)!important;text-shadow:none!important;}
+.pipeline-ts{font-size:6px!important;opacity:.6;}
+
+/* ── System Health — engine name + % only ────────────── */
+#eng-grid{gap:1px!important;padding:5px 8px!important;}
+.eng-row{
+  padding:5px 8px!important;gap:0!important;
+  background:transparent!important;border:none!important;
+  border-bottom:1px solid rgba(0,229,255,.025)!important;border-radius:0!important;
+}
+.eng-row:last-child{border-bottom:none!important;}
+.eng-row:hover{background:rgba(0,229,255,.025)!important;border-color:transparent!important;}
+.eng-dot{width:4px!important;height:4px!important;margin-right:7px;flex-shrink:0;
+  box-shadow:0 0 3px var(--ng),0 0 6px rgba(57,255,20,.14)!important;}
+.eng-name{font-size:7px!important;flex:1;letter-spacing:.7px;color:#6b8fa8!important;}
+.eng-ok{font-size:8px!important;font-weight:bold;min-width:42px!important;text-align:right;letter-spacing:.3px;}
+.eng-cycle{display:none!important;}
+
+/* ── Position Panel — elegant empty state ────────────── */
+.pos-waiting{padding:8px 4px!important;gap:4px!important;}
+.wait-ring-wrap{width:34px!important;height:34px!important;}
+.pos-wait-ic{font-size:15px!important;color:rgba(192,0,255,.55)!important;text-shadow:0 0 10px rgba(192,0,255,.2)!important;}
+.pos-wait-tx{font-size:7.5px!important;letter-spacing:2.5px!important;color:#8ab0c8!important;text-shadow:none!important;}
+.pos-wait-sub{font-size:6px!important;letter-spacing:1.8px!important;color:var(--tm)!important;}
+.pos-wait-mode{font-size:5.5px!important;letter-spacing:2px!important;border-color:rgba(0,229,255,.1)!important;color:var(--td)!important;}
+.pos-col-hdr{font-size:5.5px!important;letter-spacing:2.5px!important;color:var(--td)!important;}
+
+/* ── Bottom KPI Cards — clear numeric hierarchy ─────── */
+.kpi-sm{padding:4px 10px!important;}
+.kpi-l{font-size:6px!important;letter-spacing:1.8px!important;color:var(--td)!important;opacity:.9;}
+.kpi-sm .kpi-v{font-size:clamp(12px,1.45vw,16px)!important;letter-spacing:.5px;}
+.kpi-bottom{margin-top:1px!important;}
+.kpi-spark{opacity:.55;}
+.kpi-delta{font-size:6.5px!important;letter-spacing:.5px!important;}
+/* Primary KPIs (first 3: WIN RATE, NET PNL, TRADES) */
+.kpi-row-8 .kpi-sm:nth-child(-n+3){border-color:rgba(0,229,255,.1)!important;}
+/* Secondary KPIs */
+.kpi-row-8 .kpi-sm:nth-child(n+4){opacity:.78;border-color:var(--b1)!important;}
+
+/* ── AI Feed — message-first design ──────────────────── */
+.feed-tag{font-size:5.5px!important;padding:0px 3px!important;letter-spacing:.4px!important;opacity:.75;}
+.feed-msg{font-size:8px!important;letter-spacing:.1px!important;line-height:1.5!important;}
+.feed-ts{font-size:6px!important;color:#22384a!important;min-width:50px!important;}
+.feed-entry{gap:4px!important;}
+.bot-feed-body{padding:3px 10px 3px!important;gap:2px!important;line-height:1.5!important;}
+.bot-feed-hdr{padding:3px 10px!important;}
+.bot-feed-hdr .ptitle-left{font-size:6px!important;letter-spacing:2px!important;color:#5e8099!important;}
+.bot-feed-hdr .ptitle-right{font-size:6px!important;opacity:.5!important;}
+
+/* ── Panel title standardization ─────────────────────── */
+.ptitle{padding:4px 12px 3px!important;font-size:6.5px!important;letter-spacing:2.5px!important;background:rgba(0,0,0,.18)!important;border-bottom-color:rgba(0,229,255,.05)!important;}
+.ptitle-left::before{box-shadow:0 0 4px var(--nc),0 0 8px rgba(0,229,255,.18)!important;}
+.ptitle-right{font-size:6.5px!important;opacity:.65!important;}
+
+/* ── Market rows ─────────────────────────────────────── */
+.mrow{padding:3px 8px 3px 10px!important;gap:3px!important;}
+.mr-asset{font-size:9.5px!important;letter-spacing:.4px!important;}
+.mr-tf{font-size:6.5px!important;opacity:.5!important;}
+.mr-score{font-size:12px!important;}
+.mgrp-hdr{font-size:6px!important;letter-spacing:3px!important;padding:3px 10px 2px!important;color:var(--td)!important;background:rgba(0,0,0,.28)!important;}
+
+/* ── Global glow reduction ───────────────────────────── */
+.tgt-market.c-yes{text-shadow:0 0 10px rgba(57,255,20,.22)!important;}
+.tgt-market.c-no{text-shadow:0 0 10px rgba(255,45,149,.22)!important;}
+.tgt-score-num.yes{text-shadow:0 0 10px var(--ng),0 0 22px rgba(57,255,20,.14)!important;}
+.tgt-score-num.no{text-shadow:0 0 10px var(--nm),0 0 22px rgba(255,45,149,.14)!important;}
+.conf-fill.yes{box-shadow:0 0 5px var(--ng),0 0 10px rgba(57,255,20,.18)!important;}
+.conf-fill.no{box-shadow:0 0 5px var(--nm),0 0 10px rgba(255,45,149,.18)!important;}
+.mr-score.s95{text-shadow:0 0 7px var(--ng),0 0 14px rgba(57,255,20,.18)!important;}
+.mr-dir.yes{box-shadow:0 0 4px rgba(57,255,20,.1)!important;}
+.mr-dir.no{box-shadow:0 0 4px rgba(255,45,149,.1)!important;}
+.rank-score.s95{text-shadow:0 0 5px var(--ng)!important;}
+.hm-data.hm-hot{animation-duration:4s!important;}
+.hm-data.hm-good{animation-duration:5.5s!important;}
+
+/* ── Heatmap cleanup ─────────────────────────────────── */
+.hm-score{text-shadow:none!important;}
+.hm-data:hover{filter:brightness(1.3)!important;transform:scale(1.02)!important;}
+.hm-legend{padding:2px 9px!important;}
+.leg-item{font-size:6.5px!important;}
+
+/* ── Capital Protection panel ────────────────────────── */
+.cap-item-v5 .cap-lbl{font-size:6px!important;letter-spacing:.8px!important;}
+.cap-item-v5 .cap-remain{font-size:5.5px!important;}
+.cap-item-v5 .cap-fill{box-shadow:0 0 4px var(--ng)!important;}
+.cap-ks-badge{font-size:7.5px!important;}
+
+/* ── Footer ──────────────────────────────────────────── */
+footer{font-size:7px!important;letter-spacing:1.5px!important;padding:0 20px!important;border-top-color:rgba(0,229,255,.06)!important;}
+footer span:first-child{letter-spacing:3px!important;text-shadow:0 0 7px rgba(0,229,255,.18)!important;}
 </style>
 </head>
 <body>
@@ -2211,7 +2398,7 @@ function startThinking(){
 // ═══════════════════════════════════════════════════════
 //  BTC CANDLESTICK CHART (Lightweight Charts v4)
 // ═══════════════════════════════════════════════════════
-let btcChart=null,btcSeries=null,btcChartTf='5m',btcChartTimer=null;
+let btcChart=null,btcSeries=null,btcVolSeries=null,btcPriceLine=null,btcChartTf='5m',btcChartTimer=null;
 const BINANCE_TF={'5m':'5m','15m':'15m','1H':'1h'};
 
 function initBtcChart(){
@@ -2219,17 +2406,42 @@ function initBtcChart(){
   if(!container||typeof LightweightCharts==='undefined') return;
   btcChart=LightweightCharts.createChart(container,{
     width:container.clientWidth,height:container.clientHeight,
-    layout:{background:{type:'solid',color:'transparent'},textColor:'#4d6e8a'},
-    grid:{vertLines:{color:'rgba(0,229,255,.04)'},horzLines:{color:'rgba(0,229,255,.04)'}},
-    crosshair:{mode:LightweightCharts.CrosshairMode.Magnet},
-    rightPriceScale:{borderColor:'rgba(0,229,255,.08)',textColor:'#4d6e8a',scaleMargins:{top:.08,bottom:.04}},
-    timeScale:{borderColor:'rgba(0,229,255,.08)',textColor:'#4d6e8a',timeVisible:true,secondsVisible:false},
+    layout:{background:{type:'solid',color:'transparent'},textColor:'#4a6e88'},
+    grid:{
+      vertLines:{color:'rgba(0,229,255,.028)'},
+      horzLines:{color:'rgba(0,229,255,.028)'},
+    },
+    crosshair:{
+      mode:LightweightCharts.CrosshairMode.Magnet,
+      vertLine:{color:'rgba(0,229,255,.22)',width:1,style:3,labelBackgroundColor:'rgba(6,9,15,.92)'},
+      horzLine:{color:'rgba(0,229,255,.22)',width:1,style:3,labelBackgroundColor:'rgba(6,9,15,.92)'},
+    },
+    rightPriceScale:{
+      borderColor:'rgba(0,229,255,.06)',textColor:'#4a6e88',
+      scaleMargins:{top:.06,bottom:.22},
+    },
+    timeScale:{
+      borderColor:'rgba(0,229,255,.06)',textColor:'#4a6e88',
+      timeVisible:true,secondsVisible:false,barSpacing:5,
+    },
     handleScroll:false,handleScale:false,
   });
+  // Candlestick series
   btcSeries=btcChart.addCandlestickSeries({
     upColor:'#39FF14',downColor:'#FF2D95',
     borderUpColor:'#39FF14',borderDownColor:'#FF2D95',
-    wickUpColor:'rgba(57,255,20,.55)',wickDownColor:'rgba(255,45,149,.55)',
+    wickUpColor:'rgba(57,255,20,.45)',wickDownColor:'rgba(255,45,149,.45)',
+    priceLineVisible:false,lastValueVisible:false,
+  });
+  // Volume overlay (lower 22% of chart)
+  btcVolSeries=btcChart.addHistogramSeries({
+    color:'rgba(0,229,255,.12)',
+    priceFormat:{type:'volume'},
+    priceScaleId:'vol',
+  });
+  btcChart.priceScale('vol').applyOptions({
+    scaleMargins:{top:.80,bottom:0},
+    borderVisible:false,
   });
   const ro=new ResizeObserver(()=>{
     if(btcChart&&container.clientWidth>0&&container.clientHeight>0)
@@ -2252,7 +2464,26 @@ async function fetchBtcCandles(tf){
       open:parseFloat(k[1]),high:parseFloat(k[2]),
       low:parseFloat(k[3]),close:parseFloat(k[4]),
     }));
-    if(btcSeries){btcSeries.setData(candles);if(btcChart)btcChart.timeScale().fitContent();}
+    const volumes=data.map(k=>({
+      time:Math.floor(k[0]/1000),
+      value:parseFloat(k[5]),
+      color:parseFloat(k[4])>=parseFloat(k[1])?'rgba(57,255,20,.18)':'rgba(255,45,149,.16)',
+    }));
+    if(btcSeries){
+      btcSeries.setData(candles);
+      if(btcChart) btcChart.timeScale().fitContent();
+      // Current price line
+      if(candles.length>0){
+        const last=candles[candles.length-1].close;
+        if(btcPriceLine) btcSeries.removePriceLine(btcPriceLine);
+        btcPriceLine=btcSeries.createPriceLine({
+          price:last,color:'rgba(0,229,255,.5)',
+          lineWidth:1,lineStyle:2,
+          axisLabelVisible:true,title:'',
+        });
+      }
+    }
+    if(btcVolSeries) btcVolSeries.setData(volumes);
     const lbl=document.getElementById('btc-chart-tf-lbl');
     if(lbl) lbl.textContent=tf.toUpperCase();
   }catch(e){}

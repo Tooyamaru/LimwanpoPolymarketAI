@@ -1,0 +1,254 @@
+# LIMWANPO POLYMARKET AI — V10 FINAL UI POLISH (DESIGN FREEZE)
+
+Objective:
+
+This is NOT a feature update.
+
+This is a complete UI/UX polishing pass.
+
+Do NOT modify any AI logic, trading logic, data pipeline, scoring, engines, calculations, feeds, or backend.
+
+Only improve visual quality, consistency, readability, spacing, typography, and user experience.
+
+The target is an institutional-grade trading terminal similar to Bloomberg, Reuters Eikon, or professional crypto desks.
+
+---
+
+## 1. BTC Candlestick
+
+* Increase visual importance (~20% taller).
+* Improve internal padding.
+* Sharper candles.
+* Add compact volume bars.
+* Elegant current-price line.
+* Softer crosshair.
+* Keep timeframe synchronized with AI Current Target.
+
+---
+
+## 2. AI Current Target
+
+Reduce empty space.
+
+Display:
+
+* Market
+* Timeframe
+* Score
+* Distance to Entry
+* Spread
+* Confidence
+* Signal Strength
+* Entry Window
+
+Create a clear information hierarchy.
+
+---
+
+## 3. AI Decision Engine
+
+Separate cards into visual priorities.
+
+Primary:
+
+* Universe
+* Signal
+* Risk
+* Execution
+
+Secondary:
+
+* Remaining engines
+
+Primary cards should have slightly stronger visual emphasis.
+
+---
+
+## 4. System Health
+
+Replace debug-like appearance with clean monitoring panel.
+
+Display only:
+
+* Engine
+* Percentage
+
+Consistent spacing.
+
+No unnecessary decoration.
+
+---
+
+## 5. Position Panel
+
+Improve empty state.
+
+Display:
+
+* NO ACTIVE POSITION
+* Paper Trading
+* Waiting AI Confirmation
+* Last Trade
+* Win Rate
+
+Keep typography elegant.
+
+---
+
+## 6. Market Universe
+
+Maintain:
+
+BTC
+ETH
+SOL
+XRP
+
+Each containing:
+
+* 5m
+* 15m
+* 1H
+
+Total:
+
+12 monitored markets.
+
+Improve spacing and readability only.
+
+---
+
+## 7. Bottom KPI Cards
+
+Simplify.
+
+Reduce visual clutter.
+
+Emphasize:
+
+* Win Rate
+* PnL
+* Trades
+* Equity
+* Daily PnL
+
+Increase numeric hierarchy.
+
+---
+
+## 8. AI Feeds
+
+Keep:
+
+* Fixed height
+* Internal scrolling
+* Smart auto-scroll
+
+Reduce tag size.
+
+Message text should dominate.
+
+Improve timestamp readability.
+
+---
+
+## 9. Typography
+
+Create clear hierarchy.
+
+Headings
+
+Labels
+
+Values
+
+Numbers
+
+must all have distinct visual weights.
+
+---
+
+## 10. Glow
+
+Reduce glow intensity by approximately 20%.
+
+Maintain premium institutional appearance.
+
+---
+
+## 11. Header
+
+Improve spacing.
+
+Align every indicator consistently.
+
+Equal padding between:
+
+Paper Mode
+
+Engines
+
+Markets
+
+Signals
+
+Capital
+
+Uptime
+
+UTC
+
+---
+
+## 12. Footer
+
+Improve readability.
+
+Maintain compact terminal style.
+
+---
+
+## 13. Animations
+
+Slow all decorative animations.
+
+Nothing should feel flashy.
+
+---
+
+## 14. Card System
+
+Standardize every panel.
+
+Same:
+
+* Border radius
+* Padding
+* Margin
+* Border thickness
+* Shadow
+* Glow
+
+Every component must look like part of one unified design system.
+
+---
+
+## 15. Final Design Review
+
+Review the entire dashboard from the perspective of an end user.
+
+Remove any unnecessary visual noise.
+
+Balance spacing.
+
+Improve alignment.
+
+Ensure the interface is calm, readable, professional, and comfortable for long trading sessions.
+
+No new features.
+
+No logic changes.
+
+No backend modifications.
+
+This is the final visual refinement before production.
