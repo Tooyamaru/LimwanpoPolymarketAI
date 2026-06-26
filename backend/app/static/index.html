@@ -901,6 +901,7 @@ footer{color:#6b8fa8!important;}
   .bot-row{grid-template-columns:1fr 1fr 1fr;}
   header{padding:0 14px;}
   .hbar{gap:5px;}
+  #center-top-row{grid-template-columns:1fr clamp(160px,20%,230px);}
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1119,6 +1120,8 @@ footer{color:#6b8fa8!important;}
   footer{font-size:6px;padding:0 10px;letter-spacing:1px;}
   #tgt-reasons{gap:4px;}
   .reason-item{font-size:6.5px;padding:2px 6px;}
+  #center-top-row{grid-template-columns:1fr!important;}
+  #btc-chart-card{display:none!important;}
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1147,6 +1150,7 @@ footer{color:#6b8fa8!important;}
   .kpi-row-8{grid-template-columns:repeat(8,1fr);}
   .bot-row{grid-template-columns:1fr 1fr 1fr;height:auto;}
   footer{font-size:6px;padding:0 10px;}
+  #center-top-row{grid-template-columns:1fr 170px;}
 }
 
 
@@ -1200,7 +1204,7 @@ footer{color:#6b8fa8!important;}
 /* ═══════════════════════════════════════════════════════
    CENTER TOP ROW — Target + BTC Chart
 ═══════════════════════════════════════════════════════ */
-#center-top-row{display:grid;grid-template-columns:1fr 250px;flex-shrink:0;border-bottom:1px solid rgba(0,229,255,.1);overflow:hidden;}
+#center-top-row{display:grid;grid-template-columns:1fr clamp(180px,21vw,250px);flex-shrink:0;border-bottom:1px solid rgba(0,229,255,.1);overflow:hidden;}
 #center-top-row #target-panel{border-bottom:none!important;}
 #btc-chart-card{
   display:flex;flex-direction:column;overflow:hidden;
@@ -2919,10 +2923,15 @@ let btcChart=null,btcSeries=null,btcVolSeries=null,btcPriceLine=null,btcChartTf=
 const BINANCE_TF={'5m':'5m','15m':'15m','1H':'1h'};
 
 function initBtcChart(){
+  // Stage 1: container check
+  console.log('[CHART] Stage 1: initBtcChart called');
   const container=document.getElementById('btc-chart-body');
-  if(!container||typeof LightweightCharts==='undefined') return;
+  if(!container){console.error('[CHART] Stage 1 FAIL: #btc-chart-body not found');return;}
+  if(typeof LightweightCharts==='undefined'){console.error('[CHART] Stage 1 FAIL: LightweightCharts library not loaded');return;}
+  // Stage 2: container dimensions
+  console.log('[CHART] Stage 2: container found — size='+container.clientWidth+'x'+container.clientHeight+' offsetH='+container.offsetHeight);
   btcChart=LightweightCharts.createChart(container,{
-    width:container.clientWidth,height:container.clientHeight,
+    autoSize:true,  /* Stage 3: autoSize removes race condition with clientWidth/clientHeight at load */
     layout:{background:{type:'solid',color:'transparent'},textColor:'#4a6e88'},
     grid:{
       vertLines:{color:'rgba(0,229,255,.028)'},
@@ -2943,6 +2952,7 @@ function initBtcChart(){
     },
     handleScroll:false,handleScale:false,
   });
+  console.log('[CHART] Stage 3: chart object initialized');
   // Candlestick series
   btcSeries=btcChart.addCandlestickSeries({
     upColor:'#39FF14',downColor:'#FF2D95',
@@ -2962,22 +2972,43 @@ function initBtcChart(){
     scaleMargins:{top:.80,bottom:0},
     borderVisible:false,
   });
-  const ro=new ResizeObserver(()=>{
-    if(btcChart&&container.clientWidth>0&&container.clientHeight>0)
-      btcChart.resize(container.clientWidth,container.clientHeight);
+  console.log('[CHART] Stage 4: candlestick+volume series created');
+  // Stage 5–7: ResizeObserver — fitContent after layout resizes
+  const ro=new ResizeObserver(entries=>{
+    const e=entries[0];const w=e.contentRect.width,h=e.contentRect.height;
+    console.log('[CHART] Stage 6: ResizeObserver fired — '+Math.round(w)+'x'+Math.round(h));
+    if(btcChart&&w>0&&h>0){
+      console.log('[CHART] Stage 7: chart.resize() → fitContent()');
+      btcChart.timeScale().fitContent();
+    }
   });
   ro.observe(container);
+  console.log('[CHART] Stage 5+6: ResizeObserver active');
+  // Initial fetch + safety retry after layout settles
   fetchBtcCandles(btcChartTf);
+  setTimeout(()=>{
+    if(btcSeries){
+      console.log('[CHART] Stage 15: safety-retry fetchBtcCandles (800ms after init)');
+      fetchBtcCandles(btcChartTf);
+    }
+  },800);
   if(btcChartTimer) clearInterval(btcChartTimer);
-  btcChartTimer=setInterval(()=>fetchBtcCandles(btcChartTf),30000);
+  btcChartTimer=setInterval(()=>{
+    console.log('[CHART] Stage 15: live-update tick');
+    fetchBtcCandles(btcChartTf);
+  },30000);
 }
 
 async function fetchBtcCandles(tf){
   const interval=BINANCE_TF[tf]||'5m';
+  console.log('[CHART] Stage 8: Binance fetch started — tf='+tf+' interval='+interval);
   try{
     const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=80`);
-    if(!r.ok) return;
+    if(!r.ok){console.error('[CHART] Stage 8 FAIL: Binance HTTP '+r.status);return;}
     const data=await r.json();
+    console.log('[CHART] Stage 9: Binance fetch completed — candle count='+data.length);
+    if(!Array.isArray(data)||data.length===0){console.warn('[CHART] Stage 9 WARN: empty candle array');return;}
+    // Stage 10–11: transform
     const candles=data.map(k=>({
       time:Math.floor(k[0]/1000),
       open:parseFloat(k[1]),high:parseFloat(k[2]),
@@ -2988,9 +3019,13 @@ async function fetchBtcCandles(tf){
       value:parseFloat(k[5]),
       color:parseFloat(k[4])>=parseFloat(k[1])?'rgba(57,255,20,.18)':'rgba(255,45,149,.16)',
     }));
+    console.log('[CHART] Stage 10: candle array length='+candles.length+' valid='+candles.every(c=>c.time&&c.open));
+    console.log('[CHART] Stage 11: data transformation complete');
     if(btcSeries){
+      console.log('[CHART] Stage 12: render started — setData');
       btcSeries.setData(candles);
       if(btcChart) btcChart.timeScale().fitContent();
+      console.log('[CHART] Stage 13: render completed — fitContent called');
       // Current price line
       if(candles.length>0){
         const last=candles[candles.length-1].close;
@@ -3001,11 +3036,14 @@ async function fetchBtcCandles(tf){
           axisLabelVisible:true,title:'',
         });
       }
+    } else {
+      console.warn('[CHART] Stage 12 WARN: btcSeries not ready, data will retry');
     }
     if(btcVolSeries) btcVolSeries.setData(volumes);
     const lbl=document.getElementById('btc-chart-tf-lbl');
     if(lbl) lbl.textContent=tf.toUpperCase();
-  }catch(e){}
+    console.log('[CHART] Stage 14: live update complete');
+  }catch(e){console.error('[CHART] Stage 8 ERROR:',e);}
 }
 
 function updateBtcChartTf(newTf){
@@ -3472,7 +3510,11 @@ window.addEventListener('load',()=>{
   pushFeed('System initialized — loading market universe','highlight');
   pushFeed(`Monitoring ${MARKETS.length} markets across ${ASSETS.length} assets`,'');
   refresh().catch(e=>console.warn("[refresh]",e));setInterval(()=>refresh().catch(e=>console.warn("[refresh]",e)),REFRESH);
-  initBtcChart();
+  console.log('[CHART] Stage 1: scheduling chart init via requestAnimationFrame');
+  requestAnimationFrame(()=>{
+    console.log('[CHART] Stage 1: RAF fired — layout painted, calling initBtcChart');
+    initBtcChart();
+  });
   fetchTicker();setInterval(fetchTicker,30000);
 });
 
