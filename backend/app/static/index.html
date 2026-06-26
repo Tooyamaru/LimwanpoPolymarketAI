@@ -3473,7 +3473,7 @@ window.addEventListener('load',()=>{
   tick();setInterval(tick,1000);
   pushFeed('System initialized — loading market universe','highlight');
   pushFeed(`Monitoring ${MARKETS.length} markets across ${ASSETS.length} assets`,'');
-  refresh();setInterval(refresh,REFRESH);
+  refresh().catch(e=>console.warn("[refresh]",e));setInterval(()=>refresh().catch(e=>console.warn("[refresh]",e)),REFRESH);
   initBtcChart();
   fetchTicker();setInterval(fetchTicker,30000);
 });
