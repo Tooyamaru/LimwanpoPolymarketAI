@@ -2128,20 +2128,20 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
         <div class="rank-lbl">TOP&nbsp;3</div>
         <div class="rank-item rank-1">
           <span class="rank-pos">#1</span>
-          <span class="rank-mkt" id="r1-mkt">—</span>
-          <span class="rank-score s0" id="r1-score">—</span>
+          <span class="rank-mkt" id="r1-mkt">Waiting for Scanner</span>
+          <span class="rank-score s0" id="r1-score"></span>
           <span class="rank-dir" id="r1-dir" style="display:none"></span>
         </div>
         <div class="rank-item">
           <span class="rank-pos">#2</span>
-          <span class="rank-mkt" id="r2-mkt">—</span>
-          <span class="rank-score s0" id="r2-score">—</span>
+          <span class="rank-mkt" id="r2-mkt">Waiting for Scanner</span>
+          <span class="rank-score s0" id="r2-score"></span>
           <span class="rank-dir" id="r2-dir" style="display:none"></span>
         </div>
         <div class="rank-item">
           <span class="rank-pos">#3</span>
-          <span class="rank-mkt" id="r3-mkt">—</span>
-          <span class="rank-score s0" id="r3-score">—</span>
+          <span class="rank-mkt" id="r3-mkt">Waiting for Scanner</span>
+          <span class="rank-score s0" id="r3-score"></span>
           <span class="rank-dir" id="r3-dir" style="display:none"></span>
         </div>
       </div>
@@ -2737,14 +2737,14 @@ function updateTarget(ranked){
   if(!best){
     panel.className='';
     ['tgt-market','tgt-dir','tgt-score-n','tgt-price','tgt-spread','tgt-edge','tgt-bid','tgt-ask','tgt-expiry']
-      .forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='—';});
+      .forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='';});
     document.getElementById('tgt-dir').className='tgt-dir neutral';
     document.getElementById('tgt-score-n').className='tgt-score-num neutral';
     document.getElementById('tgt-status-badge').textContent='SCANNING';
     document.getElementById('tgt-status-badge').className='tgt-status-badge tsb-wait';
-    document.getElementById('tgt-dist').textContent='—';
+    document.getElementById('tgt-dist').textContent='SCANNING...';
     document.getElementById('tgt-ptitle-right').textContent='TOP MARKET';
-    document.getElementById('conf-tier').textContent='—';
+    document.getElementById('conf-tier').textContent='SCANNING';
     document.getElementById('conf-fill').style.width='0%';
     return;
   }
@@ -2842,7 +2842,7 @@ function updateRanking(ranked){
     const scEl=document.getElementById(s.sc);
     const dEl=document.getElementById(s.dir);
     if(!m){
-      mEl.textContent='—';scEl.textContent='—';scEl.className='rank-score s0';
+      mEl.textContent='Waiting for Scanner';scEl.textContent='';scEl.className='rank-score s0';
       dEl.style.display='none';continue;
     }
     mEl.textContent=`${m.asset} ${m.tf}`;
