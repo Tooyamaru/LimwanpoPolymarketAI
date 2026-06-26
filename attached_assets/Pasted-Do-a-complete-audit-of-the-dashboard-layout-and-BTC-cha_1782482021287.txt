@@ -1,0 +1,95 @@
+Do a complete audit of the dashboard layout and BTC chart rendering.
+
+Do NOT redesign anything.
+Keep the exact visual style.
+
+Fix ALL remaining issues.
+
+========================================
+PART A — BTC CHART
+========================================
+
+The Binance API is already returning candles successfully.
+
+Logs confirm:
+
+- candles fetched
+- transformed
+- setData()
+- fitContent()
+
+However the BTC // CANDLES panel is still completely black.
+
+Audit the entire rendering pipeline.
+
+Verify:
+
+1. createChart() executes.
+2. Chart container exists.
+3. clientWidth > 0.
+4. clientHeight > 0.
+5. LightweightCharts canvas is actually inserted.
+6. No CSS hides the canvas.
+7. No parent has overflow/display rules clipping it.
+8. ResizeObserver works.
+9. requestAnimationFrame timing.
+10. chart.timeScale().fitContent() executes after data.
+
+If any stage fails,
+fix the root cause instead of adding workarounds.
+
+========================================
+PART B — RESPONSIVE LAYOUT
+========================================
+
+The iPad landscape layout still wastes space.
+
+Current proportions are wrong.
+
+Make the layout responsive while preserving the design.
+
+Target proportions:
+
+LEFT ≈ 28%
+
+CENTER ≈ 42%
+
+RIGHT ≈ 30%
+
+Do NOT allow the chart column to squeeze the AI Current Target panel.
+
+Replace fixed widths with responsive minmax()/clamp().
+
+========================================
+PART C — HEATMAP
+========================================
+
+Reduce the heatmap height.
+
+Desktop:
+~320px
+
+Tablet landscape:
+~260px
+
+Tablet portrait:
+~220px
+
+Do not change styling.
+
+========================================
+PART D — VALIDATION
+========================================
+
+After fixing:
+
+- verify BTC chart actually renders
+- verify canvas exists
+- verify canvas size >0
+- verify chart receives 80 candles
+- verify no console errors
+- verify responsive layout on desktop, iPad landscape, iPad portrait
+
+Only modify code that directly fixes these issues.
+Do not add new features.
+Do not redesign the dashboard.
