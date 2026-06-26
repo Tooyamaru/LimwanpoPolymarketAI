@@ -1,6 +1,5 @@
 from collections.abc import AsyncGenerator
 from typing import Optional
-from urllib.parse import urlparse
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,

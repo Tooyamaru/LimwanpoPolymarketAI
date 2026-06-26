@@ -26,7 +26,6 @@ Sprint 9.1 fix (active-market lifecycle bug):
   they belong to.
 """
 
-import asyncio
 from datetime import datetime, timezone
 from typing import Optional
 

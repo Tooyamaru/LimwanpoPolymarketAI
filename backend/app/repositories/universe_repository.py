@@ -7,7 +7,7 @@ All DB operations for the MarketUniverse table go through this module.
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import func, select, update
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger

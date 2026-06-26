@@ -18,3 +18,4 @@
 - [Exit Engine design](exit-engine-design.md) — Layer 11 complete; ExitEngine→RiskEngine auto-approve→ExecutionEngine close path; 4 triggers; exit price = bid never mid
 - [Dashboard V8.0](dashboard.md) — V8.0: 12 market rows (4 assets × 3 TFs), real Binance candlestick chart via LW Charts, health shows %, positions improved empty state, "12 MARKETS" throughout
 - [HTML edit corruption](html-edit-corruption.md) — editing JS string literals via Edit tool in index.html can split file; use Python script instead for any line with single-quote string changes
+- [Final cleanup audit 2026-06-26](final-cleanup-audit.md) — Full cleanup+architecture audit done; AUDIT_REPORT.md written; project scored 88/100; zero tech debt; 4 unused backend imports removed; 1259 chars dead CSS/JS removed from index.html; ready for AI Engine roadmap

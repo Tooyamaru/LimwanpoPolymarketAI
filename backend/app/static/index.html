@@ -72,7 +72,7 @@ body::after{
 @keyframes hm-pulse-hot{0%,100%{box-shadow:inset 0 0 10px rgba(57,255,20,.07),0 0 8px rgba(57,255,20,.1);}50%{box-shadow:inset 0 0 22px rgba(57,255,20,.15),0 0 22px rgba(57,255,20,.22);}}
 @keyframes hm-top{0%,100%{border-color:rgba(57,255,20,.3);}50%{border-color:rgba(57,255,20,.8);box-shadow:0 0 18px rgba(57,255,20,.2),inset 0 0 14px rgba(57,255,20,.06);}}
 @keyframes feed-in{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
-@keyframes cap-fill-anim{from{filter:brightness(1);}to{filter:brightness(1.2);}}
+to{filter:brightness(1.2);}}
 @keyframes dot-seq-0{0%,20%,100%{opacity:1;}10%{opacity:.15;}}
 @keyframes dot-seq-1{20%,40%,100%{opacity:1;}30%{opacity:.15;}}
 @keyframes dot-seq-2{40%,60%,100%{opacity:1;}50%{opacity:.15;}}
@@ -80,8 +80,8 @@ body::after{
 @keyframes dot-seq-4{80%,100%{opacity:1;}90%{opacity:.15;}}
 @keyframes panel-breathe{0%,100%{box-shadow:0 0 0px rgba(0,229,255,0);}50%{box-shadow:0 0 20px rgba(0,229,255,.04);}}
 @keyframes rank-glow{0%,100%{opacity:.85;}50%{opacity:1;}}
-@keyframes border-flow{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
-@keyframes score-pop{0%{transform:scale(1);}40%{transform:scale(1.06);}100%{transform:scale(1);}}
+50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+40%{transform:scale(1.06);}100%{transform:scale(1);}}
 
 /* ═══════════════════════════════════════════════════════
    HEADER
@@ -323,7 +323,7 @@ main{display:grid;grid-template-columns:22% 56% 22%;overflow:hidden;min-height:0
 .tgt-score-num{font-size:clamp(18px,2.2vw,28px);font-weight:bold;letter-spacing:1px;line-height:1;transition:color .4s,text-shadow .4s;}
 .tgt-score-num.yes{color:var(--ng);text-shadow:0 0 16px var(--ng),0 0 32px rgba(57,255,20,.2);}
 .tgt-score-num.no{color:var(--nm);text-shadow:0 0 16px var(--nm),0 0 32px rgba(255,45,149,.2);}
-.tgt-score-num.neutral{color:var(--tm);}.tgt-score-num.scanner-wait{font-size:clamp(7px,0.75vw,9px)!important;font-weight:400!important;letter-spacing:1.5px!important;opacity:.5!important;text-transform:uppercase;}
+.tgt-score-num.neutral{color:var(--tm);}
 
 .tgt-right{display:flex;flex-direction:column;gap:6px;flex:1;justify-content:center;}
 .tgt-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px;}
@@ -974,7 +974,7 @@ footer{color:#6b8fa8!important;}
     font-size:clamp(84px,12vw,128px)!important;
     letter-spacing:1px;line-height:1;
   }
-  .tgt-score-num.scanner-wait{font-size:clamp(7px,0.75vw,9px)!important;font-weight:400!important;opacity:.5!important;}
+  
   .conf-wrap{margin-top:10px!important;gap:5px!important;}
   .conf-track{height:8px!important;border-radius:4px!important;}
   .conf-lbl{font-size:8px!important;letter-spacing:1px;margin-bottom:2px!important;}
@@ -1377,7 +1377,7 @@ body::after{animation-duration:14s!important;background:repeating-linear-gradien
 .tgt-dir-row{gap:6px!important;margin-top:1px!important;}
 .tgt-dir{font-size:clamp(10px,1.15vw,13px)!important;padding:2px 9px!important;}
 .tgt-score-num{font-size:clamp(15px,1.9vw,23px)!important;}
-.tgt-score-num.scanner-wait{font-size:clamp(7px,0.75vw,9px)!important;font-weight:400!important;opacity:.5!important;}
+
 .ts-l{font-size:6px!important;letter-spacing:1.5px!important;color:#5e8099!important;}
 .ts-v{font-size:11.5px!important;font-weight:bold;}
 .conf-wrap{margin-top:2px!important;gap:2px!important;}
@@ -1668,7 +1668,7 @@ footer span:first-child{text-shadow:none!important;}
 .kpi-sm .kpi-v{font-size:16px!important;font-weight:700!important;letter-spacing:normal!important;line-height:1.15!important;}
 .tgt-market{font-size:clamp(16px,2vw,26px)!important;font-weight:700!important;}
 .tgt-score-num{font-size:clamp(16px,2vw,26px)!important;font-weight:700!important;}
-.tgt-score-num.scanner-wait{font-size:clamp(7px,0.75vw,9px)!important;font-weight:400!important;opacity:.5!important;}
+
 .mr-score{font-size:14px!important;font-weight:700!important;}
 
 /* ── PRIMARY VALUES — 14px / weight 600 ──────────────── */
@@ -1746,7 +1746,7 @@ footer{font-size:8.5px!important;letter-spacing:1.5px!important;}
 /* ── TASK 2: AI Current Target — enlarge key values ──── */
 .tgt-market{font-size:clamp(17px,2.1vw,27px)!important;}
 .tgt-score-num{font-size:clamp(17px,2.1vw,27px)!important;}
-.tgt-score-num.scanner-wait{font-size:clamp(7px,0.75vw,9px)!important;font-weight:400!important;opacity:.5!important;}
+
 .ts-v{font-size:15px!important;font-weight:600!important;}
 
 /* ── TASK 3: BTC Chart — breathing room ─────────────── */
@@ -1886,7 +1886,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;}
 /* ── TASK 5: Current Target — hierarchy ──────────────── */
 .tgt-market{font-size:clamp(17px,2.1vw,27px)!important;font-weight:700!important;}
 .tgt-score-num{font-size:clamp(17px,2.1vw,27px)!important;font-weight:700!important;}
-.tgt-score-num.scanner-wait{font-size:clamp(7px,0.75vw,9px)!important;font-weight:400!important;opacity:.5!important;}
+
 .tgt-dir{font-size:clamp(10px,1.15vw,13px)!important;font-weight:700!important;}
 .tgt-status-badge{font-size:8px!important;font-weight:700!important;letter-spacing:1.2px!important;}
 
@@ -1981,8 +1981,7 @@ footer span:first-child{color:var(--nc)!important;letter-spacing:3px!important;f
 
 /* ── Market Universe subtitle removed (UI Freeze item 1) */
 
-/* ── TASK 7: Footer TF selector — subtle but readable ── */
-.f-tf{font-size:10px!important;font-weight:600!important;opacity:.88!important;letter-spacing:2px!important;color:#9dcce2!important;}
+
 
 /* ── TASK 11: Final sweep — remaining thin text ──────── */
 /* Market group headers */
@@ -2639,10 +2638,6 @@ function _renderLiveFeed(){
   if(wasBot) list.scrollTop=list.scrollHeight;
 }
 
-// Legacy aliases (called from other places)
-const renderFeed=_renderFeed;
-const renderLiveFeed=_renderLiveFeed;
-const renderLeftFeed=_renderLeftFeed;
 
 function generateFeed(ranked,sigN,oppN,strN,rskN,exN){
   // Scanner Engine not yet built — use neutral activity messages only

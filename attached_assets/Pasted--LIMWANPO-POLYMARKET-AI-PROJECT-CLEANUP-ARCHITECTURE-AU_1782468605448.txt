@@ -1,0 +1,408 @@
+# LIMWANPO POLYMARKET AI
+
+# PROJECT CLEANUP & ARCHITECTURE AUDIT
+
+## (Final Audit Before AI Engine Development)
+
+UI telah dinyatakan **UI FREEZE**.
+
+Mulai saat ini **dilarang melakukan redesign dashboard**.
+
+Audit ini bertujuan hanya untuk membersihkan project dan memastikan arsitektur siap menerima seluruh AI Engine.
+
+Tidak boleh mengubah layout, panel, typography, warna, animasi, maupun tampilan dashboard.
+
+---
+
+# OBJECTIVE
+
+Lakukan audit menyeluruh terhadap project.
+
+Target audit adalah:
+
+* mengurangi technical debt
+* menghapus code yang sudah mati
+* merapikan struktur project
+* meningkatkan maintainability
+* memastikan fondasi siap untuk pembangunan AI Engine
+
+Bukan membuat fitur baru.
+
+---
+
+# 1. FRONTEND CLEANUP
+
+Audit seluruh frontend.
+
+Cari dan laporkan:
+
+* unused CSS
+* duplicate CSS
+* dead CSS selector
+* unused animation
+* duplicate animation
+* unused JavaScript
+* duplicate function
+* unused variable
+* obsolete helper
+* unreachable code
+
+Jika benar-benar tidak digunakan lagi,
+
+hapus.
+
+Jangan mengubah tampilan dashboard.
+
+---
+
+# 2. BACKEND CLEANUP
+
+Audit backend.
+
+Cari:
+
+* unused module
+* duplicate helper
+* duplicate utility
+* unused endpoint
+* deprecated API
+* unused import
+* unused dependency
+* obsolete configuration
+
+Jika aman,
+
+hapus.
+
+---
+
+# 3. FILE STRUCTURE AUDIT
+
+Periksa struktur folder.
+
+Pastikan project siap untuk roadmap AI.
+
+Target struktur:
+
+backend/
+
+api/
+
+scanner/
+
+evaluation/
+
+ranking/
+
+confidence/
+
+decision/
+
+risk/
+
+paper/
+
+trade/
+
+analytics/
+
+learning/
+
+models/
+
+services/
+
+utils/
+
+Jika ada folder yang tidak lagi relevan,
+
+laporkan.
+
+Jangan memindahkan file besar tanpa alasan yang jelas.
+
+---
+
+# 4. ARCHITECTURE AUDIT
+
+Pastikan alur sistem sudah jelas.
+
+Target architecture:
+
+Market Data
+
+↓
+
+Market Scanner Engine
+
+↓
+
+Market Evaluation Engine
+
+↓
+
+Opportunity Ranking Engine
+
+↓
+
+Confidence Engine
+
+↓
+
+Decision Engine
+
+↓
+
+Risk Engine
+
+↓
+
+Paper Trading Engine
+
+↓
+
+Trade Management Engine
+
+↓
+
+Performance Analytics
+
+↓
+
+AI Learning
+
+Laporkan jika ada dependency yang berpotensi menghambat roadmap ini.
+
+---
+
+# 5. TECHNICAL DEBT AUDIT
+
+Cari seluruh:
+
+TODO
+
+FIXME
+
+TEMP
+
+PLACEHOLDER
+
+MOCK
+
+DUMMY
+
+DEPRECATED
+
+Catat semuanya.
+
+Jangan langsung dihapus apabila masih akan dipakai.
+
+---
+
+# 6. CONFIGURATION AUDIT
+
+Periksa:
+
+environment variable
+
+config
+
+constant
+
+magic number
+
+hardcoded path
+
+duplicate config
+
+Pastikan konfigurasi tetap bersih.
+
+---
+
+# 7. DEPENDENCY AUDIT
+
+Periksa seluruh dependency project.
+
+Laporkan:
+
+dependency tidak dipakai
+
+dependency duplikat
+
+dependency usang
+
+dependency yang sebaiknya di-upgrade
+
+Jangan melakukan upgrade otomatis.
+
+Hanya laporkan.
+
+---
+
+# 8. DOCUMENTATION AUDIT
+
+Pastikan:
+
+README
+
+dashboard.md
+
+memory
+
+roadmap
+
+tetap konsisten.
+
+Jika ada dokumentasi yang sudah tidak sesuai,
+
+perbarui.
+
+---
+
+# 9. PERFORMANCE AUDIT
+
+Periksa:
+
+frontend rendering
+
+backend startup
+
+polling
+
+timer
+
+event listener
+
+memory leak
+
+re-render
+
+unused fetch
+
+duplicate request
+
+Jika ada optimisasi yang aman,
+
+lakukan.
+
+Tanpa mengubah perilaku dashboard.
+
+---
+
+# 10. SECURITY AUDIT
+
+Periksa:
+
+hardcoded secret
+
+unsafe configuration
+
+credential leak
+
+public endpoint
+
+debug code
+
+unsafe logging
+
+Laporkan seluruh temuan.
+
+---
+
+# 11. DO NOT TOUCH
+
+Selama audit,
+
+DILARANG:
+
+* redesign dashboard
+* mengubah UI
+* mengubah warna
+* mengubah typography
+* memindahkan panel
+* mengganti layout
+* menambah animasi
+* mengubah UX
+
+UI sudah FINAL.
+
+---
+
+# 12. OUTPUT
+
+Setelah audit selesai,
+
+berikan laporan:
+
+## Frontend
+
+* unused CSS removed
+* unused JS removed
+* duplicate code removed
+
+## Backend
+
+* unused module removed
+* duplicate helper removed
+
+## Architecture
+
+PASS / FAIL
+
+## Folder Structure
+
+PASS / FAIL
+
+## Technical Debt
+
+jumlah TODO
+
+jumlah FIXME
+
+jumlah Placeholder
+
+## Dependencies
+
+unused
+
+obsolete
+
+recommended
+
+## Performance
+
+PASS / FAIL
+
+## Security
+
+PASS / FAIL
+
+## Overall Project Health
+
+Score 0–100
+
+sertakan alasan penilaiannya.
+
+---
+
+# IMPORTANT
+
+Ini adalah audit terakhir sebelum pembangunan AI.
+
+Setelah audit selesai,
+
+tidak ada lagi pekerjaan cleanup besar.
+
+Seluruh development berikutnya HARUS fokus pada roadmap berikut:
+
+1. Market Scanner Engine
+2. Market Evaluation Engine
+3. Opportunity Ranking Engine
+4. Confidence Engine
+5. Decision Engine
+6. Risk Engine Integration
+7. Paper Trading Engine
+8. Trade Management Engine
+9. Performance Analytics Engine
+10. AI Learning & Continuous Improvement
+
+Jangan mulai mengembangkan engine baru sebelum audit ini selesai dan seluruh hasil audit telah dilaporkan.
