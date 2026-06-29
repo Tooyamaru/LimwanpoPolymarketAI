@@ -146,6 +146,11 @@ async def init_db() -> None:
                 ("layer12", "ALTER TABLE positions ADD COLUMN IF NOT EXISTS exit_price DOUBLE PRECISION NULL"),
                 ("layer12", "ALTER TABLE positions ADD COLUMN IF NOT EXISTS close_decision_id INTEGER NULL"),
                 ("layer12", "ALTER TABLE positions ADD COLUMN IF NOT EXISTS close_order_id INTEGER NULL"),
+                # Phase 1 AI Signal Engine: confidence, regime, mtf_confirmed on signals
+                ("signal_phase1", "ALTER TABLE signals ADD COLUMN IF NOT EXISTS confidence_score DOUBLE PRECISION NULL"),
+                ("signal_phase1", "ALTER TABLE signals ADD COLUMN IF NOT EXISTS regime VARCHAR(16) NULL"),
+                ("signal_phase1", "ALTER TABLE signals ADD COLUMN IF NOT EXISTS mtf_confirmed BOOLEAN NULL DEFAULT FALSE"),
+                ("signal_phase1", "CREATE INDEX IF NOT EXISTS ix_signals_confidence ON signals (confidence_score)"),
             ]
             for label, stmt in all_migrations:
                 await run_migration(conn, stmt, label)

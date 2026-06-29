@@ -21,3 +21,4 @@
 - [Final cleanup audit 2026-06-26](final-cleanup-audit.md) — Full cleanup+architecture audit done; AUDIT_REPORT.md written; project scored 88/100; zero tech debt; 4 unused backend imports removed; 1259 chars dead CSS/JS removed from index.html; ready for AI Engine roadmap
 - [CSS orphaned keyframe fragments](css-keyframe-corruption.md) — orphaned @keyframes body lines (no name prefix) in global CSS scope cause parser to skip subsequent rule blocks entirely; header vanished due to this bug
 - [BTC Chart Module frozen](btc-chart-frozen.md) — FROZEN as of 2026-06-29; production-ready; only modify for reproducible bug/runtime error/security issue/Binance API change/explicit request
+- [AI Signal Engine Phase 1](signal-phase1.md) — confidence_score+regime+mtf_confirmed on signals; _MAX_DEVIATION=0.10 calibrated; strategy gate MIN_SIGNAL_CONFIDENCE=25 (15 for MTF); 30/30 tests pass; GET /signals/ranked live

@@ -4,15 +4,15 @@ Signal repository — Layer 4: Signal Engine.
 All DB persistence and query operations for the `signals` table.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from sqlalchemy import desc, select, func
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
-from app.models.signal import Signal
 from app.models.market_universe import MarketUniverse
+from app.models.signal import Signal
 
 logger = get_logger(__name__)
 
@@ -32,6 +32,9 @@ async def save_signal(
     spread_delta: Optional[float] = None,
     seed_deviation: Optional[float] = None,
     severity: str = "LOW",
+    confidence_score: Optional[float] = None,
+    regime: Optional[str] = None,
+    mtf_confirmed: Optional[bool] = False,
     snapshot_id_before: Optional[int] = None,
     snapshot_id_after: Optional[int] = None,
     detected_at: Optional[datetime] = None,
@@ -53,6 +56,9 @@ async def save_signal(
         spread_delta=spread_delta,
         seed_deviation=seed_deviation,
         severity=severity,
+        confidence_score=confidence_score,
+        regime=regime,
+        mtf_confirmed=mtf_confirmed,
         snapshot_id_before=snapshot_id_before,
         snapshot_id_after=snapshot_id_after,
         detected_at=detected_at,
@@ -66,6 +72,9 @@ async def save_signal(
         asset=asset,
         timeframe=timeframe,
         severity=severity,
+        confidence_score=confidence_score,
+        regime=regime,
+        mtf_confirmed=mtf_confirmed,
         yes_mid_before=yes_mid_before,
         yes_mid_after=yes_mid_after,
         delta=yes_mid_delta,
@@ -125,6 +134,72 @@ async def get_active_market_signals(
     return list(result.scalars().all())
 
 
+async def get_ranked_signals(
+    session: AsyncSession,
+    limit: int = 50,
+    min_confidence: float = 0.0,
+    asset: Optional[str] = None,
+    mtf_only: bool = False,
+    lookback_minutes: int = 60,
+) -> list[Signal]:
+    """
+    Return signals ranked by confidence_score DESC, then detected_at DESC.
+
+    Parameters
+    ----------
+    limit            : max rows returned
+    min_confidence   : only return signals with confidence_score >= this value
+    asset            : filter by asset (BTC, ETH, SOL, XRP)
+    mtf_only         : if True, only return MTF-confirmed signals
+    lookback_minutes : only signals from the last N minutes
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=lookback_minutes)
+    stmt = (
+        select(Signal)
+        .where(Signal.detected_at >= cutoff)
+    )
+
+    if min_confidence > 0:
+        stmt = stmt.where(Signal.confidence_score >= min_confidence)
+
+    if asset:
+        stmt = stmt.where(Signal.asset == asset)
+
+    if mtf_only:
+        stmt = stmt.where(Signal.mtf_confirmed.is_(True))
+
+    stmt = (
+        stmt
+        .order_by(desc(Signal.confidence_score), desc(Signal.detected_at))
+        .limit(limit)
+    )
+
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def get_recent_signals_by_asset(
+    session: AsyncSession,
+    asset: str,
+    lookback_seconds: int = 300,
+) -> list[Signal]:
+    """
+    Return signals for a given asset within the last `lookback_seconds`.
+
+    Used by the signal engine to compute multi-timeframe confirmation.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(seconds=lookback_seconds)
+    result = await session.execute(
+        select(Signal)
+        .where(
+            Signal.asset == asset,
+            Signal.detected_at >= cutoff,
+        )
+        .order_by(desc(Signal.detected_at))
+    )
+    return list(result.scalars().all())
+
+
 async def get_signal_count(session: AsyncSession) -> int:
     """Return total number of signals stored."""
     result = await session.execute(select(func.count()).select_from(Signal))
@@ -149,6 +224,37 @@ async def get_signal_counts_by_severity(session: AsyncSession) -> dict[str, int]
         .order_by(desc("cnt"))
     )
     return {row[0]: row[1] for row in result.all()}
+
+
+async def get_signal_counts_by_regime(session: AsyncSession) -> dict[str, int]:
+    """Return signal count per regime."""
+    result = await session.execute(
+        select(Signal.regime, func.count(Signal.id).label("cnt"))
+        .where(Signal.regime.isnot(None))
+        .group_by(Signal.regime)
+        .order_by(desc("cnt"))
+    )
+    return {row[0]: row[1] for row in result.all()}
+
+
+async def get_average_confidence(session: AsyncSession) -> Optional[float]:
+    """Return average confidence_score across all signals that have one."""
+    result = await session.execute(
+        select(func.avg(Signal.confidence_score))
+        .where(Signal.confidence_score.isnot(None))
+    )
+    val = result.scalar_one_or_none()
+    return round(float(val), 2) if val is not None else None
+
+
+async def get_mtf_confirmed_count(session: AsyncSession) -> int:
+    """Return count of signals with mtf_confirmed = True."""
+    result = await session.execute(
+        select(func.count())
+        .select_from(Signal)
+        .where(Signal.mtf_confirmed.is_(True))
+    )
+    return result.scalar_one()
 
 
 async def get_last_signal_for_market(
