@@ -1,0 +1,368 @@
+Continue refining the previous UI mockup. Do NOT redesign from scratch. Keep the existing visual identity, colors, typography, spacing, header, and overall premium cyber-terminal style. This is an evolution of the current design.
+
+====================================================
+OVERALL LAYOUT
+====================================================
+
+Final layout hierarchy:
+
+HEADER
+↓
+
+Portfolio Summary | Live Market Chart | System Health
+
+↓
+
+Market Universe (Main Focus)
+
+↓
+
+AI Decision Engine
+
+↓
+
+AI Thinking Feed | AI Live Feed
+
+↓
+
+Footer (Live Crypto + Breaking News)
+
+The dashboard priority is now:
+
+1. Portfolio
+2. Market Universe
+3. AI Decision Engine
+4. AI Feeds
+5. Footer
+
+====================================================
+HEADER
+====================================================
+
+Keep the existing header exactly as it is.
+
+Do not redesign it.
+
+The current header already fits the LimwanpoAI identity.
+
+====================================================
+ROW 1
+====================================================
+
+LEFT
+Portfolio Summary
+
+Keep the existing style but polish it if needed.
+
+CENTER
+Live Market Chart
+
+Remain the largest component in row 1.
+
+RIGHT
+System Health
+
+Move System Health beside the chart.
+
+Make it compact and premium.
+
+Do NOT use a plain text list.
+
+Use modern status capsules/cards with glowing indicators.
+
+Example:
+
+Universe
+Signal
+Opportunity
+Strategy
+Risk
+Execution
+
+Healthy components glow green.
+
+====================================================
+ROW 2
+====================================================
+
+THIS IS NOW THE HEART OF LIMWANPOAI.
+
+Expand Market Universe.
+
+Give it approximately 55–65% of the dashboard attention.
+
+Replace the previous sidebar feeling.
+
+The 12 market cards must become the center of the dashboard.
+
+Structure:
+
+BTC
+
+5M
+15M
+1H
+
+ETH
+
+5M
+15M
+1H
+
+SOL
+
+5M
+15M
+1H
+
+XRP
+
+5M
+15M
+1H
+
+====================================================
+ASSET HEADER
+====================================================
+
+Every asset section contains:
+
+BTC
+
+Overall Confidence
+
+Active Positions
+
+Capital
+
+Example
+
+══════════════════════════════════════
+
+₿ BTC
+
+Overall Confidence 82%
+
+Active Positions 2
+
+Capital $240
+
+══════════════════════════════════════
+
+====================================================
+MARKET CARD
+====================================================
+
+Every card must contain exactly:
+
+Countdown
+
+Resolve Time
+
+Target Price
+
+Current Price
+
+Prediction
+
+Confidence
+
+Position
+
+Entries
+
+Capital
+
+PnL
+
+Status
+
+Do not remove any field.
+
+Maintain clean alignment.
+
+====================================================
+CARD COLORS
+====================================================
+
+Green
+
+Position exists and profitable.
+
+Red
+
+Position exists and losing.
+
+Yellow
+
+WATCH or READY.
+
+Gray
+
+WAIT.
+
+Blue
+
+Current selected market (optional).
+
+Cards should communicate status visually before reading text.
+
+====================================================
+REMOVE
+====================================================
+
+Remove:
+
+Market Heatmap
+
+Old Position Panel
+
+Their information already exists inside each Market Card.
+
+====================================================
+ROW 3
+====================================================
+
+AI DECISION ENGINE
+
+Keep this section.
+
+Do NOT replace it with plain text.
+
+Do NOT make it look like statistics.
+
+This section is one of the visual identities of LimwanpoAI.
+
+Instead, redesign it into a premium AI pipeline.
+
+Six premium AI Core nodes:
+
+Universe
+
+Signal
+
+Opportunity
+
+Strategy
+
+Risk
+
+Execution
+
+Each node should feel alive.
+
+Examples:
+
+Universe:
+Orbital sphere.
+
+Signal:
+Radar pulse.
+
+Opportunity:
+Crystal energy core.
+
+Strategy:
+Hexagonal AI core.
+
+Risk:
+Shield energy.
+
+Execution:
+Reactor / energy core.
+
+Every node uses the same futuristic design language.
+
+The pipeline connecting them has animated flowing energy.
+
+Only the currently active node glows brightly.
+
+Other nodes remain softly illuminated.
+
+Keep the labels and live counts underneath.
+
+This should feel like watching an AI machine processing decisions in real time.
+
+====================================================
+ROW 4
+====================================================
+
+Keep
+
+AI Thinking Feed
+
+AI Live Feed
+
+No major redesign required.
+
+Only polish spacing and alignment.
+
+====================================================
+FOOTER
+====================================================
+
+Remove the previous footer text.
+
+Replace it with:
+
+LEFT
+
+Live Crypto Prices
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+Running ticker.
+
+RIGHT
+
+Breaking News Ticker
+
+Reuters
+
+Bloomberg
+
+CoinDesk
+
+The Block
+
+Display only relevant financial, crypto, or Polymarket-related news.
+
+Do NOT duplicate any information already shown elsewhere on the dashboard.
+
+The footer exists to provide external market context, not internal engine status.
+
+====================================================
+DESIGN STYLE
+====================================================
+
+Keep the existing LimwanpoAI identity.
+
+Dark premium terminal.
+
+Cyber AI.
+
+Bloomberg Terminal inspired.
+
+Professional.
+
+Minimal but alive.
+
+Use subtle glow.
+
+Smooth micro animations.
+
+Avoid excessive motion.
+
+Everything should feel like a high-end AI operating terminal built specifically for Polymarket.
+
+The Market Universe is now the primary operational center of the application.
+
+The AI Decision Engine is the visual identity of LimwanpoAI.
+
+Everything else should support these two core sections.
