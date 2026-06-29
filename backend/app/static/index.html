@@ -1362,9 +1362,25 @@ body::after{animation-duration:14s!important;background:repeating-linear-gradien
 .dot{width:5px!important;height:5px!important;box-shadow:0 0 5px var(--ng),0 0 9px rgba(57,255,20,.18)!important;}
 .logo{font-size:14px!important;letter-spacing:6px!important;text-shadow:0 0 10px var(--nc),0 0 22px rgba(0,229,255,.14)!important;}
 
-/* ── BTC Chart — ~20% wider, sharper ────────────────── */
-#center-top-row{grid-template-columns:1fr 285px!important;}
-#btc-chart-card{background:var(--panel)!important;border-left-color:rgba(0,229,255,.05)!important;}
+/* ── BTC Chart — ~20% wider, sharper (desktop only) ─── */
+@media(min-width:500px){
+  #center-top-row{grid-template-columns:1fr 285px!important;}
+  #btc-chart-card{background:var(--panel)!important;border-left-color:rgba(0,229,255,.05)!important;}
+}
+
+/* ── BTC Chart — narrow mobile: stack below AI target ── */
+@media(max-width:499px){
+  #center-top-row{
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto auto!important;
+  }
+  #btc-chart-card{
+    min-height:200px!important;
+    border-left:none!important;
+    border-top:1px solid rgba(0,229,255,.08)!important;
+  }
+  #btc-chart-body{min-height:165px!important;}
+}
 
 /* ── AI Current Target — reduced empty space ─────────── */
 #target-body{padding:8px 14px 6px!important;}
@@ -3212,7 +3228,81 @@ async function fetchBtcCandles(tf){
     const lbl=document.getElementById('btc-chart-tf-lbl');
     if(lbl) lbl.textContent=tf.toUpperCase();
     console.log('[CHART] Stage 14: live update complete');
-  }catch(e){console.error('[CHART] Stage 8 ERROR:',e);}
+    // ══ DEEP VISUAL AUDIT — runs after real data painted ══════════════════
+    setTimeout(function deepAudit(){
+      try{
+        const con=document.getElementById('btc-chart-body');
+        if(!con){console.error('[DEEP-AUDIT] container missing');return;}
+        // 1. Container
+        const cr=con.getBoundingClientRect();
+        console.log('[DEEP-AUDIT] Container BoundingRect:',JSON.stringify({left:Math.round(cr.left),top:Math.round(cr.top),w:Math.round(cr.width),h:Math.round(cr.height)}));
+        console.log('[DEEP-AUDIT] Container clientW/H:',con.clientWidth,'x',con.clientHeight);
+        // 2. All canvases
+        const cvsList=con.querySelectorAll('canvas');
+        console.log('[DEEP-AUDIT] Canvas count:',cvsList.length);
+        cvsList.forEach(function(cvs,i){
+          const r=cvs.getBoundingClientRect();
+          const s=getComputedStyle(cvs);
+          console.log('[DEEP-AUDIT] canvas['+i+'] rect:',JSON.stringify({cssW:Math.round(r.width),cssH:Math.round(r.height),bitmapW:cvs.width,bitmapH:cvs.height,left:Math.round(r.left),top:Math.round(r.top)}));
+          console.log('[DEEP-AUDIT] canvas['+i+'] style: display='+s.display+' visibility='+s.visibility+' opacity='+s.opacity+' zIndex='+s.zIndex+' position='+s.position);
+          // Pixel sampling — 5 points
+          try{
+            const ctx=cvs.getContext('2d');
+            if(ctx){
+              const pts=[
+                [Math.floor(cvs.width/2),Math.floor(cvs.height/2),'center'],
+                [10,10,'TL'],[cvs.width-10,10,'TR'],
+                [10,cvs.height-10,'BL'],[cvs.width-10,cvs.height-10,'BR']
+              ];
+              pts.forEach(function(p){
+                const px=ctx.getImageData(p[0],p[1],1,1).data;
+                const blank=px[3]===0;
+                console.log('[DEEP-AUDIT] canvas['+i+'] pixel@'+p[2]+'('+p[0]+','+p[1]+') rgba('+px[0]+','+px[1]+','+px[2]+','+px[3]+')'+(blank?' TRANSPARENT':''));
+              });
+            }
+          }catch(e){console.log('[DEEP-AUDIT] canvas['+i+'] pixel err:',e.message);}
+        });
+        // 3. elementsFromPoint at chart center
+        const mx=cr.left+cr.width/2, my=cr.top+cr.height/2;
+        const stack=document.elementsFromPoint(mx,my);
+        console.log('[DEEP-AUDIT] elementsFromPoint('+Math.round(mx)+','+Math.round(my)+') — '+stack.length+' elements:');
+        stack.slice(0,8).forEach(function(el,i){
+          const s=getComputedStyle(el);
+          console.log('[DEEP-AUDIT]   ['+i+'] '+(el.id?'#'+el.id:el.className?'.'+el.className.substring(0,25):el.tagName)+
+            ' z:'+s.zIndex+' pos:'+s.position+' op:'+s.opacity+' vis:'+s.visibility);
+        });
+        // 4. Parent chain up to body
+        console.log('[DEEP-AUDIT] Parent chain from container:');
+        let el=con;
+        while(el&&el.tagName!=='HTML'){
+          const s=getComputedStyle(el);
+          const warn=s.display==='none'||s.visibility==='hidden'||parseFloat(s.opacity)<0.01||s.overflow==='hidden'||s.transform!=='none';
+          console.log('[DEEP-AUDIT] '+(warn?'🚨 ':'   ')+(el.id?'#'+el.id:el.tagName)+
+            ' disp:'+s.display+' vis:'+s.visibility+' op:'+s.opacity+
+            ' overflow:'+s.overflow+' transform:'+s.transform.substring(0,20)+
+            ' pos:'+s.position+' z:'+s.zIndex+
+            ' w:'+s.width+' h:'+s.height);
+          el=el.parentElement;
+        }
+        // 5. series.data() length
+        if(btcSeries){
+          try{
+            const dl=btcSeries.data();
+            console.log('[DEEP-AUDIT] btcSeries.data().length:',dl?dl.length:'N/A (no .data method)');
+          }catch(e){console.log('[DEEP-AUDIT] btcSeries.data() error:',e.message);}
+        }
+        // 6. Chart timeScale
+        if(btcChart){
+          try{
+            const tw=btcChart.timeScale().width();
+            const th=btcChart.timeScale().height();
+            console.log('[DEEP-AUDIT] chart.timeScale() w:'+tw+' h:'+th);
+          }catch(e){console.log('[DEEP-AUDIT] timeScale error:',e.message);}
+        }
+        console.log('[DEEP-AUDIT] ══ COMPLETE ══');
+      }catch(e){console.error('[DEEP-AUDIT] exception:',e);}
+    },400); // 400ms after setData — paint should be complete
+  }catch(e){console.error('[CHART] Stage 8 ERROR: name='+e.name+' msg='+e.message);}
 }
 
 function updateBtcChartTf(newTf){

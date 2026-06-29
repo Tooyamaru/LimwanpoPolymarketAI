@@ -1,0 +1,71 @@
+STOP menyimpulkan bahwa chart sudah normal.
+
+Bukti visual menunjukkan panel BTC // CANDLES masih kosong. Jangan gunakan log internal sebagai bukti bahwa masalah sudah selesai. Prioritaskan kondisi yang benar-benar terlihat di browser.
+
+Lakukan audit berikut tanpa melakukan patch terlebih dahulu.
+
+1. Verifikasi apakah chart benar-benar terlihat di browser, bukan hanya berhasil dibuat oleh API.
+2. Setelah createChart(), simpan:
+    * screenshot panel chart
+    * jumlah canvas
+    * ukuran setiap canvas
+    * apakah canvas memiliki pixel selain transparan
+3. Audit semua canvas:
+    * getBoundingClientRect()
+    * width
+    * height
+    * display
+    * visibility
+    * opacity
+    * z-index
+4. Audit parent dari chart hingga document.body:
+    * overflow
+    * display
+    * visibility
+    * opacity
+    * transform
+    * position
+5. Audit apakah ada element lain yang menutupi chart menggunakan:
+    document.elementsFromPoint(x, y)
+    pada titik tengah panel chart.
+6. Verifikasi bahwa series.setData() benar-benar dipanggil.
+7. Setelah setData(), jalankan:
+    * series.data().length
+    * chart.timeScale().fitContent()
+    * chart.resize(currentWidth,currentHeight)
+8. Tangkap semua exception yang terjadi setelah createChart().
+9. Pastikan tidak ada createChart() kedua atau remove() yang menghapus chart.
+10. Pastikan tidak ada script lain yang mengosongkan container.
+
+JANGAN mengatakan “chart normal” hanya karena:
+
+* canvas ada
+* Chart API hidup
+* data diterima
+
+Chart dianggap NORMAL hanya jika screenshot browser benar-benar memperlihatkan:
+
+* candlestick
+* volume
+* grid
+* price scale
+* time scale
+
+Jika screenshot masih kosong, lanjutkan audit sampai ditemukan penyebab pastinya.
+
+Jangan berhenti pada resize. Audit juga kemungkinan:
+
+* canvas berada di belakang elemen lain
+* clipping oleh overflow
+* transform CSS
+* canvas transparan
+* render gagal
+* chart dibuat pada container yang salah
+* parent diganti setelah chart dibuat
+
+Output yang saya inginkan:
+
+1. Penyebab pasti.
+2. Bukti log.
+3. Screenshot sesudah audit.
+4. Patch hanya jika penyebab sudah terbukti.
