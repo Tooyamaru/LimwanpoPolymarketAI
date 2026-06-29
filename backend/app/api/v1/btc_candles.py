@@ -1,3 +1,27 @@
+"""
+╔══════════════════════════════════════════════════════════════════╗
+║  BTC CHART MODULE — BACKEND ENDPOINT                            ║
+║  Status : PRODUCTION READY / FROZEN                             ║
+║                                                                  ║
+║  Final configuration:                                            ║
+║    • GET /api/v1/btc/candles — proxy to Binance /api/v3/klines  ║
+║    • Params: symbol, interval (validated), limit (1–500)         ║
+║    • Timeout: 15 s via httpx.AsyncClient                         ║
+║    • Error mapping:                                              ║
+║        Binance 403  → HTTP 502 (geo-block)                       ║
+║        Binance 429  → HTTP 502 (rate-limit)                      ║
+║        Binance 451  → HTTP 502 (legal block)                     ║
+║        TimeoutException → HTTP 504                               ║
+║        ConnectError     → HTTP 502                               ║
+║        HTTPStatusError  → HTTP 502                               ║
+║    • HTTPException always re-raised (never swallowed)            ║
+║    • Full structured logging on every request/response/error     ║
+║                                                                  ║
+║  Change policy: modify ONLY if a reproducible bug, runtime       ║
+║  error, security issue, or Binance API change requires it,       ║
+║  OR if explicitly requested.                                     ║
+╚══════════════════════════════════════════════════════════════════╝
+"""
 import time
 import logging
 import httpx

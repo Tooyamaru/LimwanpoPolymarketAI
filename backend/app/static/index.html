@@ -2941,6 +2941,26 @@ function startThinking(){
 // ═══════════════════════════════════════════════════════
 //  BTC CANDLESTICK CHART (Lightweight Charts v4)
 // ═══════════════════════════════════════════════════════
+//
+//  ┌─────────────────────────────────────────────────┐
+//  │  BTC CHART MODULE — FRONTEND                    │
+//  │  Status : PRODUCTION READY / FROZEN             │
+//  │                                                 │
+//  │  Final configuration:                           │
+//  │  • createChart() called ONCE per page load      │
+//  │  • First load / TF change → series.setData()    │
+//  │  • Realtime 30s ticks    → series.update()      │
+//  │  • Stale-response guard: btcFetchToken          │
+//  │  • Loading overlay: _showChartMsg/_clearChartMsg│
+//  │  • Error UI on HTTP failure or network error    │
+//  │  • Data source: /api/v1/btc/candles ONLY        │
+//  │  • ResizeObserver: 1 instance, page lifetime    │
+//  │  • Timer: btcChartTimer, 30 s, cleared on reset │
+//  │                                                 │
+//  │  Change policy: modify ONLY for reproducible    │
+//  │  bug / runtime error / security issue /         │
+//  │  Binance API change / explicit request.         │
+//  └─────────────────────────────────────────────────┘
 let btcChart=null,btcSeries=null,btcVolSeries=null,btcPriceLine=null,btcChartTf='5m',btcChartTimer=null,btcDataLoaded=false,btcFetchToken=0;
 const BINANCE_TF={'5m':'5m','15m':'15m','1H':'1h'};
 
