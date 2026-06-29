@@ -3165,10 +3165,19 @@ function initBtcChart(){
 
 async function fetchBtcCandles(tf){
   const interval=BINANCE_TF[tf]||'5m';
-  console.log('[CHART] Stage 8: Binance fetch started — tf='+tf+' interval='+interval);
+  const internalUrl='/api/v1/btc/candles?symbol=BTCUSDT&interval='+interval+'&limit=80';
+  const t0=performance.now();
+  console.log('[CHART] Stage 8: internal fetch started — tf='+tf+' interval='+interval+' url='+internalUrl);
   try{
-    const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=80`);
-    if(!r.ok){console.error('[CHART] Stage 8 FAIL: Binance HTTP '+r.status);return;}
+    const r=await fetch(internalUrl);
+    const elapsed=Math.round(performance.now()-t0);
+    console.log('[CHART] Stage 8: HTTP status='+r.status+' elapsed='+elapsed+'ms');
+    if(!r.ok){
+      let errBody='';
+      try{const j=await r.json();errBody=JSON.stringify(j);}catch(e2){errBody=await r.text().catch(()=>'(unreadable)');}
+      console.error('[CHART] Stage 8 FAIL: internal endpoint HTTP '+r.status+' body='+errBody);
+      return;
+    }
     const data=await r.json();
     console.log('[CHART] Stage 9: Binance fetch completed — candle count='+data.length);
     if(!Array.isArray(data)||data.length===0){console.warn('[CHART] Stage 9 WARN: empty candle array');return;}
