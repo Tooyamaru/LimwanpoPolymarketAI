@@ -943,9 +943,10 @@ footer{color:#6b8fa8!important;}
   .mr-score{font-size:11px!important;}
   .mr-dir{font-size:7px!important;min-width:26px;text-align:center;}
 
-  /* ── BTC CHART — hidden on portrait ─────────────────── */
-  #center-top-row{grid-template-columns:1fr!important;}
-  #btc-chart-card{display:none!important;}
+  /* ── BTC CHART — compact on portrait (never hidden) ─── */
+  #center-top-row{grid-template-columns:1fr clamp(140px,18vw,180px)!important;}
+  #btc-chart-card{min-height:160px!important;}
+  #btc-chart-body{min-height:120px!important;}
 
   /* ── HERO TARGET — Visual center of the application
      Targets: name clamp(64-96px), score clamp(84-128px)
@@ -1122,8 +1123,9 @@ footer{color:#6b8fa8!important;}
   footer{font-size:6px;padding:0 10px;letter-spacing:1px;}
   #tgt-reasons{gap:4px;}
   .reason-item{font-size:6.5px;padding:2px 6px;}
-  #center-top-row{grid-template-columns:1fr!important;}
-  #btc-chart-card{display:none!important;}
+  #center-top-row{grid-template-columns:1fr clamp(120px,16vw,150px)!important;}
+  #btc-chart-card{min-height:140px!important;}
+  #btc-chart-body{min-height:100px!important;}
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1214,7 +1216,7 @@ footer{color:#6b8fa8!important;}
   border-left:1px solid rgba(0,229,255,.06);
   background:linear-gradient(180deg,rgba(0,229,255,.012) 0%,transparent 40%),var(--panel);
 }
-#btc-chart-body{flex:1;min-height:150px;overflow:hidden;position:relative;}
+#btc-chart-body{flex:1;min-height:150px;position:relative;}
 #btc-chart-body canvas{display:block!important;}
 
 /* ═══════════════════════════════════════════════════════
@@ -1754,9 +1756,10 @@ footer{font-size:8.5px!important;letter-spacing:1.5px!important;}
 .ts-v{font-size:15px!important;font-weight:600!important;}
 
 /* ── TASK 3: BTC Chart — breathing room ─────────────── */
-/* Safe: pad the outer card, not the chart body (avoids clientWidth mismatch) */
-#btc-chart-card{padding:7px 7px 0 7px!important;}
-#btc-chart-card .ptitle{margin:-7px -7px 0!important;}
+/* No horizontal padding on card: clientWidth = full card track width.
+   ptitle uses native padding:5px 12px 4px. Only 4px bottom padding. */
+#btc-chart-card{padding:0 0 4px 0!important;}
+#btc-chart-card .ptitle{margin:0!important;}
 #btc-chart-body{padding:0!important;}
 
 /* ── TASK 4: AI Decision Engine — hierarchy ─────────── */
