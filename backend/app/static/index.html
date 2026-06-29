@@ -2976,6 +2976,24 @@ function initBtcChart(){
     borderVisible:false,
   });
   console.log('[CHART] Stage 4: candlestick+volume series created');
+  // ── AUDIT RUNTIME VERIFICATION ───────────────────────
+  console.log('[AUDIT] container elem :', container);
+  console.log('[AUDIT] clientWidth    :', container.clientWidth);
+  console.log('[AUDIT] clientHeight   :', container.clientHeight);
+  console.log('[AUDIT] offsetHeight   :', container.offsetHeight);
+  console.log('[AUDIT] computedStyle  :', getComputedStyle(container).display, getComputedStyle(container).visibility, getComputedStyle(container).overflow);
+  console.log('[AUDIT] btcChart obj   :', btcChart);
+  console.log('[AUDIT] btcSeries obj  :', btcSeries);
+  // Canvas won't exist until autoSize ResizeObserver fires (async)
+  setTimeout(()=>{
+    const cvs=container.querySelector('canvas');
+    console.log('[AUDIT] canvas elem (100ms):', cvs);
+    console.log('[AUDIT] canvas W x H :', cvs?cvs.width:0,'x',cvs?cvs.height:0);
+    console.log('[AUDIT] canvas style  :', cvs?cvs.style.cssText:'none');
+    const inner=container.querySelector('div');
+    console.log('[AUDIT] LW inner div  :', inner);
+    console.log('[AUDIT] inner style   :', inner?inner.style.cssText:'none');
+  },100);
   // Stage 5–7: ResizeObserver — fitContent after layout resizes
   const ro=new ResizeObserver(entries=>{
     const e=entries[0];const w=e.contentRect.width,h=e.contentRect.height;
@@ -3029,6 +3047,10 @@ async function fetchBtcCandles(tf){
       btcSeries.setData(candles);
       if(btcChart) btcChart.timeScale().fitContent();
       console.log('[CHART] Stage 13: render completed — fitContent called');
+      // ── AUDIT AFTER RENDER ────────────────────────────
+      console.log('[AUDIT] candles.length :', candles.length);
+      console.log('[AUDIT] chart alive    :', btcChart!==null&&typeof btcChart.timeScale==='function');
+      console.log('[AUDIT] series alive   :', btcSeries!==null);
       // Current price line
       if(candles.length>0){
         const last=candles[candles.length-1].close;
