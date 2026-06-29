@@ -2934,10 +2934,16 @@ function initBtcChart(){
   const container=document.getElementById('btc-chart-body');
   if(!container){console.error('[CHART] Stage 1 FAIL: #btc-chart-body not found');return;}
   if(typeof LightweightCharts==='undefined'){console.error('[CHART] Stage 1 FAIL: LightweightCharts library not loaded');return;}
-  // Stage 2: container dimensions
-  console.log('[CHART] Stage 2: container found — size='+container.clientWidth+'x'+container.clientHeight+' offsetH='+container.offsetHeight);
+  // Stage 2: container dimensions — explicit sizing, no autoSize
+  const cw=container.clientWidth||container.offsetWidth||300;
+  const ch=container.clientHeight||container.offsetHeight||196;
+  console.log('[CHART] Container : '+cw+'x'+ch);
+  console.log('[CHART] Stage 2: container found — size='+cw+'x'+ch+' offsetH='+container.offsetHeight);
+  const width=cw;
+  const height=ch;
   btcChart=LightweightCharts.createChart(container,{
-    autoSize:true,  /* Stage 3: autoSize removes race condition with clientWidth/clientHeight at load */
+    width,
+    height,
     layout:{background:{type:'solid',color:'transparent'},textColor:'#4a6e88'},
     grid:{
       vertLines:{color:'rgba(0,229,255,.028)'},
@@ -3110,17 +3116,22 @@ function initBtcChart(){
       '| btcSeries alive:',btcSeries!==null,
       '| container:',body.clientWidth+'x'+body.clientHeight);
   },1200);
-  // Stage 5–7: ResizeObserver — fitContent after layout resizes
-  const ro=new ResizeObserver(entries=>{
-    const e=entries[0];const w=e.contentRect.width,h=e.contentRect.height;
-    console.log('[CHART] Stage 6: ResizeObserver fired — '+Math.round(w)+'x'+Math.round(h));
+  // Stage 5–7: App-owned ResizeObserver — sole authority for chart sizing
+  const ro=new ResizeObserver(()=>{
+    const w=container.clientWidth;
+    const h=container.clientHeight;
+    console.log('[CHART] Resize fired — container '+w+'x'+h);
     if(btcChart&&w>0&&h>0){
-      console.log('[CHART] Stage 7: chart.resize() → fitContent()');
+      btcChart.resize(w,h);
       btcChart.timeScale().fitContent();
+      // Canvas audit after resize
+      const cvs=container.querySelector('canvas');
+      if(cvs) console.log('[CHART] Canvas    : '+cvs.width+'x'+cvs.height);
+      try{const sz=btcChart.chartElement().getBoundingClientRect();console.log('[CHART] Chart API : '+Math.round(sz.width)+'x'+Math.round(sz.height));}catch(e){}
     }
   });
   ro.observe(container);
-  console.log('[CHART] Stage 5+6: ResizeObserver active');
+  console.log('[CHART] Stage 5+6: ResizeObserver active (explicit resize mode)');
   // Initial fetch + safety retry after layout settles
   fetchBtcCandles(btcChartTf);
   setTimeout(()=>{
@@ -3161,8 +3172,23 @@ async function fetchBtcCandles(tf){
     if(btcSeries){
       console.log('[CHART] Stage 12: render started — setData');
       btcSeries.setData(candles);
-      if(btcChart) btcChart.timeScale().fitContent();
-      console.log('[CHART] Stage 13: render completed — fitContent called');
+      if(btcChart){
+        btcChart.timeScale().fitContent();
+        // Explicit resize after data load
+        const _c=document.getElementById('btc-chart-body');
+        if(_c){
+          const _w=_c.clientWidth,_h=_c.clientHeight;
+          if(_w>0&&_h>0){
+            btcChart.resize(_w,_h);
+            btcChart.timeScale().fitContent();
+            console.log('[CHART] Container : '+_w+'x'+_h);
+            const _cvs=_c.querySelector('canvas');
+            if(_cvs) console.log('[CHART] Canvas    : '+_cvs.width+'x'+_cvs.height);
+            try{const _sz=btcChart.chartElement().getBoundingClientRect();console.log('[CHART] Chart API : '+Math.round(_sz.width)+'x'+Math.round(_sz.height));}catch(e){}
+          }
+        }
+      }
+      console.log('[CHART] Stage 13: render completed — fitContent+resize called');
       // ── AUDIT AFTER RENDER ────────────────────────────
       console.log('[AUDIT] candles.length :', candles.length);
       console.log('[AUDIT] first candle   :', JSON.stringify(candles[0]));
