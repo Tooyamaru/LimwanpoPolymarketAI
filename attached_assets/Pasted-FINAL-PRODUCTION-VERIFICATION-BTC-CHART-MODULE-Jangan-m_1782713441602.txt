@@ -1,0 +1,200 @@
+FINAL PRODUCTION VERIFICATION – BTC CHART MODULE
+
+Jangan menambahkan fitur baru.
+
+Jangan melakukan refactor besar.
+
+Jangan mengubah UI.
+
+Lakukan hanya audit dan perbaikan jika benar-benar ditemukan bug.
+
+TARGET
+
+Pastikan modul BTC Candlestick Chart benar-benar production-ready.
+
+⸻
+
+1. Stability Test
+
+Lakukan pengujian berikut:
+
+* Refresh halaman 20 kali berturut-turut.
+* Chart harus muncul setiap kali.
+* Tidak boleh ada panel kosong.
+* Tidak boleh ada race condition.
+* Tidak boleh ada error JavaScript.
+
+Catat hasil setiap refresh.
+
+⸻
+
+2. Timeframe Stress Test
+
+Switch cepat:
+
+5m → 15m → 1H → 5m
+
+ulang minimal 30 kali.
+
+Pastikan:
+
+* tidak ada error
+* tidak ada “Cannot update oldest data”
+* tidak ada candle yang salah timeframe
+* tidak ada data tertukar
+
+⸻
+
+3. Long Running Test
+
+Biarkan dashboard berjalan minimal 60 menit.
+
+Audit:
+
+* Memory usage
+* Canvas count
+* ResizeObserver count
+* Event Listener count
+* Timer count
+
+Semuanya harus tetap stabil.
+
+⸻
+
+4. Chart Lifecycle Audit
+
+Pastikan:
+
+createChart()
+
+hanya dipanggil SATU kali.
+
+Jangan pernah membuat chart baru setelah polling.
+
+Realtime update WAJIB menggunakan:
+
+series.update()
+
+Bukan:
+
+series.setData()
+
+kecuali first load.
+
+⸻
+
+5. Resize Audit
+
+Lakukan:
+
+* portrait
+* landscape
+* resize browser
+* refresh
+
+Pastikan:
+
+* chart tetap proporsional
+* price scale tidak hilang
+* volume tetap sinkron
+* tidak kembali ke canvas 300x150
+
+⸻
+
+6. Network Failure Simulation
+
+Simulasikan:
+
+* timeout
+* HTTP 403
+* HTTP 429
+* HTTP 451
+* backend offline
+
+Pastikan UI menampilkan pesan yang jelas.
+
+Tidak boleh hanya panel kosong.
+
+⸻
+
+7. Backend Audit
+
+Verifikasi endpoint:
+
+/api/v1/btc/candles
+
+Pastikan:
+
+* router terdaftar
+* logging lengkap
+* timeout ditangani
+* reconnect berjalan
+* HTTPException tidak tertelan
+
+⸻
+
+8. Frontend Audit
+
+Pastikan:
+
+* tidak fetch langsung ke Binance
+* hanya menggunakan endpoint backend
+* loading overlay muncul saat first load
+* loading hilang setelah data diterima
+
+⸻
+
+9. Memory Leak Audit
+
+Pastikan:
+
+ResizeObserver.disconnect()
+
+dipanggil saat chart dihancurkan.
+
+Tidak boleh ada observer yang terus bertambah.
+
+⸻
+
+10. Final Code Review
+
+Cari:
+
+* dead code
+* duplicate code
+* unused variables
+* duplicate listener
+* duplicate timer
+* duplicate fetch
+
+Jangan menghapus sesuatu kecuali memang tidak dipakai.
+
+⸻
+
+OUTPUT YANG SAYA INGINKAN
+
+Berikan laporan akhir dalam format berikut:
+
+PASS / FAIL
+
+1. Refresh Test
+2. Timeframe Test
+3. Long Running Test
+4. Resize Test
+5. Backend Test
+6. Frontend Test
+7. Memory Test
+8. Network Failure Test
+9. Code Review
+
+Untuk setiap FAIL:
+
+* jelaskan penyebab
+* tunjukkan bukti
+* lakukan patch minimal
+
+Jika semua PASS, nyatakan:
+
+“BTC Chart Module Production Ready”
+
+Setelah status tersebut tercapai, hentikan seluruh pekerjaan pada modul chart dan jangan melakukan optimasi tambahan tanpa permintaan baru. Fokus pengembangan berikutnya dialihkan ke AI Signal Engine, Paper Trading, Risk Management, dan Performance Analytics sesuai roadmap proyek.

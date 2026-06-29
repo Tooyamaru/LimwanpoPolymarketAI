@@ -2941,7 +2941,7 @@ function startThinking(){
 // ═══════════════════════════════════════════════════════
 //  BTC CANDLESTICK CHART (Lightweight Charts v4)
 // ═══════════════════════════════════════════════════════
-let btcChart=null,btcSeries=null,btcVolSeries=null,btcPriceLine=null,btcChartTf='5m',btcChartTimer=null;
+let btcChart=null,btcSeries=null,btcVolSeries=null,btcPriceLine=null,btcChartTf='5m',btcChartTimer=null,btcDataLoaded=false,btcFetchToken=0;
 const BINANCE_TF={'5m':'5m','15m':'15m','1H':'1h'};
 
 function initBtcChart(){
@@ -3148,6 +3148,8 @@ function initBtcChart(){
   });
   ro.observe(container);
   console.log('[CHART] Stage 5+6: ResizeObserver active (explicit resize mode)');
+  // Show loading overlay before first fetch
+  _showChartMsg('loading…');
   // Initial fetch + safety retry after layout settles
   fetchBtcCandles(btcChartTf);
   setTimeout(()=>{
@@ -3164,23 +3166,30 @@ function initBtcChart(){
 }
 
 async function fetchBtcCandles(tf){
+  // Stale-response guard: each call gets a unique token; ignore responses from older calls
+  const myToken=++btcFetchToken;
   const interval=BINANCE_TF[tf]||'5m';
   const internalUrl='/api/v1/btc/candles?symbol=BTCUSDT&interval='+interval+'&limit=80';
   const t0=performance.now();
+  // wasFirstLoad captured BEFORE any await so TF-change flag is read synchronously
+  const wasFirstLoad=!btcDataLoaded;
   console.log('[CHART] Stage 8: internal fetch started — tf='+tf+' interval='+interval+' url='+internalUrl);
   try{
     const r=await fetch(internalUrl);
+    if(myToken!==btcFetchToken){console.log('[CHART] Stale response discarded (token mismatch)');return;}
     const elapsed=Math.round(performance.now()-t0);
     console.log('[CHART] Stage 8: HTTP status='+r.status+' elapsed='+elapsed+'ms');
     if(!r.ok){
       let errBody='';
       try{const j=await r.json();errBody=JSON.stringify(j);}catch(e2){errBody=await r.text().catch(()=>'(unreadable)');}
+      if(myToken!==btcFetchToken){return;} // stale error
       console.error('[CHART] Stage 8 FAIL: internal endpoint HTTP '+r.status+' body='+errBody);
+      _showChartMsg('Data unavailable (HTTP '+r.status+')');
       return;
     }
     const data=await r.json();
     console.log('[CHART] Stage 9: Binance fetch completed — candle count='+data.length);
-    if(!Array.isArray(data)||data.length===0){console.warn('[CHART] Stage 9 WARN: empty candle array');return;}
+    if(!Array.isArray(data)||data.length===0){console.warn('[CHART] Stage 9 WARN: empty candle array');if(wasFirstLoad) _showChartMsg('No data received');return;}
     // Stage 10–11: transform
     const candles=data.map(k=>({
       time:Math.floor(k[0]/1000),
@@ -3195,22 +3204,36 @@ async function fetchBtcCandles(tf){
     console.log('[CHART] Stage 10: candle array length='+candles.length+' valid='+candles.every(c=>c.time&&c.open));
     console.log('[CHART] Stage 11: data transformation complete');
     if(btcSeries){
-      console.log('[CHART] Stage 12: render started — setData');
-      btcSeries.setData(candles);
-      if(btcChart){
-        btcChart.timeScale().fitContent();
-        // Explicit resize after data load
-        const _c=document.getElementById('btc-chart-body');
-        if(_c){
-          const _w=_c.clientWidth,_h=_c.clientHeight;
-          if(_w>0&&_h>0){
-            btcChart.resize(_w,_h);
-            btcChart.timeScale().fitContent();
-            console.log('[CHART] Container : '+_w+'x'+_h);
-            const _cvs=_c.querySelector('canvas');
-            if(_cvs) console.log('[CHART] Canvas    : '+_cvs.width+'x'+_cvs.height);
-            try{const _sz=btcChart.chartElement().getBoundingClientRect();console.log('[CHART] Chart API : '+Math.round(_sz.width)+'x'+Math.round(_sz.height));}catch(e){}
+      if(wasFirstLoad){
+        // First load or TF change: full setData + fit
+        console.log('[CHART] Stage 12: render started — setData (first load / TF change)');
+        btcSeries.setData(candles);
+        if(btcChart){
+          btcChart.timeScale().fitContent();
+          // Explicit resize after data load
+          const _c=document.getElementById('btc-chart-body');
+          if(_c){
+            const _w=_c.clientWidth,_h=_c.clientHeight;
+            if(_w>0&&_h>0){
+              btcChart.resize(_w,_h);
+              btcChart.timeScale().fitContent();
+              console.log('[CHART] Container : '+_w+'x'+_h);
+              const _cvs=_c.querySelector('canvas');
+              if(_cvs) console.log('[CHART] Canvas    : '+_cvs.width+'x'+_cvs.height);
+              try{const _sz=btcChart.chartElement().getBoundingClientRect();console.log('[CHART] Chart API : '+Math.round(_sz.width)+'x'+Math.round(_sz.height));}catch(e){}
+            }
           }
+        }
+        btcDataLoaded=true;
+        _clearChartMsg();
+      } else {
+        // Realtime poll: update only the latest candle — never resets view
+        console.log('[CHART] Stage 12: render started — series.update (realtime tick)');
+        const latest=candles[candles.length-1];
+        try{ btcSeries.update(latest); }catch(upErr){
+          // Fallback: if update fails (e.g. gap in data), do full setData
+          console.warn('[CHART] update() failed, falling back to setData:',upErr.message);
+          btcSeries.setData(candles);
         }
       }
       console.log('[CHART] Stage 13: render completed — fitContent+resize called');
@@ -3233,9 +3256,17 @@ async function fetchBtcCandles(tf){
     } else {
       console.warn('[CHART] Stage 12 WARN: btcSeries not ready, data will retry');
     }
-    if(btcVolSeries) btcVolSeries.setData(volumes);
+    if(btcVolSeries){
+      if(wasFirstLoad){
+        btcVolSeries.setData(volumes);
+      } else {
+        const _lv=volumes[volumes.length-1];
+        try{ btcVolSeries.update(_lv); }catch(vErr){ btcVolSeries.setData(volumes); }
+      }
+    }
     const lbl=document.getElementById('btc-chart-tf-lbl');
     if(lbl) lbl.textContent=tf.toUpperCase();
+    _clearChartMsg(); // clear any error/loading message on successful render
     console.log('[CHART] Stage 14: live update complete');
     // ══ DEEP VISUAL AUDIT — runs after real data painted ══════════════════
     setTimeout(function deepAudit(){
@@ -3311,12 +3342,37 @@ async function fetchBtcCandles(tf){
         console.log('[DEEP-AUDIT] ══ COMPLETE ══');
       }catch(e){console.error('[DEEP-AUDIT] exception:',e);}
     },400); // 400ms after setData — paint should be complete
-  }catch(e){console.error('[CHART] Stage 8 ERROR: name='+e.name+' msg='+e.message);}
+  }catch(e){
+    if(myToken!==btcFetchToken){return;} // stale failure
+    console.error('[CHART] Stage 8 ERROR: name='+e.name+' msg='+e.message);
+    _showChartMsg('Connection error — retrying…');
+  }
 }
 
+// Chart status message helpers (error / loading)
+function _showChartMsg(msg){
+  const con=document.getElementById('btc-chart-body');
+  if(!con) return;
+  let el=con.querySelector('.btc-chart-msg');
+  if(!el){
+    el=document.createElement('div');
+    el.className='btc-chart-msg';
+    el.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;'+'font-size:11px;letter-spacing:.6px;color:#4a6e88;pointer-events:none;z-index:2;';
+    con.style.position='relative';
+    con.appendChild(el);
+  }
+  el.textContent=msg;
+  el.style.display='flex';
+}
+function _clearChartMsg(){
+  const el=document.querySelector('#btc-chart-body .btc-chart-msg');
+  if(el) el.style.display='none';
+}
 function updateBtcChartTf(newTf){
   if(!newTf||newTf===btcChartTf) return;
   btcChartTf=newTf;
+  btcDataLoaded=false; // force full setData on TF change
+  _showChartMsg('loading…');
   fetchBtcCandles(newTf);
 }
 
