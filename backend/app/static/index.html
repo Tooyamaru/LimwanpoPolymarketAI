@@ -2997,6 +2997,119 @@ function initBtcChart(){
     console.log('[AUDIT] LW inner div  :', inner);
     console.log('[AUDIT] inner style   :', inner?inner.style.cssText:'none');
   },100);
+
+  // ── DEEP DOM AUDIT: runs 1200ms after init so paint has completed ─────────
+  setTimeout(function fullDomAudit(){
+    const card=document.getElementById('btc-chart-card');
+    const body=document.getElementById('btc-chart-body');
+    if(!card||!body){console.error('[DOM] containers missing');return;}
+
+    // ── 1. DOM structure ─────────────────────────────────────
+    console.group('[DOM-AUDIT] 1. Structure inside #btc-chart-body');
+    (function walk(el,d){
+      const r=el.getBoundingClientRect();
+      const s=getComputedStyle(el);
+      const tag=(el.id?'#'+el.id:el.className?'.'+el.className.split(' ')[0]:el.tagName);
+      console.log('  '.repeat(d)+tag+
+        ' | '+Math.round(r.width)+'×'+Math.round(r.height)+
+        ' @('+Math.round(r.left)+','+Math.round(r.top)+')'+
+        ' | display:'+s.display+' vis:'+s.visibility+' op:'+s.opacity+
+        ' | style:"'+el.style.cssText.replace(/\s+/g,' ').substring(0,100)+'"');
+      Array.from(el.children).forEach(c=>walk(c,d+1));
+    })(body,0);
+    console.groupEnd();
+
+    // ── 2. Bounding boxes ────────────────────────────────────
+    console.group('[DOM-AUDIT] 2. Bounding Boxes');
+    [{n:'btc-chart-card',e:card},{n:'btc-chart-body',e:body}].forEach(({n,e})=>{
+      const r=e.getBoundingClientRect();
+      console.log(n,{left:Math.round(r.left),top:Math.round(r.top),
+        w:Math.round(r.width),h:Math.round(r.height),
+        clientW:e.clientWidth,clientH:e.clientHeight,
+        offsetW:e.offsetWidth,offsetH:e.offsetHeight});
+    });
+    const allCvs=body.querySelectorAll('canvas');
+    allCvs.forEach((cvs,i)=>{
+      const r=cvs.getBoundingClientRect();
+      console.log('canvas['+i+']',{left:Math.round(r.left),top:Math.round(r.top),
+        cssW:Math.round(r.width),cssH:Math.round(r.height),
+        attrW:cvs.width,attrH:cvs.height});
+    });
+    const innerDiv=body.querySelector('div');
+    if(innerDiv){
+      const r=innerDiv.getBoundingClientRect();
+      console.log('LW-inner-div',{w:Math.round(r.width),h:Math.round(r.height),
+        clientW:innerDiv.clientWidth,clientH:innerDiv.clientHeight,
+        styleW:innerDiv.style.width,styleH:innerDiv.style.height});
+    }
+    console.groupEnd();
+
+    // ── 3. Computed style — full ancestor chain ──────────────
+    console.group('[DOM-AUDIT] 3. Computed Styles — body → canvas');
+    let el=body;
+    while(el&&el.tagName!=='HTML'){
+      const s=getComputedStyle(el);
+      const warn=s.display==='none'||s.visibility==='hidden'||
+                 parseFloat(s.opacity)<0.01||
+                 (s.clipPath&&s.clipPath!=='none'&&s.clipPath!=='');
+      console.log((warn?'🚨 ':'   ')+
+        (el.id?'#'+el.id:el.className?'.'+el.className.split(' ')[0]:el.tagName)+
+        ' | disp:'+s.display+' vis:'+s.visibility+' op:'+s.opacity+
+        ' | overflow:'+s.overflow+'/'+s.overflowX+'/'+s.overflowY+
+        ' | z:'+s.zIndex+' pos:'+s.position+
+        ' | w:'+s.width+' h:'+s.height);
+      el=el.parentElement;
+    }
+    console.groupEnd();
+
+    // ── 4. Canvas pixel content ──────────────────────────────
+    console.group('[DOM-AUDIT] 4. Canvas Pixel Audit');
+    console.log('devicePixelRatio:', window.devicePixelRatio);
+    console.log('canvas count in body:', allCvs.length);
+    allCvs.forEach((cvs,i)=>{
+      try{
+        const ctx=cvs.getContext('2d');
+        if(!ctx){console.log('canvas['+i+'] — getContext(2d) returned null');return;}
+        // Sample center pixel
+        const cx=Math.floor(cvs.width/2),cy=Math.floor(cvs.height/2);
+        const px=ctx.getImageData(cx,cy,1,1).data;
+        const blank=px[0]===0&&px[1]===0&&px[2]===0&&px[3]===0;
+        const transparent=px[3]===0;
+        console.log('canvas['+i+'] center('+cx+','+cy+') rgba('+px[0]+','+px[1]+','+px[2]+','+px[3]+')'+(blank?' BLANK/EMPTY':'')+(transparent?' TRANSPARENT':''));
+        // Sample top-left corner pixel
+        const px2=ctx.getImageData(1,1,1,1).data;
+        console.log('canvas['+i+'] top-left rgba('+px2[0]+','+px2[1]+','+px2[2]+','+px2[3]+')');
+      }catch(e){console.log('canvas['+i+'] getImageData error:',e.message);}
+    });
+    console.groupEnd();
+
+    // ── 5. Z-index overlay — what sits on top of chart card ──
+    console.group('[DOM-AUDIT] 5. Z-Index Overlay Audit');
+    const cr=card.getBoundingClientRect();
+    const overlapping=[];
+    document.querySelectorAll('*').forEach(e=>{
+      if(e===card||e.contains(card)||card.contains(e)) return;
+      const s2=getComputedStyle(e);
+      if(s2.position==='fixed'||s2.position==='absolute'||s2.position==='sticky'){
+        const r2=e.getBoundingClientRect();
+        if(r2.width>0&&r2.height>0&&
+           r2.left<cr.right&&r2.right>cr.left&&
+           r2.top<cr.bottom&&r2.bottom>cr.top){
+          overlapping.push({elem:e.id||e.className.substring(0,30)||e.tagName,
+            pos:s2.position,z:s2.zIndex,
+            w:Math.round(r2.width),h:Math.round(r2.height),
+            top:Math.round(r2.top),left:Math.round(r2.left)});
+        }
+      }
+    });
+    console.log('Overlapping positioned elements:', overlapping.length);
+    overlapping.forEach(o=>console.log('  ',JSON.stringify(o)));
+    console.groupEnd();
+
+    console.log('[DOM-AUDIT] Complete. btcChart alive:',btcChart!==null,
+      '| btcSeries alive:',btcSeries!==null,
+      '| container:',body.clientWidth+'x'+body.clientHeight);
+  },1200);
   // Stage 5–7: ResizeObserver — fitContent after layout resizes
   const ro=new ResizeObserver(entries=>{
     const e=entries[0];const w=e.contentRect.width,h=e.contentRect.height;
@@ -3052,6 +3165,8 @@ async function fetchBtcCandles(tf){
       console.log('[CHART] Stage 13: render completed — fitContent called');
       // ── AUDIT AFTER RENDER ────────────────────────────
       console.log('[AUDIT] candles.length :', candles.length);
+      console.log('[AUDIT] first candle   :', JSON.stringify(candles[0]));
+      console.log('[AUDIT] last candle    :', JSON.stringify(candles[candles.length-1]));
       console.log('[AUDIT] chart alive    :', btcChart!==null&&typeof btcChart.timeScale==='function');
       console.log('[AUDIT] series alive   :', btcSeries!==null);
       // Current price line
