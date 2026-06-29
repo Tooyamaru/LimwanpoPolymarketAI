@@ -94,10 +94,14 @@ function LiveChart() {
   const frameRef = useRef<number>(0);
   const dataRef = useRef<number[]>([]);
   const tRef = useRef(0);
+  const [livePrice, setLivePrice] = useState(107182);
+
+  const BASE = 107182;
+  const H24_OPEN = 106540;
 
   useEffect(() => {
     const seed: number[] = [];
-    let v = 107182;
+    let v = BASE;
     for (let i = 0; i < 120; i++) { v += (Math.random() - 0.49) * 60; seed.push(v); }
     dataRef.current = seed;
 
@@ -110,8 +114,10 @@ function LiveChart() {
       if (tRef.current > 2) {
         tRef.current = 0;
         const last = dataRef.current[dataRef.current.length - 1];
-        dataRef.current.push(last + (Math.random() - 0.49) * 55);
+        const next = last + (Math.random() - 0.49) * 55;
+        dataRef.current.push(next);
         if (dataRef.current.length > 150) dataRef.current.shift();
+        setLivePrice(Math.round(next));
       }
 
       ctx.clearRect(0, 0, w, h);
@@ -127,13 +133,14 @@ function LiveChart() {
         const y = 8 + (i / 4) * (h - 24);
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
         const val = mx - (i / 4) * rng;
-        ctx.fillStyle = "rgba(107,143,168,.5)"; ctx.font = "9px Courier New";
+        ctx.fillStyle = "rgba(107,143,168,.4)"; ctx.font = "8px Courier New";
         ctx.fillText(Math.round(val).toLocaleString(), 4, y - 2);
       }
 
       // Area fill
       const grad = ctx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, "rgba(0,229,255,.25)");
+      grad.addColorStop(0, "rgba(0,229,255,.22)");
+      grad.addColorStop(0.6, "rgba(0,229,255,.06)");
       grad.addColorStop(1, "rgba(0,229,255,.0)");
       ctx.beginPath(); ctx.moveTo(px(0), py(pts[0]));
       pts.forEach((v, i) => i > 0 && ctx.lineTo(px(i), py(v)));
@@ -143,19 +150,20 @@ function LiveChart() {
       // Line
       ctx.beginPath(); ctx.moveTo(px(0), py(pts[0]));
       pts.forEach((v, i) => i > 0 && ctx.lineTo(px(i), py(v)));
-      ctx.strokeStyle = C.nc; ctx.lineWidth = 1.5;
-      ctx.shadowBlur = 6; ctx.shadowColor = C.nc;
+      ctx.strokeStyle = C.nc; ctx.lineWidth = 2;
+      ctx.shadowBlur = 8; ctx.shadowColor = C.nc;
       ctx.stroke(); ctx.shadowBlur = 0;
 
-      // Last price dot
+      // Last price dot + horizontal dashed line
       const lx = px(pts.length - 1), ly = py(pts[pts.length - 1]);
-      ctx.beginPath(); ctx.arc(lx, ly, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = C.nc; ctx.shadowBlur = 10; ctx.shadowColor = C.nc;
-      ctx.fill(); ctx.shadowBlur = 0;
+      ctx.setLineDash([3, 5]);
+      ctx.strokeStyle = "rgba(0,229,255,.25)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(w, ly); ctx.stroke();
+      ctx.setLineDash([]);
 
-      // Price label
-      ctx.fillStyle = C.nc; ctx.font = "bold 10px Courier New";
-      ctx.fillText(Math.round(pts[pts.length - 1]).toLocaleString(), lx - 38, ly - 6);
+      ctx.beginPath(); ctx.arc(lx, ly, 4, 0, Math.PI * 2);
+      ctx.fillStyle = C.nc; ctx.shadowBlur = 12; ctx.shadowColor = C.nc;
+      ctx.fill(); ctx.shadowBlur = 0;
 
       frameRef.current = requestAnimationFrame(draw);
     }
@@ -163,16 +171,55 @@ function LiveChart() {
     return () => cancelAnimationFrame(frameRef.current);
   }, []);
 
+  const delta = livePrice - H24_OPEN;
+  const deltaPct = ((delta / H24_OPEN) * 100).toFixed(2);
+  const up = delta >= 0;
+  const deltaColor = up ? C.ng : C.red;
+
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
       <SectionTitle right="LIVE · BTC/USD">Live Market Chart</SectionTitle>
       <div style={{ flex:1, position:"relative", padding:"4px 6px 6px" }}>
         <canvas ref={canvasRef} style={{ width:"100%", height:"100%", display:"block" }}
           width={900} height={200} />
-        {/* Overlays */}
-        <div style={{ position:"absolute", top:10, right:16, display:"flex", gap:8 }}>
+
+        {/* Bloomberg info panel — top left */}
+        <div style={{
+          position:"absolute", top:10, left:10,
+          background:"rgba(3,5,10,.88)", border:`1px solid rgba(0,229,255,.2)`,
+          backdropFilter:"blur(6px)", borderRadius:3, padding:"8px 12px", minWidth:140,
+          boxShadow:"0 4px 20px rgba(0,0,0,.6), 0 0 12px rgba(0,229,255,.08)",
+        }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:5 }}>
+            <span style={{ fontSize:7.5, fontWeight:"bold", color:C.tm, letterSpacing:2 }}>BTC / USD</span>
+            <span style={{ fontSize:6.5, color:C.ng, letterSpacing:1.5, animation:"liveBlink 1.5s ease-in-out infinite" }}>● LIVE</span>
+          </div>
+          <div style={{ fontSize:22, fontWeight:"bold", color:C.nc, lineHeight:1, letterSpacing:1, marginBottom:4, textShadow:`0 0 16px ${C.nc}66` }}>
+            {livePrice.toLocaleString()}
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
+            <span style={{ fontSize:10, fontWeight:"bold", color:deltaColor }}>{up?"+":""}{delta.toLocaleString()}</span>
+            <span style={{ fontSize:9, color:deltaColor, background:`${deltaColor}18`, padding:"0 5px", borderRadius:2 }}>{up?"+":""}{deltaPct}%</span>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"3px 10px" }}>
+            {[
+              { l:"24H HIGH",   v:"108,440" },
+              { l:"24H LOW",    v:"106,120" },
+              { l:"24H CHANGE", v:`${up?"+":""}${delta.toLocaleString()}` },
+              { l:"VOLUME",     v:"28.4B" },
+            ].map(({ l, v }) => (
+              <div key={l}>
+                <div style={{ fontSize:6, color:C.td, letterSpacing:.5 }}>{l}</div>
+                <div style={{ fontSize:7.5, fontWeight:"bold", color:C.tm }}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* TF selector — top right */}
+        <div style={{ position:"absolute", top:10, right:10, display:"flex", gap:5 }}>
           {["5M","15M","1H"].map((tf, i) => (
-            <div key={tf} style={{ fontSize:8, padding:"2px 7px", border:`1px solid ${i===0?C.nc:C.b2}`, color:i===0?C.nc:C.td, borderRadius:2, cursor:"pointer", background:i===0?"rgba(0,229,255,.08)":"transparent" }}>{tf}</div>
+            <div key={tf} style={{ fontSize:8, padding:"2px 8px", border:`1px solid ${i===0?C.nc:C.b2}`, color:i===0?C.nc:C.td, borderRadius:2, background:i===0?"rgba(0,229,255,.1)":"rgba(0,0,0,.4)" }}>{tf}</div>
           ))}
         </div>
       </div>
@@ -224,24 +271,78 @@ function AssetHeader({ asset }: { asset: string }) {
   const cap  = cards.reduce((a, m) => a + m.capital, 0);
   const pnl  = cards.reduce((a, m) => a + (m.pnl ?? 0), 0);
   const pnlColor = pnl > 0 ? C.ng : pnl < 0 ? C.red : C.td;
+  const cc = confColor(conf);
+  const circ = 2 * Math.PI * 10; // radius=10
+  const dash = circ - (conf / 100) * circ;
   return (
-    <div style={{ padding:"6px 10px 5px", background:`linear-gradient(90deg,rgba(0,229,255,.07),rgba(0,229,255,.02))`, borderBottom:`1px solid rgba(0,229,255,.14)`, borderTop:`1px solid rgba(0,229,255,.1)`, marginBottom:4 }}>
-      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-        <span style={{ fontSize:13, fontWeight:"bold", color:C.nc, letterSpacing:1.5 }}>{ICONS[asset]} {asset}</span>
-        <div style={{ height:1, flex:1, background:`linear-gradient(90deg,rgba(0,229,255,.3),transparent)` }} />
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:4 }}>
-        {[
-          { l:"CONF",       v:`${conf}%`,                              c:confColor(conf) },
-          { l:"POSITIONS",  v:`${pos}`,                                c:pos>0?C.nc:C.td },
-          { l:"CAPITAL",    v:cap>0?`$${cap}`:"—",                     c:cap>0?C.tw:C.td },
-          { l:"PnL",        v:pnl!==0?(pnl>0?`+$${pnl.toFixed(1)}`:`-$${Math.abs(pnl).toFixed(1)}`):"—", c:pnlColor },
-        ].map(({ l, v, c }) => (
-          <div key={l} style={{ textAlign:"center", background:"rgba(0,0,0,.2)", borderRadius:2, padding:"2px 4px" }}>
-            <div style={{ fontSize:6, color:C.td, letterSpacing:1 }}>{l}</div>
-            <div style={{ fontSize:9, fontWeight:"bold", color:c }}>{v}</div>
+    <div style={{
+      background:`linear-gradient(135deg,rgba(0,229,255,.09) 0%,rgba(0,229,255,.03) 50%,transparent 100%)`,
+      borderBottom:`1px solid rgba(0,229,255,.18)`, borderTop:`1px solid rgba(0,229,255,.12)`,
+      marginBottom:4, position:"relative", overflow:"hidden",
+    }}>
+      {/* Top accent bar */}
+      <div style={{ height:2, background:`linear-gradient(90deg,${cc},rgba(0,229,255,.15),transparent)` }} />
+      <div style={{ padding:"6px 10px 8px" }}>
+        {/* Asset name + conf ring inline */}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <span style={{ fontSize:15, fontWeight:"bold", color:C.nc, letterSpacing:2, textShadow:`0 0 12px ${C.nc}55` }}>{ICONS[asset]}</span>
+            <div>
+              <div style={{ fontSize:13, fontWeight:"bold", color:C.nc, letterSpacing:2, lineHeight:1 }}>{asset}</div>
+              <div style={{ fontSize:6.5, color:C.td, letterSpacing:1 }}>3 MARKETS · {pos > 0 ? `${pos} OPEN` : "NO POSITION"}</div>
+            </div>
           </div>
-        ))}
+          {/* Mini conf ring */}
+          <div style={{ position:"relative", width:36, height:36 }}>
+            <svg width="36" height="36" style={{ transform:"rotate(-90deg)" }}>
+              <circle cx="18" cy="18" r="14" fill="none" stroke={`${cc}22`} strokeWidth="2.5"/>
+              <circle cx="18" cy="18" r="14" fill="none" stroke={cc} strokeWidth="2.5"
+                strokeDasharray={`${circ}`} strokeDashoffset={dash}
+                strokeLinecap="round"
+                style={{ filter:`drop-shadow(0 0 4px ${cc})`, transition:"stroke-dashoffset 1s ease" }}
+              />
+            </svg>
+            <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column" }}>
+              <span style={{ fontSize:8, fontWeight:"bold", color:cc, lineHeight:1 }}>{conf}</span>
+              <span style={{ fontSize:5, color:C.td }}>%</span>
+            </div>
+          </div>
+        </div>
+        {/* Stats row */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:4 }}>
+          {[
+            { l:"POSITIONS", v:`${pos}`,                                c:pos>0?C.nc:C.td },
+            { l:"CAPITAL",   v:cap>0?`$${cap}`:"—",                     c:cap>0?C.tw:C.td },
+            { l:"PnL",       v:pnl!==0?(pnl>0?`+$${pnl.toFixed(1)}`:`-$${Math.abs(pnl).toFixed(1)}`):"—", c:pnlColor },
+          ].map(({ l, v, c }) => (
+            <div key={l} style={{ textAlign:"center", background:"rgba(0,0,0,.25)", borderRadius:2, padding:"3px 4px", border:`1px solid ${C.b1}` }}>
+              <div style={{ fontSize:6, color:C.td, letterSpacing:1 }}>{l}</div>
+              <div style={{ fontSize:9.5, fontWeight:"bold", color:c }}>{v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CONFIDENCE RING ─────────────────────────────────────────────────────────────
+function ConfRing({ conf, size = 38 }: { conf: number; size?: number }) {
+  const r = size / 2 - 4;
+  const circ = 2 * Math.PI * r;
+  const dash = circ - (conf / 100) * circ;
+  const cc = confColor(conf);
+  return (
+    <div style={{ position:"relative", width:size, height:size, flexShrink:0 }}>
+      <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={`${cc}1a`} strokeWidth="2"/>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={cc} strokeWidth="2.5"
+          strokeDasharray={circ} strokeDashoffset={dash} strokeLinecap="round"
+          style={{ filter:`drop-shadow(0 0 3px ${cc})` }}/>
+      </svg>
+      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column" }}>
+        <span style={{ fontSize:8.5, fontWeight:"bold", color:cc, lineHeight:1, textShadow:`0 0 6px ${cc}` }}>{conf}</span>
+        <span style={{ fontSize:5.5, color:C.td, lineHeight:1 }}>%</span>
       </div>
     </div>
   );
@@ -254,34 +355,55 @@ function MarketCardComp({ m }: { m: MarketCard }) {
   const posColor  = m.position === "YES" ? C.ng : m.position === "NO" ? C.nm : C.td;
   const pnlColor  = m.pnl === null ? C.td : m.pnl > 0 ? C.ng : C.red;
   const pnlStr    = m.pnl === null ? "—" : m.pnl > 0 ? `+${m.pnl}%` : `${m.pnl}%`;
+  const sc = statusColor(m.status);
   return (
-    <div style={{ border:`1px solid ${b}`, background:bg, boxShadow:glow, borderRadius:2, padding:"7px 8px", marginBottom:4, position:"relative" }}>
-      {m.isTarget && <div style={{ position:"absolute", top:0, right:0, fontSize:6.5, letterSpacing:1, color:C.nc, background:"rgba(0,229,255,.14)", padding:"1px 5px", borderBottomLeftRadius:2 }}>TARGET</div>}
-      {/* Row 1: TF + countdown */}
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:5 }}>
-        <span style={{ fontSize:10, fontWeight:"bold", color:C.tw, letterSpacing:.5 }}>{m.tf}</span>
-        <div style={{ textAlign:"right" }}>
-          <div style={{ fontSize:13, fontWeight:"bold", color:statusColor(m.status), lineHeight:1 }}>{m.countdown}</div>
-          <div style={{ fontSize:6.5, color:C.td }}>{m.resolveTime}</div>
+    <div style={{ border:`1px solid ${b}`, background:bg, boxShadow:glow, borderRadius:2, padding:"8px 8px 7px", marginBottom:4, position:"relative", overflow:"hidden" }}>
+      {/* Left accent bar */}
+      <div style={{ position:"absolute", left:0, top:0, bottom:0, width:2, background:`linear-gradient(180deg,${b},transparent)`, boxShadow:`0 0 6px ${b}` }} />
+
+      {/* ① COUNTDOWN — top priority, full-width eye-catcher */}
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
+        <div>
+          <div style={{ fontSize:7.5, fontWeight:"bold", color:C.td, letterSpacing:2, marginBottom:1 }}>{m.tf}</div>
+          <div style={{ fontSize:20, fontWeight:"bold", color:sc, lineHeight:1, letterSpacing:1, textShadow:`0 0 14px ${sc}88` }}>{m.countdown}</div>
+          <div style={{ fontSize:6, color:C.td, marginTop:1 }}>{m.resolveTime}</div>
         </div>
+        {/* Confidence ring — top right */}
+        <ConfRing conf={m.confidence} size={40} />
       </div>
-      {/* Price */}
+
+      {/* ② YES / NO — the most visually dominant element */}
+      <div style={{
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+        background:`linear-gradient(135deg,${predColor}18,${predColor}08)`,
+        border:`1px solid ${predColor}55`,
+        borderRadius:3, padding:"6px 10px", marginBottom:6,
+        boxShadow:`0 0 14px ${predColor}22, inset 0 0 20px ${predColor}08`,
+      }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{
+            fontSize:16, fontWeight:"bold", color:predColor, letterSpacing:3,
+            textShadow:`0 0 12px ${predColor}, 0 0 24px ${predColor}88`,
+          }}>{m.prediction}</div>
+          <div style={{ fontSize:7, color:predColor, opacity:.7, letterSpacing:1 }}>AI PREDICTS</div>
+        </div>
+        {m.isTarget && <span style={{ fontSize:6.5, letterSpacing:1, color:C.nc, background:"rgba(0,229,255,.18)", padding:"1px 6px", borderRadius:2 }}>TARGET</span>}
+      </div>
+
+      {/* ③ Prices */}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:4, marginBottom:5 }}>
-        <div><div style={{ fontSize:6, color:C.td, letterSpacing:1 }}>TARGET</div><div style={{ fontSize:8, fontWeight:"bold", color:C.tm }}>{m.targetPrice}</div></div>
-        <div><div style={{ fontSize:6, color:C.td, letterSpacing:1 }}>CURRENT</div><div style={{ fontSize:8, fontWeight:"bold", color:C.tw }}>{m.currentPrice}</div></div>
-      </div>
-      {/* Divider */}
-      <div style={{ height:1, background:`linear-gradient(90deg,${C.b2},transparent)`, marginBottom:5 }} />
-      {/* Prediction */}
-      <div style={{ display:"grid", gridTemplateColumns:"auto 1fr", gap:6, alignItems:"center", marginBottom:5 }}>
-        <div style={{ fontSize:9, fontWeight:"bold", color:predColor, border:`1px solid ${predColor}44`, background:`${predColor}11`, padding:"1px 7px", borderRadius:1 }}>{m.prediction}</div>
-        <div style={{ display:"flex", alignItems:"baseline", gap:4 }}>
-          <span style={{ fontSize:14, fontWeight:"bold", color:confColor(m.confidence), lineHeight:1 }}>{m.confidence}%</span>
-          <span style={{ fontSize:7, color:C.td }}>conf</span>
+        <div style={{ background:"rgba(0,0,0,.2)", borderRadius:2, padding:"3px 5px" }}>
+          <div style={{ fontSize:6, color:C.td, letterSpacing:1 }}>TARGET</div>
+          <div style={{ fontSize:8, fontWeight:"bold", color:C.tm }}>{m.targetPrice}</div>
+        </div>
+        <div style={{ background:"rgba(0,0,0,.2)", borderRadius:2, padding:"3px 5px" }}>
+          <div style={{ fontSize:6, color:C.td, letterSpacing:1 }}>CURRENT</div>
+          <div style={{ fontSize:8, fontWeight:"bold", color:C.tw }}>{m.currentPrice}</div>
         </div>
       </div>
-      {/* Portfolio row */}
-      <div style={{ background:"rgba(0,0,0,.25)", border:`1px solid ${C.b1}`, borderRadius:2, padding:"3px 5px" }}>
+
+      {/* ④ Portfolio row */}
+      <div style={{ background:"rgba(0,0,0,.25)", border:`1px solid ${C.b1}`, borderRadius:2, padding:"3px 5px", marginBottom:5 }}>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:2 }}>
           {[
             { l:"POS",  v:m.position,                        c:posColor },
@@ -296,10 +418,11 @@ function MarketCardComp({ m }: { m: MarketCard }) {
           ))}
         </div>
       </div>
-      {/* Status */}
-      <div style={{ marginTop:5, display:"flex", alignItems:"center", gap:4 }}>
-        <Dot color={statusColor(m.status)} size={5} />
-        <span style={{ fontSize:7, fontWeight:"bold", color:statusColor(m.status), letterSpacing:2 }}>{m.status}</span>
+
+      {/* ⑤ Status */}
+      <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+        <Dot color={sc} size={5} />
+        <span style={{ fontSize:7, fontWeight:"bold", color:sc, letterSpacing:2 }}>{m.status}</span>
       </div>
     </div>
   );
@@ -313,37 +436,56 @@ function PipelineNode({ name, count, active, icon, colorOverride }: {
   return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8, flex:1 }}>
       {/* Node orb */}
-      <div style={{ position:"relative", width:64, height:64 }}>
-        {/* Outer ring */}
+      <div style={{ position:"relative", width:72, height:72 }}>
+        {/* Outer rotating dashed ring */}
         <div style={{
           position:"absolute", inset:0, borderRadius:"50%",
-          border:`1px solid ${col}${active?"66":"22"}`,
-          animation:active?"nodeRing 3s linear infinite":"none",
-          boxShadow:active?`0 0 20px ${col}44,inset 0 0 15px ${col}22`:"none",
+          border:`1px ${active?"dashed":"solid"} ${col}${active?"55":"18"}`,
+          animation:active?"nodeRing 4s linear infinite":"none",
+          boxShadow:active?`0 0 28px ${col}55,0 0 60px ${col}22,inset 0 0 20px ${col}18`:"none",
         }} />
-        {/* Inner fill */}
+        {/* Counter-rotating outer ring */}
+        {active && (
+          <div style={{
+            position:"absolute", inset:4, borderRadius:"50%",
+            border:`1px dashed ${col}33`,
+            animation:"nodeRingRev 6s linear infinite",
+          }} />
+        )}
+        {/* Inner core */}
         <div style={{
-          position:"absolute", inset:8, borderRadius:"50%",
-          background:active?`radial-gradient(circle,${col}33 0%,${col}08 60%,transparent 100%)`:`rgba(0,0,0,.3)`,
-          border:`1px solid ${col}${active?"44":"11"}`,
+          position:"absolute", inset:10, borderRadius:"50%",
+          background:active
+            ? `radial-gradient(circle,${col}44 0%,${col}18 45%,transparent 100%)`
+            : "rgba(0,0,0,.4)",
+          border:`1px solid ${col}${active?"55":"16"}`,
           display:"flex", alignItems:"center", justifyContent:"center",
-          boxShadow:active?`0 0 12px ${col}33`:"none",
+          boxShadow:active?`0 0 16px ${col}44,inset 0 0 12px ${col}22`:"none",
+          animation:active?"nodeGlow 2s ease-in-out infinite":"none",
         }}>
           {icon}
         </div>
-        {/* Pulse ring on active */}
+        {/* Pulse ring 1 */}
         {active && (
           <div style={{
-            position:"absolute", inset:-4, borderRadius:"50%",
-            border:`1px solid ${col}44`,
-            animation:"pulseRing 2s ease-out infinite",
+            position:"absolute", inset:-6, borderRadius:"50%",
+            border:`1px solid ${col}55`,
+            animation:"pulseRing 2.2s ease-out infinite",
+          }} />
+        )}
+        {/* Pulse ring 2 (offset) */}
+        {active && (
+          <div style={{
+            position:"absolute", inset:-6, borderRadius:"50%",
+            border:`1px solid ${col}33`,
+            animation:"pulseRing2 2.2s ease-out infinite 1.1s",
           }} />
         )}
       </div>
       {/* Label */}
       <div style={{ textAlign:"center" }}>
-        <div style={{ fontSize:8, fontWeight:"bold", color:col, letterSpacing:2, textShadow:active?`0 0 8px ${col}`:"none" }}>{name.toUpperCase()}</div>
-        <div style={{ fontSize:9, color:active?C.tw:C.td, fontWeight:"bold", marginTop:2 }}>{count}</div>
+        <div style={{ fontSize:8, fontWeight:"bold", color:col, letterSpacing:2.5, textShadow:active?`0 0 10px ${col},0 0 20px ${col}66`:"none" }}>{name.toUpperCase()}</div>
+        <div style={{ fontSize:9, color:active?C.tw:C.td, fontWeight:"bold", marginTop:3, textShadow:active?`0 0 6px ${col}44`:"none" }}>{count}</div>
       </div>
     </div>
   );
@@ -351,15 +493,24 @@ function PipelineNode({ name, count, active, icon, colorOverride }: {
 
 function FlowConnector({ active, color = C.nc }: { active: boolean; color?: string }) {
   return (
-    <div style={{ flex:1, display:"flex", alignItems:"center", paddingBottom:22 }}>
-      <div style={{ flex:1, height:2, position:"relative", background:`${color}18`, borderRadius:1 }}>
-        {active && (
+    <div style={{ flex:1, display:"flex", alignItems:"center", paddingBottom:26 }}>
+      <div style={{ flex:1, height:3, position:"relative", background:`${color}12`, borderRadius:2, overflow:"hidden" }}>
+        {/* Track dots */}
+        <div style={{ position:"absolute", inset:0, backgroundImage:`repeating-linear-gradient(90deg,${color}22 0px,${color}22 1px,transparent 1px,transparent 12px)` }} />
+        {active && (<>
           <div style={{
-            position:"absolute", top:0, height:"100%", width:"40%",
-            background:`linear-gradient(90deg,transparent,${color},transparent)`,
-            borderRadius:1, animation:"flowEnergy 1.8s linear infinite",
+            position:"absolute", top:0, height:"100%", width:"35%",
+            background:`linear-gradient(90deg,transparent,${color}cc,transparent)`,
+            animation:"flowEnergy 1.4s linear infinite",
+            borderRadius:2,
           }} />
-        )}
+          <div style={{
+            position:"absolute", top:0, height:"100%", width:"25%",
+            background:`linear-gradient(90deg,transparent,${color}88,transparent)`,
+            animation:"flowEnergy2 1.4s linear infinite 0.7s",
+            borderRadius:2,
+          }} />
+        </>)}
       </div>
     </div>
   );
@@ -528,11 +679,18 @@ export function Dashboard() {
     }}>
       <style>{`
         @keyframes nodeRing    { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes pulseRing   { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(1.6);opacity:0} }
-        @keyframes flowEnergy  { 0%{left:-40%} 100%{left:100%} }
+        @keyframes nodeRingRev { from{transform:rotate(0deg)} to{transform:rotate(-360deg)} }
+        @keyframes pulseRing   { 0%{transform:scale(1);opacity:.7} 100%{transform:scale(1.8);opacity:0} }
+        @keyframes pulseRing2  { 0%{transform:scale(1);opacity:.4} 100%{transform:scale(2.2);opacity:0} }
+        @keyframes nodeGlow    { 0%,100%{opacity:1} 50%{opacity:.6} }
+        @keyframes flowEnergy  { 0%{left:-40%} 100%{left:120%} }
+        @keyframes flowEnergy2 { 0%{left:-60%} 100%{left:120%} }
         @keyframes feedIn      { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
         @keyframes tickerScroll{ 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-        @keyframes orbitRing   { from{transform:rotateX(70deg) rotate(0deg)} to{transform:rotateX(70deg) rotate(360deg)} }
+        @keyframes orbitRing   { from{transform:rotateX(65deg) rotate(0deg)} to{transform:rotateX(65deg) rotate(360deg)} }
+        @keyframes orbitRing2  { from{transform:rotateX(65deg) rotate(120deg)} to{transform:rotateX(65deg) rotate(480deg)} }
+        @keyframes confRingFill{ from{stroke-dashoffset:var(--dash-start)} to{stroke-dashoffset:var(--dash-end)} }
+        @keyframes liveBlink   { 0%,100%{opacity:1} 50%{opacity:.2} }
         *{box-sizing:border-box;margin:0;padding:0}
         ::-webkit-scrollbar{width:2px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:#111d2e;border-radius:2px}
       `}</style>
@@ -548,11 +706,16 @@ export function Dashboard() {
 
       {/* ── HEADER ────────────────────────────────────────────────────── */}
       <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 20px", zIndex:100, position:"relative", borderBottom:`1px solid rgba(0,229,255,.1)`, background:"linear-gradient(135deg,rgba(0,229,255,.03) 0%,transparent 55%),rgba(6,9,15,.98)", boxShadow:`0 1px 0 rgba(0,229,255,.06),0 4px 24px rgba(0,0,0,.6)` }}>
-        <div>
-          <div style={{ fontSize:15, fontWeight:"bold", letterSpacing:7, color:C.nc, textShadow:`0 0 14px ${C.nc},0 0 32px rgba(0,229,255,.22)` }}>
-            LIMWANPO // <span style={{ color:C.nm, textShadow:`0 0 14px ${C.nm}` }}>POLYMARKET AI</span>
+        <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <div style={{ width:3, height:28, background:`linear-gradient(180deg,${C.nc},${C.nm})`, boxShadow:`0 0 10px ${C.nc},0 0 20px ${C.nm}44`, borderRadius:2 }} />
+            <div>
+              <div style={{ fontSize:19, fontWeight:"bold", letterSpacing:9, color:C.nc, lineHeight:1, textShadow:`0 0 18px ${C.nc},0 0 40px rgba(0,229,255,.35),0 0 60px rgba(0,229,255,.12)` }}>
+                LIMWANPO <span style={{ color:C.td, fontSize:14, letterSpacing:4 }}>//</span> <span style={{ color:C.nm, textShadow:`0 0 18px ${C.nm},0 0 40px rgba(255,45,149,.35)` }}>POLYMARKET AI</span>
+              </div>
+              <div style={{ fontSize:7, letterSpacing:5, color:C.tm, marginTop:2 }}>AI MISSION CONTROL · MARKET UNIVERSE V2 · PAPER MODE</div>
+            </div>
           </div>
-          <div style={{ fontSize:7, letterSpacing:5, color:C.tm, marginTop:1 }}>AI MISSION CONTROL · MARKET UNIVERSE V2</div>
         </div>
         <div style={{ display:"flex", gap:6, alignItems:"center" }}>
           {[
