@@ -1,0 +1,303 @@
+UI REDESIGN SPECIFICATION – LIMWANPOAI MARKET UNIVERSE V2
+
+OBJECTIVE
+
+Redesign the dashboard to become an AI Mission Control for Polymarket.
+
+The dashboard should focus on decision making, not engine monitoring.
+
+The operator must understand every market without opening another panel.
+
+====================================================
+
+REMOVE
+
+• Remove Market Heatmap completely.
+• Remove Position panel completely.
+• Merge their functionality into each Market Card.
+• Do not duplicate information.
+
+====================================================
+
+KEEP
+
+• AI Current Target
+• AI Thinking Feed
+• AI Live Feed
+
+These panels remain.
+
+====================================================
+
+MARKET UNIVERSE
+
+Replace the current Market Universe list with four asset sections.
+
+BTC
+ETH
+SOL
+XRP
+
+Each asset contains exactly three cards.
+
+BTC
+ ├── BTC 5M
+ ├── BTC 15M
+ └── BTC 1H
+
+ETH
+ ├── ETH 5M
+ ├── ETH 15M
+ └── ETH 1H
+
+SOL
+ ├── SOL 5M
+ ├── SOL 15M
+ └── SOL 1H
+
+XRP
+ ├── XRP 5M
+ ├── XRP 15M
+ └── XRP 1H
+
+====================================================
+
+ASSET HEADER
+
+Every asset section has a summary header.
+
+Example
+
+══════════════════════════════════════════════════════════════
+₿ BTC │ AI Confidence 81% │ Positions 2 │ Capital $245
+══════════════════════════════════════════════════════════════
+
+Definitions
+
+AI Confidence
+Average confidence across the three timeframes.
+
+Positions
+Number of BTC markets currently holding an active YES or NO position.
+
+Capital
+Total capital allocated across all BTC markets.
+
+====================================================
+
+MARKET CARD
+
+Every card contains:
+
+Header
+
+BTC • 15M
+
+Top Right
+
+Countdown
+
+11:42
+
+Below
+
+Resolve Time
+
+13:45 UTC
+
+Price Information
+
+Target Price
+
+107,310.00
+
+Current Price
+
+107,182.45
+
+AI Decision
+
+Prediction
+
+YES
+
+or
+
+NO
+
+Confidence
+
+89%
+
+Portfolio
+
+Position
+
+YES
+
+NO
+
+or
+
+NONE
+
+Entries
+
+3
+
+(Entries = number of buys into this Polymarket position.)
+
+Capital
+
+$125
+
+PnL
+
++8.6%
+
+If no position
+
+PnL
+
+—
+
+Status
+
+WAIT
+
+WATCH
+
+READY
+
+TRACKING
+
+WIN
+
+LOSS
+
+====================================================
+
+CARD COLOR RULES
+
+Cards must immediately communicate their condition.
+
+Do not rely only on text.
+
+Use border, glow and subtle background color.
+
+GREEN
+
+Position active and currently profitable.
+
+RED
+
+Position active and currently losing.
+
+YELLOW
+
+No position.
+AI is WATCH or READY.
+
+GRAY
+
+No opportunity.
+WAIT.
+
+BLUE
+
+Current AI Target (optional highlight).
+
+The operator should understand the portfolio within one second simply by looking at colors.
+
+====================================================
+
+CARD INFORMATION ORDER
+
+Every card must always use the same hierarchy.
+
+1. Countdown
+2. Resolve Time
+3. Target Price
+4. Current Price
+5. Prediction
+6. Confidence
+7. Position
+8. Entries
+9. Capital
+10. PnL
+11. Status
+
+====================================================
+
+AI CURRENT TARGET
+
+Keep this panel.
+
+Display only the single highest priority market selected by AI.
+
+====================================================
+
+AI THINKING FEED
+
+Keep this panel.
+
+Show concise reasoning.
+
+Example
+
+BTC 15M
+
+Confidence increased
+
+74% → 81%
+
+Price moving away from target.
+
+Decision
+
+OPEN NO
+
+====================================================
+
+AI LIVE FEED
+
+Keep this panel.
+
+Show real-time engine activity.
+
+====================================================
+
+UI PHILOSOPHY
+
+For every market the operator must instantly know:
+
+• Target Price
+• Current Price
+• Time Remaining
+• Resolve Time
+• AI Prediction
+• Confidence
+• Current Position
+• Number of Entries
+• Total Capital
+• Current PnL
+• Current Status
+
+No additional panel should be required.
+
+====================================================
+
+DESIGN STYLE
+
+Maintain LimwanpoAI identity.
+
+• Dark cyber terminal
+• Bloomberg Terminal inspired
+• Premium professional appearance
+• Dense information without clutter
+• Minimal animation
+• Smooth transitions
+• Consistent spacing
+• Consistent typography
+
+This should feel like a dedicated AI operating terminal built specifically for Polymarket, not a generic trading dashboard.
