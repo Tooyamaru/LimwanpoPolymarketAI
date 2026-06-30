@@ -1,0 +1,242 @@
+PROJECT: LIMWANPO POLYMARKET AI
+
+PENTING:
+JANGAN langsung mulai mengedit.
+
+LANGKAH 1 — CARI HASIL TERAKHIR DULU
+
+Project ini sebelumnya sudah pernah memiliki redesign/mockup yang lebih modern sebelum saya pindah workspace Replit.
+
+Cari terlebih dahulu di seluruh project:
+
+* semua branch git
+* commit history
+* folder lama
+* backup
+* temporary files
+* canvas files
+* draft files
+* file html/css/js yang tidak sedang dipakai
+* folder archive
+* folder backup
+* folder assets
+* folder design
+* folder prototype
+
+Cari menggunakan keyword:
+
+* dashboard
+* redesign
+* market universe
+* polymarket ai
+* limwanpo
+* v2
+* mockup
+* prototype
+* canvas
+
+Jika menemukan hasil redesign/mockup terakhir:
+
+JANGAN membuat desain baru.
+
+Gunakan file tersebut sebagai dasar.
+
+Jika tidak ditemukan:
+
+Gunakan dashboard production yang sekarang sebagai dasar.
+
+==================================================
+
+SETELAH FILE DITEMUKAN BARU LAKUKAN PERUBAHAN BERIKUT
+
+Perubahan harus bersifat SANGAT SURGICAL.
+
+JANGAN mengubah layout utama.
+
+JANGAN mengubah struktur grid.
+
+JANGAN mengubah ukuran panel.
+
+JANGAN mengubah posisi panel.
+
+JANGAN mengubah workflow.
+
+JANGAN mengubah backend.
+
+JANGAN mengubah API.
+
+JANGAN mengubah data.
+
+Hanya polish visual.
+
+==================================================
+
+PERUBAHAN YANG DISETUJUI
+
+HEADER
+
+KEMBALIKAN LOGO KE VERSI LAMA.
+
+Gunakan logo lama yang sebelumnya dipakai.
+
+Jangan gunakan logo redesign terbaru.
+
+==================================================
+
+HAPUS TULISAN DI BAWAH LOGO
+
+Saat ini terdapat tulisan kecil di bawah logo.
+
+Tulisan tersebut bertumpuk dengan elemen lain.
+
+Hapus seluruh subtitle tersebut.
+
+Logo hanya terdiri dari:
+
+LIMWANPO
+POLYMARKET AI
+
+Tanpa tulisan tambahan.
+
+==================================================
+
+LIVE MARKET CHART
+
+PERTAHANKAN.
+
+Ini sudah bagus.
+
+Yang dipertahankan:
+
+* floating info panel
+* live price
+* high low
+* volume
+* dashed live price line
+* live indicator
+
+Tidak perlu diubah lagi.
+
+==================================================
+
+MARKET CARDS
+
+PERTAHANKAN.
+
+Yang dipertahankan:
+
+Countdown besar
+
+YES / NO banner
+
+Glow
+
+Visual hierarchy
+
+Jangan ubah layout.
+
+==================================================
+
+CONFIDENCE RING
+
+PERTAHANKAN.
+
+Semua asset card tetap memiliki confidence ring.
+
+SVG ring tetap digunakan.
+
+Glow tetap digunakan.
+
+==================================================
+
+AI PIPELINE
+
+PERTAHANKAN.
+
+Semua improvement tetap digunakan:
+
+* rotating ring
+* pulsing core
+* energy beam
+* animated connector
+* dotted connector
+
+Semuanya tetap.
+
+==================================================
+
+VISUAL POLISH
+
+Lakukan hanya polishing kecil.
+
+Misalnya:
+
+spacing
+
+alignment
+
+padding
+
+border consistency
+
+shadow consistency
+
+glow consistency
+
+font consistency
+
+Tanpa mengubah layout.
+
+==================================================
+
+YANG TIDAK BOLEH DIUBAH
+
+❌ ukuran dashboard
+
+❌ posisi panel
+
+❌ workflow AI
+
+❌ backend
+
+❌ scanner
+
+❌ trading engine
+
+❌ signal engine
+
+❌ heatmap
+
+❌ AI Decision Engine
+
+❌ data
+
+❌ API
+
+❌ websocket
+
+❌ chart logic
+
+❌ responsive behavior yang sudah benar
+
+==================================================
+
+OUTPUT YANG SAYA INGINKAN
+
+Sebelum melakukan edit tampilkan:
+
+File redesign/mockup ditemukan atau tidak.
+
+Lokasi file.
+
+File mana yang akan diedit.
+
+Daftar perubahan yang akan dilakukan.
+
+Baru setelah itu lakukan editing.
+
+Jangan membuat dashboard baru.
+
+Jangan membuat file baru.
+
+Edit langsung file dashboard yang digunakan project.
