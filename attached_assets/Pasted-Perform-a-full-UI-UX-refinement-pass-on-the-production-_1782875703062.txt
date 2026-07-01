@@ -1,0 +1,423 @@
+Perform a full UI/UX refinement pass on the production dashboard WITHOUT changing any backend logic, API calls, trading engine, data flow, HTML structure, or overall dashboard layout.
+
+IMPORTANT:
+This is NOT a redesign.
+This is a professional visual polishing and responsive optimization pass only.
+
+The goal is to make the dashboard look like a premium institutional trading terminal (Bloomberg / Hyperliquid / TradingView style), while keeping the current cyber theme.
+
+====================================================
+PRIMARY GOAL
+====================================================
+
+The dashboard MUST fit entirely inside one viewport on iPad Landscape, laptop, and desktop.
+
+There should be NO vertical scrolling for the main dashboard.
+
+Only internal panels that contain long lists (AI Feed, News Feed, Opportunity List, Logs) may have their own internal scrolling.
+
+The dashboard should always feel compact, information-dense, and professional.
+
+====================================================
+1. REMOVE MAIN PAGE SCROLL
+====================================================
+
+Use the viewport height correctly.
+
+Requirements:
+
+• html
+• body
+• #app
+• dashboard root
+• main container
+
+must use:
+
+height:100vh;
+overflow:hidden;
+
+The page itself must never scroll.
+
+Only these components may use overflow-y:auto:
+
+- AI Thinking Feed
+- AI Live Feed
+- News Feed
+- Opportunity List
+- Logs
+
+Everything else must fit inside the viewport.
+
+====================================================
+2. HEADER OPTIMIZATION
+====================================================
+
+Current header is still slightly too tall.
+
+Reduce total height to approximately 30px.
+
+Reduce:
+
+- top padding
+- bottom padding
+- vertical margins
+- unnecessary spacing
+
+Keep logo readable.
+
+Keep status pills.
+
+Do not remove anything.
+
+Improve visual hierarchy.
+
+====================================================
+3. GLOBAL SPACING
+====================================================
+
+Reduce unnecessary whitespace everywhere.
+
+Target spacing:
+
+panel gap:
+6-8px
+
+panel padding:
+8-10px
+
+section margin:
+6-8px
+
+Remove excessive empty space.
+
+Increase information density.
+
+====================================================
+4. CHART PANEL
+====================================================
+
+Chart should remain the visual focus.
+
+Responsive height:
+
+Desktop Large:
+300-320px
+
+Laptop:
+270px
+
+iPad Landscape:
+250px
+
+Never allow chart to push dashboard beyond viewport.
+
+BTC price should remain the largest element.
+
+Secondary statistics should be visually lighter.
+
+====================================================
+5. PORTFOLIO PANEL
+====================================================
+
+Strengthen typography hierarchy.
+
+TOTAL VALUE
+
+must immediately catch the eye.
+
+Example hierarchy:
+
+TOTAL VALUE
+$400
+
++$0 today
+
+Primary values:
+16-18px
+
+Secondary labels:
+10-11px
+
+Muted opacity.
+
+====================================================
+6. MARKET CARD OPTIMIZATION
+====================================================
+
+Current cards waste too much vertical space.
+
+Reduce card height approximately 20%.
+
+Target:
+
+165-180px
+
+Compress:
+
+padding
+
+empty margins
+
+countdown spacing
+
+footer spacing
+
+without removing information.
+
+====================================================
+7. MARKET CARD CONTENT
+====================================================
+
+Do NOT show identical text on every asset.
+
+Instead of:
+
+Collecting Market Data...
+
+use dynamic loading states.
+
+Examples:
+
+BTC
+Scanning Liquidity...
+
+ETH
+Building Signals...
+
+SOL
+Analyzing Orderbook...
+
+XRP
+Waiting AI Confirmation...
+
+Randomize or rotate these states until AI data is available.
+
+Dashboard should feel alive.
+
+====================================================
+8. TYPOGRAPHY
+====================================================
+
+Increase hierarchy.
+
+Asset names:
+
+BTC
+ETH
+SOL
+XRP
+
+must be visually dominant.
+
+Subtitle
+
+3 MARKETS
+
+should become smaller and lighter.
+
+Use stronger contrast.
+
+====================================================
+9. SYSTEM HEALTH
+====================================================
+
+Current health panel is visually repetitive.
+
+Improve readability.
+
+Keep green indicators.
+
+Reduce unnecessary spacing.
+
+Improve alignment.
+
+Do NOT redesign.
+
+====================================================
+10. AI PIPELINE
+====================================================
+
+Reduce total height around 15%.
+
+Reduce glow intensity.
+
+Keep animations.
+
+Add a subtle moving data-flow animation across connection lines.
+
+Animation must be slow and elegant.
+
+No flashy effects.
+
+====================================================
+11. CONFIDENCE RINGS
+====================================================
+
+Increase center number readability.
+
+Improve ring animation slightly.
+
+Very subtle pulse only.
+
+====================================================
+12. AI THINKING FEED
+====================================================
+
+Current feed wastes vertical space.
+
+Reduce panel height.
+
+Approximately:
+
+80-90px
+
+Feed should internally auto-scroll.
+
+Newest entries remain visible.
+
+Increase font readability slightly.
+
+====================================================
+13. AI LIVE FEED
+====================================================
+
+Same optimization.
+
+Reduce height.
+
+Internal scrolling only.
+
+Improve typography hierarchy.
+
+====================================================
+14. FOOTER
+====================================================
+
+Reduce footer height approximately 20%.
+
+Improve crypto ticker contrast.
+
+Keep news ticker visible.
+
+Remove unnecessary padding.
+
+====================================================
+15. BORDER SYSTEM
+====================================================
+
+Current borders are still slightly too visible.
+
+Reduce opacity another 10%.
+
+Content should stand out more than borders.
+
+====================================================
+16. GLOW EFFECTS
+====================================================
+
+Reduce glow intensity approximately 20%.
+
+Dashboard should feel premium.
+
+Avoid excessive neon.
+
+Glow should support the content instead of dominating it.
+
+====================================================
+17. RESPONSIVE DESIGN
+====================================================
+
+Create proper responsive breakpoints.
+
+Desktop Large
+Desktop
+Laptop
+iPad Landscape
+iPad Portrait
+
+Each breakpoint should adjust:
+
+chart height
+
+card height
+
+font sizes
+
+spacing
+
+pipeline height
+
+feed height
+
+without breaking layout.
+
+====================================================
+18. PERFORMANCE
+====================================================
+
+Do not add heavy animations.
+
+Avoid unnecessary DOM updates.
+
+Keep CSS efficient.
+
+Maintain smooth 60fps rendering.
+
+====================================================
+19. DO NOT CHANGE
+====================================================
+
+Do NOT modify:
+
+Backend
+
+Trading engine
+
+Market logic
+
+AI logic
+
+API
+
+Database
+
+Data flow
+
+Grid structure
+
+Overall dashboard layout
+
+Business logic
+
+This task is strictly a CSS/UI/UX refinement and responsive optimization pass.
+
+====================================================
+20. FINAL VERIFICATION
+====================================================
+
+Before finishing, verify:
+
+✓ No vertical scroll on iPad Landscape
+
+✓ No vertical scroll on standard laptop
+
+✓ Dashboard fits inside 100vh
+
+✓ Information density improved
+
+✓ Market cards are more compact
+
+✓ Header is slimmer
+
+✓ Chart remains primary focus
+
+✓ AI feeds scroll internally
+
+✓ Pipeline is more compact
+
+✓ Footer is slimmer
+
+✓ Professional institutional trading terminal appearance maintained
+
+Apply all refinements in one implementation pass.
