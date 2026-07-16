@@ -1,0 +1,149 @@
+Lakukan perubahan terakhir pada panel kiri (MARKET UNIVERSE).
+
+Ini adalah perubahan struktur terakhir sebelum UI Freeze benar-benar selesai.
+
+## Tujuan
+
+Panel kiri harus menjadi **Scanner Universe**, yaitu tempat AI memonitor seluruh kombinasi Asset × Timeframe.
+
+Jangan lagi mengulang tulisan BTC tiga kali, ETH tiga kali, dst.
+
+---
+
+## Struktur baru
+
+Gunakan struktur seperti berikut:
+
+BTC
+5m
+15m
+1H
+
+ETH
+5m
+15m
+1H
+
+SOL
+5m
+15m
+1H
+
+XRP
+5m
+15m
+1H
+
+Gunakan icon/logo asset yang sudah ada.
+
+Setiap asset menjadi satu grup.
+
+Setiap timeframe menjadi child dari asset tersebut.
+
+---
+
+## Layout
+
+Asset Name
+
+* lebih besar
+* bold
+* menjadi anchor utama
+
+Timeframe
+
+* sedikit lebih kecil
+* rata kiri
+* sejajar
+* beri indent agar jelas merupakan child dari asset
+
+Jangan gunakan tabel.
+
+Jangan gunakan grid baru.
+
+Jangan mengubah ukuran panel.
+
+Cukup ubah susunan informasi.
+
+---
+
+## Placeholder
+
+Karena Scanner Engine belum selesai,
+
+jangan tampilkan:
+
+24
+
+0
+
+—
+
+dummy score
+
+dummy ranking
+
+dummy confidence
+
+Pada setiap timeframe cukup tampilkan status sederhana seperti:
+
+Scanning
+
+atau
+
+Ready
+
+atau biarkan kosong.
+
+Jangan tampilkan angka palsu.
+
+---
+
+## Future Ready
+
+Struktur ini harus disiapkan agar nanti Scanner Engine hanya mengisi nilai di kanan timeframe.
+
+Contoh nanti:
+
+BTC
+
+5m      92
+
+15m     84
+
+1H      71
+
+tanpa perlu mengubah layout lagi.
+
+---
+
+## Jangan mengubah
+
+* ukuran dashboard
+* warna utama
+* typography global
+* panel lain
+* AI Current Target
+* Decision Engine
+* Chart
+* KPI
+* Feed
+
+Hanya panel MARKET UNIVERSE yang diubah.
+
+Setelah selesai, anggap panel kiri FINAL.
+
+Sesudah itu seluruh development berpindah ke backend AI sesuai roadmap:
+
+1. Market Scanner Engine
+2. Market Evaluation Engine
+3. Opportunity Ranking Engine
+4. Confidence Engine
+5. Decision Engine
+6. Risk Engine Integration
+7. Paper Trading Engine
+8. Trade Management
+9. Performance Analytics
+10. AI Learning
+
+Tidak ada redesign UI lagi kecuali untuk mendukung fitur AI baru.

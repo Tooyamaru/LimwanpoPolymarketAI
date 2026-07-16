@@ -1,0 +1,429 @@
+LIMWANPO AI — FINAL DASHBOARD POLISH (LAST 10%)
+IMPORTANT
+
+Before writing any code:
+
+Read the entire frontend first.
+
+Read:
+
+backend/app/static/index.html
+dashboard.js
+styles.css
+every dashboard component
+
+Understand the current implementation completely.
+
+Do NOT modify backend.
+
+Do NOT modify AI.
+
+Do NOT modify trading logic.
+
+Do NOT modify paper trading.
+
+Frontend only.
+
+VERY IMPORTANT
+
+Remember forever:
+
+THIS IS NOT A TRADING TERMINAL.
+
+THIS IS NOT BINANCE.
+
+THIS IS NOT BYBIT.
+
+THIS IS NOT METATRADER.
+
+THIS IS
+
+POLYMARKET AI
+
+Everything displayed must represent prediction markets.
+
+Never redesign it into a crypto trading terminal.
+
+OBJECTIVE
+
+Current dashboard is about 90% complete.
+
+This task is ONLY polishing.
+
+Do not redesign.
+
+Do not invent new features.
+
+1 MARKET UNIVERSE
+
+This is the most important section.
+
+Every asset must become a TRUE CARD.
+
+Current version still looks like a table.
+
+We want
+
+BTC
+--------------------------------
+
+Open Positions : 2
+
+Capital Used : $50
+
+────────────────────────
+
+5M CARD
+
+────────────────────────
+
+15M CARD
+
+────────────────────────
+
+1H CARD
+
+NOT
+
+BTC
+
+5M
+
+15M
+
+1H
+
+Every timeframe must be visually separated.
+
+Each timeframe has:
+
+background
+
+border
+
+padding
+
+rounded corner
+
+spacing
+
+shadow
+
+2 REMOVE "5M • 15M • 1H"
+
+Current asset header still shows
+
+5M • 15M • 1H
+
+Delete it.
+
+Replace with
+
+Open Positions : X
+
+Capital Used : $XX
+
+If no position
+
+Open Positions : 0
+
+Capital Used : $0
+3 PRICE TO BEAT
+
+MOST IMPORTANT.
+
+Every timeframe card MUST display
+
+Price To Beat
+
+61,800
+
+This is Polymarket.
+
+This value is more important than Live Probability.
+
+Hierarchy becomes
+
+Price To Beat
+
+↓
+
+Current Price
+
+↓
+
+Difference
+
+↓
+
+Probability
+
+4 CURRENT PRICE
+
+Show
+
+Current Price
+
+61,742
+
+NOT
+
+Live Probability
+
+5 DIFFERENCE
+
+Show
+
+Difference
+
++58
+
+-24
+
+Green
+
+Red
+
+Automatically colored.
+
+6 INFORMATION ORDER
+
+Every timeframe card becomes
+
+TOP
+
+YES Price
+
+NO Price
+
+Spread
+
+Price To Beat
+
+Current Price
+
+Difference
+
+Position
+
+BUY YES
+
+BUY NO
+
+NONE
+
+Stake
+
+Contracts
+
+Entry Probability
+
+Current Probability
+
+Live PnL
+
+Age
+
+Engine Score
+
+Status
+
+7 ENGINE SCORE
+
+Current Engine Score is too small.
+
+Increase visibility.
+
+Use
+
+Engine Score
+
+34%
+
+instead of tiny yellow text.
+
+8 CARD BORDER
+
+Current borders still disappear.
+
+Increase border visibility about 20%.
+
+Keep cyan.
+
+Do NOT use white.
+
+9 SYSTEM HEALTH
+
+Current layout is almost correct.
+
+Make every row
+
+Signal         100%
+
+Opportunity    100%
+
+Strategy       100%
+
+Risk           100%
+
+Execution      100%
+
+Universe       100%
+
+Refresh        100%
+
+Analytics      100%
+
+Exit           100%
+
+Label left.
+
+Percentage right.
+
+Perfect alignment.
+
+Two-column layout remains.
+
+10 EXECUTION PIPELINE
+
+Keep current pipeline.
+
+Improve spacing only.
+
+Icons should feel connected.
+
+Reduce unnecessary gaps.
+
+More visual flow.
+
+11 MARKET CARD SPACING
+
+Increase spacing between
+
+5M
+
+15M
+
+1H
+
+Each timeframe should clearly feel independent.
+
+12 CARD TITLE
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+Make asset title slightly stronger.
+
+Current version too weak.
+
+13 VISUAL HIERARCHY
+
+The user's eye should naturally see
+
+Asset
+
+↓
+
+Price To Beat
+
+↓
+
+Current Price
+
+↓
+
+Difference
+
+↓
+
+Position
+
+↓
+
+PnL
+
+Everything else becomes secondary.
+
+14 POLYMARKET STYLE
+
+Everything must feel like prediction markets.
+
+Never resemble Binance.
+
+Never resemble TradingView.
+
+Never resemble MetaTrader.
+
+15 DO NOT TOUCH
+
+Do NOT modify
+
+Backend
+
+API
+
+Trading logic
+
+AI
+
+Paper Trading
+
+Footer
+
+Live Chart
+
+Engine Logic
+
+FINAL VALIDATION
+
+Before finishing verify:
+
+✓ Footer unchanged
+
+✓ Backend unchanged
+
+✓ AI unchanged
+
+✓ Chart unchanged
+
+✓ Price To Beat visible
+
+✓ Current Price visible
+
+✓ Difference visible
+
+✓ Asset cards restored
+
+✓ Timeframe cards visually separated
+
+✓ Open Positions displayed
+
+✓ Capital Used displayed
+
+✓ Engine Score readable
+
+✓ Better borders
+
+✓ Better spacing
+
+✓ Better hierarchy
+
+✓ Prediction market appearance
+
+✓ No trading terminal appearance
+
+If everything above is complete,
+
+STOP.
+
+Do not redesign anything else.
+
+Catatan tambahan untuk Replit (penting):
+
+Setelah revisi ini selesai, anggap dashboard sebagai UI Final v1.0. Jangan lagi melakukan perubahan layout besar tanpa instruksi eksplisit. Pengembangan berikutnya harus fokus pada kualitas AI, evaluasi keputusan, peningkatan akurasi prediksi, paper trading, dan kesiapan live trading di Polymarket, bukan lagi pada perubahan tampilan dashboard.

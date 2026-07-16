@@ -1,0 +1,113 @@
+STOP.
+
+JANGAN mengubah arsitektur project.
+
+JANGAN mengubah backend.
+
+JANGAN membuat dummy data.
+
+JANGAN mengubah endpoint API.
+
+================================================
+
+TASK 1
+FINAL SPACING POLISH
+
+Rapikan seluruh Market Universe Card.
+
+Target:
+
+• seluruh card mempunyai tinggi identik
+
+• seluruh row mempunyai jarak yang konsisten
+
+• label dan value tidak boleh saling menempel
+
+• TARGET dan PROFIT harus sejajar horizontal
+
+• CONF GAP SPREAD harus mempunyai 3 kolom yang sama lebar
+
+• Countdown dan Status harus sejajar pada baseline
+
+• seluruh value rata kanan
+
+• seluruh label rata kiri
+
+• padding dibuat konsisten
+
+Gunakan CSS Grid.
+
+Jangan memakai margin acak.
+
+================================================
+
+TASK 2
+
+LIVE HEADER PRICE
+
+Harga BTC ETH SOL XRP pada header card TIDAK boleh menggunakan cache lama.
+
+Saya ingin harga benar-benar bergerak mengikuti market.
+
+Tetapi dashboard harus tetap ringan.
+
+WAJIB menggunakan Binance MiniTicker WebSocket.
+
+Contoh:
+
+wss://stream.binance.com:9443/ws/!miniTicker@arr
+
+atau stream individual:
+
+btcusdt@miniTicker
+ethusdt@miniTicker
+solusdt@miniTicker
+xrpusdt@miniTicker
+
+JANGAN polling REST setiap detik.
+
+JANGAN fetch API tiap detik.
+
+Gunakan satu websocket.
+
+Saat websocket menerima update:
+
+Update hanya element:
+
+.asset-live-px
+
+tanpa render ulang seluruh Market Universe.
+
+Tanpa rebuild seluruh DOM.
+
+================================================
+
+TASK 3
+
+Pastikan:
+
+✓ CPU tetap ringan
+
+✓ Tidak ada memory leak
+
+✓ Tidak ada reconnect loop
+
+✓ Jika websocket putus lakukan reconnect otomatis
+
+✓ Backend tidak berubah
+
+✓ API backend tidak berubah
+
+✓ Semua data prediction tetap berasal dari backend
+
+✓ Hanya harga header yang berasal dari Binance websocket.
+
+================================================
+
+Setelah selesai lakukan review sendiri dan pastikan:
+
+✓ spacing rapi
+✓ semua card identik
+✓ header bergerak real-time
+✓ tidak ada lag
+✓ tidak ada dummy

@@ -1,0 +1,360 @@
+LIMWANPO AI — PERMANENT STABILIZATION & DEVELOPMENT MODE
+READ FIRST (MANDATORY)
+
+Before touching ANY code, you MUST completely read:
+
+CONSTITUTION.md
+replit.md
+.agents/memory/product-constitution.md
+
+If any of these files are missing, STOP immediately and ask the user.
+
+You are NOT allowed to assume this project is a trading platform.
+
+PROJECT IDENTITY
+
+This project is:
+
+LIMWANPO AI
+
+It is a
+
+AI-assisted POLYMARKET probability analysis platform.
+
+It is NOT:
+
+Trading platform
+Exchange terminal
+Crypto trading bot
+Futures bot
+Arbitrage bot
+Portfolio manager
+
+Never classify it as any of those.
+
+PRIMARY OBJECTIVE
+
+The purpose of this software is ONLY:
+
+Read official Polymarket markets.
+Read official Polymarket probabilities.
+Analyze probabilities.
+Produce prediction recommendations.
+Monitor prediction performance.
+
+NOT execute trades.
+
+PERMANENT DATA SOURCE RULES
+
+These rules are ABSOLUTE.
+
+MARKET DATA
+
+Market information MUST originate from
+
+OFFICIAL POLYMARKET ONLY.
+
+Examples:
+
+market title
+market description
+resolution date
+liquidity
+volume
+YES probability
+NO probability
+market status
+condition id
+token id
+
+Source:
+
+Official Polymarket APIs only.
+
+Never fabricate.
+
+Never simulate.
+
+Never replace with Binance.
+
+PREDICTION DATA
+
+Prediction cards MUST use
+
+ONLY
+
+Polymarket probabilities.
+
+Never derive prediction probability from Binance.
+
+MARKET UNIVERSE
+
+Everything inside Market Universe MUST come from Polymarket.
+
+That includes:
+
+cards
+title
+confidence
+monitoring
+countdown
+market state
+prediction state
+
+No Binance information is allowed inside Market Universe.
+
+CHART
+
+Chart is the ONLY place allowed to use external market context.
+
+Allowed:
+
+Binance
+Chainlink
+
+Purpose:
+
+Context only.
+
+Never use chart data to replace Polymarket probabilities.
+
+PRICE TO BEAT
+
+Price To Beat is NOT a trading target.
+
+It is ONLY:
+
+Reference price at prediction creation.
+
+Never rename it to:
+
+Entry
+TP
+SL
+Take Profit
+Target Price
+Exit
+GAP
+
+Gap means:
+
+Difference between
+
+Current external reference price
+
+and
+
+Price To Beat.
+
+Nothing else.
+
+FORBIDDEN VOCABULARY
+
+The following words are permanently forbidden inside UI.
+
+Never render:
+
+Trade
+
+Trading
+
+Order
+
+Orderbook
+
+Bid
+
+Ask
+
+Spread
+
+Leverage
+
+Margin
+
+Position
+
+Portfolio
+
+Exposure
+
+Capital
+
+Entry
+
+Exit
+
+Take Profit
+
+Stop Loss
+
+Broker
+
+Exchange
+
+Long
+
+Short
+
+P/L
+
+PnL
+
+Risk Reward
+
+Whenever these concepts appear internally,
+
+translate them into LIMWANPO terminology.
+
+Examples
+
+Position
+
+→ Prediction
+
+Portfolio
+
+→ Prediction Workspace
+
+Exposure
+
+→ Coverage
+
+Capital
+
+→ Budget
+
+Entry
+
+→ Open At
+
+Exit
+
+→ Resolution
+
+Orderbook
+
+→ Order Flow
+
+UI STABILITY RULES
+
+Never redesign the dashboard.
+
+Never move panels unless requested.
+
+Never reorder layout.
+
+Never invent new cards.
+
+Never remove existing information.
+
+Never compress information by deleting content.
+
+If additional space is needed:
+
+Optimize spacing,
+
+NOT information.
+
+REGRESSION RULE
+
+Before modifying ANY UI,
+
+compare:
+
+Current implementation
+
+vs
+
+Existing implementation.
+
+Never remove:
+
+Target
+Gap
+Confidence
+Countdown
+Status
+Open At
+Coverage
+Entries
+
+unless explicitly instructed.
+
+If a change causes any existing information to disappear,
+
+ROLL BACK.
+
+DEVELOPMENT WORKFLOW
+
+For every task:
+
+Step 1
+
+Read existing implementation.
+
+Step 2
+
+Analyze.
+
+Step 3
+
+Explain findings.
+
+Step 4
+
+Propose solution.
+
+Step 5
+
+Wait for approval.
+
+Step 6
+
+Implement.
+
+Never skip analysis.
+
+API INTEGRATION PRIORITY
+
+Future work priority:
+
+Complete Polymarket integration.
+
+Replace every remaining simulated value.
+
+Remove placeholder values.
+
+Audit every displayed value.
+
+Verify every value originates from approved source.
+
+BEFORE EVERY RESPONSE
+
+Internally verify:
+
+Is this still a Polymarket prediction platform?
+
+If the answer is not YES,
+
+STOP.
+
+Re-read the Constitution.
+
+SUCCESS CRITERIA
+
+The project is considered correct only if:
+
+✔ Every Market Universe card is sourced from Polymarket.
+
+✔ Every probability comes from Polymarket.
+
+✔ Dashboard terminology matches Constitution.
+
+✔ Chart may use Binance/Chainlink only as external reference.
+
+✔ No trading vocabulary leaks into UI.
+
+✔ No regression removes previously approved information.
+
+✔ UI changes preserve all existing functionality.

@@ -1,0 +1,285 @@
+LIMWANPO AI — PHASE 10B FORCED EXIT PRICE LIVE VALIDATION
+
+Konteks:
+Phase 10 sudah selesai dengan status:
+
+DECISION ACTIVATION: PASS WITH REMEDIATION
+
+Fix yang sudah diterapkan:
+
+* TradeDecision sekarang punya forced_exit_price.
+* Exit Engine menulis resolution-based exit price ke forced_exit_price untuk EXPIRY_EXIT.
+* Execution Engine memakai forced_exit_price jika tersedia, bukan menghitung ulang dari stale orderbook.
+* App restart clean.
+* Tests terkait Exit/Execution Engine sudah pass.
+* Full suite masih punya beberapa failure pre-existing/unrelated.
+
+Tujuan Phase 10B:
+Validasi live bahwa saat posisi baru expired, close price dan realized_pnl benar-benar memakai direct Polymarket resolution final price, bukan stale CLOB/opportunity price.
+
+JANGAN mulai dari nol.
+JANGAN redo Phase 9D.
+JANGAN redo Phase 10.
+JANGAN ubah UI.
+JANGAN redesign.
+JANGAN tambah provider baru.
+JANGAN tambah dummy/fake outcome.
+JANGAN paksa BUY.
+JANGAN fabricate expired position.
+
+==================================================
+STEP 1 — READ CURRENT STATE
+===========================
+
+Baca file:
+
+* AI_DECISION_INTEGRITY_AUDIT.md
+* backend/app/services/exit_engine.py
+* backend/app/services/execution_engine.py
+* backend/app/models/trade_decision.py
+* backend/app/models/position.py
+* backend/app/models/outcome_learning.py
+* backend/app/database.py
+* backend/app/config/settings.py
+
+Lalu jalankan:
+
+* git status
+* git diff
+* python -m compileall -q backend/app
+
+Pastikan code Phase 10 masih ada:
+
+* TradeDecision.forced_exit_price
+* database migration / ADD COLUMN untuk forced_exit_price
+* Exit Engine menulis forced_exit_price untuk EXPIRY_EXIT
+* Execution Engine memakai forced_exit_price saat close position
+
+==================================================
+STEP 2 — CHECK OPEN POSITIONS NEAR EXPIRY
+=========================================
+
+Query positions:
+
+Tampilkan semua OPEN positions:
+
+* position_id
+* asset
+* timeframe
+* side
+* condition_id
+* entry_price
+* quantity
+* opened_at
+* market end_time
+* minutes_to_expiry
+* market status
+
+Jika tidak ada OPEN position yang expired / near expiry:
+
+* tulis NO_EXPIRY_POSITION_AVAILABLE_YET.
+* final status tetap PHASE 10B PENDING LIVE EXPIRY VALIDATION.
+* jangan fabricate.
+
+Jika ada OPEN position dengan end_time < now:
+
+* lanjut Step 3.
+
+==================================================
+STEP 3 — VERIFY DIRECT RESOLUTION FOR POSITION
+==============================================
+
+Untuk expired OPEN position:
+
+Join dengan outcome_learnings:
+
+* condition_id
+* outcome_source
+* winning_side
+* winning_token_id
+* final_yes_price
+* final_no_price
+* resolution_note
+
+Wajib:
+
+* outcome_source = DIRECT_POLYMARKET_RESOLUTION
+
+Jika direct resolution belum tersedia:
+
+* jangan close pakai fake price.
+* tunggu / jalankan Outcome Learning cycle.
+* jika masih belum tersedia, dokumentasikan NOT_AVAILABLE.
+
+==================================================
+STEP 4 — RUN EXIT ENGINE / EXECUTION ENGINE
+===========================================
+
+Jalankan atau tunggu cycle:
+
+* Outcome Learning cycle jika resolution belum ada
+* Exit Engine cycle
+* Risk / Execution Engine cycle
+
+Cek apakah dibuat TradeDecision:
+
+* decision = CLOSE_POSITION
+* exit_reason = EXPIRY_EXIT
+* forced_exit_price is not null
+* forced_exit_price = final_yes_price untuk LONG_YES
+* forced_exit_price = final_no_price untuk LONG_NO
+
+==================================================
+STEP 5 — VERIFY POSITION CLOSE PRICE
+====================================
+
+Setelah Execution Engine memproses close:
+
+Query position row:
+
+* position_id
+* side
+* entry_price
+* exit_price
+* quantity
+* realized_pnl
+* close_reason
+* closed_at
+* status
+
+Validasi:
+
+LONG_YES:
+
+* exit_price = final_yes_price
+
+LONG_NO:
+
+* exit_price = final_no_price
+
+realized_pnl:
+
+* harus sesuai formula project:
+  realized_pnl = (exit_price - entry_price) * quantity
+  atau sesuai formula position service existing.
+
+Tidak boleh:
+
+* exit_price dari stale CLOB
+* exit_price 0.49 kalau final_no_price = 0.0
+* forced_exit_price null untuk EXPIRY_EXIT
+* realized_pnl memakai stale quote
+
+==================================================
+STEP 6 — DECISION ACTIVATION CHECK
+==================================
+
+Cek decision distribution terbaru:
+
+* WAIT
+* BUY_YES
+* BUY_NO
+* risk_gated true/false
+* avg risk_score
+* current open positions
+* expired_positions_open count
+
+Pastikan:
+
+* expired_positions_open = 0
+* risk gate tidak diblokir stale position
+* BUY_YES / BUY_NO tetap berasal dari formula, bukan hardcoded
+
+==================================================
+STEP 7 — TEST / VALIDATION
+==========================
+
+Jalankan:
+
+* python -m compileall -q backend/app
+* pytest untuk test_exit_engine.py
+* pytest untuk test_execution_engine.py
+* workflow restart
+* cek logs satu full cycle
+
+Jika ada failure:
+
+* klasifikasikan NEW_FAILURE atau PRE_EXISTING_FAILURE.
+
+Search backend:
+
+* forced_exit_price
+* EXPIRY_EXIT
+* final_yes_price
+* final_no_price
+* stale orderbook
+* stale opportunity
+* hardcoded BUY
+* fake confidence
+* fake outcome
+* default winner
+
+Klasifikasikan:
+
+* REAL_DATA
+* DIRECT_POLYMARKET_RESOLUTION
+* SAFE
+* TEST_ONLY
+* INVALID
+* FIXED
+
+==================================================
+STEP 8 — UPDATE AUDIT REPORT
+============================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md dengan section:
+
+PHASE 10B — FORCED EXIT PRICE LIVE VALIDATION
+
+Isi:
+
+1. Open positions checked
+2. Expired position found / not found
+3. Direct resolution evidence
+4. TradeDecision forced_exit_price evidence
+5. Execution close-price evidence
+6. Position realized_pnl validation
+7. Decision activation after close
+8. Tests run
+9. Remaining risks
+10. Final status
+
+Final status:
+
+* PHASE 10B: PASS
+  jika expired position live berhasil close dengan forced_exit_price = final resolution price.
+
+* PHASE 10B: PENDING LIVE EXPIRY VALIDATION
+  jika belum ada posisi expired untuk diuji.
+
+* PHASE 10B: FAIL
+  jika expired position close masih memakai stale CLOB/opportunity price.
+
+==================================================
+STEP 9 — FINAL RESPONSE FORMAT
+==============================
+
+Jawab dengan format:
+
+1. Files read
+2. Git diff summary
+3. Open positions / expiry status
+4. Direct resolution evidence
+5. TradeDecision forced_exit_price result
+6. Execution close-price result
+7. Position PnL validation
+8. Decision activation status
+9. Tests run
+10. Search classification
+11. Audit report update
+12. Final Phase 10B status
+13. Exact next recommended step
+
+Jangan jawab umum.
+Jangan klaim PASS kalau belum ada expired position live.
+Jangan fabricate expired position.

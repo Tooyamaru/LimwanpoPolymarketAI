@@ -1,0 +1,506 @@
+# LIMWANPO AI – FINAL UI REFINEMENT (NO SHORTCUTS)
+
+## OBJECTIVE
+
+This is **NOT** a redesign.
+
+This is a **professional UI refinement pass**.
+
+The objective is to improve readability, hierarchy, spacing, density, responsiveness, and polish WITHOUT changing the existing dashboard identity.
+
+Do NOT simplify the dashboard.
+
+Do NOT remove information.
+
+Do NOT replace information with empty space.
+
+The dashboard should look like a professional Bloomberg / TradingView institutional terminal.
+
+---
+
+# VERY IMPORTANT
+
+Before touching anything:
+
+1. Read the ENTIRE dashboard.
+2. Inspect every section.
+3. Compare the current implementation with the specification.
+4. Make ONE coordinated implementation.
+5. Verify everything visually.
+6. Only finish after every checklist item is satisfied.
+
+Do NOT stop halfway.
+
+Do NOT skip difficult parts.
+
+---
+
+# CRITICAL RULE
+
+Information density MUST NOT decrease.
+
+If a card currently contains 10 pieces of information,
+after refinement it must still contain 10 pieces of information.
+
+Never sacrifice information for aesthetics.
+
+Professional trading dashboards prioritize information.
+
+---
+
+# GLOBAL UI REQUIREMENTS
+
+Everything must become:
+
+• cleaner
+• tighter
+• easier to scan
+• visually balanced
+
+without becoming empty.
+
+Whitespace should be reduced intelligently.
+
+Never create giant empty areas.
+
+---
+
+# 1. MARKET CARDS
+
+Current issue:
+
+Cards lost too much information.
+
+Some rows disappeared.
+
+Some labels disappeared.
+
+Some values disappeared.
+
+This is NOT acceptable.
+
+Restore every missing element.
+
+Each card must contain all required information.
+
+---
+
+## CARD LAYOUT
+
+NO POSITION
+
+UP / DOWN
+
+Target
+
+Gap
+
+Confidence
+
+Time Left
+
+Status
+
+---
+
+ACTIVE POSITION
+
+UP / DOWN
+
+Target
+
+Gap
+
+Entry
+
+Exposure
+
+Entries
+
+Confidence
+
+Time Left
+
+Status
+
+No information may disappear.
+
+---
+
+# 2. TARGET
+
+Target is the most important number.
+
+It must dominate visually.
+
+Requirements:
+
+larger font
+
+bright cyan
+
+bold
+
+strong glow
+
+perfect alignment
+
+Target should instantly attract the eye.
+
+---
+
+# 3. GAP
+
+Gap is secondary.
+
+Smaller.
+
+Lower opacity.
+
+Still green/red.
+
+Never compete with Target.
+
+---
+
+# 4. CONFIDENCE
+
+Current implementation has problems.
+
+Sometimes disappears.
+
+Sometimes only label exists.
+
+Sometimes value disappears.
+
+Requirements:
+
+Always render correctly.
+
+If confidence exists:
+
+CONFIDENCE
+
+24%
+
+If unavailable:
+
+CONFIDENCE
+
+—
+
+Never collapse the row.
+
+Never create layout jumps.
+
+---
+
+# 5. COUNTDOWN
+
+Countdown should always render.
+
+Never disappear.
+
+Never overlap.
+
+Format:
+
+22h 18m
+
+18m
+
+48s
+
+RESOLVED
+
+No label above.
+
+Only:
+
+⏳ 22h 18m
+
+---
+
+# 6. STATUS
+
+Always last row.
+
+Never beside countdown.
+
+Always below countdown.
+
+Spacing:
+
+Countdown
+
+Status
+
+Nothing after Status.
+
+---
+
+# 7. HEADER OF EACH ASSET
+
+Current header is still not optimal.
+
+Need compact professional layout.
+
+One line only.
+
+Example:
+
+BTC
+
+$63,978
+
+2 Predictions • $0 Exposure
+
+Everything aligned.
+
+Nothing wrapping.
+
+---
+
+# 8. CARD SPACING
+
+Current cards still waste space.
+
+Reduce:
+
+top padding
+
+bottom padding
+
+internal gaps
+
+row spacing
+
+but NEVER remove information.
+
+Goal:
+
+more information
+
+less dead space
+
+same readability.
+
+---
+
+# 9. EXECUTION PIPELINE
+
+Current execution pipeline is broken.
+
+Problems:
+
+labels overlap
+
+icons overlap
+
+texts overflow
+
+scan text collides
+
+spacing inconsistent
+
+Fix everything.
+
+Requirements:
+
+perfect horizontal alignment
+
+equal spacing
+
+icons centered
+
+titles centered
+
+subtitle below
+
+scan text centered vertically
+
+no clipping
+
+no overlap
+
+no overflow
+
+The entire execution pipeline should look professionally designed.
+
+---
+
+# 10. SYSTEM HEALTH
+
+Ensure:
+
+equal row spacing
+
+aligned percentages
+
+aligned labels
+
+no clipping
+
+consistent font sizes
+
+---
+
+# 11. MARKET UNIVERSE
+
+Every asset column must have:
+
+identical width
+
+identical spacing
+
+identical card heights
+
+perfect alignment.
+
+---
+
+# 12. RESPONSIVENESS
+
+Dashboard must work correctly on:
+
+Desktop
+
+1366×768
+
+1440×900
+
+1600×
+
+1920×
+
+iPad Landscape
+
+1024×768
+
+1180×
+
+1366×
+
+No clipping.
+
+No overflow.
+
+No hidden information.
+
+No overlapping.
+
+No horizontal scrolling.
+
+No vertical clipping.
+
+---
+
+# 13. VISUAL HIERARCHY
+
+Highest priority:
+
+Target
+
+Current Price
+
+Chart
+
+Second:
+
+Confidence
+
+Gap
+
+Entry
+
+Exposure
+
+Third:
+
+Status
+
+Countdown
+
+Labels
+
+Nothing should visually compete with Target.
+
+---
+
+# 14. DO NOT REMOVE FEATURES
+
+Do NOT remove:
+
+Target
+
+Gap
+
+Confidence
+
+Exposure
+
+Entries
+
+Status
+
+Countdown
+
+Labels
+
+Prediction data
+
+Any card content
+
+No simplification.
+
+---
+
+# 15. CLEANUP
+
+Remove only:
+
+unused CSS
+
+duplicate CSS
+
+obsolete spacing rules
+
+conflicting media queries
+
+Do NOT remove working functionality.
+
+---
+
+# 16. FINAL VERIFICATION
+
+Before finishing:
+
+Audit the entire dashboard.
+
+Verify:
+
+✓ no overlapping
+
+✓ no clipping
+
+✓ no missing information
+
+✓ no hidden rows
+
+✓ no broken responsiveness
+
+✓ all cards consistent
+
+✓ execution pipeline aligned
+
+✓ system health aligned
+
+✓ market cards complete
+
+✓ dashboard visually balanced
+
+If any issue still exists,
+
+continue refining until every point passes.
+
+Only then consider the task complete.

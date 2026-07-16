@@ -1,0 +1,412 @@
+=========================================================
+LIMWANPO AI
+PHASE 2.1
+STABILIZATION MODE
+=========================================================
+
+READ THIS ENTIRE PROMPT FIRST.
+
+DO NOT MODIFY ANY CODE BEFORE YOU FINISH THE ANALYSIS.
+
+=========================================================
+PROJECT IDENTITY
+=========================================================
+
+This is NOT a crypto trading platform.
+
+This is NOT a futures platform.
+
+This is NOT a spot trading platform.
+
+This is NOT an exchange terminal.
+
+This is NOT an order execution system.
+
+This project is an
+
+AI Probability Analysis Platform
+
+built ONLY for Polymarket.
+
+The AI analyzes prediction markets.
+
+The AI DOES NOT trade.
+
+The AI DOES NOT execute orders.
+
+The AI DOES NOT manage positions like a trading bot.
+
+Everything displayed on this dashboard must reinforce that identity.
+
+=========================================================
+PRIMARY OBJECTIVE
+=========================================================
+
+Before touching APIs or AI logic,
+the entire dashboard must be stabilized.
+
+This phase is called
+
+PHASE 2.1
+STABILIZATION
+
+No new features.
+
+No redesign.
+
+No optimization.
+
+No AI improvements.
+
+No API migration.
+
+Only stabilization.
+
+=========================================================
+IMPORTANT RULE
+=========================================================
+
+DO NOT MODIFY ANYTHING IMMEDIATELY.
+
+First:
+
+1. Read CONSTITUTION.md
+
+2. Read replit.md
+
+3. Read the entire dashboard
+
+4. Read all render functions
+
+5. Read all CSS
+
+6. Read all Polymarket services
+
+7. Read all Binance services
+
+ONLY AFTER THE FULL ANALYSIS
+
+produce an audit.
+
+=========================================================
+ABSOLUTE DATA SOURCE RULES
+=========================================================
+
+Everything related to prediction markets
+MUST come from Polymarket.
+
+Examples:
+
+Prediction Cards
+
+Confidence
+
+Markets
+
+Resolution Time
+
+Market Status
+
+Market Title
+
+YES Probability
+
+NO Probability
+
+Liquidity
+
+Volume
+
+Description
+
+Category
+
+Question
+
+Resolution
+
+Outcome
+
+Market Universe
+
+Pipeline Counts
+
+Opportunity Engine
+
+Recommendation Engine
+
+ALL MUST originate from
+
+Polymarket.
+
+=========================================================
+
+Binance is NOT a prediction source.
+
+Binance is ONLY allowed for:
+
+• BTC Chart
+
+• ETH Chart
+
+• Oracle Price
+
+• Price To Beat calculation
+
+• Reference Price
+
+• Context Layer
+
+Nothing else.
+
+Binance MUST NEVER influence
+
+Prediction
+
+Confidence
+
+Recommendation
+
+Opportunity Score
+
+Decision Engine
+
+=========================================================
+FORBIDDEN VOCABULARY
+=========================================================
+
+Never introduce
+or reintroduce
+
+Trade
+
+Trading
+
+Trader
+
+Entry
+
+Exit
+
+Portfolio
+
+Capital
+
+Position
+
+Exposure
+
+Order
+
+Orderbook
+
+Bid
+
+Ask
+
+Spread
+
+Broker
+
+Exchange
+
+Margin
+
+Leverage
+
+PnL
+
+Stop Loss
+
+Take Profit
+
+Liquidation
+
+Risk Reward
+
+Funding
+
+Open Position
+
+Close Position
+
+These words are permanently forbidden.
+
+If one appears,
+
+replace it with project-approved terminology.
+
+=========================================================
+UI STABILIZATION RULES
+=========================================================
+
+Do NOT redesign.
+
+Keep layout.
+
+Keep colors.
+
+Keep spacing philosophy.
+
+Only fix:
+
+misalignment
+
+overlap
+
+clipping
+
+responsiveness
+
+spacing
+
+missing information
+
+visual hierarchy
+
+consistency
+
+Never remove existing information.
+
+Never invent new information.
+
+Never add dummy values.
+
+=========================================================
+PREDICTION CARD RULE
+=========================================================
+
+Every card must display only information
+that already exists inside Polymarket
+or is already produced by LIMWANPO AI.
+
+Do NOT invent metrics.
+
+Do NOT resurrect previously removed metrics.
+
+Specifically NEVER bring back
+
+Bid
+
+Ask
+
+Spread
+
+Depth
+
+Orderbook
+
+Funding
+
+Volume Profile
+
+Market Depth
+
+Order Flow
+
+Those have already been intentionally removed.
+
+=========================================================
+TARGET RULE
+=========================================================
+
+Price To Beat
+
+is one of the most important values.
+
+It must always remain visible.
+
+Never hide it.
+
+Never clip it.
+
+Never remove it.
+
+=========================================================
+ANALYSIS RULE
+=========================================================
+
+Before making ANY modification,
+produce an audit.
+
+The audit must contain
+
+PASS
+
+WARNING
+
+FAIL
+
+for every section.
+
+=========================================================
+MODIFICATION RULE
+=========================================================
+
+Never perform more than ONE logical change
+at a time.
+
+After each logical change
+
+verify
+
+review
+
+confirm
+
+then continue.
+
+Never batch 20 unrelated edits.
+
+=========================================================
+REGRESSION RULE
+=========================================================
+
+Before saving any modification
+
+verify that
+
+nothing previously fixed
+has reappeared.
+
+Examples
+
+Vocabulary
+
+Card Layout
+
+Dashboard Layout
+
+Pipeline
+
+Header
+
+Feeds
+
+Borders
+
+Responsive
+
+Constitution
+
+Everything must remain intact.
+
+=========================================================
+IF THERE IS ANY CONFLICT
+=========================================================
+
+CONSTITUTION.md
+
+always overrides
+
+all prompts
+
+all assumptions
+
+all AI defaults
+
+all optimization suggestions.
+
+=========================================================
+END OF PROMPT
+=========================================================

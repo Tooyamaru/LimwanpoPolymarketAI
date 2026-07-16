@@ -1,0 +1,283 @@
+LIMWANPO AI — PHASE 12K
+NATURAL SCALE-IN / SCALE-OUT LIVE OBSERVATION ONLY
+
+Konteks:
+
+Phase 12J sudah selesai:
+
+- MULTI-ENTRY: PASS
+- SCALE-IN DELTA GATE: PASS
+- SCALE-OUT CODE/TESTS: PASS
+- ROLLOVER ISOLATION: PASS
+- Full suite: 720/720 passed
+
+Current live condition:
+
+- 5 open positions
+- PORTFOLIO_POSITION_LIMIT memblokir sekitar 10 decisions per cycle
+- markets masih AMM-init
+- scale-in live belum pernah terlihat
+- SCALE_IN_NO_IMPROVEMENT belum pernah terpicu secara natural
+
+TUGAS:
+
+Jangan ubah code.
+Jangan ubah UI.
+Jangan ubah threshold.
+Jangan menaikkan portfolio limit.
+Jangan menurunkan SCALE_IN_MIN_OPPORTUNITY_DELTA.
+Jangan membuat fake entry/exit.
+Jangan memaksa BUY.
+Hanya lakukan runtime observation dan buktikan event natural.
+
+==================================================
+STEP 1 — CURRENT PORTFOLIO STATE
+==================================================
+
+Tampilkan:
+
+- open positions
+- partial positions
+- closed positions
+- active lots
+- total exposure
+- exposure per asset
+- exposure per condition_id
+- portfolio position limit
+- available slots
+- current risk score
+- current capital status
+
+Untuk setiap open position:
+
+- position_id
+- condition_id
+- asset
+- timeframe
+- side UP/DOWN
+- entry_sequence
+- entry_price
+- remaining_quantity
+- unrealized_pnl
+- opened_at
+- market end_time
+
+==================================================
+STEP 2 — OBSERVE NATURAL EXITS
+==================================================
+
+Monitor Exit Engine.
+
+Capture setiap candidate:
+
+- position_id
+- condition_id
+- exit reason
+- current price
+- entry price
+- unrealized pnl
+- time to expiry
+- decision created?
+- order created?
+- order filled?
+- close_quantity
+- remaining_quantity
+
+Jika exit diblokir atau dilewati, tampilkan exact reason.
+
+==================================================
+STEP 3 — VERIFY SLOT RELEASE
+==================================================
+
+Ketika posisi keluar:
+
+Before:
+- open lots
+- portfolio position count
+- available slots
+
+After:
+- open lots
+- portfolio position count
+- available slots
+
+Pastikan slot benar-benar dilepas setelah final exit.
+
+Partial exit tidak boleh dianggap melepas satu lot jika remaining_quantity masih > 0.
+
+==================================================
+STEP 4 — OBSERVE NEXT ENTRY CANDIDATES
+==================================================
+
+Setelah satu slot tersedia, monitor:
+
+- new first-entry candidates
+- scale-in candidates
+- blocked reasons
+- opportunity delta
+- price improvement
+- cooldown
+- exposure cap
+- same-side rule
+
+Classify each candidate:
+
+- FIRST_ENTRY
+- SCALE_IN_ALLOWED
+- SCALE_IN_NO_IMPROVEMENT
+- SCALE_IN_COOLDOWN
+- MAX_ENTRIES
+- MAX_LOTS
+- EXPOSURE_CAP
+- OPPOSITE_SIDE_CONFLICT
+- LOW_SCORE
+- NO_ORDER_FLOW
+
+==================================================
+STEP 5 — NATURAL SCALE-IN PROOF
+==================================================
+
+Jika scale-in terjadi, tampilkan:
+
+- condition_id
+- asset
+- timeframe
+- previous decision_id
+- new decision_id
+- previous opportunity score
+- new opportunity score
+- score delta
+- previous yes_mid
+- new yes_mid
+- price improvement
+- previous lot count
+- new lot count
+- previous IN count
+- new IN count
+- new entry_sequence
+- new order_id
+- new position_id
+- scale_in_reason
+
+Verify:
+
+- same condition_id
+- different order/position IDs
+- no duplicate execution
+- rule 1g passed legitimately
+- dashboard LOTS increases
+- dashboard IN increases
+- AI LIVE TRADES shows second IN / SCALE-IN
+
+==================================================
+STEP 6 — NATURAL SCALE-OUT PROOF
+==================================================
+
+Jika partial/final/expiry exit terjadi, tampilkan:
+
+- event type
+- position_id
+- condition_id
+- close_quantity
+- exit price
+- exit notional
+- realized PnL
+- remaining_quantity
+- status before/after
+- close reason
+
+Verify:
+
+- OUT count increases
+- OUT amount increases
+- LOTS updates correctly
+- PNL updates correctly
+- AI LIVE TRADES shows OUT
+- direction displayed UP/DOWN
+
+==================================================
+STEP 7 — ROLLOVER OBSERVATION
+==================================================
+
+Observe at least one 5M rollover.
+
+Capture:
+
+OLD:
+- condition_id
+- positions
+- lots
+- entry/exit totals
+- resolution state
+
+NEW:
+- condition_id
+- card summary
+
+Verify:
+
+- new card starts independently
+- old positions do not leak
+- old positions remain in history/resolution
+- scale-in previous-decision lookup does not use old condition_id
+
+==================================================
+STEP 8 — RUNTIME DURATION
+==================================================
+
+Observe for at least:
+
+- 30 minutes
+- one 5M rollover
+- one portfolio slot release if possible
+- several full engine cycles after slot release
+
+Report:
+
+- total cycles
+- decisions evaluated
+- first-entry candidates
+- scale-in candidates
+- allowed scale-ins
+- blocked scale-ins by reason
+- exits
+- rollovers
+
+Do not alter settings if no event appears.
+
+==================================================
+STEP 9 — FINAL STATUS
+==================================================
+
+Use:
+
+NATURAL SCALE-IN:
+- PASS
+- NOT YET OBSERVED
+- FAIL
+
+NATURAL SCALE-OUT:
+- PASS
+- NOT YET OBSERVED
+- FAIL
+
+PORTFOLIO SLOT RELEASE:
+- PASS
+- NOT YET OBSERVED
+- FAIL
+
+ROLLOVER LIVE:
+- PASS
+- NOT YET OBSERVED
+- FAIL
+
+TRADING RUNTIME:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+Jangan mengubah implementation.
+Jangan membuat test baru kecuali runtime menemukan bug nyata.
+Jangan fabricate.
+Jangan menurunkan threshold.

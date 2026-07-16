@@ -1,0 +1,517 @@
+LIMWANPO AI — PRE-MARKET / ACTIVE / EXPIRED STATE GATE AUDIT + FIX
+
+Konteks:
+Dashboard saat ini bisa menampilkan nilai seperti:
+
+- UP 50.5%
+- DOWN 49.5%
+- CONF 24%
+- SPREAD 1.00%
+- POTENTIAL PROFIT +$10.20
+- WAIT
+
+meskipun market belum benar-benar masuk waktu trading aktif.
+
+Masalah:
+Data seed/orderbook awal memang bisa sudah tersedia sebelum market aktif, tetapi dashboard dan AI tidak boleh menyajikannya seolah-olah itu keputusan live.
+
+Target:
+Pisahkan dengan tegas kondisi:
+
+- PRE_MARKET / UPCOMING
+- ACTIVE
+- EXPIRED
+- RESOLUTION_PENDING
+- RESOLVED
+
+JANGAN mulai dari nol.
+JANGAN redesign.
+JANGAN tambah provider baru.
+JANGAN tambah dummy/fake data.
+JANGAN paksa variasi.
+JANGAN ubah formula AI sebelum state gate terbukti benar.
+JANGAN izinkan entry/BUY pada market yang belum aktif atau sudah expired.
+JANGAN tampilkan seed data sebagai keputusan live tanpa label PRE-MARKET.
+
+==================================================
+STEP 1 — READ CURRENT MARKET STATE FLOW
+==================================================
+
+Baca semua file terkait:
+
+Backend:
+- market_universe_service.py
+- universe sync worker/repository
+- Gamma client
+- CLOB client
+- signal engine
+- opportunity engine
+- strategy engine
+- risk engine
+- decision engine
+- execution engine
+- exit engine
+- outcome learning service
+- market_universe model/schema
+- API endpoint yang dipakai dashboard
+- settings.py
+
+Frontend:
+- renderCard / equivalent
+- market status mapping
+- countdown logic
+- decision/status display
+- confidence display
+- UP/DOWN display
+- spread display
+- potential profit display
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+==================================================
+STEP 2 — IDENTIFY TRUE MARKET TIME FIELDS
+==================================================
+
+Untuk setiap market, identifikasi field waktu real:
+
+- start_time
+- event_start_time
+- market_start_time
+- open_time
+- end_time
+- close_time
+- active
+- closed
+- archived
+- accepting_orders jika ada
+- enable_order_book jika ada
+
+Tentukan field mana yang benar-benar dipakai sebagai:
+
+- waktu mulai trading
+- waktu akhir trading
+- status Polymarket/Gamma
+- status internal DB
+
+Jangan memakai title/countdown parsing jika field waktu resmi tersedia.
+
+==================================================
+STEP 3 — DEFINE CANONICAL MARKET STATE
+==================================================
+
+Buat satu fungsi canonical, misalnya:
+
+get_market_lifecycle_state(market, now)
+
+Output wajib:
+
+- PRE_MARKET
+- ACTIVE
+- EXPIRED
+- RESOLUTION_PENDING
+- RESOLVED
+- INVALID_TIME_STATE
+
+Aturan dasar:
+
+PRE_MARKET:
+- now < start_time
+- market belum boleh menghasilkan entry decision
+- execution_allowed = false
+
+ACTIVE:
+- start_time <= now < end_time
+- market active
+- closed=false
+- execution_allowed = true jika semua gate lain lolos
+
+EXPIRED:
+- now >= end_time
+- belum ada direct resolution
+- execution_allowed = false
+
+RESOLUTION_PENDING:
+- market expired/closed
+- direct resolution belum tersedia
+- execution_allowed = false
+
+RESOLVED:
+- direct Polymarket resolution tersedia
+- execution_allowed = false
+- outcome learning boleh berjalan
+
+INVALID_TIME_STATE:
+- timestamp hilang/kontradiktif
+- execution_allowed = false
+
+Gunakan UTC secara konsisten.
+
+==================================================
+STEP 4 — AUDIT CURRENT 12 DASHBOARD MARKETS
+==================================================
+
+Ambil satu snapshot live untuk semua 12 market.
+
+Untuk setiap market tampilkan:
+
+- asset
+- timeframe
+- condition_id
+- start_time
+- end_time
+- current UTC time
+- Gamma active
+- Gamma closed
+- DB status
+- canonical lifecycle state
+- execution_allowed
+
+Tampilkan count:
+
+- PRE_MARKET
+- ACTIVE
+- EXPIRED
+- RESOLUTION_PENDING
+- RESOLVED
+- INVALID_TIME_STATE
+
+Buktikan apakah screenshot sebelumnya memang berisi PRE_MARKET markets.
+
+==================================================
+STEP 5 — BACKEND AI GATING
+==================================================
+
+Audit Signal, Opportunity, Strategy, Risk, dan Decision Engine.
+
+Aturan:
+
+PRE_MARKET:
+- boleh simpan seed/orderbook/reference snapshot sebagai observasi
+- jangan menghasilkan BUY_YES / BUY_NO / OPEN_LONG
+- decision harus NOT_ACTIVE / PRE_MARKET
+- confidence keputusan aktif harus null / NOT_AVAILABLE
+- opportunity boleh diberi classification PRE_MARKET_PREVIEW jika dibutuhkan
+- jangan dicampur dengan active opportunities
+
+ACTIVE:
+- engine berjalan normal
+- signal/confidence/opportunity/strategy/risk/decision dihitung dari live data
+
+EXPIRED / RESOLUTION_PENDING / RESOLVED:
+- jangan membuat entry decision baru
+- hanya exit/resolution/outcome-learning path yang boleh berjalan
+
+Cari dan perbaiki semua query yang mengambil market tanpa lifecycle filter.
+
+==================================================
+STEP 6 — EXECUTION SAFETY GATE
+==================================================
+
+Execution Engine wajib revalidate sebelum membuat position:
+
+- lifecycle_state == ACTIVE
+- start_time <= now
+- end_time > now
+- market closed=false
+- market active=true jika field reliable
+- condition_id/token IDs valid
+- decision timestamp masih fresh
+
+Jika tidak:
+- reject dengan reason:
+  - MARKET_NOT_STARTED
+  - MARKET_EXPIRED
+  - MARKET_CLOSED
+  - INVALID_MARKET_TIME
+  - STALE_DECISION
+
+Jangan hanya percaya status dari Decision Engine.
+Execution harus melakukan revalidation sendiri.
+
+==================================================
+STEP 7 — DASHBOARD DISPLAY RULES
+==================================================
+
+Jangan redesign layout.
+
+Ubah hanya semantic display.
+
+PRE_MARKET card:
+- status utama: PRE-MARKET
+- secondary text: WAITING FOR OPEN
+- countdown ke start_time
+- execution decision: NOT ACTIVE
+- confidence: N/A atau PREVIEW, jangan tampilkan sebagai live confidence
+- UP/DOWN seed price boleh tampil jika diberi label PRE-MARKET PRICE / SEED
+- spread boleh tampil dengan label SEED SPREAD
+- potential profit preview boleh tampil jika diberi label IF WIN / PREVIEW
+- jangan tampilkan WAIT sebagai keputusan AI live
+
+ACTIVE card:
+- status utama: ACTIVE
+- countdown ke end_time
+- tampilkan live UP/DOWN, spread, confidence
+- tampilkan BUY_YES / BUY_NO / WAIT / BLOCKED sesuai engine
+
+EXPIRED:
+- status: EXPIRED
+- no new entry
+- tampilkan RESOLUTION PENDING atau result jika ada
+
+RESOLVED:
+- status: RESOLVED
+- tampilkan winner dan outcome learning result jika tersedia
+
+==================================================
+STEP 8 — API SCHEMA
+==================================================
+
+Pastikan API dashboard mengirim field eksplisit:
+
+- lifecycle_state
+- start_time
+- end_time
+- execution_allowed
+- is_pre_market
+- is_active
+- is_expired
+- is_resolved
+- display_status
+- decision_status
+- data_mode:
+  - SEED
+  - LIVE
+  - FINAL
+
+Jangan paksa frontend menebak state dari countdown/text.
+
+==================================================
+STEP 9 — PRE-MARKET DATA HONESTY
+==================================================
+
+Audit semua nilai saat PRE_MARKET:
+
+- probability
+- spread
+- confidence
+- opportunity score
+- target
+- gap
+- potential profit
+- decision
+
+Klasifikasikan:
+
+- SEED_REAL_DATA
+- PREVIEW_DERIVED
+- LIVE_REAL_DATA
+- NOT_AVAILABLE
+- INVALID_LIVE_LABEL
+- BUG
+
+Jika confidence 24% berasal dari seed deviation:
+- jangan tampilkan sebagai live AI confidence
+- label PREVIEW CONF atau N/A
+- jangan dipakai untuk entry decision
+
+Jika opportunity score 34 berasal dari seed state:
+- tandai PRE_MARKET_PREVIEW
+- jangan dianggap active opportunity
+
+==================================================
+STEP 10 — TESTS
+==================================================
+
+Tambahkan/update tests:
+
+1. now < start_time:
+   - lifecycle PRE_MARKET
+   - execution_allowed false
+   - no BUY decision
+   - confidence active null/N/A
+
+2. start_time <= now < end_time:
+   - lifecycle ACTIVE
+   - engine allowed
+
+3. now >= end_time without resolution:
+   - RESOLUTION_PENDING/EXPIRED
+   - no new entry
+
+4. direct resolution available:
+   - RESOLVED
+   - no new entry
+   - outcome learning allowed
+
+5. Execution Engine rejects:
+   - pre-market decision
+   - expired market
+   - stale decision
+   - invalid timestamp
+
+6. Dashboard/API:
+   - PRE_MARKET displays PRE-MARKET, not WAIT
+   - ACTIVE displays live decision
+   - missing start_time → INVALID_TIME_STATE
+   - timezone handled in UTC
+
+Jalankan:
+
+- python -m compileall -q backend/app
+- relevant lifecycle tests
+- decision tests
+- execution tests
+- frontend tests jika ada
+- workflow restart
+- capture one live API snapshot
+
+==================================================
+STEP 11 — RED FLAG SEARCH
+==================================================
+
+Search backend/frontend:
+
+- status = active
+- upcoming
+- pre-market
+- market not started
+- start_time
+- end_time
+- execution_allowed
+- WAIT
+- confidence
+- 50.5
+- 24
+- seed
+- AMM-init
+- default active
+- fallback active
+- now < start
+- now > end
+- stale decision
+- open position
+
+Klasifikasikan:
+
+- SAFE
+- REAL_STATE_GATE
+- UI_LABEL
+- TEST_ONLY
+- INVALID_PREMARKET_EXECUTION
+- INVALID_EXPIRED_EXECUTION
+- INVALID_LIVE_LABEL
+- FIXED
+
+No INVALID allowed at final.
+
+==================================================
+STEP 12 — LIVE VALIDATION
+==================================================
+
+Setelah fix:
+
+Ambil snapshot seluruh 12 card.
+
+Untuk setiap card tampilkan:
+
+- lifecycle_state
+- start_time
+- end_time
+- now
+- display_status
+- data_mode
+- execution_allowed
+- decision
+- confidence display
+
+Expected:
+
+PRE_MARKET:
+- PRE-MARKET
+- data_mode=SEED
+- execution_allowed=false
+- decision=NOT_ACTIVE
+- confidence=N/A atau PREVIEW
+
+ACTIVE:
+- ACTIVE
+- data_mode=LIVE
+- execution_allowed sesuai gates
+- live decision tersedia
+
+EXPIRED/RESOLVED:
+- no new entry
+
+==================================================
+STEP 13 — UPDATE DOCUMENTATION
+==================================================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md dengan section:
+
+MARKET LIFECYCLE STATE INTEGRITY
+
+Isi:
+
+1. Time field source
+2. Canonical lifecycle rules
+3. 12-market before snapshot
+4. Pre-market engine behavior before
+5. Bugs/misleading labels found
+6. Backend gating changes
+7. Execution safety changes
+8. API schema changes
+9. Dashboard semantic changes
+10. Tests run
+11. Live after snapshot
+12. Remaining risks
+13. Final status
+
+Final status:
+
+- MARKET LIFECYCLE INTEGRITY: PASS
+- MARKET LIFECYCLE INTEGRITY: PASS WITH REMEDIATION
+- MARKET LIFECYCLE INTEGRITY: PARTIAL
+- MARKET LIFECYCLE INTEGRITY: FAIL
+
+Use PASS only if:
+- PRE_MARKET cannot execute
+- ACTIVE state is explicit
+- expired market cannot enter
+- frontend labels seed data honestly
+- API exposes lifecycle state
+- tests pass
+- no invalid execution path
+
+==================================================
+STEP 14 — FINAL RESPONSE FORMAT
+==================================================
+
+Jawab:
+
+1. Files read
+2. Time field source
+3. Canonical lifecycle rules
+4. Current 12-market state distribution
+5. Pre-market behavior findings
+6. Backend gating changes
+7. Execution safety changes
+8. API changes
+9. Dashboard changes
+10. Tests run
+11. Live validation result
+12. Red flag search
+13. Files changed
+14. Remaining risks
+15. MARKET LIFECYCLE INTEGRITY status
+16. Exact next recommended step
+
+Jangan jawab umum.
+Jangan menyebut seed data sebagai live trading.
+Jangan tampilkan WAIT sebagai active decision untuk PRE_MARKET.
+Jangan izinkan entry sebelum start_time.
+Jangan izinkan entry setelah end_time.
+Jangan fabricate market state.

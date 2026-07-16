@@ -1,0 +1,415 @@
+LIMWANPO AI — PHASE 12H
+FINAL RUNTIME VALIDATION
+LOTS + LIVE TRADES + ROLLOVER + REAL PNL
+
+Konteks:
+
+Implementasi sebelumnya sudah selesai:
+
+- card summary diperluas
+- LOTS ditambahkan
+- AI LIVE TRADES endpoint dibuat
+- System Health UI dihapus
+- Prediction Pipeline UI dihapus
+- countdown dikembalikan
+- 697/697 tests pass
+
+Tetapi implementasi BELUM dianggap selesai.
+
+Saya membutuhkan runtime proof bahwa semuanya benar-benar bekerja pada dashboard dan menggunakan DATA NYATA.
+
+JANGAN menambah fitur baru.
+
+JANGAN redesign.
+
+JANGAN mengubah arsitektur.
+
+Hanya audit dan perbaiki bila ditemukan bug.
+
+==================================================
+
+STEP 1
+
+Compile.
+
+Run workflow.
+
+Restart app.
+
+Pastikan dashboard berjalan normal.
+
+==================================================
+
+STEP 2
+
+Audit setiap market card.
+
+Untuk seluruh 12 active markets tampilkan tabel:
+
+asset
+
+timeframe
+
+condition_id
+
+LOTS
+
+IN count
+
+IN amount
+
+OUT count
+
+OUT amount
+
+realized pnl
+
+unrealized pnl
+
+total pnl
+
+countdown
+
+==================================================
+
+STEP 3
+
+Pastikan LOTS berasal dari:
+
+OPEN
+
++
+
+PARTIAL
+
+position
+
+BUKAN
+
+jumlah entry.
+
+Tunjukkan query yang digunakan.
+
+==================================================
+
+STEP 4
+
+Audit IN.
+
+Pastikan:
+
+ENTRY
+
+SCALE IN
+
+RE ENTRY
+
+menambah:
+
+entry_count
+
+entry_amount
+
+BUKAN:
+
+WAIT
+
+BLOCKED
+
+FAILED
+
+PENDING
+
+==================================================
+
+STEP 5
+
+Audit OUT.
+
+Pastikan:
+
+PARTIAL EXIT
+
+FINAL EXIT
+
+EXPIRY EXIT
+
+menambah:
+
+exit_count
+
+exit_amount
+
+BUKAN:
+
+WAIT
+
+==================================================
+
+STEP 6
+
+Audit PNL.
+
+Pastikan:
+
+TOTAL PNL
+
+=
+
+REALIZED
+
++
+
+UNREALIZED
+
+Realtime.
+
+Bukan:
+
+stake default
+
+potential payout
+
+simulasi.
+
+==================================================
+
+STEP 7
+
+Audit rollover.
+
+Cari minimal satu:
+
+old condition_id
+
+dan
+
+current condition_id.
+
+Pastikan:
+
+CURRENT CARD
+
+hanya membaca
+
+ACTIVE condition_id.
+
+Old position
+
+tidak ikut current card.
+
+Old position
+
+tetap muncul di history.
+
+==================================================
+
+STEP 8
+
+Audit AI LIVE TRADES.
+
+Pastikan feed hanya berasal dari:
+
+orders
+
+positions
+
+executions
+
+trade decisions
+
+yang benar-benar EXECUTED.
+
+Cari seluruh event.
+
+Klasifikasikan:
+
+ENTRY
+
+SCALE_IN
+
+PARTIAL_EXIT
+
+FINAL_EXIT
+
+EXPIRY_EXIT
+
+Pastikan:
+
+WAIT
+
+tidak pernah tampil.
+
+==================================================
+
+STEP 9
+
+Audit frontend.
+
+Pastikan:
+
+System Health
+
+tidak tampil.
+
+Prediction Pipeline
+
+tidak tampil.
+
+Tetapi backend:
+
+/health
+
+/health/detailed
+
+heartbeat
+
+pipeline
+
+tetap hidup.
+
+==================================================
+
+STEP 10
+
+Audit countdown.
+
+Pastikan:
+
+BTC 5M 03:18
+
+ETH 15M 12:01
+
+dst.
+
+Countdown tetap berjalan.
+
+Tidak hilang.
+
+==================================================
+
+STEP 11
+
+Screenshot dashboard.
+
+Verifikasi secara visual:
+
+LOTS muncul.
+
+IN tampil.
+
+OUT tampil.
+
+Countdown tampil.
+
+AI LIVE TRADES tampil.
+
+Tidak ada System Health.
+
+Tidak ada Prediction Pipeline.
+
+==================================================
+
+STEP 12
+
+Red flag search.
+
+Cari:
+
+asset-only lookup
+
+timeframe-only lookup
+
+old condition_id
+
+potential
+
+stake default
+
+fake pnl
+
+fake trade
+
+WAIT di live trades
+
+hardcoded lots
+
+==================================================
+
+STEP 13
+
+Kalau ditemukan bug,
+
+perbaiki langsung.
+
+Compile.
+
+Restart.
+
+Screenshot lagi.
+
+==================================================
+
+STEP 14
+
+Jalankan:
+
+python -m compileall -q backend/app
+
+Full test suite.
+
+Restart workflow.
+
+==================================================
+
+FINAL REPORT
+
+Jawab dalam urutan:
+
+1. Files audited
+
+2. Runtime validation
+
+3. LOTS validation
+
+4. IN validation
+
+5. OUT validation
+
+6. PNL validation
+
+7. Rollover validation
+
+8. AI LIVE TRADES validation
+
+9. Countdown validation
+
+10. Backend monitoring validation
+
+11. Screenshot verification
+
+12. Tests
+
+13. Remaining bugs
+
+14. Files changed
+
+15. Final status
+
+Gunakan hanya:
+
+PASS
+
+PASS WITH NOTES
+
+PASS WITH REMEDIATION
+
+PARTIAL
+
+FAIL
+
+Jangan mengatakan selesai apabila belum ada runtime proof.
+
+Jangan menggunakan fake data.
+
+Semua harus berasal dari database project yang sedang berjalan.

@@ -1,0 +1,392 @@
+LIMWANPO AI — FIX GAMMA API SSL / RESTORE LIVE UNIVERSE DATA INGESTION
+
+Konteks:
+
+Live runtime validation menemukan:
+
+- PostgreSQL connected
+- Redis running
+- all engines nominal
+- health endpoint healthy
+- tetapi database kosong:
+  - market_universe = 0
+  - signals = 0
+  - opportunities = 0
+  - trade_decisions = 0
+  - orders = 0
+  - positions = 0
+
+Root cause:
+
+Gamma API requests through httpx.AsyncClient fail with:
+
+SSL: CERTIFICATE_VERIFY_FAILED
+unable to get local issuer certificate
+
+Direct urllib.request with User-Agent can reach Gamma and returns real events.
+
+Akibatnya:
+
+Gamma sync → 0 markets
+→ no signals
+→ no opportunities
+→ no decisions
+→ no positions
+
+TUGAS:
+
+Fix live Gamma API ingestion safely.
+Do not disable SSL verification blindly.
+Do not use verify=False as permanent production fix.
+Do not fabricate market data.
+Do not seed dummy markets.
+Do not change AI formulas.
+Do not change UI.
+Do not touch multi-entry logic.
+
+==================================================
+STEP 1 — VERIFY CURRENT SSL ENVIRONMENT
+==================================================
+
+Inspect:
+
+- gamma_series_client.py
+- gamma_client.py
+- all httpx.AsyncClient creation points
+- pyproject.toml
+- requirements.txt
+- certifi installation
+- SSL_CERT_FILE
+- REQUESTS_CA_BUNDLE
+- Python ssl.get_default_verify_paths()
+- certifi.where()
+
+Run diagnostics:
+
+python -c "
+import ssl, certifi, os
+print('certifi:', certifi.where())
+print('default verify paths:', ssl.get_default_verify_paths())
+print('SSL_CERT_FILE:', os.getenv('SSL_CERT_FILE'))
+print('REQUESTS_CA_BUNDLE:', os.getenv('REQUESTS_CA_BUNDLE'))
+"
+
+Test:
+
+- httpx with default verify
+- httpx with verify=certifi.where()
+- urllib with default context
+- Gamma /events endpoint
+- Gamma /markets endpoint
+
+Show exact results.
+
+==================================================
+STEP 2 — USE CERTIFI CA BUNDLE
+==================================================
+
+Preferred fix:
+
+Create httpx client with explicit verified CA bundle:
+
+import certifi
+import ssl
+import httpx
+
+ssl_context = ssl.create_default_context(cafile=certifi.where())
+
+client = httpx.AsyncClient(
+    verify=ssl_context,
+    headers={
+        "User-Agent": "LIMWANPO-AI/1.0",
+        "Accept": "application/json",
+    },
+    timeout=...
+)
+
+Or if project pattern allows:
+
+httpx.AsyncClient(
+    verify=certifi.where(),
+    ...
+)
+
+Do not use:
+
+verify=False
+
+unless only for temporary diagnostics and never committed.
+
+==================================================
+STEP 3 — CENTRALIZE HTTP CLIENT
+==================================================
+
+If multiple Gamma clients create their own AsyncClient:
+
+Create one helper/factory:
+
+create_verified_httpx_client()
+
+It must:
+
+- use certifi CA bundle
+- set User-Agent
+- set Accept header
+- use current timeout/retry settings
+- not expose secrets
+- be reusable by Gamma series client and Gamma market client
+
+Avoid duplicated SSL configuration.
+
+==================================================
+STEP 4 — SAFE FALLBACK
+==================================================
+
+If explicit certifi still fails:
+
+- inspect Replit/Nix CA certificate package
+- ensure ca-certificates package is installed
+- set SSL_CERT_FILE to certifi.where() at process startup or Replit environment
+- verify with httpx again
+
+Do not silently fall back to unverified TLS.
+
+If a temporary diagnostic fallback is added:
+- disabled by default
+- config flag explicit
+- production status must remain DEGRADED
+- never classify unverified data as trusted
+
+==================================================
+STEP 5 — ERROR TRANSPARENCY
+==================================================
+
+Universe Sync must not report success with 0 markets if all Gamma requests failed.
+
+Add honest status:
+
+- GAMMA_SSL_ERROR
+- GAMMA_UNREACHABLE
+- GAMMA_EMPTY_RESPONSE
+- GAMMA_PARTIAL_SUCCESS
+
+Log:
+
+- endpoint
+- retry count
+- exception class
+- sanitized error
+- series slug
+- success/failure count
+
+Health endpoint should become DEGRADED if:
+
+- configured series > 0
+- successful Gamma fetches = 0
+- market_universe remains empty
+
+Do not show all engines nominal if ingestion is broken.
+
+==================================================
+STEP 6 — RETRY / USER-AGENT
+==================================================
+
+Ensure Gamma requests include:
+
+- User-Agent
+- Accept: application/json
+
+Keep retry with bounded exponential backoff.
+
+Do not retry forever.
+
+Classify:
+
+- SSL error
+- DNS error
+- timeout
+- HTTP 4xx
+- HTTP 5xx
+- empty payload
+- schema mismatch
+
+==================================================
+STEP 7 — LIVE GAMMA VALIDATION
+==================================================
+
+After fix, call Gamma through the same production client.
+
+Show:
+
+- endpoint
+- HTTP status
+- number of events
+- number of markets
+- sample market title
+- condition_id
+- token IDs
+- start_time
+- end_time
+- active/closed state
+
+No direct urllib-only proof is sufficient.
+The production httpx client itself must succeed.
+
+==================================================
+STEP 8 — RUN UNIVERSE SYNC
+==================================================
+
+Trigger Universe Sync.
+
+Expected:
+
+market_universe > 0
+
+Show counts:
+
+- total markets
+- active
+- upcoming
+- expired
+- invalid/missing condition_id
+- missing token IDs
+
+Then verify:
+
+- Signal Engine receives active markets
+- Opportunity Engine receives signals/prices
+- Decision Engine receives opportunities
+- dashboard shows market cards
+
+==================================================
+STEP 9 — DATABASE VALIDATION
+==================================================
+
+Query:
+
+SELECT COUNT(*) FROM market_universe;
+SELECT status, COUNT(*) FROM market_universe GROUP BY status;
+SELECT COUNT(*) FROM signals;
+SELECT COUNT(*) FROM opportunities;
+SELECT COUNT(*) FROM trade_decisions;
+
+Show exact before/after counts.
+
+Expected minimum:
+
+- market_universe > 0
+- active markets > 0 when current windows exist
+
+Do not require positions immediately.
+
+==================================================
+STEP 10 — DASHBOARD VALIDATION
+==================================================
+
+Restart workflow.
+
+Verify screenshot:
+
+- markets > 0
+- BTC/ETH/SOL/XRP cards populated
+- countdown visible
+- PNL/IN/OUT/LOTS visible
+- engines no longer only nominal with empty data
+- health reflects Gamma state honestly
+
+==================================================
+STEP 11 — TESTS
+==================================================
+
+Add tests:
+
+1. verified httpx client uses certifi
+2. User-Agent present
+3. SSL error classified correctly
+4. all Gamma requests failed → health DEGRADED
+5. empty payload != successful sync
+6. partial success classification
+7. no verify=False in production client
+8. Universe Sync inserts real parsed markets
+9. malformed Gamma response handled safely
+
+Run:
+
+- compileall
+- Gamma client tests
+- universe sync tests
+- health tests
+- full suite
+
+==================================================
+STEP 12 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- verify=False
+- ssl._create_unverified_context
+- CERT_NONE
+- fake market
+- seed market
+- hardcoded condition_id
+- hardcoded token_id
+- empty success
+- all engines nominal
+- GAMMA_SSL_ERROR
+
+Classify:
+
+- SAFE_VERIFIED_TLS
+- DIAGNOSTIC_ONLY
+- INVALID_INSECURE_TLS
+- INVALID_FAKE_DATA
+- FIXED
+
+No unresolved INVALID.
+
+==================================================
+STEP 13 — FINAL RESPONSE
+==================================================
+
+Answer:
+
+1. Files read
+2. SSL diagnostics
+3. Root cause
+4. CA bundle fix
+5. HTTP client changes
+6. Error/status transparency
+7. Production Gamma call result
+8. Universe Sync before/after
+9. DB counts before/after
+10. Engine pipeline result
+11. Dashboard result
+12. Tests run
+13. Red flag search
+14. Files changed
+15. Remaining risks
+16. Final status
+17. Exact next step
+
+Final status:
+
+- LIVE DATA INGESTION: PASS
+- LIVE DATA INGESTION: PASS WITH NOTES
+- LIVE DATA INGESTION: PARTIAL
+- LIVE DATA INGESTION: FAIL
+
+Use PASS only if:
+
+- production httpx client succeeds with verified TLS
+- market_universe populated
+- active markets visible
+- no verify=False
+- health status is honest
+- tests pass
+
+Jangan jawab setup complete.
+Jangan defer.
+Jangan gunakan dummy data.
+Jangan menonaktifkan SSL verification.
+Kerjakan perbaikan ini sekarang.

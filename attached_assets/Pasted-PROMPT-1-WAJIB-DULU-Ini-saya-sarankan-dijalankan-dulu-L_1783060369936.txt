@@ -1,0 +1,219 @@
+PROMPT 1 (WAJIB DULU)
+
+Ini saya sarankan dijalankan dulu.
+
+LIMWANPOAI CORE IDENTITY (DO NOT CHANGE)
+
+Before writing any code, read this carefully.
+
+This project is NOT a crypto trading bot.
+
+This project is NOT Binance.
+
+This project is NOT Bybit.
+
+This project is NOT Forex.
+
+This project is NOT MT5.
+
+This project is a professional AI execution system built specifically for Polymarket prediction markets.
+
+Everything you build must follow the Polymarket market structure.
+
+Polymarket Concepts
+
+Each market has only two outcomes.
+
+YES
+NO
+
+There are no:
+
+candles
+leverage
+stop hunting
+EMA strategies
+RSI trading
+MACD entries
+scalping indicators
+trend following
+
+Those are irrelevant unless explicitly used as research inputs.
+
+What LimwanpoAI actually does
+
+The AI searches Polymarket markets.
+
+It evaluates:
+
+Probability
+
+Liquidity
+
+Spread
+
+Market efficiency
+
+Order book
+
+Signal quality
+
+Expected value
+
+Risk
+
+Capital allocation
+
+Portfolio exposure
+
+Execution quality
+
+Everything revolves around probability.
+
+NOT price action.
+
+Position Types
+
+The system never displays
+
+LONG
+
+SHORT
+
+BUY
+
+SELL
+
+Instead display
+
+BUY YES
+
+BUY NO
+
+or
+
+YES Position
+
+NO Position
+
+This terminology must be consistent everywhere.
+
+Price Representation
+
+Price is probability.
+
+Example
+
+YES = 0.62
+
+means
+
+62%
+
+NO automatically becomes
+
+38%
+
+Never display it like a normal trading chart.
+
+Dashboard Philosophy
+
+This dashboard is an institutional Polymarket terminal.
+
+It is NOT TradingView.
+
+It is NOT Binance Futures.
+
+Everything should look like
+
+Bloomberg Terminal
+
+Polymarket Institutional
+
+Prediction Market Desk
+
+Decision Intelligence System
+
+Market Cards
+
+Every market card must display information relevant to prediction markets.
+
+Never trading indicators.
+
+Required information:
+
+Market title
+
+Timeframe
+
+BUY YES / BUY NO
+
+YES probability
+
+NO probability
+
+Entry probability
+
+Current probability
+
+Probability movement
+
+Expected Value (EV)
+
+Signal confidence
+
+Position status
+
+Current PnL
+
+Risk grade
+
+Liquidity
+
+Spread
+
+Engine score
+
+Market state
+
+AI Philosophy
+
+The AI does NOT chase trends.
+
+The AI evaluates
+
+probability mispricing.
+
+The objective is to buy mispriced probabilities.
+
+Not momentum.
+
+Dashboard Priority
+
+The dashboard exists to answer one question:
+
+"Should capital currently be allocated into this prediction market?"
+
+Everything on screen must help answer that question.
+
+Anything that does not improve capital allocation should not be added.
+
+IMPORTANT
+
+Whenever you implement features,
+
+always ask yourself:
+
+"Is this useful for Polymarket?"
+
+NOT
+
+"Is this useful for crypto trading?"
+
+If the feature belongs to traditional trading rather than prediction markets,
+
+do NOT implement it.
+
+Do not change backend logic unless explicitly requested.
+
+Focus on UI only.

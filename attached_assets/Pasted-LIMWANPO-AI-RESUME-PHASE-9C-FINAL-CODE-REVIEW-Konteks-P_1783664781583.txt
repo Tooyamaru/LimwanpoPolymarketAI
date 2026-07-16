@@ -1,0 +1,287 @@
+LIMWANPO AI — RESUME PHASE 9C FINAL CODE REVIEW
+
+Konteks:
+Pengerjaan Phase 9C berhenti karena quota tepat saat final code review dimulai.
+
+Yang sudah diklaim selesai:
+
+1. Stale opportunity consumers fixed:
+
+   * opportunity_repository.get_all_opportunities() default active_only=True
+   * get_top_opportunities() default active_only=True
+   * PortfolioAllocationService pindah dari raw select(Opportunity) ke repository
+   * StrategyEngine ikut active-only karena memakai repository
+
+2. Outcome Learning expired-market bug fixed:
+
+   * filter berubah dari status == "active"
+   * menjadi status IN ("active", "expired")
+   * tetap end_time < now
+   * tetap dedupe dengan already_evaluated(condition_id)
+
+3. Portfolio Allocation fabricated fallback fixed:
+
+   * quality_score / confidence / entry_quality_score tidak lagi default 50.0 sebagai evidence
+   * missing required data menjadi DEFER / NOT_AVAILABLE
+   * allocation_score menjadi None jika data wajib tidak tersedia
+
+4. AI_DECISION_INTEGRITY_AUDIT.md sudah diperbarui dengan Phase 9C section.
+
+TUGAS SEKARANG:
+Jangan mulai dari nol.
+Jangan redo sembarangan.
+Selesaikan final code review Phase 9C yang kepotong.
+
+ATURAN WAJIB:
+
+* JANGAN ubah UI.
+* JANGAN redesign.
+* JANGAN tambah provider baru.
+* JANGAN tambah dummy data.
+* JANGAN tambah random value.
+* JANGAN tambah fake reasoning.
+* JANGAN klaim PASS murni.
+* Status maksimal tetap PASS WITH CAVEATS selama Outcome Learning masih REALIZED_PNL_PROXY.
+* Source code lebih penting daripada audit report. Jika report tidak cocok dengan code, perbaiki report.
+
+STEP 1 — REVIEW ACTUAL DIFF
+
+Jalankan dan baca:
+
+* git diff
+* git status
+
+Review file yang berubah:
+
+* backend/app/repositories/opportunity_repository.py
+* backend/app/services/portfolio_allocation_service.py
+* backend/app/services/outcome_learning_service.py
+* backend/app/config/settings.py
+* backend/app/services/opportunity_engine.py
+* backend/app/services/dynamic_weight_service.py
+* backend/app/schemas/engine_weight.py
+* AI_DECISION_INTEGRITY_AUDIT.md
+
+Pastikan report “Files changed” mencantumkan SEMUA file yang benar-benar berubah.
+Jika sekarang report hanya menyebut settings.py dan opportunity_engine.py, perbaiki karena Phase 9C juga mengubah opportunity_repository.py, portfolio_allocation_service.py, dan outcome_learning_service.py.
+
+STEP 2 — VERIFY STALE OPPORTUNITY FIX
+
+Search seluruh backend untuk:
+
+* get_all_opportunities(
+* get_top_opportunities(
+* select(Opportunity)
+* session.exec(select(Opportunity
+* Opportunity.
+* opportunity_score
+
+Untuk setiap pemakaian, klasifikasikan:
+
+* ACTIVE_ONLY_SAFE
+* HISTORICAL_EXPLICIT
+* INVALID_STALE_RISK
+* TEST_ONLY
+* FIXED
+
+Wajib pastikan:
+
+1. Strategy Engine hanya membaca active opportunity.
+2. Portfolio Allocation hanya membaca active opportunity.
+3. Opportunities API default active-only.
+4. Historical access hanya boleh lewat parameter eksplisit active_only=False / include_inactive=true.
+5. Tidak ada raw select(Opportunity) production path tanpa join/filter active universe.
+6. Risk Engine atau Execution Engine tetap revalidasi active market sebelum approve/execute, atau dokumentasikan jika belum ada dan tambahkan guard.
+
+Jika masih ada stale opportunity path:
+
+* perbaiki.
+* update AI_DECISION_INTEGRITY_AUDIT.md.
+* final status tetap FAIL sampai fixed.
+
+STEP 3 — VERIFY OUTCOME LEARNING FIX
+
+Baca outcome_learning_service.py.
+
+Pastikan:
+
+* expired market dengan end_time < now ikut dievaluasi.
+* active market dengan end_time < now ikut dievaluasi.
+* upcoming/future market tidak dievaluasi.
+* already_evaluated(condition_id) tetap mencegah double count.
+* tidak ada fake outcome.
+* source outcome tetap diklasifikasikan jujur sebagai REALIZED_PNL_PROXY jika belum ada direct Polymarket/Gamma resolution.
+
+Tambahkan atau jalankan test minimal:
+
+1. active + end_time past → evaluated
+2. expired + end_time past → evaluated
+3. expired + already_evaluated → skipped
+4. active/upcoming + end_time future → skipped
+
+Jika test sulit karena fixture kompleks, buat script/test kecil yang memverifikasi query predicate dan dedupe behavior.
+
+STEP 4 — VERIFY PORTFOLIO FALLBACK CLEANUP
+
+Search di portfolio_allocation_service.py:
+
+* or 50.0
+* if None
+* default 50
+* market_score
+* confidence
+* entry_quality_score
+* allocation_score
+* priority_score
+
+Pastikan:
+
+* missing quality_score tidak menjadi 50.0
+* missing confidence tidak menjadi 50.0
+* missing entry_quality_score tidak menjadi 50.0
+* market dengan missing required data menjadi DEFER / NOT_AVAILABLE
+* allocation_score None jika data wajib missing
+* ENTER tidak mungkin keluar dari fabricated score
+* kedua scoring loop konsisten, tidak ada satu loop masih memakai default palsu
+
+Jika `mtp_accuracy = 50.0` masih ada:
+
+* klasifikasikan hanya sebagai CONFIGURATION / no-history prior jika memang bukan required market evidence.
+* dokumentasikan jelas agar tidak disalahartikan sebagai real confidence.
+
+STEP 5 — VERIFY DYNAMIC WEIGHT PHASE 9B
+
+Pastikan:
+
+* dynamic_weight_service.py tidak lagi punya `accuracy = perf.accuracy or 50.0`
+* jika perf.accuracy is None setelah enough outcomes, status NOT_AVAILABLE
+* accuracy_at_adjustment tidak menyimpan angka palsu
+* engine_weight.py status mendukung:
+
+  * INSUFFICIENT_HISTORY
+  * NOT_AVAILABLE
+  * LEARNED
+  * DEFAULT
+
+STEP 6 — VERIFY OPPORTUNITY CONSTANTS PHASE 9B
+
+Pastikan:
+
+* semua OPPORTUNITY_* constants ada di settings.py
+* opportunity_engine.py membaca settings.*
+* formula behavior tetap sama
+* tidak ada 600.0 / 2000.0 inline production path kecuali di tests/docs
+* formula equivalence proof di audit report benar
+* jika report masih ada typo arah seperti `_direction(0.49) = "BUY_NO"→ actually "BUY_YES"`, perbaiki agar tidak membingungkan.
+
+STEP 7 — FOUR MARKET HARD TRACE CORRECTION
+
+Audit report sekarang masih lemah pada SOL/XRP karena ada bagian seperti:
+
+* "implied by opportunities"
+* "same pattern"
+
+Perbaiki agar benar-benar hard trace.
+
+Untuk BTC 5m, ETH 15m, SOL 1H, XRP 5m, ambil ulang dari DB/API dan tampilkan actual row values:
+
+* condition_id
+* yes_token_id
+* no_token_id
+* market status
+* raw/latest CLOB snapshot atau DB market_price_snapshot row id
+* signal row id dan confidence_score
+* opportunity row id dan score breakdown
+* strategy/trade_decision row id
+* risk_event row id jika ada
+* decision_log row id
+* final action
+* final confidence
+* final reason
+* same condition_id true/false
+
+Jangan gunakan:
+
+* implied
+* same pattern
+* mirrored
+* logs confirm only
+
+Jika endpoint tidak menyediakan field tertentu, tulis:
+
+* NOT_AVAILABLE_FROM_ENDPOINT
+  dan jelaskan apakah datanya ada di DB atau belum.
+
+STEP 8 — STATIC VALIDATION
+
+Jalankan:
+
+* python -m compileall -q backend/app
+* python -m py_compile untuk semua file yang berubah
+* import test untuk file yang berubah
+* workflow restart
+* cek logs satu full cycle
+
+Jalankan grep:
+
+* random
+* Math.random
+* mock
+* fake
+* dummy
+* placeholder
+* default_score
+* default_confidence
+* fallback_score
+* neutral_score
+* fabricated explanation
+* hardcoded decision
+* get_all_opportunities
+* get_top_opportunities
+* select(Opportunity)
+* or 50.0
+* accuracy or 50.0
+
+Untuk setiap match, klasifikasikan:
+
+* SAFE
+* CONFIGURATION
+* TEST_ONLY
+* FIXED
+* INVALID
+
+STEP 9 — UPDATE AI_DECISION_INTEGRITY_AUDIT.md
+
+Perbaiki report agar konsisten:
+
+1. Files changed harus mencantumkan semua file yang berubah.
+2. Phase 9B dan 9C jangan saling bertabrakan.
+3. Jangan klaim hard trace jika masih “implied”.
+4. Four-market trace harus actual row values.
+5. Final status tetap:
+   AI DECISION INTEGRITY: PASS WITH CAVEATS
+   selama Outcome Learning masih REALIZED_PNL_PROXY.
+6. Caveat harus jelas:
+   Outcome Learning belum memakai direct Polymarket/Gamma market resolution.
+
+STEP 10 — FINAL RESPONSE FORMAT
+
+Jawab dengan format:
+
+1. Files read
+2. Git diff summary
+3. Files changed confirmed
+4. Stale opportunity review result
+5. Outcome learning review result
+6. Portfolio fallback review result
+7. Dynamic weight review result
+8. Opportunity constants review result
+9. Four market hard trace result
+10. Tests run
+11. Search classification
+12. Report corrections made
+13. Remaining risks
+14. Final status
+
+Jangan jawab umum.
+Jangan klaim selesai tanpa bukti.

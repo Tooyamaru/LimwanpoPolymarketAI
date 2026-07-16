@@ -1,0 +1,169 @@
+STOP.
+
+Read everything first.
+
+DO NOT modify:
+- watchdog.py
+- engine_workers.py
+- settings.py
+- main.py
+- any UI
+- any frontend
+- any CSS
+- any JavaScript
+
+The watchdog architecture has already been fixed.
+
+dynamic_weight is intentionally:
+
+- RUN_ON_STARTUP = False
+- INTERVAL = 1800 seconds
+- NOT monitored by watchdog
+- still registered inside engine_health
+- still visible in /api/v1/health/detailed
+
+DO NOT touch any of that.
+
+====================================================
+
+Current issue
+
+During the first 30 minutes after boot:
+
+dynamic_weight correctly reports
+
+status = not_started
+
+because it has not reached its first scheduled execution.
+
+However,
+
+/api/v1/health/detailed
+
+returns
+
+overall = degraded
+
+even though
+
+- watchdog is healthy
+- database is healthy
+- redis is healthy
+- all realtime engines are alive
+- degraded=[]
+
+This is a FALSE DEGRADED.
+
+====================================================
+
+Your task
+
+ONLY inspect
+
+backend/app/api/v1/health.py
+
+Find exactly why
+
+overall
+
+becomes degraded while
+
+dynamic_weight
+
+is merely waiting for its first scheduled cycle.
+
+====================================================
+
+Requirements
+
+Do NOT redesign anything.
+
+Do NOT change any engine.
+
+Do NOT change watchdog.
+
+Do NOT change heartbeat logic.
+
+Do NOT change engine_health.py.
+
+Only modify the health evaluation logic.
+
+====================================================
+
+Expected behaviour
+
+Realtime engines:
+
+if not_started after stall threshold
+
+→ degraded
+
+Scheduled engines (dynamic_weight):
+
+if RUN_ON_STARTUP=False
+and first execution has not yet arrived
+
+→ remain not_started
+
+BUT
+
+must NOT downgrade
+
+overall
+
+to degraded.
+
+Once dynamic_weight executes normally,
+
+status becomes alive
+
+exactly as today.
+
+====================================================
+
+After the fix
+
+Verify:
+
+1.
+Fresh restart
+
+overall = healthy
+
+2.
+
+dynamic_weight
+
+status = not_started
+
+3.
+
+All realtime engines
+
+alive
+
+4.
+
+After ~1800 seconds
+
+dynamic_weight
+
+changes to alive
+
+5.
+
+overall
+
+remains healthy
+
+====================================================
+
+Output:
+
+1. Explain the root cause.
+
+2. Show exactly which lines were changed.
+
+3. Explain why the new logic is correct.
+
+Do not modify anything else.

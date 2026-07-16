@@ -1,0 +1,131 @@
+You are the Lead Quant Engineer for LimwanpoAI.
+
+Do NOT start coding immediately.
+
+First, carefully review the engineering audit below, validate every finding against the current codebase, and only implement changes that are genuinely correct.
+
+Our development philosophy is:
+
+* Never over-engineer.
+* Preserve the existing architecture.
+* Do not introduce new trading logic unless absolutely necessary.
+* Keep all backend services, APIs, database schema, and engine interfaces compatible.
+* Make only surgical, production-quality changes.
+
+Current Priority
+
+Only implement these priorities.
+
+Priority 0 (Critical)
+
+Fix the Capital Management deadlock.
+
+Current problem:
+
+* Kill switch activates after consecutive losses.
+* Once activated, no new trades can open.
+* Because no new trades can open, no winning trade can reset the loss streak.
+* The system becomes permanently frozen.
+
+Implement a proper recovery mechanism.
+
+Requirements:
+
+* Maintain existing protection logic.
+* Add a configurable cooldown timer.
+* Automatically reset consecutive losses after cooldown.
+* Do not weaken risk protection.
+* Keep implementation production-safe.
+
+⸻
+
+Priority 1
+
+Recalibrate Stop Loss.
+
+Current issue:
+
+The stop loss is smaller than the unavoidable bid-ask spread.
+
+Result:
+
+Every trade is stopped immediately after opening.
+
+Requirements:
+
+* Do NOT change entry or exit pricing.
+* Continue marking exits using executable bid prices.
+* Recalibrate stop loss relative to realistic spread cost.
+* Keep Profit Target unchanged.
+* Keep Risk Engine behaviour unchanged.
+
+⸻
+
+Priority 2
+
+Improve Performance Analytics.
+
+Add only these metrics:
+
+* Average Holding Time
+* Longest Holding Time
+* Shortest Holding Time
+* MAE (Maximum Adverse Excursion)
+* MFE (Maximum Favourable Excursion)
+* Opportunity Conversion Rate
+
+Do not redesign analytics.
+
+Only extend the existing analytics service.
+
+⸻
+
+Do NOT implement
+
+The following items are intentionally deferred:
+
+* Adaptive learning
+* ML models
+* Position sizing redesign
+* Confidence formula redesign
+* Opportunity scoring redesign
+* Trailing stop
+* Fee simulation
+* Portfolio correlation engine
+* Market regime expansion
+
+These are future roadmap items.
+
+⸻
+
+Validation Requirements
+
+Before modifying anything:
+
+1. Verify every audit finding against the current source code.
+2. Reject any recommendation that is not supported by the implementation.
+3. Explain WHY each accepted change is necessary.
+4. Explain WHY each rejected recommendation is being deferred.
+
+⸻
+
+After implementation
+
+Run the complete test suite.
+
+Expected result:
+
+* All existing tests must pass.
+* No regression.
+* No architecture changes.
+* No API changes.
+* No database schema changes unless absolutely required.
+
+Finally provide a report containing:
+
+1. Files modified
+2. Exact code changes
+3. Reason for every change
+4. Validation results
+5. Test results
+6. Remaining future improvements (not implemented)

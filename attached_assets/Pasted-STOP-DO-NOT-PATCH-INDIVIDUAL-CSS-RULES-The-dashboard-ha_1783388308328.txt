@@ -1,0 +1,361 @@
+STOP.
+
+DO NOT PATCH INDIVIDUAL CSS RULES.
+
+The dashboard has reached the point where small incremental fixes are making the layout worse.
+
+I want ONE COMPLETE UI REFINEMENT PASS.
+
+The goal is to make the dashboard feel like a professional Bloomberg / TradingView / institutional trading terminal.
+
+==================================================
+GLOBAL RULES
+==================================================
+
+Do NOT change:
+
+- backend
+- websocket
+- data flow
+- prediction logic
+- market logic
+- timers
+- engine logic
+
+Only improve:
+
+- HTML structure
+- CSS
+- layout
+- spacing
+- responsive behavior
+- typography
+- visual hierarchy
+
+==================================================
+PRIORITY
+==================================================
+
+Priority #1
+
+Every component must have enough space.
+
+NOTHING may overlap.
+
+NOTHING may be clipped.
+
+NOTHING may overflow.
+
+NO text may be hidden.
+
+==================================================
+PART 1
+MARKET CARD REDESIGN
+==================================================
+
+The current cards lost too much information after previous compression.
+
+Restore all important information while keeping the cards clean.
+
+Each prediction card must have this hierarchy.
+
+--------------------------------------------------
+
+Header
+
+Asset
+Price
+
+2 Predictions • $0 Exposure
+
+--------------------------------------------------
+
+Direction
+
+UP probability
+
+DOWN probability
+
+--------------------------------------------------
+
+Target Section
+
+TARGET
+
+62,800
+
+Gap
+
++120
+
+--------------------------------------------------
+
+If active position
+
+Entry
+
+Exposure
+
+Entries
+
+Confidence
+
+--------------------------------------------------
+
+If no active position
+
+Confidence
+
+--------------------------------------------------
+
+Time Left
+
+Status
+
+--------------------------------------------------
+
+Rules
+
+Target is the visual focus.
+
+Gap is secondary.
+
+Confidence must NEVER disappear.
+
+No placeholders.
+
+No empty rows.
+
+Everything aligned.
+
+==================================================
+PART 2
+CARD SPACING
+==================================================
+
+Do NOT compress vertically until information disappears.
+
+Instead
+
+use better hierarchy.
+
+Target can be large.
+
+Gap can be small.
+
+Labels small.
+
+Values larger.
+
+Give every row enough breathing room.
+
+==================================================
+PART 3
+EXECUTION PIPELINE
+==================================================
+
+Current implementation is broken.
+
+Everything overlaps.
+
+Everything touches each other.
+
+Text spills outside.
+
+Fix the entire section.
+
+Required structure
+
+--------------------------------------------------
+
+Title
+
+Execution Pipeline
+
+--------------------------------------------------
+
+Horizontal timeline
+
+Universe
+
+↓
+
+Signal
+
+↓
+
+Opportunity
+
+↓
+
+Strategy
+
+↓
+
+Risk
+
+↓
+
+Execution
+
+--------------------------------------------------
+
+Each stage must have
+
+icon
+
+title
+
+count
+
+status
+
+--------------------------------------------------
+
+Timeline line perfectly centered.
+
+Icons equally spaced.
+
+Labels centered.
+
+No overlap.
+
+No clipping.
+
+No text crossing other text.
+
+==================================================
+PART 4
+BOTTOM NEWS BAR
+==================================================
+
+Current news bar overlaps with Execution Pipeline.
+
+Separate them.
+
+Execution Pipeline gets its own area.
+
+News ticker gets its own area.
+
+Ticker always stays on one horizontal line.
+
+Never overlap.
+
+==================================================
+PART 5
+SYSTEM HEALTH
+==================================================
+
+Current columns are too tight.
+
+Align everything.
+
+Equal spacing.
+
+Equal row height.
+
+Numbers right aligned.
+
+Names left aligned.
+
+Looks like server monitoring dashboard.
+
+==================================================
+PART 6
+RESPONSIVE
+==================================================
+
+Must work correctly on
+
+1366x768
+
+1440x900
+
+1536x864
+
+1920x1080
+
+1024x768 iPad
+
+1180x820 iPad Air
+
+1366x1024 iPad Pro
+
+No clipping.
+
+No overlap.
+
+No hidden text.
+
+No scrollbars.
+
+==================================================
+PART 7
+VISUAL QUALITY
+==================================================
+
+Make the UI feel premium.
+
+Inspired by
+
+Bloomberg Terminal
+
+TradingView
+
+Bookmap
+
+Polygon Terminal
+
+Polymarket Pro
+
+Use spacing instead of hacks.
+
+Avoid absolute positioning unless absolutely necessary.
+
+Avoid negative margins.
+
+Avoid transform hacks.
+
+==================================================
+PART 8
+CODE QUALITY
+==================================================
+
+Before changing anything:
+
+Audit the entire dashboard.
+
+Find every overlap.
+
+Find every overflow.
+
+Find every clipping issue.
+
+Then redesign all affected sections together.
+
+Do NOT patch one problem at a time.
+
+==================================================
+PART 9
+VERIFICATION
+==================================================
+
+Before finishing verify:
+
+✓ No overlapping text
+
+✓ No clipped cards
+
+✓ No clipped pipeline
+
+✓ News bar separated
+
+✓ Market cards complete
+
+✓ Responsive
+
+✓ Equal spacing
+
+✓ Professional alignment
+
+Only finish when every checklist item passes.

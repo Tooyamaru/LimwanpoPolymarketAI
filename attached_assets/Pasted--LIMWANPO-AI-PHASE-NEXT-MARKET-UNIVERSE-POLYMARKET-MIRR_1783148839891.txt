@@ -1,0 +1,381 @@
+# LIMWANPO AI - PHASE NEXT
+# MARKET UNIVERSE = POLYMARKET MIRROR
+# (NO AI CALCULATION INSIDE MARKET CARDS)
+
+## IMPORTANT
+
+Mulai phase ini ubah filosofi dashboard.
+
+Market Universe BUKAN lagi tempat AI melakukan analisa.
+
+Market Universe harus menjadi mirror 1:1 dari halaman Polymarket.
+
+Artinya user harus bisa membuka Polymarket pada market yang sama lalu membandingkan card dashboard dengan website Polymarket dan hasilnya harus identik.
+
+----------------------------------------------------
+
+## OBJECTIVE
+
+Semua data Market Universe harus berasal dari Polymarket.
+
+Jangan generate.
+Jangan estimasi.
+Jangan hitung.
+
+Jika Polymarket tidak memiliki suatu data maka tampilkan "-".
+
+----------------------------------------------------
+
+## CARD LAYOUT BARU
+
+Header
+
+------------------------------------------------
+
+BTC
+
+5M
+
+------------------------------------------------
+
+YES
+NO
+
+Bid
+Ask
+
+Spread
+
+Liquidity
+
+Volume
+
+------------------------------------------------
+
+Current Price
+
+Price To Beat
+
+Difference
+
+------------------------------------------------
+
+Status
+
+------------------------------------------------
+
+
+----------------------------------------------------
+
+## FIELD YANG WAJIB
+
+Asset
+
+Timeframe
+
+YES Price
+
+NO Price
+
+YES Bid
+
+YES Ask
+
+NO Bid
+
+NO Ask
+
+Spread
+
+Liquidity
+
+Volume
+
+Current Price
+
+Price To Beat
+
+Difference
+
+Status
+
+----------------------------------------------------
+
+## SOURCE
+
+SEMUA FIELD HARUS BERASAL DARI POLYMARKET
+
+Contoh
+
+YES Price
+
+langsung dari market
+
+NO Price
+
+langsung dari market
+
+Bid
+
+orderbook
+
+Ask
+
+orderbook
+
+Spread
+
+best ask - best bid
+
+Liquidity
+
+market liquidity
+
+Volume
+
+market volume
+
+Current Price
+
+current reference price dari Polymarket
+
+Price To Beat
+
+opening reference price yang digunakan Polymarket
+
+Difference
+
+Current Price
+-
+
+Price To Beat
+
+Status
+
+Waiting
+
+Running
+
+Closing
+
+Resolved
+
+langsung mengikuti market state
+
+----------------------------------------------------
+
+## DILARANG
+
+JANGAN
+
+menggunakan Binance
+
+untuk mengisi
+
+YES
+
+NO
+
+Bid
+
+Ask
+
+Spread
+
+Liquidity
+
+Volume
+
+Current Price
+
+Price To Beat
+
+Status
+
+Karena seluruh data tersebut adalah data milik Polymarket.
+
+----------------------------------------------------
+
+## AI TIDAK BOLEH MASUK KE MARKET CARD
+
+Card Market Universe hanya boleh menjadi monitor.
+
+AI belum boleh memberi:
+
+BUY
+
+SELL
+
+Probability
+
+Prediction
+
+Confidence
+
+Trend
+
+Decision
+
+Engine Score
+
+Opportunity
+
+Signal
+
+atau analisa apapun.
+
+----------------------------------------------------
+
+## AI DIMULAI SETELAH MARKET CARD
+
+Flow baru
+
+STEP 1
+
+Mirror Polymarket
+
+↓
+
+STEP 2
+
+AI mengambil snapshot market
+
+↓
+
+STEP 3
+
+AI mengambil data eksternal
+
+Binance
+
+Bybit
+
+Coinbase
+
+Orderbook
+
+Funding
+
+Open Interest
+
+Liquidation
+
+Whale
+
+News
+
+Sentiment
+
+On-chain
+
+Volatility
+
+Momentum
+
+dll
+
+↓
+
+STEP 4
+
+Opportunity Engine
+
+↓
+
+STEP 5
+
+Signal Engine
+
+↓
+
+STEP 6
+
+Risk Engine
+
+↓
+
+STEP 7
+
+Decision Engine
+
+↓
+
+STEP 8
+
+Baru menghasilkan
+
+BUY
+
+SELL
+
+NO TRADE
+
+----------------------------------------------------
+
+## YANG TIDAK BOLEH DIUBAH
+
+Dashboard Layout
+
+Portfolio
+
+Chart
+
+Execution Pipeline
+
+System Health
+
+Footer
+
+AI Activity
+
+Trading Engine
+
+Paper Trading
+
+Risk Engine
+
+Opportunity Engine
+
+Signal Engine
+
+Execution Logic
+
+Semua tetap.
+
+Phase ini hanya mengganti isi Market Universe.
+
+----------------------------------------------------
+
+## VALIDATION
+
+Dashboard dianggap benar apabila:
+
+✓ semua harga sama dengan Polymarket
+
+✓ YES sama
+
+✓ NO sama
+
+✓ Bid sama
+
+✓ Ask sama
+
+✓ Spread sama
+
+✓ Liquidity sama
+
+✓ Volume sama
+
+✓ Current Price sama
+
+✓ Price To Beat sama
+
+✓ Status sama
+
+✓ tidak ada AI calculation di card
+
+✓ card menjadi mirror Polymarket
+
+Jika ada satu field yang tidak dapat diperoleh dari Polymarket API, jangan membuat nilai sendiri.
+
+Laporkan field tersebut secara eksplisit beserta alasan teknis mengapa field tersebut tidak tersedia.

@@ -1,0 +1,371 @@
+# LIMWANPO AI — PHASE NEXT
+
+# DECISION ENGINE FIRST
+
+# STOP DASHBOARD DEVELOPMENT
+
+## IMPORTANT
+
+Mulai saat ini **STOP seluruh pekerjaan dashboard/UI**.
+
+Jangan mengubah:
+
+* Dashboard Layout
+* CSS
+* HTML
+* Market Card
+* Chart
+* Portfolio Panel
+* System Health
+* Footer
+* AI Activity
+* Execution Pipeline
+* Responsive Layout
+
+Dashboard dianggap **cukup stabil**.
+
+Fokus berikutnya adalah **Decision Engine**.
+
+---
+
+# OBJECTIVE
+
+Mulai membangun AI yang mampu mengambil keputusan trading.
+
+Target AI hanya satu:
+
+OUTPUT:
+
+* BUY YES
+* BUY NO
+* WAIT
+
+Tidak ada target lain.
+
+---
+
+# RULES
+
+Market Universe tetap dianggap sebagai Source of Truth.
+
+Semua data market berasal dari Polymarket.
+
+Decision Engine hanya membaca data.
+
+Decision Engine TIDAK BOLEH mengubah data market.
+
+---
+
+# DECISION ENGINE INPUT
+
+Gunakan seluruh data yang tersedia.
+
+## A. POLYMARKET
+
+YES
+
+NO
+
+Bid
+
+Ask
+
+Spread
+
+Liquidity
+
+Volume
+
+Countdown
+
+Oracle
+
+Resolution
+
+---
+
+## B. BINANCE
+
+Current Price
+
+OHLC
+
+Volume
+
+VWAP
+
+ATR
+
+Momentum
+
+Volatility
+
+EMA
+
+RSI
+
+MACD
+
+Orderbook
+
+Funding
+
+Open Interest (jika tersedia)
+
+---
+
+## C. NEWS
+
+Crypto News
+
+Macro News
+
+Breaking News
+
+Sentiment
+
+---
+
+## D. RISK
+
+Current Exposure
+
+Open Positions
+
+Capital Used
+
+Daily Drawdown
+
+Max Exposure
+
+Correlation
+
+---
+
+## E. INTERNAL
+
+Previous Trades
+
+Win Rate
+
+Historical Accuracy
+
+Signal History
+
+Portfolio State
+
+---
+
+# BUILD DECISION PIPELINE
+
+Pisahkan menjadi beberapa engine.
+
+Signal Engine
+
+↓
+
+Momentum Engine
+
+↓
+
+Trend Engine
+
+↓
+
+Volatility Engine
+
+↓
+
+Opportunity Engine
+
+↓
+
+Risk Engine
+
+↓
+
+Decision Engine
+
+↓
+
+BUY YES
+
+BUY NO
+
+WAIT
+
+---
+
+# EVERY ENGINE MUST RETURN
+
+score
+
+reason
+
+confidence
+
+supporting data
+
+Example
+
+Signal Engine
+
+score : 82
+
+confidence : 0.81
+
+reason :
+
+Bullish momentum
+
+EMA crossover
+
+Volume increasing
+
+---
+
+# FINAL DECISION
+
+Decision Engine membaca seluruh engine.
+
+Output:
+
+BUY YES
+
+atau
+
+BUY NO
+
+atau
+
+WAIT
+
+beserta confidence.
+
+Example
+
+Decision
+
+BUY YES
+
+Confidence
+
+91%
+
+Reasons
+
+Momentum bullish
+
+Volume confirmation
+
+Orderbook imbalance
+
+Positive news
+
+Risk acceptable
+
+---
+
+# IMPORTANT
+
+Decision Engine TIDAK BOLEH langsung menggunakan satu indikator.
+
+Decision harus berasal dari gabungan semua engine.
+
+---
+
+# ADD LOGGING
+
+Setiap engine wajib memiliki log.
+
+Example
+
+Signal Engine
+
+PASS
+
+Trend Engine
+
+PASS
+
+Momentum Engine
+
+PASS
+
+Opportunity Engine
+
+PASS
+
+Risk Engine
+
+PASS
+
+Decision
+
+BUY YES
+
+Confidence
+
+91%
+
+---
+
+# NO MACHINE LEARNING YET
+
+Belum perlu training model.
+
+Gunakan rule-based engine terlebih dahulu.
+
+Tujuan sekarang adalah membangun pipeline keputusan yang stabil.
+
+Machine Learning akan ditambahkan setelah Paper Trading menghasilkan dataset yang cukup.
+
+---
+
+# DO NOT TOUCH
+
+Dashboard
+
+UI
+
+CSS
+
+HTML
+
+Chart
+
+Portfolio
+
+Market Universe Layout
+
+Semua pekerjaan hanya pada backend Decision Engine.
+
+Jika menemukan ketergantungan dengan dashboard, jangan ubah dashboard.
+
+Bangun engine secara modular sehingga nanti dashboard hanya membaca hasil Decision Engine.
+
+---
+
+# DELIVERABLE
+
+Saat selesai harus ada:
+
+Signal Engine
+
+Momentum Engine
+
+Trend Engine
+
+Volatility Engine
+
+Opportunity Engine
+
+Risk Engine
+
+Decision Engine
+
+Confidence Score
+
+Decision Log
+
+Semua engine modular, dapat diuji secara independen, dan siap dihubungkan ke Paper Trading pada fase berikutnya.

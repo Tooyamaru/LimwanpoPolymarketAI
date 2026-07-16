@@ -1,0 +1,169 @@
+Lakukan penyempurnaan terakhir pada UI LIMWANPO POLYMARKET AI.
+
+## FINAL UI FREEZE
+
+Setelah pekerjaan ini selesai, anggap UI FINAL.
+
+Tidak boleh lagi melakukan redesign, memindahkan panel, mengganti layout, mengubah warna utama, atau mengubah struktur dashboard.
+
+Seluruh development berikutnya akan fokus ke AI Engine.
+
+---
+
+# 1. POSITIONS PANEL
+
+Ini adalah panel yang masih paling sulit dibaca.
+
+Perbaiki typography saja.
+
+Target tampilan:
+
+NO ACTIVE POSITION
+
+AI is scanning markets
+
+Waiting for confidence threshold
+
+Paper Mode Active
+
+Ketentuan:
+
+* jangan gunakan ALL CAPS selain judul utama
+* gunakan sentence case untuk deskripsi
+* naikkan ukuran font menjadi sekitar 9–10px
+* opacity sekitar 0.70–0.80
+* line-height diperbaiki agar tidak pecah menjadi terlalu banyak baris
+* gunakan ruang kosong panel dengan lebih baik
+* jangan mengubah ukuran panel
+
+Panel harus tetap minimalis tetapi jauh lebih mudah dibaca.
+
+---
+
+# 2. LAST CLOSED
+
+Hilangkan ruang kosong yang berlebihan.
+
+Jika belum ada transaksi cukup tampilkan:
+
+No trades yet
+
+Gunakan ukuran font sedikit lebih besar dibanding sekarang.
+
+Tetap center.
+
+---
+
+# 3. AI CURRENT TARGET
+
+Saat Scanner Engine belum selesai dibuat,
+
+jangan tampilkan:
+
+WAITING FOR SCANNER
+
+dengan ukuran besar.
+
+Gunakan status yang lebih natural.
+
+Contoh:
+
+Scanner Initializing...
+
+atau
+
+Waiting for Scanner...
+
+Status ini harus:
+
+* lebih kecil daripada tulisan BTC 5m
+* tidak menjadi fokus utama panel
+* opacity sekitar 0.60–0.70
+
+Fokus panel tetap:
+
+BTC 5m
+
+---
+
+# 4. RESPONSIVE VALIDATION
+
+Sebelum menyatakan UI FINAL,
+
+cek seluruh dashboard pada:
+
+1920×1080
+
+1600×900
+
+1366×768
+
+1280×720
+
+1024×768
+
+768×1024 (Portrait)
+
+820×1180 (Portrait)
+
+Periksa:
+
+* tidak ada panel bertabrakan
+* tidak ada tulisan terpotong
+* chart tetap proporsional
+* Decision Engine tetap utuh
+* Feed tidak overlap
+* KPI tetap rapi
+* Position Panel tetap terbaca
+* Heatmap tetap rapi
+
+Jika ada masalah,
+
+perbaiki hanya CSS responsive.
+
+Jangan mengubah layout utama.
+
+---
+
+# 5. FINAL CODE REVIEW
+
+Sebelum selesai:
+
+* cek seluruh Console Browser
+* pastikan tidak ada JavaScript Error
+* pastikan tidak ada CSS Conflict
+* pastikan tidak ada placeholder lama
+* pastikan tidak ada elemen dummy yang tertinggal
+
+---
+
+# 6. UI FREEZE COMPLETE
+
+Setelah semua selesai,
+
+anggap UI sudah FINAL.
+
+Mulai saat itu seluruh pengembangan HARUS fokus ke backend AI.
+
+Roadmap selanjutnya:
+
+1. Market Scanner Engine
+2. Market Evaluation Engine
+3. Opportunity Ranking Engine
+4. Confidence Engine
+5. Decision Engine
+6. Risk Engine Integration
+7. Paper Trading Engine
+8. Trade Management
+9. Performance Analytics
+10. AI Learning
+
+Tidak boleh lagi melakukan perubahan UI kecuali jika ada fitur AI baru yang benar-benar membutuhkan komponen visual tambahan.
+
+Di akhir pekerjaan, berikan laporan singkat:
+
+* Responsive Review: PASS / FAIL
+* Code Review: PASS / FAIL
+* JavaScript Errors: 0
+* CSS Conflicts: 0
+* UI Freeze Status: COMPLETE

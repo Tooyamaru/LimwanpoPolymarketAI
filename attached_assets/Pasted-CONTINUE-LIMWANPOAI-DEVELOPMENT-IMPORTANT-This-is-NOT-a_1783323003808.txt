@@ -1,0 +1,359 @@
+CONTINUE LIMWANPOAI DEVELOPMENT
+
+IMPORTANT
+
+This is NOT a new task.
+
+Continue EXACTLY from the previous implementation.
+
+DO NOT restart repository exploration.
+
+DO NOT reread the entire project.
+
+DO NOT redesign architecture.
+
+DO NOT duplicate models.
+
+DO NOT duplicate repositories.
+
+DO NOT duplicate services.
+
+Resume exactly from the last stopping point.
+
+=========================================================
+CURRENT IMPLEMENTATION STATUS
+=========================================================
+
+The previous session already completed:
+
+✓ Repository exploration
+
+✓ Existing architecture analysis
+
+✓ Existing services analysis
+
+✓ Existing repositories analysis
+
+✓ Existing models analysis
+
+✓ Existing dynamic weight analysis
+
+✓ Existing portfolio allocation analysis
+
+✓ Existing outcome learning analysis
+
+Already implemented (partially or fully):
+
+✓ confidence_calibration.py
+
+✓ market_type_performance.py
+
+✓ outcome_learning model extension
+
+✓ engine_performance extension
+
+✓ engine_weight extension
+
+✓ trade_evaluation extension
+
+✓ repositories updated
+
+✓ confidence_calibration_service
+
+✓ market_type_performance_service
+
+✓ outcome_learning_service extended
+
+✓ engine_performance_service extended
+
+✓ trade_evaluation_service extended
+
+✓ dynamic_weight_service partially upgraded
+
+✓ portfolio_allocation_service partially upgraded
+
+The implementation stopped ONLY because AI monthly quota ended.
+
+Continue from there.
+
+=========================================================
+FINISH ALL 8 PRIORITIES
+=========================================================
+
+Priority 1
+
+Finish Market Level Learning.
+
+Priority 2
+
+Finish Engine Contribution Analysis.
+
+Priority 3
+
+Finish Confidence Calibration.
+
+Priority 4
+
+Finish Entry Quality Validation.
+
+Priority 5
+
+Finish Market Type Performance.
+
+Priority 6
+
+Finish Confidence vs Performance buckets.
+
+Priority 7
+
+Finish Smart Dynamic Engine Weight.
+
+Priority 8
+
+Finish Portfolio Priority Score.
+
+=========================================================
+DATABASE
+=========================================================
+
+Finish every missing migration.
+
+Only additive migrations.
+
+Never break compatibility.
+
+Never remove columns.
+
+Never rename existing columns.
+
+=========================================================
+SERVICES
+=========================================================
+
+Inspect what is already implemented.
+
+Only complete missing logic.
+
+Never rewrite completed code.
+
+Never duplicate calculations.
+
+=========================================================
+WORKERS
+=========================================================
+
+Register every missing worker.
+
+Register periodic updates if required.
+
+Keep current scheduling intact.
+
+=========================================================
+API
+=========================================================
+
+Expose missing endpoints only.
+
+Never break existing endpoints.
+
+=========================================================
+SELF REVIEW
+=========================================================
+
+Before finishing verify:
+
+✓ No duplicated models
+
+✓ No duplicated repositories
+
+✓ No duplicated services
+
+✓ No duplicated APIs
+
+✓ No duplicated calculations
+
+✓ Migrations compatible
+
+✓ Paper Trading unaffected
+
+✓ Existing Portfolio unaffected
+
+✓ Existing Dashboard unaffected
+
+✓ Existing Engine unaffected
+
+=========================================================
+NEW IMPORTANT TASK
+=========================================================
+
+After backend refinement is complete,
+
+review the entire Market Universe data pipeline.
+
+The dashboard is a POLYMARKET dashboard.
+
+NOT a crypto trading dashboard.
+
+Current Market Universe still mixes Binance information with Polymarket information.
+
+Review every displayed field.
+
+=========================================================
+MARKET UNIVERSE VALIDATION
+=========================================================
+
+For every market:
+
+BTC Up or Down 5m
+
+BTC Up or Down 15m
+
+BTC Up or Down 1H
+
+ETH
+
+SOL
+
+XRP
+
+Verify every displayed field.
+
+The dashboard should display:
+
+YES price
+
+NO price
+
+Spread
+
+Price To Beat
+
+Current Price
+
+Difference
+
+Position
+
+Stake
+
+Contracts
+
+PnL
+
+Age
+
+AI Score
+
+Status
+
+=========================================================
+VERY IMPORTANT
+=========================================================
+
+Price To Beat
+
+MUST come from the actual Polymarket market.
+
+It is the reference price when the market opens.
+
+=========================================================
+
+Current Price
+
+MUST NOT be the YES probability.
+
+MUST NOT be a placeholder.
+
+It must represent the real underlying asset reference price used by that Polymarket market.
+
+Example:
+
+BTC Up or Down 5m
+
+Price To Beat:
+
+62480
+
+Current Price:
+
+62512
+
+Difference:
+
++32
+
+=========================================================
+
+Difference
+
+Must always equal
+
+Current Price
+
+minus
+
+Price To Beat.
+
+=========================================================
+
+YES / NO prices
+
+Must always come from Polymarket.
+
+=========================================================
+
+Spread
+
+Must come from Polymarket.
+
+=========================================================
+
+If any field currently comes from the wrong source,
+
+identify it,
+
+correct it,
+
+and reconnect it to the proper data source.
+
+=========================================================
+DO NOT CHANGE
+=========================================================
+
+Do NOT redesign the dashboard.
+
+Do NOT change layout.
+
+Do NOT change CSS.
+
+Do NOT change Portfolio.
+
+Do NOT change Chart.
+
+Do NOT change Footer.
+
+Do NOT change System Health.
+
+Do NOT change Execution Pipeline.
+
+Only fix the DATA.
+
+=========================================================
+CONTINUATION RULE
+=========================================================
+
+If the implementation is too large for one response,
+
+continue automatically in the next response.
+
+Never restart repository exploration.
+
+Never repeat previous analysis.
+
+Resume exactly where the previous response stopped.
+
+Continue until every objective is completed.
+
+Do NOT stop because the code compiles.
+
+Stop only after every checklist above has been completed and verified.

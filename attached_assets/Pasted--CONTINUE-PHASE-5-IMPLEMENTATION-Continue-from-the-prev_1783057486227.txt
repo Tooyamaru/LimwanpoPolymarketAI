@@ -1,0 +1,183 @@
+# CONTINUE PHASE 5 IMPLEMENTATION
+
+Continue from the previous session.
+
+DO NOT audit the project again.
+
+DO NOT explore the codebase again.
+
+DO NOT reread files.
+
+Everything required has already been audited.
+
+Continue exactly where you stopped.
+
+---
+
+Current state:
+
+TradeEvaluation model created.
+
+TradeEvaluationService created.
+
+TradeReplayService created.
+
+EngineScorecardService created.
+
+New schemas partially completed.
+
+Trades router partially completed.
+
+Analytics router partially completed.
+
+Health router partially completed.
+
+Database migration partially completed.
+
+Several tests created.
+
+Implementation is NOT finished.
+
+---
+
+Continue with the remaining work.
+
+---
+
+## Finish remaining implementation
+
+Complete every unfinished file.
+
+Fix every missing import.
+
+Fix every router registration.
+
+Fix every schema registration.
+
+Fix every model registration.
+
+Fix every repository registration.
+
+Fix every migration.
+
+Fix every dependency injection.
+
+Fix every startup registration.
+
+Fix every API registration.
+
+Do NOT leave placeholders.
+
+---
+
+## Database
+
+Finish every migration.
+
+Verify every new table.
+
+Verify every new column.
+
+Verify backward compatibility.
+
+---
+
+## API
+
+Verify every endpoint.
+
+Trades API
+
+Replay API
+
+Evaluation API
+
+Dashboard API
+
+Dataset API
+
+Health API
+
+Everything must work.
+
+---
+
+## Tests
+
+Finish every remaining test.
+
+Current before implementation:
+
+377 tests.
+
+Expected after implementation:
+
+400+ tests.
+
+Run the ENTIRE test suite.
+
+Fix every failing test.
+
+Repeat until:
+
+ALL TESTS PASS.
+
+---
+
+## Validation
+
+After tests pass:
+
+Start the application.
+
+Verify startup.
+
+Verify database migration.
+
+Verify every endpoint.
+
+Verify dashboard endpoint.
+
+Verify replay endpoint.
+
+Verify dataset endpoint.
+
+Verify evaluation endpoint.
+
+Verify health endpoint.
+
+Verify scorecard endpoint.
+
+---
+
+## Final report
+
+Only after EVERYTHING works.
+
+Provide:
+
+1. Files modified
+
+2. New database tables
+
+3. New columns
+
+4. New services
+
+5. New endpoints
+
+6. Tests before
+
+7. Tests after
+
+8. Total passing tests
+
+9. Startup verification
+
+10. Database migration verification
+
+11. API verification
+
+12. Backward compatibility confirmation
+
+Do NOT stop until the entire implementation is complete.

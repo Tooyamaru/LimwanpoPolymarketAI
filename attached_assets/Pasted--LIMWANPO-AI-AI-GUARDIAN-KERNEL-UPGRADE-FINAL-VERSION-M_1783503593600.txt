@@ -1,0 +1,407 @@
+# LIMWANPO AI — AI GUARDIAN KERNEL UPGRADE (FINAL VERSION)
+
+## MODE
+
+READ ONLY FIRST.
+
+DO NOT MODIFY ANY APPLICATION CODE.
+
+This task modifies ONLY the Guardian System.
+
+No dashboard changes.
+
+No CSS.
+
+No JavaScript.
+
+No API work.
+
+No optimization.
+
+Only upgrade AI_GUARDIAN.md into the permanent project kernel.
+
+---
+
+# OBJECTIVE
+
+AI_GUARDIAN.md must become the highest authority inside this project.
+
+Every future coding session MUST pass AI_GUARDIAN before modifying anything.
+
+AI_GUARDIAN sits ABOVE every Phase.
+
+Hierarchy becomes:
+
+Operating System
+
+↓
+
+Constitution
+
+↓
+
+Project Rules
+
+↓
+
+Data Rules
+
+↓
+
+UI Rules
+
+↓
+
+Phase Gate
+
+↓
+
+AI Guardian (KERNEL)
+
+↓
+
+Audit
+
+↓
+
+Coding
+
+---
+
+# REQUIREMENTS
+
+Upgrade AI_GUARDIAN.md.
+
+Do NOT replace it.
+
+Improve it.
+
+Preserve existing content.
+
+Add the following permanent sections.
+
+---
+
+# SECTION A
+
+GUARDIAN AUTHORITY
+
+State explicitly:
+
+AI_GUARDIAN is NOT a project phase.
+
+AI_GUARDIAN is NOT documentation only.
+
+AI_GUARDIAN is the permanent validation kernel.
+
+Every coding session must execute AI_GUARDIAN before code modification.
+
+---
+
+# SECTION B
+
+PERMISSION SYSTEM
+
+Before ANY coding,
+
+Guardian MUST execute:
+
+Identity Check
+
+Source Check
+
+Vocabulary Check
+
+Regression Check
+
+Layout Check
+
+Phase Check
+
+Data Integrity Check
+
+Output exactly:
+
+Identity
+
+PASS / FAIL
+
+Source
+
+PASS / FAIL
+
+Vocabulary
+
+PASS / FAIL
+
+Regression
+
+PASS / FAIL
+
+Layout
+
+PASS / FAIL
+
+Phase
+
+PASS / FAIL
+
+Data Integrity
+
+PASS / FAIL
+
+If every item PASS
+
+Output
+
+PERMISSION GRANTED
+
+If ONE item FAIL
+
+Output
+
+PERMISSION DENIED
+
+Immediately stop.
+
+No coding.
+
+---
+
+# SECTION C
+
+SOURCE VALIDATOR
+
+Guardian must verify
+
+EVERY displayed value
+
+has EXACTLY ONE approved source.
+
+Allowed
+
+Polymarket
+
+Binance Chart
+
+Chainlink
+
+Internal Engine
+
+Everything else
+
+FAIL
+
+If source unknown
+
+FAIL
+
+If duplicated source
+
+FAIL
+
+If placeholder
+
+FAIL
+
+---
+
+# SECTION D
+
+MARKET CARD LOCK
+
+Guardian permanently locks the structure.
+
+Every Market Universe card MUST contain
+
+Movement
+
+UP Probability
+
+DOWN Probability
+
+Target
+
+Gap
+
+Confidence
+
+Countdown
+
+Status
+
+When active
+
+Open At
+
+Coverage
+
+Entries
+
+Guardian must compare
+
+Previous Card
+
+↓
+
+New Card
+
+If any required information disappears
+
+FAIL
+
+Rollback.
+
+---
+
+# SECTION E
+
+REGRESSION SNAPSHOT
+
+Before coding
+
+Guardian stores
+
+Dashboard Snapshot
+
+After coding
+
+Guardian stores
+
+New Snapshot
+
+Compare
+
+Layout
+
+Typography
+
+Components
+
+Information
+
+If information decreases
+
+FAIL
+
+Rollback
+
+---
+
+# SECTION F
+
+LAYOUT VALIDATOR
+
+Guardian checks
+
+No overlap
+
+No clipping
+
+No hidden content
+
+No duplicated widgets
+
+No disappearing sections
+
+No inconsistent spacing
+
+No inconsistent typography
+
+PASS / FAIL
+
+---
+
+# SECTION G
+
+VOCABULARY VALIDATOR
+
+Forbidden words remain permanently blocked.
+
+If any forbidden term becomes visible
+
+FAIL
+
+Rollback.
+
+---
+
+# SECTION H
+
+PHASE ENFORCEMENT
+
+Guardian validates current phase.
+
+If requested work belongs to another phase
+
+DENY.
+
+No exceptions.
+
+---
+
+# SECTION I
+
+API LOCK
+
+No API integration may begin
+
+until
+
+Source Stabilization
+
+has passed.
+
+Current status
+
+LOCKED
+
+---
+
+# SECTION J
+
+POST-CODE VALIDATION
+
+After every modification
+
+Guardian automatically executes
+
+Regression Audit
+
+Vocabulary Audit
+
+Source Audit
+
+Layout Audit
+
+UI Audit
+
+Data Integrity Audit
+
+Output
+
+PASS / FAIL
+
+---
+
+# FINAL OUTPUT
+
+Do NOT modify dashboard.
+
+Do NOT modify CSS.
+
+Do NOT modify JavaScript.
+
+Deliver only:
+
+1. Updated AI_GUARDIAN.md
+
+2. Summary of newly added kernel capabilities
+
+3. Confirmation that AI_GUARDIAN is now the permanent validation kernel of LIMWANPO AI.
+
+No additional features.
+
+No API work.
+
+No redesign.

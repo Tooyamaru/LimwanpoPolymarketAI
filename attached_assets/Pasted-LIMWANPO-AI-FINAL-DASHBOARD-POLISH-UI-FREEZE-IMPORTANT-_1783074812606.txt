@@ -1,0 +1,395 @@
+LIMWANPO AI — FINAL DASHBOARD POLISH (UI FREEZE)
+IMPORTANT
+
+Before writing a single line of code:
+
+Read the entire frontend.
+
+Read completely:
+
+backend/app/static/index.html
+dashboard.js
+styles.css
+every dashboard component
+
+Understand the current implementation.
+
+This is the LAST dashboard polishing task.
+
+After this task the dashboard enters UI Freeze.
+
+No more layout redesign.
+
+No backend changes.
+
+No AI changes.
+
+No engine changes.
+
+Frontend only.
+
+VERY IMPORTANT
+
+Remember forever.
+
+This project is
+
+POLYMARKET AI
+
+NOT
+
+Crypto Trading
+
+NOT
+
+MetaTrader
+
+NOT
+
+TradingView
+
+NOT
+
+Binance Terminal
+
+Everything displayed must follow prediction market logic.
+
+Never redesign this into a trading dashboard.
+
+GOAL
+
+Finish the remaining 5%.
+
+After this dashboard should be considered FINAL.
+
+1 REMOVE DEBUG INFORMATION
+
+Completely REMOVE these fields from the bottom.
+
+Remove:
+
+DB OK
+
+REDIS OK
+
+UPTIME
+
+VERSION
+
+MARKETS
+
+They are developer/debug information.
+
+They provide no value to the AI operator.
+
+Do NOT move them.
+
+Delete them completely.
+
+2 SYSTEM HEALTH
+
+Keep current layout.
+
+Do NOT redesign.
+
+Improve only alignment.
+
+Layout becomes
+
+Signal........100%
+
+Opportunity...100%
+
+Strategy......100%
+
+Risk..........100%
+
+Execution.....100%
+
+Exit..........100%
+
+Universe......100%
+
+Refresh.......100%
+
+Analytics.....100%
+
+Position......100%
+
+Label left.
+
+Value right.
+
+Perfect alignment.
+
+Increase row spacing slightly.
+
+3 EXECUTION PIPELINE
+
+Keep current layout.
+
+Only polish.
+
+Reduce icon size about 15%.
+
+Make pipeline text slightly larger.
+
+Reduce unnecessary empty space.
+
+Improve visual flow.
+
+Do NOT redesign.
+
+4 MARKET UNIVERSE
+
+This is the highest priority.
+
+Every asset must feel like a Prediction Market Card.
+
+Current implementation still feels too flat.
+
+Structure becomes
+
+BTC
+
+Open Positions : X
+
+Capital Used : $XX
+
+5M CARD
+
+15M CARD
+
+1H CARD
+
+Each timeframe must be visually separated.
+
+More spacing.
+
+More breathing room.
+
+Clear borders.
+
+Rounded corners.
+
+Soft cyan glow.
+
+5 REMOVE
+
+Remove
+
+5M • 15M • 1H
+
+under BTC ETH SOL XRP.
+
+Replace permanently with
+
+Open Positions : X
+
+Capital Used : $XX
+
+6 POLYMARKET DATA ORDER
+
+Inside every timeframe card
+
+display in this exact order
+
+YES Price
+
+NO Price
+
+Spread
+
+Price To Beat
+
+Current Price
+
+Difference
+
+Position
+
+BUY YES
+
+BUY NO
+
+NONE
+
+Stake
+
+Contracts
+
+Entry Probability
+
+Current Probability
+
+PnL
+
+Age
+
+Engine Score
+
+Status
+
+7 PRICE TO BEAT
+
+This is mandatory.
+
+Display
+
+Price To Beat
+
+Current Price
+
+Difference
+
+Difference auto colored
+
+Green
+
+Red
+
+This is a POLYMARKET dashboard.
+
+These values are primary.
+
+8 ENGINE SCORE
+
+Increase visibility.
+
+Use
+
+Engine Score
+
+34%
+
+instead of tiny text.
+
+9 BORDERS
+
+Increase visibility around
+
+Asset Cards
+
+Timeframe Cards
+
+about 20%.
+
+Keep cyan.
+
+Never use white.
+
+10 PANEL PROPORTIONS
+
+Current proportions are already correct.
+
+Do NOT redesign layout.
+
+Only fine tune spacing.
+
+11 AI ACTIVITY
+
+Current implementation is good.
+
+Leave unchanged.
+
+12 PORTFOLIO
+
+Current implementation is good.
+
+Leave unchanged.
+
+13 LIVE CHART
+
+Leave completely unchanged.
+
+This is not TradingView.
+
+It is only a probability reference.
+
+14 FOOTER
+
+Do NOT touch.
+
+15 DO NOT TOUCH
+
+Backend
+
+API
+
+Database
+
+AI
+
+Signal Engine
+
+Execution Engine
+
+Paper Trading
+
+Learning
+
+Anything outside frontend
+
+FINAL VALIDATION
+
+Before finishing verify:
+
+✓ Footer unchanged
+
+✓ Backend unchanged
+
+✓ AI unchanged
+
+✓ Chart unchanged
+
+✓ System Health aligned
+
+✓ Execution Pipeline polished
+
+✓ Debug info removed
+
+✓ Asset cards restored
+
+✓ Timeframe cards separated
+
+✓ Open Positions shown
+
+✓ Capital Used shown
+
+✓ Price To Beat visible
+
+✓ Current Price visible
+
+✓ Difference visible
+
+✓ Engine Score readable
+
+✓ Better borders
+
+✓ Better spacing
+
+✓ Prediction market appearance
+
+✓ No trading terminal appearance
+
+UI FREEZE
+
+When everything above is complete:
+
+STOP.
+
+Do NOT redesign the dashboard again.
+
+Consider this dashboard UI Version 1.0 FINAL.
+
+All future development must focus on:
+
+AI accuracy
+Signal quality
+Opportunity selection
+Position management
+Paper trading performance
+Performance analytics
+Live Polymarket readiness
+
+NOT on changing the dashboard layout anymore.

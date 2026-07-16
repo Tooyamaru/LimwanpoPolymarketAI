@@ -1,0 +1,356 @@
+# LIMWANPO POLYMARKET AI
+
+## V12.2 FINAL UI FREEZE + DEVELOPMENT DIRECTION
+
+---
+
+# IMPORTANT
+
+Read this instruction completely before making any changes.
+
+This is **NOT** a redesign.
+
+The dashboard has reached **UI FREEZE**.
+
+The current dashboard layout, panel arrangement, panel sizes, spacing system, color palette, design language, and overall identity are now considered FINAL.
+
+From this point forward:
+
+* DO NOT redesign the dashboard.
+* DO NOT move panels.
+* DO NOT resize panels.
+* DO NOT change the grid.
+* DO NOT create a new visual concept.
+* DO NOT replace the current theme.
+* DO NOT introduce another "V13 redesign".
+
+Only perform the refinements described below.
+
+---
+
+# DEVELOPMENT DIRECTION (MANDATORY)
+
+After this UI Freeze, all future development must focus on the intelligence of LIMWANPO POLYMARKET AI.
+
+The priority is now:
+
+* Market Scanner
+* Odds Analysis
+* Market Ranking
+* AI Decision Engine
+* Opportunity Detection
+* Risk Management
+* Capital Protection
+* Paper Trading / Simulation
+* Performance Analytics
+* Strategy Evaluation
+* Model Improvement
+* AI Learning
+
+NOT visual redesign.
+
+Visual work is only allowed if required to support new functionality.
+
+---
+
+# TASK 1
+
+## MICRO TYPOGRAPHY ONLY
+
+Improve readability.
+
+DO NOT redesign.
+
+Only improve typography.
+
+Increase readability of:
+
+* panel titles
+* important numbers
+* KPI values
+* system health percentages
+* odds
+* spread
+* confidence
+* market scores
+* AI feeds
+
+If any text feels
+
+* too small
+* too thin
+* too faded
+
+fix ONLY typography.
+
+NOT layout.
+
+---
+
+# TASK 2
+
+## LABEL CONTRAST
+
+Small labels are still slightly difficult to read.
+
+Increase label contrast around 10–15%.
+
+Examples
+
+EDGE
+
+ODDS
+
+SPREAD
+
+CONFIDENCE
+
+WIN RATE
+
+DAILY PNL
+
+TRADES
+
+etc.
+
+Do NOT change colors.
+
+Only improve readability.
+
+---
+
+# TASK 3
+
+## IMPORTANT NUMBERS
+
+Numbers are the most important information.
+
+Make them easier to scan.
+
+Increase only
+
+* font-weight
+* tiny font-size adjustments if necessary
+
+Examples
+
+BTC score
+
+Opportunity count
+
+Odds
+
+Spread
+
+Confidence
+
+KPI values
+
+Health %
+
+---
+
+# TASK 4
+
+## MARKET LIST
+
+Current title
+
+"12 MARKETS MONITORED"
+
+is misleading.
+
+The system is NOT monitoring 12 different markets.
+
+It is monitoring
+
+4 Assets
+
+×
+
+3 Timeframes
+
+=
+
+12 Analysis Streams
+
+Rename the panel to something more accurate.
+
+Recommended:
+
+MARKET UNIVERSE
+
+or
+
+ACTIVE UNIVERSE
+
+or
+
+SCANNER UNIVERSE
+
+Below the title display
+
+4 Assets
+
+12 Analysis Streams
+
+The market list itself stays exactly the same.
+
+Do NOT change layout.
+
+---
+
+# TASK 5
+
+## CURRENT TARGET
+
+Improve hierarchy only.
+
+BTC
+
+5m
+
+Odds
+
+Spread
+
+Edge
+
+Confidence
+
+should become easier to scan.
+
+Radar stays.
+
+Layout stays.
+
+---
+
+# TASK 6
+
+## DECISION ENGINE
+
+Universe
+
+Signal
+
+Risk
+
+Execution
+
+remain visually dominant.
+
+Opportunity
+
+Strategy
+
+remain secondary.
+
+Do NOT redesign.
+
+Only improve typography hierarchy.
+
+---
+
+# TASK 7
+
+## SYSTEM HEALTH
+
+Keep current layout.
+
+Improve readability only.
+
+Engine names slightly stronger.
+
+Percentages slightly stronger.
+
+Keep progress bars.
+
+---
+
+# TASK 8
+
+## KPI CARDS
+
+Keep current layout.
+
+Only improve typography.
+
+Numbers easier to read.
+
+Labels slightly brighter.
+
+---
+
+# TASK 9
+
+## AI FEEDS
+
+Messages should be the first thing the eye notices.
+
+Timestamp should remain secondary.
+
+Tags remain compact.
+
+---
+
+# TASK 10
+
+## FOOTER
+
+Improve readability only.
+
+Nothing else.
+
+---
+
+# TASK 11
+
+## FINAL REVIEW
+
+Before finishing, inspect the entire dashboard.
+
+Ask yourself:
+
+Does anything still feel
+
+* too thin
+* too faded
+* difficult to read
+* visually inconsistent
+
+If yes,
+
+fix ONLY typography.
+
+Never redesign.
+
+Never move panels.
+
+Never resize panels.
+
+---
+
+# AFTER THIS TASK
+
+The UI is considered COMPLETE.
+
+Future work must move to:
+
+* Scanner Intelligence
+* AI Decision Engine
+* Paper Trading
+* Risk Engine
+* Performance Analytics
+* Strategy Optimization
+* AI Learning
+
+No more visual redesigns unless required by new functionality.
+
+---
+
+Return a summary explaining
+
+* what typography improvements were made
+* what title was chosen instead of "12 MARKETS MONITORED"
+* confirmation that UI FREEZE remains in effect.

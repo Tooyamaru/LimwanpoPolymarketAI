@@ -1,0 +1,266 @@
+# DESIGN TASK — Portfolio Decision Framework (Pre-Layer 11)
+
+Before implementing CLOSE_POSITION, Live Trading, Exit Engine, or any Layer 11 execution logic, perform a complete architecture review and design a Portfolio Decision Framework for LimwanpoPolymarketAI.
+
+## Critical Context
+
+LimwanpoPolymarketAI is a Polymarket Quant Bot.
+
+It is NOT:
+
+* Spot trading bot
+* Futures trading bot
+* Arbitrage bot
+* Market making bot
+* Pure probability-mispricing engine
+
+The system trades YES and NO contracts on Polymarket prediction markets.
+
+BTC, ETH, SOL, and XRP are prediction targets only.
+
+The project already has:
+
+* Layer 1–10 completed
+* Opportunity Engine
+* Strategy Engine
+* Risk Engine
+* Execution Engine (paper mode)
+* Position Tracking
+* Portfolio Reporting
+
+README.md is the single source of truth.
+
+Read README.md completely before making any design decisions.
+
+---
+
+# Objective
+
+Do NOT implement CLOSE_POSITION yet.
+
+First design the complete decision framework that determines:
+
+1. When to open a position
+2. When to keep a position
+3. When to increase a position
+4. When to reduce a position
+5. When to rotate capital
+6. When to fully exit a position
+
+The goal is to manage a portfolio of opportunities, not individual trades in isolation.
+
+---
+
+# Required Architecture Review
+
+Analyze and document:
+
+## A. Current Decision Lifecycle
+
+Map the complete lifecycle:
+
+Opportunity
+→ Strategy
+→ Risk
+→ Execution
+→ Position Tracking
+→ Reporting
+
+Identify where portfolio-level decisions should exist.
+
+---
+
+## B. Existing Exposure Framework
+
+Review:
+
+* MAX_OPEN_POSITIONS
+* MAX_EXPOSURE_PER_ASSET
+* DUPLICATE_POSITION
+* Daily limits
+
+Determine whether current rules align with:
+
+"Exposure Management > Position Count"
+
+Do not modify anything yet.
+
+Document findings.
+
+---
+
+## C. Existing Opportunity Framework
+
+Review:
+
+* Opportunity scoring
+* Confidence scoring
+* Signal generation
+* Market ranking
+
+Determine which metrics can be reused for portfolio decisions.
+
+---
+
+## D. Existing Position Framework
+
+Review:
+
+* Position lifecycle
+* Unrealized PnL
+* Realized PnL
+* Entry tracking
+* Market price updates
+
+Document available inputs.
+
+---
+
+# Design Deliverable
+
+Design a new component:
+
+Portfolio Decision Engine
+
+Purpose:
+
+Evaluate the entire portfolio every cycle.
+
+Input:
+
+* Open positions
+* Opportunity scores
+* Confidence metrics
+* Liquidity conditions
+* Order book state
+* Exposure state
+* Risk state
+
+Output:
+
+Portfolio decisions.
+
+Possible outcomes:
+
+* KEEP_POSITION
+* ADD_TO_POSITION
+* REDUCE_POSITION
+* ROTATE_POSITION
+* CLOSE_POSITION
+
+These are portfolio-management decisions.
+
+Execution actions are generated afterward.
+
+---
+
+# Portfolio Decision Philosophy
+
+The system must NOT use:
+
+if pnl > target:
+close()
+
+as the sole exit mechanism.
+
+Decisions must be multi-factor.
+
+Potential factors:
+
+* Opportunity score
+* Confidence score
+* Probability estimate
+* Market pricing
+* Liquidity
+* Spread quality
+* Order book imbalance
+* Exposure utilization
+* Risk utilization
+* Relative ranking versus other opportunities
+
+No single factor may be the sole criterion.
+
+---
+
+# Rotation Framework
+
+Design how the system behaves when:
+
+* Portfolio is full
+* Exposure limits reached
+* Better opportunities appear
+
+Questions to answer:
+
+When should a lower-ranked position be replaced?
+
+How is ranking determined?
+
+How much improvement is required before rotation?
+
+How is churn prevented?
+
+---
+
+# Exit Framework
+
+Design exit categories.
+
+Examples:
+
+* Profit realization
+* Edge deterioration
+* Confidence deterioration
+* Exposure reduction
+* Capital rotation
+* Risk reduction
+* Liquidity deterioration
+
+Do NOT implement fixed thresholds yet.
+
+First design the framework.
+
+---
+
+# Polymarket Market Mechanics
+
+Use Polymarket mechanics only.
+
+Important:
+
+YES and NO contracts are traded instruments.
+
+Bid and ask prices matter.
+
+Do not assume execution at midpoint.
+
+When discussing live execution:
+
+* Buy YES at ask
+* Sell YES at bid
+* Buy NO at ask
+* Sell NO at bid
+
+Mid prices may be used for analytics but not assumed execution.
+
+---
+
+# Final Deliverable
+
+Produce:
+
+1. Architecture review
+2. Gap analysis
+3. Portfolio Decision Framework
+4. Rotation Framework
+5. Exit Framework
+6. Recommended Layer 10.5 architecture
+7. Recommended Layer 11 architecture
+
+Do not write code.
+
+Do not modify files.
+
+Do not implement.
+
+Design only.

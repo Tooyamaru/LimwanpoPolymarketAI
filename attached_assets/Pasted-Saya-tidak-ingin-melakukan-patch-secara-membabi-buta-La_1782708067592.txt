@@ -1,0 +1,67 @@
+Saya tidak ingin melakukan patch secara membabi buta. Lakukan audit menyeluruh terlebih dahulu, baru lakukan perbaikan yang memang terbukti diperlukan.
+
+FAKTA SAAT INI:
+
+* Audit log mengatakan chart berhasil dibuat.
+* Chart API melaporkan ukuran benar.
+* ResizeObserver sudah berjalan.
+* Tetapi screenshot terbaru menunjukkan panel “BTC // CANDLES” masih kosong total.
+* Tidak ada candlestick.
+* Tidak ada volume.
+* Tidak ada grid.
+* Tidak ada price scale.
+* Tidak ada time scale.
+
+Artinya masalah kemungkinan bukan lagi hanya resize.
+
+TOLONG LAKUKAN AUDIT BERIKUT:
+
+1. Pastikan createChart() benar-benar dipanggil.
+2. Pastikan container yang digunakan benar.
+3. Pastikan container masih berada di DOM setelah render selesai.
+4. Pastikan canvas Lightweight Charts benar-benar dibuat.
+5. Hitung jumlah canvas di dalam container.
+6. Pastikan canvas tidak dihapus oleh script lain.
+7. Pastikan tidak ada innerHTML=”” atau re-render yang menghapus chart.
+8. Audit semua CSS parent hingga body:
+    * display
+    * visibility
+    * opacity
+    * overflow
+    * height
+    * width
+    * position
+    * z-index
+9. Pastikan tidak ada overlay yang menutupi chart.
+10. Pastikan canvas memiliki ukuran CSS yang benar.
+11. Pastikan canvas memiliki bitmap size yang benar.
+12. Pastikan chart.resize() benar-benar dieksekusi setelah layout selesai.
+13. Pastikan series.setData() benar-benar menerima data.
+14. Hitung jumlah candle yang diterima.
+15. Pastikan tidak ada exception setelah createChart().
+
+Tambahkan log audit seperti berikut:
+
+console.log(“Container”, container);
+console.log(“Container children”, container.children.length);
+console.log(“Canvas”, container.querySelector(“canvas”));
+console.log(“Canvas count”, container.querySelectorAll(“canvas”).length);
+console.log(“BoundingRect”, container.getBoundingClientRect());
+console.log(“Computed Style”, {
+display: getComputedStyle(container).display,
+visibility: getComputedStyle(container).visibility,
+opacity: getComputedStyle(container).opacity,
+overflow: getComputedStyle(container).overflow,
+zIndex: getComputedStyle(container).zIndex
+});
+console.log(“Chart API”, chart.timeScale().width(), chart.timeScale().height());
+console.log(“Candles loaded”, candleData.length);
+
+SETELAH AUDIT:
+
+* Jelaskan penyebab utama jika chart masih tidak muncul.
+* Berikan bukti log.
+* Berikan screenshot terbaru.
+* Baru lakukan patch jika penyebabnya sudah terbukti.
+
+Jangan mengubah bagian lain dari aplikasi. Fokus hanya pada modul BTC Candlestick Chart sampai chart benar-benar tampil normal dan stabil.

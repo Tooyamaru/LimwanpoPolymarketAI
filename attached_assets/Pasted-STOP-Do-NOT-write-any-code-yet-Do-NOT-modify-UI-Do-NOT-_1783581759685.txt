@@ -1,0 +1,127 @@
+STOP.
+
+Do NOT write any code yet.
+
+Do NOT modify UI.
+Do NOT redesign anything.
+Do NOT refactor.
+Do NOT optimize.
+Do NOT implement another workaround.
+
+We already know these facts:
+
+* Backend returns valid market data.
+* Frontend endpoints return data.
+* The dashboard renders correctly after restart.
+* dynamic_weight interval = 1800 seconds.
+* WATCHDOG_RESTART_SECONDS = 600 seconds.
+* DYNAMIC_WEIGHT_RUN_ON_STARTUP = False.
+
+The previous solution added:
+
+* initial heartbeat
+* chunked sleep
+* heartbeat during waiting period
+
+I am NOT approving that solution yet.
+
+Your task now is to prove whether that solution is actually correct.
+
+Follow this exact order.
+
+---
+
+## STEP 1
+
+Read these files completely:
+
+backend/app/workers/watchdog.py
+
+backend/app/workers/engine_workers.py
+
+backend/app/core/engine_health.py
+
+backend/app/core/settings.py
+
+Do not edit anything.
+
+---
+
+## STEP 2
+
+Explain precisely:
+
+1. Why is dynamic_weight monitored by watchdog?
+
+2. Is that intentional by the original architecture?
+
+3. Is every monitored worker expected to heartbeat continuously?
+
+4. Which workers heartbeat only after finishing work?
+
+5. Which workers heartbeat while idle?
+
+---
+
+## STEP 3
+
+Determine whether the real design bug is ONE of these:
+
+A.
+dynamic_weight should NOT be monitored.
+
+B.
+WATCHDOG_RESTART_SECONDS is too small.
+
+C.
+dynamic_weight should execute once on startup.
+
+D.
+engine_health should support scheduled workers.
+
+E.
+Something else.
+
+Choose ONLY ONE.
+
+You must justify it using the code.
+
+---
+
+## STEP 4
+
+Before changing anything, provide a comparison table:
+
+Option
+
+Advantages
+
+Disadvantages
+
+Architecturally correct?
+
+Requires minimal code?
+
+Risk level
+
+---
+
+## STEP 5
+
+Recommend ONLY ONE solution.
+
+Do NOT implement it yet.
+
+Wait for my approval.
+
+IMPORTANT
+
+Do NOT create another workaround.
+
+Do NOT add heartbeat loops.
+
+Do NOT add fake heartbeats.
+
+Do NOT change timing unless you prove that timing is the real architectural issue.
+
+I want the ROOT CAUSE, not a workaround.

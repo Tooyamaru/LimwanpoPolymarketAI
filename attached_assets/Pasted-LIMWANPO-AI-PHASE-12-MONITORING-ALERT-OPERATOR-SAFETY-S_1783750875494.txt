@@ -1,0 +1,404 @@
+LIMWANPO AI — PHASE 12 MONITORING / ALERT / OPERATOR SAFETY SYSTEM
+
+Konteks project:
+LIMWANPO AI adalah AI decision system untuk Polymarket binary prediction markets.
+
+Status sebelumnya:
+
+* Phase 9D: AI DECISION INTEGRITY = PASS
+* Phase 10: DECISION ACTIVATION = PASS WITH REMEDIATION
+* Phase 10B: PENDING LIVE EXPIRY VALIDATION
+* Phase 11: EXECUTION SAFETY = PASS WITH REMEDIATION
+
+Tujuan Phase 12:
+Bangun dan audit monitoring / alert / operator safety system untuk memastikan operator bisa melihat masalah penting sebelum sistem masuk tahap automation yang lebih jauh.
+
+Fokus:
+
+* Jangan tambah real trading.
+* Jangan tambah wallet.
+* Jangan ubah UI besar-besaran.
+* Jangan redesign dashboard.
+* Jangan tambah dummy data.
+* Jangan fake alert.
+* Alert harus berbasis state nyata dari DB, worker logs, dan engine health.
+
+==================================================
+STEP 1 — READ CURRENT STATE
+===========================
+
+Baca file:
+
+* AI_DECISION_INTEGRITY_AUDIT.md
+* backend/app/services/health_service.py jika ada
+* backend/app/services/monitoring_service.py jika ada
+* backend/app/services/execution_engine.py
+* backend/app/services/exit_engine.py
+* backend/app/services/outcome_learning_service.py
+* backend/app/services/decision_engine.py
+* backend/app/services/risk_engine.py
+* backend/app/services/portfolio_allocation_service.py
+* backend/app/models/trade_decision.py
+* backend/app/models/position.py
+* backend/app/models/outcome_learning.py
+* backend/app/models/market_universe.py
+* backend/app/models/risk_event.py jika ada
+* backend/app/api/v1/health.py jika ada
+* backend/app/api/v1/status.py jika ada
+* backend/app/config/settings.py
+* MEMORY.md jika ada
+
+Jalankan:
+
+* git status
+* git diff
+* python -m compileall -q backend/app
+
+==================================================
+STEP 2 — MONITORING INVENTORY
+=============================
+
+Audit monitoring yang sudah ada.
+
+Cari:
+
+* health endpoint
+* engine status endpoint
+* worker status
+* last cycle timestamps
+* error counters
+* API health checks
+* DB health checks
+* CLOB/Gamma health checks
+* dashboard health panel
+* logs / structured logs
+* alerts / notifications
+* system_settings
+
+Untuk setiap item:
+
+* file
+* endpoint/function
+* data source
+* refresh frequency
+* apakah real atau placeholder
+* failure mode
+
+Klasifikasi:
+
+* REAL_MONITORING
+* PARTIAL_MONITORING
+* PLACEHOLDER
+* MISSING
+* INVALID_FAKE
+
+Tidak boleh ada INVALID_FAKE.
+
+==================================================
+STEP 3 — DEFINE CRITICAL ALERTS
+===============================
+
+Buat daftar alert wajib berbasis real DB / real engine state.
+
+Minimal alert:
+
+1. ENGINE_STALLED
+
+   * jika worker tertentu tidak update lebih dari X menit
+
+2. GAMMA_API_DEGRADED
+
+   * jika Gamma calls fail berulang
+
+3. CLOB_API_DEGRADED
+
+   * jika CLOB/orderbook fetch fail berulang
+
+4. NO_MARKETS_ACTIVE
+
+   * jika market_universe active count = 0
+
+5. EXPIRED_POSITION_OPEN
+
+   * jika position.status=OPEN dan market.end_time < now
+
+6. DIRECT_RESOLUTION_MISSING
+
+   * jika market expired tapi outcome_learning outcome_source masih NOT_AVAILABLE terlalu lama
+
+7. EXECUTION_ERROR_SPIKE
+
+   * jika trade_decisions FAILED meningkat
+
+8. RISK_GATE_STUCK
+
+   * jika risk_gated=true terlalu lama / terlalu banyak secara tidak normal
+
+9. DUPLICATE_POSITION
+
+   * jika lebih dari 1 OPEN position untuk condition_id sama
+
+10. PORTFOLIO_EXPOSURE_HIGH
+
+* jika exposure > configured cap
+
+11. PAPER_PNL_ANOMALY
+
+* jika realized/unrealized PnL impossible / null pada closed position
+
+12. FORCED_EXIT_PENDING
+
+* jika expired open position belum punya CLOSE_POSITION decision
+
+Untuk setiap alert, dokumentasikan:
+
+* query / condition
+* severity
+* threshold
+* recommended operator action
+* false positive risk
+
+Severity:
+
+* INFO
+* WARNING
+* CRITICAL
+
+==================================================
+STEP 4 — IMPLEMENT ALERT SNAPSHOT SERVICE
+=========================================
+
+Jika belum ada, buat service minimal:
+
+backend/app/services/alert_service.py
+
+Service harus menghasilkan snapshot:
+
+{
+"status": "OK" | "WARNING" | "CRITICAL",
+"generated_at": "...",
+"alerts": [
+{
+"code": "...",
+"severity": "...",
+"message": "...",
+"evidence": {...},
+"recommended_action": "..."
+}
+],
+"summary": {
+"critical": 0,
+"warning": 0,
+"info": 0
+}
+}
+
+Aturan:
+
+* Semua alert harus berasal dari DB/log/state nyata.
+* Jangan fake alert.
+* Jangan dummy alert.
+* Jangan hardcode OK jika query gagal.
+* Jika query gagal, return CRITICAL MONITORING_QUERY_FAILED.
+
+==================================================
+STEP 5 — API ENDPOINT
+=====================
+
+Jika belum ada endpoint alert, tambahkan:
+
+GET /api/v1/alerts/summary
+
+atau sesuai struktur router project.
+
+Endpoint harus:
+
+* read-only
+* tidak mengubah DB
+* tidak trigger trade
+* tidak trigger execution
+* tidak expose secrets
+* return JSON
+* include generated_at
+* include alerts
+* include summary counts
+
+==================================================
+STEP 6 — DASHBOARD COMPATIBILITY
+================================
+
+Jangan redesign UI.
+
+Jika dashboard sudah punya Health Monitor:
+
+* cukup pastikan endpoint baru bisa dipakai.
+* jangan ubah layout besar.
+* boleh tambahkan minimal data binding jika aman.
+
+Jika tidak perlu UI change:
+
+* jangan ubah UI.
+
+==================================================
+STEP 7 — VALIDATE CURRENT SYSTEM ALERTS
+=======================================
+
+Jalankan alert snapshot terhadap current DB.
+
+Tampilkan hasil:
+
+* status
+* total alerts
+* critical count
+* warning count
+* info count
+* setiap alert code
+* evidence
+* recommended_action
+
+Expected possible alerts saat ini:
+
+* PHASE_10B_PENDING_LIVE_EXPIRY_VALIDATION
+* TEST_INFRA_AIOSQLITE_MISSING
+* ENTRY_GATE_PRETUNED
+* mungkin NO_EXPIRED_POSITION_OPEN
+
+Jangan buat alert palsu.
+
+==================================================
+STEP 8 — TESTS
+==============
+
+Tambahkan tests untuk alert service:
+
+* no alerts when clean
+* expired position open → CRITICAL EXPIRED_POSITION_OPEN
+* duplicate position → CRITICAL DUPLICATE_POSITION
+* direct resolution missing → WARNING / CRITICAL sesuai threshold
+* failed trade decisions spike → WARNING
+* query failure → CRITICAL MONITORING_QUERY_FAILED
+
+Jalankan:
+
+* python -m compileall -q backend/app
+* pytest untuk alert service
+* pytest untuk health/status route jika ada
+* workflow restart
+* curl /api/v1/alerts/summary
+
+Jika full suite punya pre-existing failures:
+
+* klasifikasikan PRE_EXISTING_FAILURE.
+* jangan klaim full clean kalau tidak clean.
+
+==================================================
+STEP 9 — RED FLAG SEARCH
+========================
+
+Search backend:
+
+* fake alert
+* dummy alert
+* hardcoded OK
+* always healthy
+* mock health
+* ignore error
+* pass silently
+* except: pass
+* wallet
+* private_key
+* place_order
+* post_order
+* create_order
+
+Klasifikasi:
+
+* SAFE
+* TEST_ONLY
+* REAL_MONITORING
+* INVALID_FAKE
+* FIXED
+* REAL_ORDER_DISABLED
+
+No INVALID_FAKE at final.
+
+==================================================
+STEP 10 — UPDATE AUDIT REPORT
+=============================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md with section:
+
+PHASE 12 — MONITORING / ALERT / OPERATOR SAFETY SYSTEM
+
+Include:
+
+1. Monitoring inventory
+2. Alert definitions
+3. Alert service implementation
+4. Alert endpoint
+5. Current alert snapshot
+6. Dashboard compatibility
+7. Tests run
+8. Red flag search
+9. Files changed
+10. Remaining risks
+11. Final Monitoring status
+
+Status must be one of:
+
+* MONITORING SAFETY: PASS
+* MONITORING SAFETY: PASS WITH REMEDIATION
+* MONITORING SAFETY: PARTIAL
+* MONITORING SAFETY: FAIL
+
+Use PASS only if:
+
+* alert service exists
+* endpoint works
+* critical safety alerts are real-data driven
+* tests pass or only documented pre-existing failures
+* no fake/hardcoded OK
+* no silent query failures
+
+Use PASS WITH REMEDIATION if:
+
+* bugs were found and fixed
+* current alert system works
+* remaining issues documented
+
+Use PARTIAL if:
+
+* inventory completed but implementation not finished
+
+Use FAIL if:
+
+* monitoring lies
+* alerts are fake
+* critical failures are silently ignored
+* endpoint always returns OK despite query errors
+
+==================================================
+STEP 11 — FINAL RESPONSE FORMAT
+===============================
+
+Answer with:
+
+1. Files read
+2. Monitoring inventory
+3. Alerts implemented
+4. Alert endpoint result
+5. Current alert snapshot
+6. Dashboard compatibility
+7. Tests run
+8. Red flag search
+9. Files changed
+10. Audit report update
+11. Remaining risks
+12. Monitoring Safety status
+13. Exact next recommended step
+
+Jangan jawab umum.
+Jangan fake alert.
+Jangan hardcode OK.
+Jangan ubah trading logic.
+Jangan tambah real trading.

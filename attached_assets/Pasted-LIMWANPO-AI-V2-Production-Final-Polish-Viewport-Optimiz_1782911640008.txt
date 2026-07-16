@@ -1,0 +1,400 @@
+LIMWANPO AI – V2 Production Final Polish & Viewport Optimization
+
+PENTING
+
+Jangan membuat dashboard baru.
+
+Jangan mengubah struktur layout.
+
+Jangan mengubah backend.
+
+Jangan mengubah API.
+
+Jangan mengubah endpoint.
+
+Jangan menghapus fitur yang sudah bekerja.
+
+Jangan mengubah alur data.
+
+Fokus hanya pada refinement visual dan optimasi layout berdasarkan screenshot terbaru.
+
+⸻
+
+PRIORITAS 1 — DASHBOARD HARUS FIT 100% KE LAYAR (WAJIB)
+
+Ini adalah prioritas tertinggi.
+
+Saat ini dashboard masih belum menggunakan tinggi viewport secara optimal sehingga muncul area kosong besar di antara Market Universe dan AI Decision Engine.
+
+Target:
+
+* Dashboard harus memenuhi tinggi layar (100dvh).
+* Tidak ada area hitam kosong yang tidak disengaja.
+* Semua section mengisi viewport secara proporsional.
+* Tidak ada kebutuhan zoom browser.
+* Tidak ada scroll pada halaman utama.
+* Layout terasa seperti aplikasi native, bukan halaman web.
+
+Lakukan audit terhadap:
+
+* height
+* min-height
+* max-height
+* flex-grow
+* flex-shrink
+* overflow
+* padding-bottom
+* margin-bottom
+
+Pastikan seluruh layout menggunakan viewport modern (100dvh) dan bukan tinggi statis.
+
+⸻
+
+MARKET UNIVERSE
+
+Jangan ubah grid.
+
+Tetapi:
+
+* Tinggi section harus menyesuaikan viewport.
+* Tidak boleh menghasilkan ruang kosong besar di bawah card.
+* Card harus memenuhi area yang tersedia secara proporsional.
+
+Jika data belum tersedia:
+
+Jangan tampilkan panel kosong.
+
+Gunakan status seperti:
+
+* Monitoring…
+* Syncing…
+* Loading…
+* Waiting…
+* Scanning…
+
+⸻
+
+AI DECISION ENGINE
+
+Saat ini pipeline terdorong terlalu ke bawah.
+
+Naikkan sedikit agar komposisi vertikal lebih seimbang.
+
+Jangan ubah ukuran node.
+
+Jangan ubah layout.
+
+Hanya optimalkan spacing.
+
+⸻
+
+AI THINKING FEED & AI LIVE FEED
+
+Pastikan kedua feed tetap terlihat utuh setelah layout dioptimalkan.
+
+Tidak boleh terpotong.
+
+Tidak boleh terdorong keluar viewport.
+
+Tetap maksimal 5 baris.
+
+⸻
+
+FOOTER (WAJIB)
+
+Footer Bloomberg masih belum terlihat.
+
+Buat footer penuh di bagian PALING BAWAH dashboard.
+
+Footer harus selalu terlihat.
+
+Isi footer:
+
+Crypto Ticker
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+BNB
+
+DOGE
+
+Harga bergerak live.
+
+News Ticker
+
+Scrolling horizontal.
+
+Kecepatan halus.
+
+Loop tanpa putus.
+
+Footer harus menjadi layer terakhir dashboard.
+
+Jangan tertutup feed.
+
+Jangan hilang di viewport.
+
+⸻
+
+LOGO
+
+Glow masih terlalu lemah.
+
+Perkuat:
+
+* cyan glow
+* magenta glow
+* dual layer shadow
+* neon ambience
+
+Tetap elegan.
+
+Jangan berlebihan.
+
+Tambahkan sedikit breathing space dari sisi kiri.
+
+⸻
+
+HEADER
+
+Header masih terasa terlalu mati.
+
+Tambahkan:
+
+* subtle animated energy sweep
+* moving scan line
+* ambience glow
+* separator lebih hidup
+
+Animasi harus sangat halus.
+
+⸻
+
+PORTFOLIO
+
+Masih terlalu flat.
+
+Tambahkan:
+
+* depth
+* glow pada angka
+* hover lebih elegan
+* border hierarchy
+
+⸻
+
+LIVE CHART
+
+Tetap gunakan LightweightCharts.
+
+Perbaiki:
+
+* floating info panel lebih premium
+* live indicator lebih jelas
+* glow harga lebih kuat
+* crosshair lebih elegan
+
+⸻
+
+SYSTEM HEALTH
+
+Status dot masih kurang hidup.
+
+Tambahkan:
+
+* pulse
+* glow
+* breathing animation
+
+⸻
+
+MARKET CARDS
+
+Perbaiki hierarchy.
+
+Urutan visual:
+
+1. Asset Name
+2. Prediction Banner
+3. Confidence Ring
+4. Countdown
+5. Detail Position
+
+Countdown jangan menjadi fokus utama.
+
+⸻
+
+CONFIDENCE RING
+
+Masih terlalu kecil.
+
+Perbesar sedikit.
+
+Glow lebih jelas.
+
+Animasi progress lebih halus.
+
+⸻
+
+PREDICTION BANNER
+
+YES / NO harus menjadi fokus visual.
+
+Tambahkan:
+
+* gradient
+* glow
+* shadow
+* premium border
+
+⸻
+
+TYPOGRAPHY
+
+Audit ulang seluruh dashboard.
+
+Pastikan:
+
+* hierarchy konsisten
+* spacing rapi
+* ukuran font seragam
+* tidak ada teks terlalu kecil
+
+⸻
+
+AI PIPELINE
+
+Perkuat visual:
+
+* particle lebih banyak
+* dual/triple energy beam
+* orbit lebih hidup
+* pulse lebih halus
+
+Tetapi jangan berlebihan.
+
+⸻
+
+FEED
+
+Thinking Feed dan Live Feed harus terasa seperti terminal AI.
+
+Gunakan badge berwarna:
+
+INFO
+
+SYS
+
+RISK
+
+EXEC
+
+SIGNAL
+
+UNIV
+
+EXIT
+
+Timestamp jelas.
+
+Animasi masuk halus.
+
+⸻
+
+BORDER HIERARCHY
+
+Saat ini hampir semua border terlihat sama.
+
+Buat hierarchy:
+
+* Header
+* Portfolio
+* Chart
+* Market
+* Pipeline
+* Feed
+* Footer
+
+Menggunakan opacity berbeda agar depth lebih terasa.
+
+⸻
+
+MICRO ANIMATION
+
+Gunakan hanya animasi ringan:
+
+* opacity
+* transform
+* glow breathing
+* pulse
+* scan
+
+Tidak boleh menyebabkan FPS turun.
+
+⸻
+
+PERFORMANCE
+
+Semua animasi harus GPU accelerated.
+
+Gunakan:
+
+* transform
+* opacity
+* requestAnimationFrame bila perlu
+
+Hindari repaint dan reflow yang tidak perlu.
+
+Target minimal 60 FPS.
+
+⸻
+
+FINAL QA
+
+Sebelum selesai lakukan audit visual.
+
+Pastikan:
+
+✓ Dashboard benar-benar fit ke layar tanpa ruang kosong besar.
+
+✓ Tidak ada scroll halaman utama.
+
+✓ Market Universe mengisi area secara proporsional.
+
+✓ AI Decision Engine berada pada posisi yang seimbang.
+
+✓ Feed tetap terlihat utuh.
+
+✓ Footer crypto ticker + news ticker benar-benar muncul dan selalu terlihat.
+
+✓ Logo premium.
+
+✓ Header lebih hidup.
+
+✓ Portfolio lebih premium.
+
+✓ Chart lebih elegan.
+
+✓ System Health lebih hidup.
+
+✓ Market card tidak kosong.
+
+✓ Confidence Ring lebih jelas.
+
+✓ Prediction Banner lebih dominan.
+
+✓ Typography konsisten.
+
+✓ Pipeline lebih hidup.
+
+✓ Border hierarchy lebih baik.
+
+✓ Semua fitur lama tetap berfungsi.
+
+Target akhir adalah dashboard dengan kualitas visual setara terminal trading institusional seperti Bloomberg Terminal, TradingView Premium, atau hedge fund execution terminal, dengan layout yang benar-benar memenuhi viewport di desktop maupun iPad tanpa area kosong yang tidak diperlukan.

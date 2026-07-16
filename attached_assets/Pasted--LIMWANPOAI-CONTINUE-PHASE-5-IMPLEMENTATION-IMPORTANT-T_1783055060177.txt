@@ -1,0 +1,490 @@
+# LIMWANPOAI — CONTINUE PHASE 5 IMPLEMENTATION
+
+## IMPORTANT
+
+This is a continuation of the previous session.
+
+DO NOT restart Phase 5.
+
+DO NOT perform another full codebase audit.
+
+The audit has already been completed.
+
+The implementation planning has already been completed.
+
+Continue directly from the implementation stage.
+
+---
+
+## CURRENT PROJECT STATUS
+
+Current backend status:
+
+* Phase 1 ✅
+* Phase 2 ✅
+* Phase 3 ✅
+* Phase 4 ✅
+
+Current test status:
+
+377 / 377 PASS
+
+Backend trading pipeline is fully operational.
+
+Paper trading is operational.
+
+Health monitoring is operational.
+
+Performance analytics already exists.
+
+Signal confidence is already integrated.
+
+Dynamic stop loss already exists.
+
+Fee simulation already exists.
+
+Engine watchdog already exists.
+
+DO NOT MODIFY ANY OF THESE.
+
+---
+
+# THE PREVIOUS SESSION ALREADY FINISHED
+
+The previous session already confirmed:
+
+✔ TradeEvaluation model does not yet exist
+
+✔ Trade Replay system does not exist
+
+✔ Trade History API does not exist
+
+✔ Engine Scorecard does not exist
+
+✔ AI Self Evaluation does not exist
+
+✔ Dashboard Analytics endpoint is incomplete
+
+✔ Learning Dataset endpoint does not exist
+
+✔ Existing Position / Order / Signal / TradeDecision models are sufficient to build these features
+
+DO NOT repeat this analysis.
+
+Proceed directly to implementation.
+
+---
+
+# IMPLEMENTATION ORDER
+
+Implement exactly in this order.
+
+---
+
+## STEP 1
+
+Create TradeEvaluation model.
+
+Store:
+
+trade_id
+
+prediction
+
+prediction_direction
+
+confidence
+
+expected_edge
+
+expected_rr
+
+actual_rr
+
+actual_return
+
+holding_minutes
+
+maximum_favorable_excursion
+
+maximum_adverse_excursion
+
+entry_price
+
+exit_price
+
+entry_time
+
+exit_time
+
+fees
+
+slippage
+
+signal_quality
+
+opportunity_quality
+
+strategy_quality
+
+execution_quality
+
+overall_trade_quality
+
+prediction_correct
+
+evaluation_notes
+
+created_at
+
+updated_at
+
+---
+
+## STEP 2
+
+Create Trade Evaluation Service.
+
+Automatically evaluate every CLOSED position.
+
+Compute:
+
+Prediction Correct
+
+Expected RR
+
+Actual RR
+
+Quality Scores
+
+Holding Duration
+
+PnL
+
+MAE
+
+MFE
+
+Fees
+
+Slippage
+
+Overall Grade
+
+Persist everything.
+
+---
+
+## STEP 3
+
+Create Trade Replay Service.
+
+Every trade must be replayable.
+
+Timeline:
+
+Market
+
+↓
+
+Signal
+
+↓
+
+Opportunity
+
+↓
+
+Strategy
+
+↓
+
+Risk
+
+↓
+
+Execution
+
+↓
+
+Position Open
+
+↓
+
+PnL Evolution
+
+↓
+
+Exit Trigger
+
+↓
+
+Close
+
+Replay must be generated from existing database records.
+
+Do NOT infer data.
+
+Use persisted timestamps.
+
+---
+
+## STEP 4
+
+Create Engine Scorecard Service.
+
+Return scores for:
+
+Signal Engine
+
+Opportunity Engine
+
+Strategy Engine
+
+Risk Engine
+
+Execution Engine
+
+Exit Engine
+
+Capital Management
+
+Performance Analytics
+
+Health Engine
+
+Scores must be derived from actual trading statistics.
+
+Never hardcode percentages.
+
+---
+
+## STEP 5
+
+Create Trade History API.
+
+Endpoints:
+
+GET /api/v1/trades
+
+GET /api/v1/trades/{id}
+
+GET /api/v1/trades/{id}/replay
+
+GET /api/v1/trades/{id}/evaluation
+
+---
+
+## STEP 6
+
+Extend Analytics API.
+
+Add:
+
+Best Trade
+
+Worst Trade
+
+Current Equity
+
+Gross Profit
+
+Gross Loss
+
+Total Fees
+
+Signal Precision
+
+Average Hold Time
+
+Average Winner Duration
+
+Average Loser Duration
+
+Average Fee
+
+Average Slippage
+
+Opportunity Conversion
+
+Maximum Win Streak
+
+Maximum Loss Streak
+
+Net Return
+
+Everything must be calculated.
+
+No placeholder values.
+
+---
+
+## STEP 7
+
+Create Dashboard Analytics Endpoint.
+
+Single endpoint returning:
+
+Portfolio
+
+Performance
+
+Health
+
+Engine Scorecard
+
+Analytics
+
+Current Exposure
+
+Current Drawdown
+
+Open Positions
+
+Recent Trades
+
+Everything required by Dashboard V2.
+
+---
+
+## STEP 8
+
+Create Learning Dataset Endpoint.
+
+GET
+
+/api/v1/analytics/dataset
+
+Return one structured record per completed trade.
+
+Include:
+
+Signal
+
+Opportunity
+
+Strategy
+
+Risk
+
+Execution
+
+Exit
+
+PnL
+
+Confidence
+
+Result
+
+Quality Scores
+
+This endpoint prepares future AI learning.
+
+DO NOT implement machine learning.
+
+Only expose the dataset.
+
+---
+
+## STEP 9
+
+Extend Health Endpoint.
+
+Add:
+
+Last Trade Time
+
+Last Winning Trade
+
+Last Losing Trade
+
+Current Daily PnL
+
+Current Weekly PnL
+
+Current Exposure
+
+Current Open Risk
+
+Average Engine Cycle Time
+
+Average API Latency
+
+Average DB Latency
+
+Average Execution Time
+
+Average Strategy Time
+
+---
+
+## STEP 10
+
+Database Migration.
+
+Add all required tables and columns using:
+
+ALTER TABLE IF NOT EXISTS
+
+Never break existing installations.
+
+Existing databases must migrate automatically.
+
+---
+
+## STEP 11
+
+Testing.
+
+Current:
+
+377 tests.
+
+Target:
+
+400+ tests.
+
+Every new service must have unit tests.
+
+Every new endpoint must have API tests.
+
+Every replay function must have tests.
+
+Every analytics calculation must have tests.
+
+No existing tests may fail.
+
+---
+
+## STEP 12
+
+Final Validation.
+
+Run the entire test suite.
+
+Provide ONLY:
+
+1. Files modified
+
+2. Database migrations
+
+3. New endpoints
+
+4. New services
+
+5. New models
+
+6. Test count before
+
+7. Test count after
+
+8. Pass count
+
+9. Backward compatibility confirmation
+
+Do NOT stop after one feature.
+
+Do NOT ask for confirmation.
+
+Continue until the entire Phase 5 implementation is complete.

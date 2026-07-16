@@ -1,0 +1,235 @@
+STOP.
+
+LANJUTKAN DARI KONDISI PROJECT SAAT INI.
+
+JANGAN rollback.
+
+JANGAN membuat ulang file.
+
+JANGAN mengubah arsitektur project.
+
+JANGAN mengubah backend.
+
+JANGAN mengubah endpoint.
+
+JANGAN mengubah AI Engine.
+
+JANGAN mengubah Decision Engine.
+
+JANGAN mengubah Opportunity Engine.
+
+JANGAN mengubah Dashboard Layout.
+
+JANGAN mengubah Market Universe Card.
+
+JANGAN redesign.
+
+==================================================
+TASK 1
+HAPUS BINANCE WEBSOCKET
+==================================================
+
+Saat ini project masih memiliki implementasi Binance MiniTicker WebSocket.
+
+Saya TIDAK ingin menggunakan Binance sama sekali.
+
+Hapus seluruh implementasi berikut apabila masih ada:
+
+- connectPriceWs()
+- stream.binance.com
+- _priceWs
+- _priceWsRT
+- _priceWsClosing
+- reconnect scheduler
+- websocket listener
+- websocket cleanup
+
+Pastikan tidak ada lagi referensi Binance di project.
+
+==================================================
+TASK 2
+HEADER HARUS MENGIKUTI PIPELINE POLYMARKET
+==================================================
+
+Harga BTC
+Harga ETH
+Harga SOL
+Harga XRP
+
+yang ada pada HEADER Market Universe
+
+HARUS mengikuti source harga yang SUDAH dipakai project.
+
+Artinya:
+
+gunakan object / cache / state yang saat ini dipakai oleh:
+
+- TARGET
+- GAP
+- AI Engine
+- Opportunity Engine
+- Decision Engine
+
+JANGAN membuat source baru.
+
+JANGAN polling endpoint baru.
+
+JANGAN websocket baru.
+
+JANGAN rebuild Market Universe.
+
+JANGAN render ulang Card.
+
+Yang boleh dilakukan hanya:
+
+update isi
+
+.asset-live-px
+
+setelah cPrices diperbarui oleh pipeline yang sudah ada.
+
+Header hanya patch text.
+
+Tidak boleh rebuild DOM.
+
+==================================================
+TASK 3
+FETCH PRICE
+==================================================
+
+Kembalikan fetchPrices ke mekanisme sebelumnya.
+
+Target:
+
+fetchPrices()
+
+tetap menjadi source harga utama.
+
+Gunakan interval ringan.
+
+JANGAN membuat request berlebihan.
+
+Jika sebelumnya interval 5 detik sudah stabil,
+
+gunakan kembali 5 detik.
+
+Tetap gunakan dedup agar request tidak bertumpuk.
+
+==================================================
+TASK 4
+PREDICTION PIPELINE FINAL POLISH
+==================================================
+
+Prediction Pipeline TIDAK boleh berubah desain.
+
+Hanya lakukan visual polish.
+
+Perbaiki:
+
+• seluruh node sama ukuran
+
+• seluruh node sejajar
+
+• seluruh node center
+
+• seluruh text center
+
+• seluruh spacing horizontal sama
+
+• seluruh spacing vertical sama
+
+• arrow tepat di tengah
+
+• glow sama semua
+
+• padding sama semua
+
+• tidak ada node yang terlalu dekat
+
+• tidak ada node yang terlalu jauh
+
+• pipeline memenuhi panel
+
+• tidak overflow
+
+• tidak muncul scrollbar
+
+• animation tetap sama
+
+• flow tetap sama
+
+• progress line tetap sama
+
+• jangan mengubah logic.
+
+==================================================
+YANG TIDAK BOLEH BERUBAH
+==================================================
+
+❌ Backend
+
+❌ API
+
+❌ AI Engine
+
+❌ Decision Engine
+
+❌ Opportunity Engine
+
+❌ Prediction Logic
+
+❌ Market Universe Layout
+
+❌ Dashboard Layout
+
+❌ Card Layout
+
+❌ Chart
+
+==================================================
+SEBELUM SELESAI
+==================================================
+
+Lakukan self review.
+
+Pastikan:
+
+✓ tidak ada lagi kode Binance
+
+✓ header menggunakan pipeline harga project
+
+✓ header tidak rebuild card
+
+✓ hanya patch text
+
+✓ pipeline lebih rapi
+
+✓ tidak ada error javascript
+
+✓ tidak ada duplicate code
+
+✓ hanya ada satu </html>
+
+✓ tidak ada memory leak
+
+✓ tidak ada reconnect loop
+
+==================================================
+OUTPUT
+==================================================
+
+JANGAN langsung mengatakan "selesai".
+
+Tampilkan:
+
+1. daftar file yang diubah
+
+2. daftar fungsi yang diubah
+
+3. apa saja yang dihapus
+
+4. apa saja yang diperbaiki
+
+5. hasil self review
+
+Baru setelah semuanya PASS, akhiri pekerjaan.

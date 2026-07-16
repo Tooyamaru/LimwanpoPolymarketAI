@@ -1,0 +1,638 @@
+LIMWANPO AI — ACTIVE MARKET LIVE ORDER FLOW VALIDATION
+
+Konteks:
+
+Audit sebelumnya sudah membuktikan:
+
+- PRE_MARKET = 0
+- ACTIVE = 12
+- EXPIRED = 0
+- lifecycle_state = ACTIVE
+- data_mode = LIVE
+- execution_allowed = true
+- market lifecycle gate sudah diperbaiki
+- 24/24 lifecycle tests pass
+
+Namun masih ada pertanyaan penting:
+
+Semua market ACTIVE masih menampilkan nilai hampir identik:
+
+- UP 50.5%
+- DOWN 49.5%
+- SPREAD 1.00%
+- CONF sekitar 24%
+- Opportunity score sekitar 34
+- Banyak keputusan WAIT
+
+Audit sebelumnya menyimpulkan ini berasal dari CLOB seed:
+
+- yes_bid = 0.50
+- yes_ask = 0.51
+- yes_mid = 0.505
+
+Tugas sekarang:
+Buktikan apakah sistem benar-benar menerima LIVE ORDER FLOW yang berubah dari Polymarket untuk setiap condition_id, atau hanya terus memakai snapshot seed/stale price.
+
+JANGAN mulai dari nol.
+JANGAN ulang Phase 12D atau 12E.
+JANGAN ubah UI dulu.
+JANGAN paksa variasi.
+JANGAN membuat harga palsu.
+JANGAN menambah random movement.
+JANGAN hardcode bid/ask berbeda.
+JANGAN menyebut data live hanya karena market status ACTIVE.
+JANGAN klaim PASS tanpa bukti multi-timestamp.
+
+==================================================
+STEP 1 — READ CURRENT PRICE FLOW
+==================================================
+
+Baca seluruh file terkait:
+
+- Gamma client
+- CLOB client
+- orderbook worker
+- price snapshot worker
+- market price repository
+- market price model
+- opportunity engine
+- signal engine
+- decision engine
+- active universe repository
+- API endpoint:
+  - /api/v1/price/active
+  - /api/v1/prices/latest
+  - endpoint lain yang mengirim CLOB ke dashboard
+- frontend loadClob / price polling function
+- renderCard
+- settings interval worker/polling
+- AI_DECISION_INTEGRITY_AUDIT.md
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+==================================================
+STEP 2 — VERIFY UNIQUE MARKET MAPPING
+==================================================
+
+Untuk seluruh 12 market ACTIVE tampilkan:
+
+- asset
+- timeframe
+- condition_id
+- yes_token_id
+- no_token_id
+- CLOB market/token lookup key
+- latest price row id
+- latest opportunity row id
+- latest signal row id
+- latest decision row id
+- price timestamp
+
+Pastikan:
+
+- 12 card tidak memakai condition_id yang sama
+- token IDs unik sesuai market
+- orderbook request memakai token ID yang benar
+- response orderbook dipetakan kembali ke condition_id yang benar
+- dictionary/cache key menggunakan condition_id atau token_id
+- bukan hanya asset
+- bukan hanya timeframe
+- bukan index array yang mudah tertukar
+- tidak ada shared mutable object antar-card
+
+Output:
+
+- duplicate condition_id count
+- duplicate token mapping count
+- missing token mapping count
+- wrong asset/timeframe mapping count
+
+==================================================
+STEP 3 — MULTI-TIMESTAMP LIVE CAPTURE
+==================================================
+
+Ambil minimal 12 snapshot, satu snapshot setiap 10–15 detik.
+
+Durasi minimal:
+- 2–3 menit
+
+Untuk setiap timestamp dan setiap 12 market capture:
+
+- condition_id
+- yes_bid
+- yes_ask
+- yes_mid
+- no_bid
+- no_ask
+- no_mid
+- spread_yes
+- spread_no
+- best bid size
+- best ask size
+- orderbook depth
+- liquidity
+- volume jika tersedia
+- source timestamp
+- DB written_at / captured_at
+- API response timestamp
+
+Jangan memakai satu snapshot saja.
+
+Buat tabel perubahan per market:
+
+- first value
+- last value
+- min
+- max
+- number of changes
+- number of identical snapshots
+- age of latest data
+
+==================================================
+STEP 4 — VERIFY CLOB REQUESTS ARE REALLY REFRESHED
+==================================================
+
+Audit worker dan client.
+
+Pastikan setiap cycle:
+
+- melakukan request baru ke CLOB
+- tidak selalu membaca cached startup response
+- tidak memakai stale response selamanya
+- tidak meng-copy satu response untuk semua market
+- tidak menggunakan seed fallback saat request gagal
+- menyimpan timestamp baru
+- menyimpan condition/token association yang benar
+
+Tampilkan log atau instrumentation sementara:
+
+- request timestamp
+- token_id
+- condition_id
+- HTTP status
+- response bid/ask
+- cache hit/miss
+- DB upsert result
+
+Jangan log secrets.
+
+==================================================
+STEP 5 — DATA FRESHNESS AUDIT
+==================================================
+
+Untuk setiap market hitung:
+
+- now - source_timestamp
+- now - DB captured_at
+- now - opportunity calculated_at
+- now - signal generated_at
+- now - decision decided_at
+
+Klasifikasikan:
+
+- FRESH
+- DELAYED
+- STALE
+- MISSING
+
+Gunakan threshold yang sesuai worker interval.
+
+Jika worker interval 5 detik, contoh:
+
+- FRESH: <= 15 detik
+- DELAYED: 15–30 detik
+- STALE: > 30 detik
+
+Gunakan settings project yang nyata, jangan asal menentukan jika interval berbeda.
+
+==================================================
+STEP 6 — ORDERBOOK DEPTH VALIDATION
+==================================================
+
+Jangan hanya cek top bid/ask.
+
+Untuk setiap market tampilkan minimal:
+
+- top 5 bid levels
+- top 5 ask levels
+- size setiap level
+- total bid depth
+- total ask depth
+- imbalance
+- number of levels
+
+Cari apakah:
+
+- semua market benar-benar mempunyai orderbook identik
+- client hanya membaca top-of-book default
+- depth parsing gagal lalu menjadi kosong
+- bid/ask size diabaikan
+- API mengembalikan seed liquidity dari market maker
+
+Jika semua orderbook identik:
+- tampilkan raw response untuk minimal 4 market berbeda
+- buktikan token_id berbeda
+- buktikan response memang identik dari Polymarket
+
+==================================================
+STEP 7 — VOLUME / TRADING ACTIVITY AUDIT
+==================================================
+
+Untuk setiap ACTIVE market tampilkan:
+
+- volume
+- volume_24h jika tersedia
+- liquidity
+- trades count jika tersedia
+- last trade price
+- last trade timestamp
+- accepting_orders
+- closed
+- active
+
+Klasifikasikan market:
+
+- ACTIVE_WITH_ORDER_FLOW
+- ACTIVE_SEED_ONLY
+- ACTIVE_NO_TRADES
+- ACTIVE_STALE_BOOK
+- ACTIVE_DATA_MISSING
+
+Penting:
+ACTIVE tidak otomatis berarti ada trader/order flow.
+
+Jika market ACTIVE tetapi:
+
+- volume = 0
+- no trades
+- book tetap 0.50/0.51
+- depth seed-only
+
+maka klasifikasikan:
+
+ACTIVE_SEED_ONLY
+
+Jangan sebut “live trading activity” jika belum ada transaksi nyata.
+
+==================================================
+STEP 8 — TRACE SIGNAL CONFIDENCE OVER TIME
+==================================================
+
+Untuk setiap snapshot, trace:
+
+- signal type
+- deviation
+- severity
+- spread
+- momentum
+- trend
+- volatility
+- depth imbalance
+- confidence raw
+- confidence rounded
+- signal timestamp
+
+Buktikan apakah confidence 23.5 selalu sama karena:
+
+- input memang selalu sama
+- signal engine hanya memakai seed deviation
+- signal worker tidak refresh
+- formula collapse
+- rounding
+- fallback/default
+
+Klasifikasikan:
+
+- LIVE_COMPUTED
+- SEED_COMPUTED
+- STALE_COMPUTED
+- DEFAULT
+- BUG
+
+Jika market ACTIVE_SEED_ONLY:
+- confidence harus diberi classification SEED_COMPUTED
+- jangan disamakan dengan confidence berbasis real order flow
+
+==================================================
+STEP 9 — OPPORTUNITY SCORE OVER TIME
+==================================================
+
+Untuk seluruh 12 market tampilkan komponen:
+
+- score_mid_movement
+- score_spread
+- score_depth_imbalance
+- score_signal_activity
+- score_discovery
+- total score
+- calculated_at
+
+Buktikan kenapa total tetap 34.
+
+Jika karena:
+
+- mid deviation = 0.005
+- spread = 0.01
+- imbalance = 0
+- one seed signal
+- discovery = 1
+
+maka klasifikasikan:
+
+SEED_STATE_COMPUTED
+
+Jangan klaim real differentiated opportunity jika tidak ada order-flow variance.
+
+==================================================
+STEP 10 — DECISION SEMANTIC FIX
+==================================================
+
+Audit apakah market ACTIVE_SEED_ONLY seharusnya menampilkan keputusan AI live seperti WAIT.
+
+Bedakan:
+
+1. ACTIVE_WITH_ORDER_FLOW
+   - BUY_YES / BUY_NO / WAIT / BLOCKED boleh dihitung normal
+
+2. ACTIVE_SEED_ONLY
+   - market memang sudah masuk waktu aktif
+   - tetapi belum ada order flow nyata
+   - decision sebaiknya:
+     - WAIT_NO_ORDER_FLOW
+     - OBSERVING
+     - atau WAIT dengan reason NO_ORDER_FLOW
+   - confidence harus diberi label SEED / LOW_DATA
+   - jangan tampilkan seolah-olah AI memiliki conviction normal
+
+Jangan paksa BUY.
+
+Tambahkan reason eksplisit jika belum ada:
+
+- NO_ORDER_FLOW
+- SEED_BOOK_ONLY
+- INSUFFICIENT_DEPTH_VARIANCE
+- STALE_ORDERBOOK
+- PRICE_DATA_MISSING
+
+==================================================
+STEP 11 — FRONTEND SEMANTIC DISPLAY
+==================================================
+
+Jangan redesign.
+
+Jika market ACTIVE tetapi seed-only:
+
+Status/card harus jujur, misalnya:
+
+- ACTIVE · SEED BOOK
+- WAITING FOR ORDER FLOW
+- CONF: LOW DATA
+- DATA MODE: SEED
+
+Jika market memiliki real order flow:
+
+- ACTIVE · LIVE
+- CONF: nilai live
+- DATA MODE: LIVE_ORDER_FLOW
+
+API harus mengirim field eksplisit:
+
+- trading_activity_state
+- has_order_flow
+- has_recent_trade
+- orderbook_fresh
+- data_mode:
+  - SEED
+  - LIVE_ORDER_FLOW
+  - STALE
+  - MISSING
+- decision_reason
+
+Frontend jangan menebak sendiri.
+
+==================================================
+STEP 12 — FIX PRICE API DISCONNECT
+==================================================
+
+Audit perbedaan endpoint yang ditemukan sebelumnya:
+
+- /api/v1/price/active menghasilkan data
+- /api/v1/prices/latest pernah menghasilkan kosong/error
+- opportunities tetap mempunyai bid/ask
+
+Tentukan:
+
+- endpoint mana source of truth
+- apakah ada dua model/repository berbeda
+- apakah frontend memakai endpoint yang benar
+- apakah salah satu endpoint sudah obsolete
+- apakah dashboard memakai data yang berbeda dari engine
+
+Perbaiki jika ada disconnect.
+
+Target:
+Dashboard, Opportunity Engine, Signal Engine, dan Decision Engine harus membaca snapshot CLOB yang konsisten atau memiliki provenance yang jelas.
+
+==================================================
+STEP 13 — MISSING DATA RULE
+==================================================
+
+Jika CLOB request gagal atau belum ada data:
+
+- jangan fallback ke 0.50/0.51
+- jangan mempertahankan stale seed tanpa label
+- return:
+  - N/A
+  - DATA_MISSING
+  - STALE
+- execution_allowed = false
+- no BUY decision
+
+Cari semua fallback seperti:
+
+- yes_bid or 0.5
+- yes_ask or 0.51
+- default midpoint
+- seed fallback
+- previous value tanpa freshness check
+
+Klasifikasikan dan perbaiki jika menyamar sebagai live data.
+
+==================================================
+STEP 14 — TESTS
+==================================================
+
+Tambahkan/update tests:
+
+1. Unique condition/token mapping untuk 12 market
+2. Satu CLOB response tidak boleh dipakai ke market lain
+3. Worker refresh memperbarui source timestamp
+4. Stale data diklasifikasikan STALE
+5. Missing CLOB tidak menjadi 0.50/0.51
+6. Seed-only market menjadi ACTIVE_SEED_ONLY
+7. Market dengan price/depth changes menjadi ACTIVE_WITH_ORDER_FLOW
+8. Signal confidence berubah jika raw CLOB inputs berubah
+9. Opportunity score berubah jika spread/depth/mid berubah
+10. Execution diblokir untuk stale/missing price
+11. Dashboard API mengirim data_mode dan decision_reason
+12. Multi-timeframe mapping tetap unik
+
+Jalankan:
+
+- python -m compileall -q backend/app
+- relevant CLOB/orderbook tests
+- signal tests
+- opportunity tests
+- decision tests
+- execution tests
+- API tests
+- workflow restart
+- capture multi-timestamp after snapshot
+
+==================================================
+STEP 15 — RED FLAG SEARCH
+==================================================
+
+Search backend/frontend:
+
+- 0.50
+- 0.5
+- 0.51
+- 50.5
+- 49.5
+- 23.5
+- 24
+- 34
+- seed
+- fallback
+- default
+- stale
+- cache
+- shared
+- first market
+- condition_id
+- token_id
+- orderbook
+- latest price
+- or 0.5
+- || 0.5
+- ?? 0.5
+- hardcoded bid
+- hardcoded ask
+
+Klasifikasikan:
+
+- REAL_RAW_DATA
+- SAFE_CONFIG
+- SEED_MARKET_STATE
+- TEST_ONLY
+- UI_FORMATTING
+- INVALID_FALLBACK
+- STALE_DATA_BUG
+- SHARED_MAPPING_BUG
+- FIXED
+
+No unresolved INVALID at final.
+
+==================================================
+STEP 16 — UPDATE AUDIT REPORT
+==================================================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md dengan section:
+
+ACTIVE MARKET LIVE ORDER FLOW VALIDATION
+
+Isi:
+
+1. Snapshot duration and timestamps
+2. 12-market condition/token mapping
+3. Multi-timestamp CLOB table
+4. Price freshness
+5. Orderbook depth comparison
+6. Volume/trade activity
+7. Signal confidence variance
+8. Opportunity score variance
+9. Decision semantic classification
+10. Price API consistency
+11. Missing/stale data handling
+12. Bugs found
+13. Files changed
+14. Tests run
+15. Before/after live evidence
+16. Remaining risks
+17. Final status
+
+Final status:
+
+- LIVE ORDER FLOW INTEGRITY: PASS
+- LIVE ORDER FLOW INTEGRITY: PASS WITH REMEDIATION
+- LIVE ORDER FLOW INTEGRITY: SEED-ONLY CONFIRMED
+- LIVE ORDER FLOW INTEGRITY: PARTIAL
+- LIVE ORDER FLOW INTEGRITY: FAIL
+
+Gunakan:
+
+SEED-ONLY CONFIRMED jika:
+- market benar-benar ACTIVE
+- CLOB data real dan fresh
+- tetapi tidak ada trades/order-flow variance
+- semua angka identik karena official seed book
+- sistem memberi label seed-only secara jujur
+- tidak ada fallback palsu
+
+PASS jika:
+- market mapping benar
+- multi-timestamp price/depth benar-benar refresh
+- order-flow variance nyata muncul
+- data fresh
+- dashboard/engines konsisten
+- tidak ada fallback/stale/shared bug
+
+PASS WITH REMEDIATION jika:
+- bug ditemukan dan diperbaiki
+- current output sudah benar
+
+FAIL jika:
+- harga fallback dianggap live
+- shared market mapping
+- stale snapshot digunakan tanpa label
+- worker tidak refresh
+- data engine dan dashboard berbeda tanpa provenance
+
+==================================================
+STEP 17 — FINAL RESPONSE FORMAT
+==================================================
+
+Jawab dengan format:
+
+1. Files read
+2. Snapshot duration
+3. Market/token mapping
+4. Multi-timestamp price findings
+5. Orderbook depth findings
+6. Volume/trade activity
+7. Data freshness
+8. Signal confidence findings
+9. Opportunity score findings
+10. Decision semantic findings
+11. Price API consistency
+12. Missing/fallback search
+13. Bugs found
+14. Files changed
+15. Tests run
+16. Live after evidence
+17. Audit report update
+18. Remaining risks
+19. LIVE ORDER FLOW INTEGRITY status
+20. Exact next recommended step
+
+Jangan jawab umum.
+Jangan menyebut ACTIVE sebagai bukti ada order flow.
+Jangan menyebut seed book sebagai trader activity.
+Jangan membuat variasi palsu.
+Jangan fallback diam-diam.
+Jangan klaim PASS dari satu snapshot saja.

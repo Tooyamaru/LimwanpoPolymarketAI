@@ -1,0 +1,257 @@
+# STOP
+
+JANGAN lanjut mengubah kode dulu.
+
+JANGAN membuat fallback.
+
+JANGAN membuat dummy.
+
+JANGAN membuat workaround.
+
+JANGAN menganggap 404 sebagai hal yang normal.
+
+Karena kita BELUM tahu akar masalah sebenarnya.
+
+Target sekarang hanya SATU:
+
+**Buktikan kenapa `/markets/{condition_id}` mengembalikan 404.**
+
+---
+
+# LANGKAH 1
+
+Audit seluruh alur market discovery.
+
+Mulai dari:
+
+Polymarket Gamma
+
+↓
+
+market_universe_service
+
+↓
+
+database market_universe
+
+↓
+
+condition_id
+
+↓
+
+yes_token_id
+
+↓
+
+no_token_id
+
+↓
+
+clob_client
+
+↓
+
+/markets/{condition_id}
+
+↓
+
+/book?token_id=
+
+---
+
+# LANGKAH 2
+
+Untuk SATU market saja.
+
+BTC 5m.
+
+Cetak lengkap.
+
+Misalnya:
+
+Gamma:
+
+condition_id
+
+question
+
+market_slug
+
+event_slug
+
+start_time
+
+end_time
+
+yes_token_id
+
+no_token_id
+
+↓
+
+Database
+
+condition_id
+
+yes_token_id
+
+no_token_id
+
+↓
+
+CLOB
+
+GET /markets/{condition_id}
+
+status
+
+response body
+
+↓
+
+GET /book?token_id=yes
+
+status
+
+↓
+
+GET /book?token_id=no
+
+status
+
+---
+
+# LANGKAH 3
+
+Kalau ditemukan:
+
+Gamma condition_id
+
+≠
+
+Database condition_id
+
+berarti bug ada di sync.
+
+Jangan sentuh clob_client.
+
+---
+
+Kalau ditemukan:
+
+Database benar
+
+tetapi
+
+/markets/{condition_id}
+
+404
+
+sedangkan
+
+/book?token_id=
+
+200
+
+berarti dokumentasi CLOB berubah.
+
+Baru setelah itu boleh ubah clob_client.
+
+---
+
+# LANGKAH 4
+
+Cari jawaban berikut.
+
+Apakah endpoint
+
+GET /markets/{condition_id}
+
+masih resmi didukung Polymarket?
+
+Kalau YA
+
+kenapa 404?
+
+Kalau TIDAK
+
+endpoint penggantinya apa?
+
+Buktikan menggunakan dokumentasi resmi.
+
+Jangan berasumsi.
+
+---
+
+# LANGKAH 5
+
+Kalau endpoint memang berubah,
+
+baru lakukan refactor.
+
+Bukan fallback.
+
+Refactor berarti:
+
+gunakan endpoint resmi terbaru.
+
+Bukan:
+
+if 404 then continue.
+
+---
+
+# LANGKAH 6
+
+Audit seluruh market.
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+5m
+
+15m
+
+1H
+
+Untuk setiap market tampilkan:
+
+Gamma condition_id
+
+Database condition_id
+
+CLOB status
+
+Book status
+
+Sinkron / Tidak Sinkron
+
+---
+
+# LANGKAH 7
+
+Kalau ditemukan root cause,
+
+baru lakukan perbaikan.
+
+Sesudah itu langsung verifikasi:
+
+* 12/12 market berhasil diambil.
+* 12/12 orderbook berhasil.
+* 12/12 price snapshot tersimpan.
+* Opportunity Engine memproses 12 market.
+* Semua kartu UI menampilkan YES/NO/SPREAD/REWARD tanpa "-".
+
+---
+
+Jangan berhenti sebelum bisa membuktikan penyebab sebenarnya.
+
+Saya tidak ingin workaround.
+
+Saya ingin akar masalah ditemukan lalu diperbaiki dengan solusi yang benar.

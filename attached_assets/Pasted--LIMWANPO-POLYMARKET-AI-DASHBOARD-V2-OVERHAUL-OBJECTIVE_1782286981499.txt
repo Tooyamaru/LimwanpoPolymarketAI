@@ -1,0 +1,555 @@
+# LIMWANPO POLYMARKET AI — DASHBOARD V2 OVERHAUL
+
+## OBJECTIVE
+
+Redesign the existing dashboard into a true operator dashboard for Limwanpo Polymarket AI.
+
+This is NOT a generic trading dashboard.
+
+This is NOT a crypto exchange dashboard.
+
+This is NOT a portfolio management dashboard.
+
+This dashboard exists for a very specific universe:
+
+BTC Up/Down 5M
+BTC Up/Down 15M
+BTC Up/Down 1H
+
+ETH Up/Down 5M
+ETH Up/Down 15M
+ETH Up/Down 1H
+
+SOL Up/Down 5M
+SOL Up/Down 15M
+SOL Up/Down 1H
+
+XRP Up/Down 5M
+XRP Up/Down 15M
+XRP Up/Down 1H
+
+Total fixed universe:
+
+12 markets only.
+
+The dashboard must be optimized specifically for these 12 markets.
+
+No assumptions about future expansion.
+
+No dynamic market discovery UI.
+
+No generic exchange-style widgets.
+
+No unnecessary complexity.
+
+---
+
+# DESIGN PHILOSOPHY
+
+The operator should understand the entire state of the system within 3 seconds.
+
+The dashboard must answer:
+
+1. Which markets currently have the strongest opportunities?
+2. Which positions are currently open?
+3. Is the system healthy?
+4. Is capital protection active?
+5. Is the system making money?
+
+Nothing else.
+
+---
+
+# HARD CONSTRAINTS
+
+## Layout
+
+Single screen only.
+
+No scrolling.
+
+No sidebar.
+
+No submenu.
+
+No tabs.
+
+No multiple pages.
+
+No modal navigation.
+
+Everything visible at once.
+
+---
+
+## Style
+
+Cyberpunk.
+
+Dark background.
+
+Neon accents.
+
+Minimal text.
+
+Minimal numbers.
+
+Minimal tables.
+
+Minimal clutter.
+
+High readability.
+
+High contrast.
+
+Professional.
+
+Not gamer-like.
+
+Not flashy.
+
+Not overloaded.
+
+---
+
+# REMOVE COMPLETELY
+
+Remove the current center pipeline visualization:
+
+SIGNALS → OPPS → STRATEGY → RISK → EXEC → OPEN → CLOSED → PNL
+
+Reason:
+
+This is useful for development.
+
+It is not useful for live operation.
+
+It consumes the most valuable screen space.
+
+It does not help identify trading opportunities.
+
+---
+
+# NEW CENTERPIECE
+
+## OPPORTUNITY RADAR
+
+The largest element on the screen.
+
+Occupies approximately 60–70% of dashboard attention.
+
+Purpose:
+
+Visualize all 12 fixed markets simultaneously.
+
+Operator must instantly identify:
+
+* strongest opportunities
+* weakest opportunities
+* market distribution
+
+---
+
+## RADAR STRUCTURE
+
+Display all 12 markets as permanent nodes.
+
+Example arrangement:
+
+BTC 1H
+
+BTC 15M ETH 1H
+
+BTC 5M ETH 15M
+
+ETH 5M
+
+SOL 1H XRP 1H
+
+SOL 15M XRP 15M
+
+SOL 5M XRP 5M
+
+Exact arrangement may vary.
+
+But all 12 markets must always be visible.
+
+No pagination.
+
+No filtering.
+
+No collapsing.
+
+---
+
+## NODE CONTENT
+
+Each node displays:
+
+Asset
+
+Timeframe
+
+Direction
+
+Opportunity Score
+
+Example:
+
+BTC
+15M
+
+YES
+
+92
+
+---
+
+## NODE SIZE
+
+Size must scale based on opportunity score.
+
+Higher score:
+
+larger node
+
+Lower score:
+
+smaller node
+
+This allows instant visual prioritization.
+
+---
+
+## NODE COLOR RULES
+
+Score >= 95
+
+Bright Neon Green
+
+Highest confidence.
+
+---
+
+Score 90–94
+
+Green
+
+Strong candidate.
+
+---
+
+Score 85–89
+
+Blue
+
+Valid candidate.
+
+---
+
+Score < 85
+
+Dark Grey
+
+No trade.
+
+---
+
+## NODE ANIMATION
+
+Subtle pulse.
+
+No aggressive flashing.
+
+Pulse speed increases with score.
+
+Higher score = more alive.
+
+Lower score = nearly static.
+
+---
+
+## CONNECTIONS
+
+Draw thin animated lines between:
+
+Signal Engine
+
+Opportunity
+
+Strategy
+
+Risk
+
+Execution
+
+Position
+
+But these lines must remain secondary.
+
+The Opportunity Radar remains the focus.
+
+---
+
+# LEFT PANEL
+
+## MARKET OVERVIEW
+
+Keep the 12 market boxes.
+
+Improve them.
+
+Each box should show:
+
+Asset
+
+Timeframe
+
+Current YES Mid
+
+Direction
+
+Opportunity Score
+
+Mini score bar
+
+Example:
+
+BTC 5M
+
+YES
+
+92
+
+0.61
+
+█████████
+
+---
+
+Remove any redundant numbers.
+
+Remove unnecessary labels.
+
+---
+
+# RIGHT PANEL
+
+## ACTIVE POSITIONS
+
+Purpose:
+
+Show only live positions.
+
+Nothing else.
+
+Each position card:
+
+Asset
+
+Timeframe
+
+Direction
+
+Current PnL
+
+Example:
+
+BTC 15M YES
+
++4.8
+
+---
+
+ETH 1H NO
+
++2.1
+
+---
+
+SOL 5M YES
+
+-0.7
+
+---
+
+No large tables.
+
+No extra columns.
+
+No database-style layout.
+
+---
+
+If no positions exist:
+
+Display:
+
+NO OPEN POSITIONS
+
+with subtle cyberpunk icon.
+
+---
+
+# TOP BAR
+
+Keep:
+
+UTC Clock
+
+Uptime
+
+Engine Count
+
+Capital Status
+
+But reduce size.
+
+These are support metrics.
+
+Not primary metrics.
+
+---
+
+# PERFORMANCE AREA
+
+Keep only 4 KPIs.
+
+Do not add more.
+
+WIN RATE
+
+NET PNL
+
+TRADES
+
+MAX DD
+
+Large typography.
+
+Minimal labels.
+
+No extra statistics.
+
+No advanced analytics.
+
+No profit factor.
+
+No expectancy.
+
+No clutter.
+
+---
+
+# CAPITAL PROTECTION AREA
+
+Keep:
+
+Daily Loss
+
+Weekly Loss
+
+Loss Streak
+
+Drawdown
+
+Display as neon progress bars.
+
+Not tables.
+
+Not text-heavy blocks.
+
+Operator should understand risk status instantly.
+
+---
+
+# SYSTEM HEALTH
+
+Keep all engine statuses.
+
+Universe
+
+Price
+
+Signal
+
+Opportunity
+
+Strategy
+
+Risk
+
+Execution
+
+Exit
+
+Capital
+
+Display as simple neon indicators.
+
+Green:
+
+Healthy
+
+Red:
+
+Down
+
+Yellow:
+
+Warning
+
+---
+
+# FOOTER
+
+Display:
+
+LIMWANPO POLYMARKET AI
+
+Paper Mode / Live Mode
+
+Version
+
+Universe Summary:
+
+BTC | ETH | SOL | XRP
+
+Nothing else.
+
+---
+
+# IMPORTANT
+
+The dashboard must feel like:
+
+A professional AI operator terminal.
+
+NOT:
+
+A crypto exchange.
+
+NOT:
+
+A portfolio tracker.
+
+NOT:
+
+A software debugging console.
+
+NOT:
+
+A developer dashboard.
+
+The visual priority order must be:
+
+1. Opportunity Radar (largest element)
+2. Active Positions
+3. Performance
+4. Capital Protection
+5. System Health
+6. Infrastructure metrics
+
+The operator's eyes should naturally go first to the Opportunity Radar.
+
+That is the heart of Limwanpo Polymarket AI.

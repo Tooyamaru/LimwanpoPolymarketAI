@@ -1,0 +1,489 @@
+LIMWANPO AI — RESUME PHASE 12G ORDER FLOW READINESS
+
+Konteks:
+Phase 12G berhenti karena monthly quota tepat saat implementasi baru mau dimulai.
+
+Yang sudah ditemukan:
+
+- 12 market memiliki condition_id unik
+- token mapping unik
+- worker refresh setiap 10 detik
+- request CLOB terpisah per market
+- snapshot fresh
+- tidak ada shared response/caching bug
+- semua market masih ACTIVE_SEED_ONLY
+- volume/liquidity belum menunjukkan human trading
+- market 5m baru rollover dan sempat ACTIVE_STALE_BOOK selama gap snapshot awal
+- multi-timestamp capture menunjukkan mid tetap di sekitar seed state
+- dashboard sudah punya SEED label dari Phase 12F
+
+Rencana implementasi sebelum quota habis:
+
+New files:
+- backend/app/models/market_price_change.py
+- backend/app/repositories/market_price_change_repository.py
+- backend/app/services/market_activity_classifier.py
+- backend/app/api/v1/market_changes.py
+- backend/app/schemas/market_changes.py
+- backend/app/tests/test_market_activity_classifier.py
+
+Files to modify:
+- backend/app/core/database.py
+- backend/app/models/__init__.py
+- backend/app/services/market_price_service.py
+- backend/app/api/v1/__init__.py
+- backend/app/schemas/price.py
+- backend/app/api/v1/price.py
+- backend/app/services/decision_engine.py
+- backend/app/static/index.html
+
+TUGAS:
+Resume dari current codebase.
+Jangan mulai dari nol.
+Jangan ulang Phase 12F.
+Jangan redesign UI.
+Jangan membuat fake order flow.
+Jangan membuat random price movement.
+Jangan hardcode activity state.
+Jangan klaim perubahan file sudah ada sebelum memeriksa git diff.
+
+==================================================
+STEP 1 — VERIFY CURRENT STATE
+==================================================
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+Baca file terkait:
+
+- market_price_service.py
+- market_price_repository.py
+- market_price_snapshot model
+- price API/schema
+- decision_engine.py
+- static/index.html
+- core/database.py
+- models/__init__.py
+
+Pastikan apakah implementasi Phase 12G ada sebagian atau belum ada.
+
+==================================================
+STEP 2 — IMPLEMENT MARKET ACTIVITY CLASSIFIER
+==================================================
+
+Buat:
+
+backend/app/services/market_activity_classifier.py
+
+State:
+
+- SEED_ONLY
+- BOOK_CHANGED
+- PRICE_MOVED
+- DEPTH_CHANGED
+- TRADED
+- HIGH_ACTIVITY
+
+Input:
+
+- previous snapshot
+- current snapshot
+- volume
+- liquidity
+- bid/ask/mid
+- spread
+- bid/ask sizes/depth jika tersedia
+- timestamp
+
+Rules harus deterministik dan berbasis real data.
+
+Contoh:
+
+SEED_ONLY:
+- no recent trade
+- no volume
+- bid/ask/mid/spread unchanged
+
+BOOK_CHANGED:
+- bid atau ask berubah
+- mid belum berubah signifikan
+
+PRICE_MOVED:
+- mid berubah melewati threshold setting
+
+DEPTH_CHANGED:
+- bid/ask size atau total depth berubah signifikan
+
+TRADED:
+- volume atau last trade timestamp meningkat
+
+HIGH_ACTIVITY:
+- multiple changes dalam short window
+
+Jangan infer TRADED hanya dari bid/ask change.
+
+==================================================
+STEP 3 — PERSIST CHANGE EVENTS
+==================================================
+
+Buat model/table market_price_changes:
+
+- id
+- condition_id
+- asset
+- timeframe
+- detected_at
+- activity_state
+- previous_bid
+- current_bid
+- delta_bid
+- previous_ask
+- current_ask
+- delta_ask
+- previous_mid
+- current_mid
+- delta_mid
+- previous_spread
+- current_spread
+- delta_spread
+- previous_volume
+- current_volume
+- delta_volume
+- details_json jika sesuai pola project
+
+Migration harus idempotent.
+
+Simpan hanya real change events.
+SEED_ONLY boleh tidak disimpan, tetapi classifier tetap harus bisa return state.
+
+==================================================
+STEP 4 — INTEGRATE WITH PRICE WORKER
+==================================================
+
+Dalam market_price_service.py:
+
+1. Ambil previous snapshot untuk condition_id
+2. Fetch CLOB baru
+3. Simpan current snapshot
+4. Classify previous vs current
+5. Persist change event jika ada perubahan
+6. Log:
+   - condition_id
+   - previous/current
+   - activity_state
+   - delta
+   - timestamp
+
+Jangan fallback ke fake value.
+
+==================================================
+STEP 5 — WATCHLIST API
+==================================================
+
+Buat endpoint read-only:
+
+GET /api/v1/market-changes/recent
+GET /api/v1/market-changes/watchlist
+
+Watchlist ranking berdasarkan real data:
+
+- activity state priority
+- recent trade
+- volume/liquidity
+- spread
+- time to expiry
+- freshness
+
+Return top 10:
+
+- asset
+- timeframe
+- condition_id
+- activity_state
+- bid
+- ask
+- mid
+- spread
+- volume
+- liquidity
+- last_change_at
+- minutes_to_expiry
+- watch_score
+- reason
+
+Jangan membuat score tanpa formula terdokumentasi.
+
+==================================================
+STEP 6 — DECISION ENGINE SEMANTICS
+==================================================
+
+Decision Engine harus membaca current activity state.
+
+SEED_ONLY:
+- decision tetap WAIT
+- reason NO_ORDER_FLOW / SEED_BOOK_ONLY
+
+BOOK_CHANGED:
+- decision boleh OBSERVING
+- tidak boleh execute
+- reason BOOK_CHANGED_OBSERVING
+
+PRICE_MOVED / DEPTH_CHANGED / TRADED / HIGH_ACTIVITY:
+- pipeline scoring normal
+- tetap subject to risk gate
+
+Jika menambah OBSERVING:
+- pastikan Risk/Execution memperlakukannya sebagai non-executable
+- jangan merusak enum/schema downstream
+
+Lebih aman jika OBSERVING hanya semantic status yang tetap non-trading.
+
+==================================================
+STEP 7 — PRICE API FIELDS
+==================================================
+
+Tambahkan ke price API/schema:
+
+- market_activity_state
+- last_change_at
+- bid_changed
+- ask_changed
+- mid_changed
+- spread_changed
+- volume_changed
+- price_data_mode:
+  - SEED
+  - LIVE_ORDER_FLOW
+  - STALE
+  - MISSING
+
+Pastikan backward compatible.
+
+==================================================
+STEP 8 — DASHBOARD DATA MODE
+==================================================
+
+Jangan redesign.
+
+Tambahkan label kecil:
+
+- DATA MODE: SEED
+- DATA MODE: LIVE
+- DATA MODE: STALE
+
+Untuk SEED_ONLY:
+- status: ACTIVE · SEED BOOK
+- decision: WAITING FOR ORDER FLOW
+- confidence label tetap SEED / LOW DATA
+
+Untuk real order flow:
+- status: ACTIVE · LIVE
+- confidence normal
+
+==================================================
+STEP 9 — PIPELINE TRACE
+==================================================
+
+Pilih satu condition_id dan tampilkan:
+
+Raw CLOB:
+- bid
+- ask
+- mid
+- spread
+- volume
+- timestamp
+
+DB Snapshot:
+- row id
+- captured_at
+
+Change Detector:
+- previous/current
+- state
+- delta
+
+Signal:
+- type
+- confidence
+- timestamp
+
+Opportunity:
+- components
+- score
+
+Decision:
+- decision
+- reason
+- risk state
+
+Dashboard API:
+- displayed values
+- data mode
+
+Jika tidak ada change event:
+- tulis SEED_ONLY
+- jangan fabricate.
+
+==================================================
+STEP 10 — 5-MINUTE CAPTURE
+==================================================
+
+Capture setiap 10 detik selama 5 menit.
+
+Untuk 12 market catat:
+
+- bid
+- ask
+- mid
+- spread
+- volume
+- activity_state
+- timestamp
+
+Output:
+
+- market pertama berubah
+- total changes per market
+- first/last/min/max
+- fresh/stale count
+
+Jika tidak ada perubahan:
+
+POLYMARKET MARKET STILL IN AMM SEED STATE
+
+Final status:
+WAITING FOR FIRST ORDER FLOW
+
+==================================================
+STEP 11 — TESTS
+==================================================
+
+Tambahkan tests:
+
+- SEED_ONLY
+- BOOK_CHANGED
+- PRICE_MOVED
+- DEPTH_CHANGED
+- TRADED
+- HIGH_ACTIVITY
+- no false TRADED from price-only change
+- worker persists only real changes
+- watchlist ranking deterministic
+- SEED_ONLY produces WAIT/NO_ORDER_FLOW
+- BOOK_CHANGED produces non-executable OBSERVING
+- execution rejects OBSERVING
+- API exposes activity fields
+- dashboard mapping uses DATA MODE
+
+Jalankan:
+
+- python -m compileall -q backend/app
+- classifier tests
+- price worker tests
+- decision tests
+- execution tests
+- API tests
+- workflow restart
+
+==================================================
+STEP 12 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- random
+- fake order flow
+- hardcoded activity
+- hardcoded bid
+- hardcoded ask
+- fallback 0.5
+- fallback 0.51
+- seed
+- stale
+- shared cache
+- OBSERVING
+- NO_ORDER_FLOW
+- market_price_changes
+
+Klasifikasikan:
+
+- REAL_DATA
+- SAFE_CONFIG
+- SEED_STATE
+- TEST_ONLY
+- INVALID
+- FIXED
+
+No INVALID at final.
+
+==================================================
+STEP 13 — UPDATE AUDIT REPORT
+==================================================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md:
+
+PHASE 12G — ORDER FLOW READINESS & LIVE MARKET DIFFERENTIATION
+
+Include:
+
+1. Files read
+2. Baseline state
+3. Change detector design
+4. Activity classifier rules
+5. Watchlist ranking
+6. Pipeline trace
+7. 5-minute capture
+8. Decision semantics
+9. Dashboard data mode
+10. Bugs found
+11. Files changed
+12. Tests run
+13. Live evidence
+14. Remaining risks
+15. Final status
+
+Final status:
+
+- ORDER FLOW VERIFIED
+- LIVE READY
+- WAITING FOR FIRST ORDER FLOW
+- ORDER FLOW INTEGRITY: FAIL
+
+Use ORDER FLOW VERIFIED only if real changes were observed and propagated through the pipeline.
+
+Use LIVE READY if code is ready and tested but no human order flow appeared.
+
+Use WAITING FOR FIRST ORDER FLOW if all markets remain seed-only after 5-minute capture.
+
+==================================================
+STEP 14 — FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Files read
+2. Git diff summary
+3. Baseline market state
+4. Change detector implementation
+5. Activity classifier result
+6. Watchlist result
+7. Pipeline trace
+8. 5-minute capture
+9. Signal behavior
+10. Opportunity behavior
+11. Decision behavior
+12. Dashboard behavior
+13. Tests run
+14. Audit update
+15. Remaining risks
+16. Final status
+17. Exact next step
+
+Jangan jawab umum.
+Jangan mengklaim file dibuat tanpa git diff.
+Jangan membuat variasi palsu.
+Jangan klaim order flow verified tanpa real change event.

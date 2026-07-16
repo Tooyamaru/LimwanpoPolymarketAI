@@ -1,0 +1,335 @@
+MODE: PROJECT IDENTITY & DOCUMENTATION CORRECTION
+
+PRIORITY: CRITICAL
+
+Read all instructions completely before making any modifications.
+
+This task exists to correct and standardize project identity, business context, architecture assumptions, audit assumptions, and documentation structure.
+
+Do NOT implement features.
+
+Do NOT modify business logic.
+
+Do NOT modify code.
+
+Do NOT modify database schema.
+
+Do NOT modify APIs.
+
+Do NOT modify tests.
+
+Documentation clarification only.
+
+======================================================================
+OFFICIAL PROJECT IDENTITY
+=========================
+
+Official Project Name:
+
+LimwanpoPolymarketAI
+
+Project Type:
+
+Polymarket Quant Bot
+
+Prediction Market Intelligence System
+
+Probability-Based Decision Engine
+
+This project is NOT:
+
+* Binance Trading Bot
+* Spot Trading Bot
+* Futures Trading Bot
+* Arbitrage Bot
+* Market Making Bot
+* Copy Trading Bot
+* Traditional Crypto Trading System
+
+Future audits, planning, reviews, and architecture discussions must use the correct project identity.
+
+======================================================================
+BUSINESS MODEL
+==============
+
+LimwanpoPolymarketAI is a prediction-market system.
+
+The system:
+
+1. Collects data.
+2. Analyzes signals.
+3. Estimates probabilities.
+4. Determines whether YES or NO has statistical edge.
+5. Executes YES/NO contracts on Polymarket.
+6. Manages exposure.
+7. Takes profit when opportunities exist.
+
+The system predicts outcomes.
+
+The system does NOT trade cryptocurrencies directly.
+
+======================================================================
+TRADED INSTRUMENTS
+==================
+
+Actual traded instruments:
+
+* YES contracts
+* NO contracts
+
+on Polymarket.
+
+The system does NOT directly buy or sell:
+
+* BTC
+* ETH
+* SOL
+* XRP
+
+Those assets are prediction targets only.
+
+======================================================================
+ROLE OF EXTERNAL DATA SOURCES
+=============================
+
+Sources such as:
+
+* Binance
+* Chainlink
+* Market feeds
+* Price feeds
+
+exist only as:
+
+* signal inputs
+* prediction inputs
+* probability features
+* market intelligence sources
+
+They are NOT execution venues.
+
+They are NOT traded assets.
+
+The only execution venue is Polymarket.
+
+======================================================================
+PRIMARY TARGET MARKETS
+======================
+
+Primary focus:
+
+* BTC Up / Down
+* ETH Up / Down
+* SOL Up / Down
+* XRP Up / Down
+
+These are prediction markets.
+
+Not spot assets.
+
+Not futures contracts.
+
+Not perpetual contracts.
+
+======================================================================
+POSITION & EXPOSURE PHILOSOPHY
+==============================
+
+The project philosophy is:
+
+Exposure Management > Position Count
+
+Important:
+
+* Multiple entries may be valid.
+* Multiple positions may be valid.
+* Multiple entries on the same market are not automatically bugs.
+* Duplicate-position findings must first verify violation of an explicit exposure rule.
+
+Do NOT assume:
+
+"One market = one position"
+
+unless explicitly defined by project rules.
+
+======================================================================
+PROFIT-TAKING PHILOSOPHY
+========================
+
+Profit-taking before settlement is valid.
+
+Profit-taking before market expiry is valid.
+
+Profit-taking before event resolution is valid.
+
+Expected behavior:
+
+Open Position
+→ Opportunity Exists
+→ Take Profit
+→ Close Position
+
+The system does not require waiting until event resolution.
+
+The system does not require waiting until market expiry.
+
+Audits must not classify early profit-taking as a defect.
+
+======================================================================
+AUDIT RULES
+===========
+
+Before reporting a bug:
+
+Determine whether the finding comes from:
+
+A. Prediction-market logic
+
+or
+
+B. Traditional spot/futures-trading assumptions
+
+If the finding depends only on spot/futures assumptions:
+
+The finding must be rejected unless it also applies to prediction markets.
+
+Examples of invalid assumptions:
+
+* one market = one position
+* must hold until expiry
+* must hold until settlement
+* early profit-taking is wrong
+* multiple entries are automatically bugs
+
+These assumptions are not valid for LimwanpoPolymarketAI.
+
+======================================================================
+DOCUMENTATION STRUCTURE
+=======================
+
+README.md
+
+Purpose:
+
+Primary business-model reference.
+
+Must contain:
+
+* Project identity
+* Business model
+* Architecture overview
+* Prediction-market philosophy
+* Exposure philosophy
+* Audit assumptions
+
+README should contain the most complete explanation.
+
+---
+
+PROJECT_STATUS.md
+
+Purpose:
+
+Current project status.
+
+Keep focused on:
+
+* current version
+* current layer
+* completed layers
+* next layer
+* current phase
+
+Add only a short business reminder:
+
+"LimwanpoPolymarketAI is a Polymarket Quant Bot.
+See README.md for full business-model details."
+
+Do not duplicate large business-model sections.
+
+---
+
+ROADMAP_NEXT_PHASE.md
+
+Purpose:
+
+Future planning.
+
+Add only a short architecture reminder:
+
+"All future layers must follow
+Polymarket prediction-market mechanics.
+
+See README.md for full business-model details."
+
+Do not duplicate large business-model sections.
+
+---
+
+NEXT_BUILD_TASKS.md
+
+Purpose:
+
+Guide future AI builders.
+
+Add a concise mandatory section:
+
+Mandatory Development Rules:
+
+1. This is a Polymarket Quant Bot.
+2. YES/NO contracts are traded.
+3. BTC/ETH/SOL/XRP are prediction targets only.
+4. Multiple entries may be valid.
+5. Profit-taking before settlement is valid.
+
+See README.md for complete business-model details.
+
+Do not duplicate the entire README section.
+
+======================================================================
+VALIDATION REQUIREMENTS
+=======================
+
+Confirm:
+
+[ ] Project name is consistently LimwanpoPolymarketAI.
+
+[ ] Documentation clearly identifies the system as a Polymarket Quant Bot.
+
+[ ] BTC/ETH/SOL/XRP are correctly described as prediction targets, not traded assets.
+
+[ ] README contains the detailed business-model definition.
+
+[ ] PROJECT_STATUS.md contains only a short reference.
+
+[ ] ROADMAP_NEXT_PHASE.md contains only a short reference.
+
+[ ] NEXT_BUILD_TASKS.md contains only a concise builder reminder.
+
+[ ] Existing roadmap items remain unchanged.
+
+[ ] Existing project status remains unchanged.
+
+[ ] Existing layer numbering remains unchanged.
+
+[ ] Existing version numbers remain unchanged.
+
+[ ] No code changes.
+
+[ ] No API changes.
+
+[ ] No database changes.
+
+[ ] No test changes.
+
+======================================================================
+DELIVERABLE
+===========
+
+Provide:
+
+1. Files modified.
+2. Exact sections added.
+3. Exact sections removed.
+4. Resulting document structure.
+5. Confirmation that project identity is now clear and consistent across documentation.

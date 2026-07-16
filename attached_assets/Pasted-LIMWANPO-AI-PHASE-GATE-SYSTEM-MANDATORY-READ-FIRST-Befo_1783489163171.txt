@@ -1,0 +1,391 @@
+LIMWANPO AI — PHASE GATE SYSTEM (MANDATORY)
+READ FIRST
+
+Before doing ANYTHING, read in this exact order:
+
+CONSTITUTION.md
+PROJECT_RULES.md
+replit.md
+.agents/memory/product-constitution.md
+
+If one file cannot be found:
+
+STOP.
+
+Ask the user.
+
+Never continue.
+
+IMPORTANT
+
+This project is NOT feature-driven.
+
+This project is PHASE-driven.
+
+You are NOT allowed to skip phases.
+
+You are NOT allowed to decide the next phase yourself.
+
+Only the project owner (user) decides.
+
+CURRENT PROJECT STATUS
+
+Current project:
+
+LIMWANPO AI
+
+Identity:
+
+AI-assisted Polymarket Probability Intelligence Platform
+
+NOT
+
+Trading Platform
+Trading Terminal
+Exchange Dashboard
+Crypto Bot
+PERMANENT DEVELOPMENT ROADMAP
+
+The following roadmap is LOCKED.
+
+You MUST follow it.
+
+PHASE 1
+
+Project Identity Lock
+
+Goal
+
+Ensure the project is permanently recognized as LIMWANPO AI.
+
+Status
+
+COMPLETE
+
+Never revisit unless requested.
+
+PHASE 2
+
+Vocabulary Lock
+
+Goal
+
+Remove every trading term.
+
+Examples
+
+Forbidden
+
+Trade
+
+Portfolio
+
+Exposure
+
+Capital
+
+Bid
+
+Ask
+
+Orderbook
+
+Spread
+
+Margin
+
+Leverage
+
+Entry
+
+Exit
+
+Position
+
+PnL
+
+Replace with Constitution terminology.
+
+Status
+
+COMPLETE
+
+Only audit if regression appears.
+
+PHASE 3
+
+UI Stabilization
+
+Goal
+
+Stabilize layout.
+
+NOT redesign.
+
+Requirements
+
+No overlap.
+
+No clipping.
+
+No hidden information.
+
+No deleted information.
+
+No added information.
+
+Only layout refinement.
+
+Status
+
+IN PROGRESS
+
+DO NOT leave this phase until approved.
+
+PHASE 4
+
+Regression Lock
+
+Goal
+
+Protect approved UI.
+
+Before changing ANY UI:
+
+Compare current implementation.
+
+If any approved information disappears:
+
+ROLL BACK immediately.
+
+Regression checklist:
+
+Target
+
+Gap
+
+Confidence
+
+Countdown
+
+Status
+
+Coverage
+
+Entries
+
+Open At
+
+Prediction State
+
+If one disappears:
+
+STOP.
+
+Rollback.
+
+Status
+
+NOT STARTED
+
+PHASE 5
+
+Data Source Audit
+
+Goal
+
+Audit every visible value.
+
+Every displayed number must answer:
+
+Where does it come from?
+
+Allowed answers
+
+Official Polymarket
+
+Official Binance (chart only)
+
+Official Chainlink (chart only)
+
+Not allowed
+
+Placeholder
+
+Random
+
+Hardcoded
+
+Estimated
+
+Simulated
+
+Status
+
+NOT STARTED
+
+PHASE 6
+
+Polymarket API Integration
+
+Goal
+
+Replace every placeholder with official Polymarket data.
+
+Priority
+
+Market
+
+Probability
+
+Resolution
+
+Liquidity
+
+Volume
+
+Prediction Status
+
+Never replace with Binance.
+
+Status
+
+LOCKED
+
+Cannot begin until Phase 5 approved.
+
+PHASE 7
+
+Historical Database
+
+Goal
+
+Store prediction history.
+
+No UI redesign.
+
+No AI improvements.
+
+Database only.
+
+Status
+
+LOCKED
+
+PHASE 8
+
+Prediction Engine
+
+Goal
+
+Improve prediction quality.
+
+Uses historical data.
+
+Status
+
+LOCKED
+
+PHASE 9
+
+Outcome Learning
+
+Goal
+
+AI learns from resolved Polymarket markets.
+
+Status
+
+LOCKED
+
+PHASE 10
+
+Optimization
+
+Goal
+
+Performance.
+
+Refactoring.
+
+Speed.
+
+Memory.
+
+Status
+
+LOCKED
+
+DECISION RULE
+
+Before proposing ANY work:
+
+Ask yourself
+
+"What phase am I currently inside?"
+
+If the proposed task belongs to another phase
+
+STOP.
+
+Do NOT continue.
+
+NEVER DO THIS
+
+Never say
+
+"Let's also..."
+
+Never say
+
+"I'll improve..."
+
+Never say
+
+"I noticed..."
+
+Never install packages unless requested.
+
+Never redesign UI.
+
+Never rename components.
+
+Never reorganize dashboard.
+
+Never add new cards.
+
+Never remove information.
+
+Never add information because "there is empty space."
+
+Never create features outside current phase.
+
+AFTER EVERY TASK
+
+Produce this report
+
+Current Phase
+
+Task Completed
+
+Regression Check
+
+PASS / FAIL
+
+Approved For Next Phase?
+
+YES / NO
+
+If NO
+
+Remain inside current phase.
+
+IMPORTANT
+
+The user controls phase transitions.
+
+You DO NOT.
+
+Even if another phase appears beneficial,
+
+remain inside the approved phase until explicitly instructed otherwise.

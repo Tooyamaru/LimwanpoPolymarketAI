@@ -1,0 +1,215 @@
+Continue Phase 4 from exactly the current implementation state.
+
+Do NOT restart the work.
+
+Do NOT re-audit the entire project again.
+
+Assume all previous edits are the current baseline.
+
+Current baseline:
+
+- 359/359 tests originally passed
+- Settings, Order model, Position model, and Signal Confidence work has already started
+- Continue from there.
+
+Before writing new code, verify that:
+
+1. There is only ONE confidence calculation module used across the project.
+   Do not create duplicate confidence implementations.
+   Signal Engine, Strategy Engine and Analytics must all use the same source of truth.
+
+2. Database migrations must be backward compatible.
+   Never recreate tables.
+   Never drop tables.
+   Use safe ALTER TABLE IF NOT EXISTS style migrations where required.
+
+3. Never break existing API responses.
+   Existing fields must remain unchanged.
+   Only append new fields.
+
+--------------------------------------------------
+
+Continue implementing the remaining Phase 4 items.
+
+PART A
+Dynamic Stop Loss
+
+Do NOT hardcode a larger number.
+
+Implement:
+
+SpreadCost = PositionSize × CurrentSpread
+
+StopLoss = SpreadCost × ConfigurableMultiplier
+
+The multiplier must come from settings.
+
+Current markets should survive the spread immediately after entry.
+
+--------------------------------------------------
+
+PART B
+Position Sizing
+
+Rebuild sizing tiers using quality ranges instead of today's score coincidence.
+
+Example architecture:
+
+0–29
+SMALL
+
+30–39
+MEDIUM
+
+40–59
+HIGH
+
+60+
+MAX
+
+Design it so future market improvements require no recalibration.
+
+--------------------------------------------------
+
+PART C
+Performance Analytics
+
+Add:
+
+- Average Hold Time
+- MAE
+- MFE
+- Signal Precision
+- Opportunity Conversion
+- Average Winner Duration
+- Average Loser Duration
+- Average Spread
+- Average Fee
+- Average Slippage
+- Average Time To Stop
+- Average Time To Profit
+
+Expose all metrics through existing analytics endpoints.
+
+--------------------------------------------------
+
+PART D
+Fee Simulation
+
+Implement configurable fee support.
+
+Never hardcode.
+
+Create:
+
+POLYMARKET_FEE_RATE
+
+Entry fee
+
+Exit fee
+
+Fee stored with order
+
+Fee included in realized PnL
+
+Fee shown in analytics
+
+--------------------------------------------------
+
+PART E
+Trailing Stop
+
+Implement architecture now.
+
+Even if current markets never activate it.
+
+It should be production-ready.
+
+--------------------------------------------------
+
+PART F
+Dashboard
+
+Expose every new metric on the dashboard.
+
+No redesign.
+
+Reuse existing UI.
+
+--------------------------------------------------
+
+PART G
+Health Endpoint
+
+Extend health response with:
+
+- Current Capital
+- Daily Loss
+- Weekly Loss
+- Current Drawdown
+- Loss Streak
+- Cooldown Remaining
+- Kill Switch
+- Current Spread
+- Current Risk
+- Average Hold Time
+- Average Fee
+- Average Slippage
+
+--------------------------------------------------
+
+PART H
+Testing
+
+Update every affected test.
+
+Never reduce coverage.
+
+All legacy tests must continue passing.
+
+Add new tests for every new feature.
+
+--------------------------------------------------
+
+PART I
+Validation
+
+After implementation verify:
+
+✓ Cooldown works
+
+✓ Kill switch resets correctly
+
+✓ Dynamic stop loss works
+
+✓ Fees are correct
+
+✓ Position sizing behaves correctly
+
+✓ Analytics calculate correctly
+
+✓ Dashboard reads new metrics
+
+✓ Health endpoint exposes everything
+
+✓ Database migration is safe
+
+✓ No API compatibility broken
+
+✓ No engine broken
+
+--------------------------------------------------
+
+Final report must include:
+
+1. Files modified
+
+2. Runtime validation
+
+3. Test count before vs after
+
+4. New metrics added
+
+5. Remaining future improvements
+
+Continue until every Phase 4 item above is fully implemented and validated.

@@ -1,0 +1,101 @@
+LIMWANPO AI — LIVE MULTI-ENTRY RUNTIME PROOF ONLY
+
+Konteks:
+
+Implementasi dan tests sudah selesai:
+
+- Full suite: 680/680 passed
+- Execution Engine: 16/16 passed
+- Risk Engine: 26/26 passed
+- Exit Engine: 31/31 passed
+- Countdown: implemented
+- PNL / IN / OUT / LOTS: implemented
+- Multi-entry and partial exit: implemented
+- No unique constraint on positions.condition_id
+- Duplicate fills protected by unique order identity
+
+TUGAS:
+Jangan ubah code.
+Jangan redesign.
+Jangan menambah dummy position.
+Jangan memaksa BUY.
+Lakukan live runtime validation pada database project normal.
+
+1. Pastikan PostgreSQL, Redis, Universe Sync, Price Worker, Signal, Opportunity, Strategy, Risk, Decision, dan Execution workers hidup.
+
+2. Query active markets dan positions.
+
+3. Cari condition_id yang memiliki lebih dari satu entry/position lot:
+
+SELECT
+    condition_id,
+    COUNT(*) AS lot_count
+FROM positions
+GROUP BY condition_id
+HAVING COUNT(*) > 1
+ORDER BY lot_count DESC;
+
+4. Jika ada, tampilkan:
+
+- condition_id
+- asset
+- timeframe
+- position ID
+- entry_sequence
+- order_id
+- side
+- entry_price
+- quantity
+- remaining_quantity
+- status
+- scale_in_reason
+- opened_at
+- realized_pnl
+- unrealized_pnl
+
+5. Validasi:
+
+- lot IDs berbeda
+- order IDs berbeda
+- entry_sequence berbeda
+- condition_id sama
+- duplicate order tidak ada
+- exposure cap tidak terlampaui
+- cooldown dipatuhi
+- same-side rules dipatuhi
+- weighted average benar
+
+6. Call card-summary API dan cocokkan:
+
+- LOTS
+- IN count
+- IN amount
+- OUT count
+- OUT amount
+- realized PnL
+- unrealized PnL
+- total PnL
+
+7. Jika belum ada natural multi-entry:
+
+- jangan fabricate
+- tampilkan market yang paling dekat menghasilkan additional entry
+- tampilkan block reason terakhir:
+  - cooldown
+  - exposure
+  - confidence
+  - risk
+  - no order flow
+  - max lots
+- final status:
+  MULTI-ENTRY POSITIONING: PASS — LIVE EVENT NOT YET OBSERVED
+
+8. Jika minimal satu condition_id mempunyai dua atau lebih valid lots dan card aggregation cocok:
+
+Final status:
+MULTI-ENTRY POSITIONING: PASS — LIVE VERIFIED
+
+Jangan setup ulang.
+Jangan edit tests.
+Jangan membuat follow-up task.
+Jangan ubah threshold hanya untuk menghasilkan entry.

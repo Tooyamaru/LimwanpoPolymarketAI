@@ -1,0 +1,362 @@
+LIMWANPO AI — RESUME PHASE 12J
+FINALIZE SCALE-IN DELTA GATE + MULTI-ENTRY / ROLLOVER VALIDATION
+
+Konteks:
+
+Phase 12J berhenti karena daily quota.
+
+Yang sudah dilakukan:
+
+- audit multi-entry, idempotency, risk, partial exit, expiry exit, rollover
+- settings scale-in delta gate mulai ditambahkan
+- trade_decision_repository.py diperbarui untuk mengambil previous decision
+- risk_engine.py diperbarui untuk membandingkan decision quality
+- rule SCALE_IN_NO_IMPROVEMENT sudah ditambahkan
+- compileall berhasil
+- risk tests gagal karena mock/session execute side_effect sequence belum mengikuti DB query baru
+- quota habis saat membuka test_risk_engine.py
+
+TUGAS:
+
+Resume dari current codebase.
+Jangan mulai dari nol.
+Jangan rollback scale-in delta gate.
+Jangan redesign UI.
+Jangan mengubah chart, MARKET ALERTS, AI LIVE TRADES, atau market card.
+Jangan menurunkan threshold.
+Jangan membuat fake trade.
+Jangan memaksa multi-entry.
+
+==================================================
+STEP 1 — VERIFY CURRENT DIFF
+==================================================
+
+Jalankan:
+
+- git status
+- git diff --stat
+- git diff
+- python -m compileall -q backend/app
+
+Daftar file yang berubah.
+
+Pastikan perubahan current mencakup:
+
+- settings.py
+- trade_decision_repository.py
+- risk_engine.py
+- test_risk_engine.py jika sudah sebagian diedit
+
+==================================================
+STEP 2 — DOCUMENT SCALE-IN DELTA RULE
+==================================================
+
+Tampilkan exact settings baru:
+
+- minimum confidence improvement
+- minimum opportunity score improvement
+- better entry price threshold
+- order-flow confirmation requirement jika ada
+
+Tampilkan formula exact:
+
+valid scale-in jika minimal satu:
+
+- confidence_new >= confidence_previous + configured_delta
+- opportunity_new >= opportunity_previous + configured_delta
+- entry_price improvement memenuhi threshold
+- new order-flow confirmation
+
+Jika tidak ada improvement:
+
+block reason:
+
+SCALE_IN_NO_IMPROVEMENT
+
+Pastikan first entry tidak terkena gate ini.
+
+==================================================
+STEP 3 — VERIFY PREVIOUS DECISION QUERY
+==================================================
+
+Audit method baru di trade_decision_repository.py.
+
+Pastikan query:
+
+- condition_id sama
+- decision entry executable
+- status relevant/executed
+- timestamp lebih lama dari current decision
+- newest previous entry decision only
+- tidak mengambil WAIT/BLOCKED
+- tidak mengambil current decision sendiri
+- tidak mencampur old rollover condition_id
+
+Jika query masih terlalu luas, perbaiki.
+
+==================================================
+STEP 4 — FIX RISK TEST MOCK SEQUENCE
+==================================================
+
+Run:
+
+python -m pytest backend/app/tests/test_risk_engine.py -vv
+
+Untuk setiap failure:
+
+- test name
+- expected
+- actual
+- root cause
+
+Periksa AsyncSession.execute side_effect order.
+
+Risk Engine sekarang mungkin melakukan query tambahan:
+
+1. open positions / exposure
+2. entry counts
+3. previous entry decision
+4. other risk queries
+
+Update fixtures/mocks agar return sequence sesuai production query order.
+
+Jangan mengubah production logic hanya agar mock pass.
+
+==================================================
+STEP 5 — ADD SCALE-IN GATE TESTS
+==================================================
+
+Tambahkan tests:
+
+1. First entry allowed without previous decision
+2. Same condition second entry with confidence improvement allowed
+3. Same condition second entry with opportunity improvement allowed
+4. Better entry price allows scale-in
+5. New order-flow confirmation allows scale-in
+6. Identical confidence/score/price blocked:
+   SCALE_IN_NO_IMPROVEMENT
+7. Lower confidence blocked
+8. Lower opportunity score blocked
+9. Old condition_id decision not used after rollover
+10. WAIT/BLOCKED previous decisions ignored
+11. Current decision not compared to itself
+12. Cooldown still evaluated independently
+13. Exposure cap still evaluated independently
+14. Duplicate execution still blocked separately
+
+==================================================
+STEP 6 — VERIFY MULTI-ENTRY CORE
+==================================================
+
+Prove via tests:
+
+- first entry same condition success
+- second valid entry same condition success
+- third valid entry same condition success
+- different position IDs
+- different order IDs
+- entry_sequence increments
+- same side allowed
+- opposite side blocked if hedge disabled
+
+No condition_id-only blocker may remain.
+
+==================================================
+STEP 7 — VERIFY IDEMPOTENCY
+==================================================
+
+Prove:
+
+- same order retry blocked
+- same decision retry blocked
+- same execution event blocked
+- new decision/order same condition allowed
+
+Idempotency key must not be condition_id.
+
+==================================================
+STEP 8 — VERIFY SCALE-OUT
+==================================================
+
+Run exit tests.
+
+Prove:
+
+- partial exit
+- remaining_quantity decreases
+- realized PnL only closed quantity
+- final exit closes remaining quantity
+- expiry closes all OPEN/PARTIAL lots
+- no double-close
+
+==================================================
+STEP 9 — VERIFY ROLLOVER ISOLATION
+==================================================
+
+Tests and queries:
+
+- old condition_id positions excluded from current card
+- new condition_id summary starts independently
+- old positions remain in history
+- old unresolved positions remain in exit/resolution flow
+- previous decision lookup for scale-in only uses exact current condition_id
+
+==================================================
+STEP 10 — RUN TARGETED TESTS
+==================================================
+
+Run:
+
+- test_risk_engine.py
+- test_execution_engine.py
+- test_exit_engine.py
+- position service tests
+- position repository tests
+- card summary tests
+- rollover tests
+- live trades tests
+
+Report exact totals.
+
+==================================================
+STEP 11 — FULL SUITE
+==================================================
+
+Run:
+
+python -m pytest
+
+Report:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+Classify any remaining issue:
+
+- NEW_REGRESSION
+- FIXTURE_DRIFT
+- PRE_EXISTING_UNRELATED
+- TEST_INFRA
+
+Do not claim PASS with failures.
+
+==================================================
+STEP 12 — RUNTIME OBSERVATION
+==================================================
+
+Restart workflow.
+
+Observe natural cycles.
+
+Do not lower thresholds.
+
+Capture:
+
+- entries evaluated
+- scale-in candidates
+- scale-in allowed
+- scale-in blocked
+- exact block reasons
+- exits
+- rollovers
+
+If no natural scale-in occurs:
+
+report:
+
+SCALE-IN: NOT YET OBSERVED
+
+but include block reason counts.
+
+==================================================
+STEP 13 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- DUPLICATE_POSITION
+- one position per market
+- repeated identical signal entry
+- SCALE_IN_NO_IMPROVEMENT
+- threshold lowered
+- force BUY
+- fake scale-in
+- old condition in current card
+- asset-only lookup
+- timeframe-only lookup
+- unlimited entries
+- double close
+
+Classify:
+
+- VALID_IDEMPOTENCY
+- SAFE_RISK_LIMIT
+- MULTI_ENTRY_READY
+- ROLLOVER_SAFE
+- TEST_ONLY
+- INVALID
+- FIXED
+
+No unresolved INVALID.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Files read
+2. Git diff summary
+3. Scale-in delta settings
+4. Previous decision query
+5. SCALE_IN_NO_IMPROVEMENT behavior
+6. Risk test fix
+7. Multi-entry proof
+8. Idempotency proof
+9. Scale-out proof
+10. Rollover isolation proof
+11. Targeted tests
+12. Full suite
+13. Runtime observations
+14. Block reason counts
+15. Files changed
+16. Remaining risks
+17. Final statuses
+18. Exact next step
+
+Final statuses:
+
+MULTI-ENTRY:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+SCALE-IN DELTA GATE:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+SCALE-IN LIVE:
+- PASS
+- NOT YET OBSERVED
+- FAIL
+
+SCALE-OUT:
+- PASS
+- NOT YET OBSERVED
+- FAIL
+
+ROLLOVER ISOLATION:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+Jangan defer.
+Jangan membuat follow-up task.
+Jangan redesign.
+Jangan menurunkan threshold.
+Jangan fabricate.
+Selesaikan current implementation dan test regression.

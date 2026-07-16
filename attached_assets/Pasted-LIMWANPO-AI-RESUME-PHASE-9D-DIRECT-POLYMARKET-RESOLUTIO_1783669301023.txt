@@ -1,0 +1,488 @@
+LIMWANPO AI — RESUME PHASE 9D DIRECT POLYMARKET RESOLUTION EVIDENCE
+
+Konteks:
+Pengerjaan Phase 9D berhenti karena daily quota tepat setelah workflow restart dan sebelum live validation selesai.
+
+JANGAN mulai dari nol.
+JANGAN redo Phase 9B/9C.
+JANGAN ubah UI.
+JANGAN redesign.
+JANGAN tambah dummy data.
+JANGAN tambah random value.
+JANGAN tambah fake outcome.
+JANGAN klaim PASS kalau direct resolution belum terbukti live.
+Source code lebih penting daripada audit report.
+
+Tujuan Phase 9D:
+Menutup caveat terakhir:
+
+LEARNING_OUTCOME_SOURCE = REALIZED_PNL_PROXY
+
+Target:
+Outcome Learning harus memakai direct Polymarket/Gamma resolution jika data valid tersedia dari integration yang sudah ada.
+
+Yang sudah sempat dilakukan sebelum quota habis:
+
+1. Membaca:
+
+   * outcome_learning_service.py
+   * dynamic_weight_service.py
+   * gamma_series_client.py
+   * clob_client.py
+   * outcome_learning.py
+   * universe_repository.py
+   * outcome_learning_repository.py
+   * position_repository.py
+   * settings.py
+
+2. Search dilakukan untuk:
+
+   * resolved
+   * resolution
+   * winning
+   * realized_pnl
+   * correct
+   * OutcomeLearning
+
+3. Ditemukan bahwa:
+
+   * GET /markets?condition_ids={id} sempat tidak stabil / tidak cukup reliable.
+   * Lookup kemudian diarahkan memakai series_slug.
+   * fetch_market_resolution di gamma_series_client.py diklaim sudah bisa bekerja reliable dengan series_slug.
+
+4. Perubahan yang sudah sempat dilakukan:
+
+   * outcome_learning.py ditambah field resolution/outcome source.
+   * database.py ditambah migration / column creation.
+   * gamma_series_client.py ditambah parsing resolution.
+   * outcome_learning_service.py diubah agar direct resolution menjadi primary correctness source.
+   * outcome_learning_repository.py diubah agar menerima field baru.
+   * test_gamma_series_client.py ditambah test resolution.
+   * test_outcome_learning_service.py ditambah test correctness direct resolution.
+   * compile/check code sempat dijalankan.
+   * test suite sempat dijalankan.
+   * pre-existing failures diklaim masih sama dan unrelated.
+   * workflow sudah direstart.
+   * pengerjaan berhenti sebelum live validation dan audit report final selesai.
+
+TUGAS SEKARANG:
+Resume dari kondisi codebase saat ini.
+Selesaikan final review, live validation, audit report, dan final status Phase 9D.
+
+==================================================
+STEP 1 — READ CURRENT STATE
+===========================
+
+Baca file berikut dulu:
+
+* AI_DECISION_INTEGRITY_AUDIT.md
+* MEMORY.md jika ada
+* backend/app/clients/gamma_series_client.py
+* backend/app/services/outcome_learning_service.py
+* backend/app/repositories/outcome_learning_repository.py
+* backend/app/models/outcome_learning.py
+* backend/app/models/market_universe.py
+* backend/app/models/position.py
+* backend/app/database.py
+* backend/app/config/settings.py
+* backend/app/services/dynamic_weight_service.py
+* backend/app/services/decision_engine.py
+* backend/app/repositories/universe_repository.py
+* backend/app/services/market_universe_service.py
+* backend/app/clients/clob_client.py
+* backend/app/tests/test_gamma_series_client.py
+* backend/app/tests/test_outcome_learning_service.py
+
+Lalu jalankan:
+
+* git status
+* git diff
+
+Jangan percaya klaim log sebelumnya tanpa cek code sekarang.
+
+==================================================
+STEP 2 — REVIEW PHASE 9D CODE CHANGES
+=====================================
+
+Review perubahan yang sudah dibuat:
+
+A. outcome_learning.py
+
+Pastikan field baru masuk dengan benar, misalnya:
+
+* outcome_source
+* resolution_source
+* winning_side
+* winning_token_id
+* resolved_at
+* final_yes_price
+* final_no_price
+* resolution_status
+* raw evidence/hash/reference jika ada
+
+Pastikan:
+
+* tidak break existing row
+* nullable aman
+* tidak ada default winner
+* tidak ada fake outcome
+* tidak ada assumed YES/NO
+
+B. database.py / migration
+
+Pastikan:
+
+* column creation idempotent
+* aman untuk existing DB
+* tidak drop data lama
+* tidak gagal kalau column sudah ada
+* startup tidak error
+
+C. gamma_series_client.py
+
+Pastikan:
+
+* fetch_market_resolution benar-benar memakai provider existing Gamma/Polymarket
+* tidak fabricate winning_side
+* tidak menganggap market live sebagai resolved
+* tidak menganggap outcomePrices live/current probability sebagai final resolution
+* hanya menganggap direct resolution valid kalau market benar-benar closed/resolved dan outcomePrices/final token price jelas menunjukkan YES/NO menang
+* condition_id mapping benar
+* yes_token_id/no_token_id mapping benar
+* series_slug fallback benar
+* jika data tidak cukup, return NOT_AVAILABLE, bukan winner palsu
+
+Aturan penting:
+outcomePrices hanya boleh dianggap resolution jika market sudah closed/resolved dan nilainya menunjukkan final outcome secara jelas, misalnya YES=1/NO=0 atau YES=0/NO=1.
+Kalau outcomePrices masih probabilitas live seperti 0.51/0.49, itu BUKAN resolution.
+
+D. outcome_learning_service.py
+
+Pastikan correctness logic sekarang:
+
+Jika DIRECT_POLYMARKET_RESOLUTION tersedia:
+
+* BUY_YES benar hanya jika winning_side == YES
+* BUY_NO benar hanya jika winning_side == NO
+* realized_pnl tetap disimpan sebagai economic_result, bukan primary correctness source
+* outcome_source = DIRECT_POLYMARKET_RESOLUTION
+
+Jika direct resolution tidak tersedia:
+
+* fallback boleh REALIZED_PNL_PROXY
+* outcome_source = REALIZED_PNL_PROXY
+* report tidak boleh klaim direct resolution
+
+Pastikan:
+
+* WAIT/BLOCKED tidak dihitung sebagai trade prediction win/loss kecuali desainnya jelas
+* already_evaluated(condition_id) tetap mencegah double count
+* active dan expired market dengan end_time < now tetap dievaluasi
+* future market tidak dievaluasi
+
+E. outcome_learning_repository.py
+
+Pastikan:
+
+* field baru dipersist benar
+* tidak overwrite dengan null secara salah
+* upsert tetap dedupe condition_id
+* backward compatible dengan row lama
+
+==================================================
+STEP 3 — VERIFY GAMMA RESOLUTION REALITY
+========================================
+
+Ambil minimal 1 market yang benar-benar closed/expired dari database.
+
+Untuk market itu:
+
+* ambil condition_id
+* series_slug
+* question/title
+* yes_token_id
+* no_token_id
+* end_time
+* status
+
+Lalu panggil Gamma/Polymarket existing integration.
+
+Tampilkan raw relevant fields:
+
+* closed
+* active
+* archived
+* resolved jika ada
+* outcomePrices
+* outcomes
+* clobTokenIds
+* conditionId
+* question/title
+* endDate/end_time
+* any winning/result field jika ada
+
+Klasifikasikan:
+
+1. DIRECT_RESOLUTION_CONFIRMED
+   Jika:
+
+* market closed/resolved
+* condition_id cocok
+* token mapping cocok
+* winning_side bisa dibuktikan dari provider data tanpa asumsi
+
+2. RESOLUTION_NOT_AVAILABLE
+   Jika:
+
+* market closed tapi provider tidak memberi winning side/final price yang jelas
+
+3. LIVE_PROBABILITY_ONLY
+   Jika:
+
+* outcomePrices hanya current probability, bukan final resolution
+
+4. NOT_PROVEN
+   Jika:
+
+* response tidak stabil / tidak bisa dipastikan
+
+Jangan lanjut klaim PASS jika klasifikasinya bukan DIRECT_RESOLUTION_CONFIRMED.
+
+==================================================
+STEP 4 — TEST DIRECT RESOLUTION LOGIC
+=====================================
+
+Pastikan test mencakup minimal:
+
+1. Gamma client:
+
+* closed market dengan outcomePrices YES=1, NO=0 → winning_side YES
+* closed market dengan outcomePrices YES=0, NO=1 → winning_side NO
+* live market dengan outcomePrices 0.51/0.49 → NOT_AVAILABLE / not resolved
+* missing outcomePrices → NOT_AVAILABLE
+* condition_id mismatch → reject
+* token_id mismatch → reject
+
+2. Outcome Learning:
+
+* BUY_YES + winning_side YES → correct=True
+* BUY_YES + winning_side NO → correct=False
+* BUY_NO + winning_side NO → correct=True
+* BUY_NO + winning_side YES → correct=False
+* direct resolution unavailable + realized_pnl positive → correct=True with outcome_source REALIZED_PNL_PROXY
+* direct resolution unavailable + realized_pnl negative → correct=False with outcome_source REALIZED_PNL_PROXY
+* already_evaluated → skip
+* expired + end_time past → evaluate
+* future market → skip
+
+3. Repository:
+
+* outcome_source persists
+* winning_side persists
+* winning_token_id persists
+* accuracy/correctness persists
+* old rows remain readable
+
+==================================================
+STEP 5 — LIVE VALIDATION
+========================
+
+Jalankan app/workflow.
+
+Tunggu minimal satu full cycle jika perlu.
+
+Validasi live:
+
+A. Jika ada resolved/closed market dengan direct resolution:
+Tampilkan:
+
+* condition_id
+* market title/question
+* series_slug
+* yes_token_id
+* no_token_id
+* status
+* end_time
+* Gamma response field yang membuktikan closed/resolved
+* outcomePrices/final prices
+* winning_side
+* winning_token_id
+* resolution_source
+* related DecisionLog
+* related Position jika ada
+* OutcomeLearning row
+* correct true/false
+* outcome_source = DIRECT_POLYMARKET_RESOLUTION
+
+B. Jika tidak ada direct resolution:
+Tampilkan:
+
+* market yang dicek
+* raw response evidence
+* alasan kenapa belum bisa direct resolution
+* outcome_source tetap REALIZED_PNL_PROXY
+* final status tetap PASS WITH CAVEATS
+
+Jangan fabricate market resolved.
+Jangan fabricate winning_side.
+Jangan pakai market live sebagai bukti resolved.
+
+==================================================
+STEP 6 — DO NOT BREAK PHASE 9B / 9C
+===================================
+
+Pastikan semua fix sebelumnya tetap aman:
+
+* Opportunity constants tetap dari settings.OPPORTUNITY_*
+* tidak ada inline 600.0 / 2000.0 production path
+* Dynamic Weight tidak memakai accuracy or 50.0
+* EngineWeightResponse masih punya INSUFFICIENT_HISTORY / NOT_AVAILABLE / LEARNED / DEFAULT
+* get_all_opportunities active_only=True default
+* get_top_opportunities active_only=True default
+* Portfolio Allocation tidak memakai fallback 50.0 untuk required evidence
+* Outcome Learning tetap mengevaluasi active/expired market yang end_time < now
+* No stale opportunity consumer muncul lagi
+
+==================================================
+STEP 7 — STATIC VALIDATION
+==========================
+
+Jalankan:
+
+* python -m compileall -q backend/app
+* python -m py_compile untuk semua file yang berubah
+* pytest untuk:
+
+  * test_gamma_series_client.py
+  * test_outcome_learning_service.py
+  * test opportunity repository / portfolio jika ada
+* full test suite jika memungkinkan
+* workflow restart
+* cek logs satu full engine cycle
+
+Jika ada test failure:
+
+* pisahkan NEW_FAILURE vs PRE_EXISTING_FAILURE
+* jangan klaim clean jika ada failure baru
+* jika failure dari perubahan Phase 9D, perbaiki
+
+==================================================
+STEP 8 — RED FLAG SEARCH
+========================
+
+Search seluruh backend untuk:
+
+* random
+* Math.random
+* mock
+* fake
+* dummy
+* placeholder
+* default winner
+* default_outcome
+* synthetic outcome
+* assumed outcome
+* fallback outcome
+* hardcoded winner
+* winning_side
+* winning_token
+* outcome_source
+* realized_pnl
+* resolution
+* accuracy or 50.0
+* or 50.0
+* get_all_opportunities
+* select(Opportunity)
+
+Klasifikasikan setiap match:
+
+* SAFE
+* CONFIGURATION
+* TEST_ONLY
+* REAL_DATA
+* DIRECT_POLYMARKET_RESOLUTION
+* REALIZED_PNL_PROXY
+* INVALID
+* FIXED
+
+==================================================
+STEP 9 — UPDATE AI_DECISION_INTEGRITY_AUDIT.md
+==============================================
+
+Tambahkan section final:
+
+PHASE 9D — DIRECT POLYMARKET RESOLUTION EVIDENCE
+
+Isi wajib:
+
+1. Current outcome source before Phase 9D
+2. Gamma/Polymarket resolution audit
+3. Direct resolution availability result
+4. Implementation summary
+5. Files changed
+6. Schema/model changes
+7. Outcome Learning correctness before/after
+8. Outcome source classification
+9. Test results
+10. Live validation evidence
+11. Red-flag search classification
+12. Phase 9B/9C regression check
+13. Remaining risks
+14. Final status reclassification
+
+Final status hanya boleh:
+
+* AI DECISION INTEGRITY: PASS
+* AI DECISION INTEGRITY: PASS WITH CAVEATS
+* AI DECISION INTEGRITY: FAIL
+
+Gunakan PASS murni hanya jika:
+
+* DIRECT_RESOLUTION_CONFIRMED
+* Outcome Learning memakai direct resolution sebagai primary correctness source
+* realized_pnl hanya economic_result / fallback when direct not available
+* no fake/random/default winner
+* outcome_source label persisted
+* dynamic weight / engine performance tidak mencampur unlabeled outcome sources
+* tests pass atau failure jelas pre-existing
+* live validation menunjukkan actual resolved market evidence
+* Phase 9B/9C tidak regress
+
+Jika direct resolution belum terbukti live:
+
+* final status tetap AI DECISION INTEGRITY: PASS WITH CAVEATS
+
+Jika direct resolution logic memakai asumsi dari live probabilities:
+
+* final status AI DECISION INTEGRITY: FAIL sampai diperbaiki
+
+Jika ada fake outcome / assumed winner:
+
+* final status AI DECISION INTEGRITY: FAIL
+
+==================================================
+STEP 10 — FINAL RESPONSE FORMAT
+===============================
+
+Jawab dengan format:
+
+1. Files read
+2. Git diff summary
+3. Files changed
+4. Current outcome source classification
+5. Gamma/Polymarket resolution availability
+6. Direct resolution implementation review
+7. Outcome Learning correctness before/after
+8. Repository/schema/migration result
+9. Live validation result
+10. Tests run
+11. Red-flag search classification
+12. Phase 9B/9C regression check
+13. AI_DECISION_INTEGRITY_AUDIT.md updates
+14. Remaining risks
+15. Final status
+16. Exact next recommended step
+
+Jangan jawab umum.
+Jangan klaim PASS tanpa DIRECT_RESOLUTION_CONFIRMED.
+Jangan membuat outcome palsu.

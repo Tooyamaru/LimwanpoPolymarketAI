@@ -1,0 +1,248 @@
+STOP.
+
+JANGAN mengubah arsitektur.
+
+JANGAN membuat dummy.
+
+JANGAN membuat fake data.
+
+JANGAN membuat fallback.
+
+JANGAN hardcode angka.
+
+WAJIB menggunakan data REAL dari pipeline yang sudah ada (Gamma + CLOB + AI Engine).
+
+Tujuan
+
+Refactor Market Universe Card menjadi lebih ringkas tanpa menghilangkan informasi penting.
+
+Semua data WAJIB berasal dari backend yang sudah ada.
+
+⸻
+
+Layout baru
+
+BTC 5M
+UP 50.5%            DOWN 49.5%
+TARGET 62,684       PROFIT +$96.20
+CONF 68%   GAP +53.5   SPREAD 1.00%
+⏳22h15m            ●MONITORING
+
+⸻
+
+Yang WAJIB
+
+Row 1
+
+Tetap gunakan
+
+* UP probability
+* DOWN probability
+
+Data harus berasal dari harga YES / NO CLOB.
+
+Bukan hardcode.
+
+⸻
+
+Row 2
+
+Kiri
+
+TARGET
+
+gunakan AI Target yang sekarang.
+
+Jangan diubah.
+
+Kanan
+
+PROFIT
+
+BUKAN persen.
+
+Harus dollar.
+
+Profit dihitung menggunakan stake default aplikasi.
+
+Contoh
+
+stake_default = $100
+
+Jika harga YES sekarang = 0.51
+
+Maka
+
+cost = $100
+
+contracts = 100 / 0.51
+
+gross payout = contracts × 1
+
+profit = gross payout − cost
+
+Tampilkan
+
+PROFIT +$96.08
+
+Jangan hardcode.
+
+Hitung realtime setiap refresh.
+
+Jika signal adalah DOWN/NO maka gunakan harga NO.
+
+Profit selalu mengikuti sisi yang direkomendasikan AI.
+
+⸻
+
+Row 3
+
+Tetap tampilkan
+
+CONF
+
+GAP
+
+SPREAD
+
+Semuanya berasal dari data asli.
+
+CONF
+
+gunakan confidence AI.
+
+GAP
+
+gunakan target - current price.
+
+SPREAD
+
+gunakan spread orderbook CLOB.
+
+Tidak boleh dummy.
+
+Tidak boleh fake.
+
+⸻
+
+Row 4
+
+Tetap
+
+Countdown
+
+Status
+
+Status tetap berasal dari AI Engine.
+
+Contoh
+
+MONITORING
+
+READY
+
+ENTRY
+
+WAIT
+
+CLOSED
+
+Jangan hardcode.
+
+⸻
+
+Data Source
+
+WAJIB gunakan pipeline yang sudah ada.
+
+Gamma
+
+↓
+
+Universe
+
+↓
+
+Database
+
+↓
+
+Orderbook CLOB
+
+↓
+
+AI Engine
+
+↓
+
+Frontend
+
+Jangan membuat field baru jika sebenarnya datanya sudah tersedia.
+
+Cari source aslinya.
+
+⸻
+
+DILARANG
+
+* hardcode Profit
+* hardcode Target
+* hardcode Gap
+* hardcode Spread
+* hardcode Confidence
+
+Semua harus berasal dari backend.
+
+⸻
+
+CSS
+
+Tidak mengubah tinggi card.
+
+Tidak mengubah jumlah card.
+
+Tidak membuat card lebih panjang.
+
+Hanya merapikan layout.
+
+⸻
+
+Validasi
+
+Setelah selesai tampilkan bukti:
+
+BTC 5M
+
+ETH 5M
+
+SOL 5M
+
+XRP 5M
+
+Pastikan masing-masing menampilkan:
+
+✓ UP
+
+✓ DOWN
+
+✓ TARGET
+
+✓ PROFIT ($)
+
+✓ CONF
+
+✓ GAP
+
+✓ SPREAD
+
+✓ COUNTDOWN
+
+✓ STATUS
+
+Semua menggunakan data REAL dari backend.
+
+Jika ada field yang kosong, cari penyebabnya.
+
+Jangan mengganti dengan dummy.
+
+Temukan akar masalah hingga field tersebut terisi dari source yang benar.

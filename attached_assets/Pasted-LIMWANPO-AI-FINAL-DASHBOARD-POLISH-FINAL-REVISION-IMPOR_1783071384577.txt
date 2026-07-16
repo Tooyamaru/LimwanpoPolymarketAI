@@ -1,0 +1,532 @@
+LIMWANPO AI — FINAL DASHBOARD POLISH (FINAL REVISION)
+IMPORTANT
+
+Before touching anything:
+
+Read the entire frontend.
+Read every HTML file.
+Read every CSS file.
+Read dashboard.js completely.
+Read all dashboard API endpoints.
+Understand the current layout before modifying.
+
+Do NOT modify backend logic.
+
+Do NOT modify AI logic.
+
+Do NOT modify execution logic.
+
+Do NOT modify paper trading.
+
+Do NOT modify trading strategy.
+
+This task is frontend only.
+
+VERY IMPORTANT
+
+Remember forever:
+
+This project is NOT a cryptocurrency trading terminal.
+
+This project is NOT Binance.
+
+This project is NOT Bybit.
+
+This project is NOT MetaTrader.
+
+This project is a
+
+POLYMARKET AI
+
+The dashboard monitors prediction markets.
+
+Everything displayed must represent prediction markets.
+
+Never redesign it into a trading terminal.
+
+OBJECTIVE
+
+This is the FINAL dashboard polish.
+
+Do not redesign.
+
+Do not invent new features.
+
+Only perfect the existing dashboard.
+
+FINAL LAYOUT
+
+The dashboard MUST become:
+
+------------------------------------------------------------
+
+Portfolio      Live Probability Chart      AI Activity
+
+------------------------------------------------------------
+
+Market Universe
+(All 12 markets visible)
+
+------------------------------------------------------------
+
+System Health        Execution Pipeline
+
+------------------------------------------------------------
+
+Footer
+
+Footer stays exactly the same.
+
+1 Portfolio
+
+Keep current information.
+
+Do not redesign.
+
+Improve spacing only.
+
+Keep:
+
+Total Capital
+Capital Used
+Available Capital
+Open Positions
+Total Stake
+Today's PnL
+Win Rate
+Total Fees
+2 Live Probability Chart
+
+DO NOT redesign.
+
+Only resize.
+
+Current chart is too wide.
+
+Reduce width slightly.
+
+Suggested proportions:
+
+Portfolio
+
+20%
+
+Chart
+
+55%
+
+AI Activity
+
+25%
+
+This gives AI Activity more room.
+
+3 AI Activity
+
+Current location is correct.
+
+Do NOT move.
+
+Increase width.
+
+Reduce empty space.
+
+Show more log text.
+
+Better timestamp alignment.
+
+Newest events always visible.
+
+4 MARKET UNIVERSE (MOST IMPORTANT)
+
+This is now the main section.
+
+It should occupy the largest area.
+
+All 12 markets must be visible without scrolling.
+
+No page scrolling.
+
+5 REMOVE "3 MARKETS"
+
+Delete everywhere:
+
+3 Markets
+
+This information is meaningless.
+
+Instead show:
+
+Capital Used
+
+Open Positions
+
+or
+
+Total Stake
+
+6 MARKET CARD DESIGN
+
+Return to the original card style.
+
+Current version feels like one large table.
+
+We want cards again.
+
+Each asset becomes one large card.
+
+Example:
+
+BTC
+
+Open Positions : 2
+
+Capital Used : $50
+
+--------------------------------
+
+[ BTC • 5M ]
+
+...
+
+--------------------------------
+
+[ BTC • 15M ]
+
+...
+
+--------------------------------
+
+[ BTC • 1H ]
+
+...
+
+Same for
+
+ETH
+
+SOL
+
+XRP
+
+7 EACH TIMEFRAME MUST BE ITS OWN SUB-CARD
+
+Do NOT separate only with thin lines.
+
+Each timeframe becomes a mini card.
+
+Example:
+
+BTC
+
+┌───────────────┐
+
+BTC 5M
+
+...
+
+└───────────────┘
+
+┌───────────────┐
+
+BTC 15M
+
+...
+
+└───────────────┘
+
+┌───────────────┐
+
+BTC 1H
+
+...
+
+└───────────────┘
+
+This is much easier to read.
+
+8 INFORMATION INSIDE EVERY TIMEFRAME
+
+Every timeframe must display:
+
+TOP
+
+Price To Beat
+
+Current Price
+
+Difference
+
+Middle
+
+YES Probability
+
+NO Probability
+
+Spread
+
+Position
+
+BUY YES
+
+BUY NO
+
+NONE
+
+Bottom
+
+Stake
+
+Contracts
+
+Entry Probability
+
+Current Probability
+
+Live PnL
+
+Position Age
+
+Engine Score
+
+Status
+
+Waiting
+
+Monitoring
+
+Trading
+
+Closing
+
+9 VERY IMPORTANT
+
+Price To Beat must become the primary information.
+
+This is Polymarket.
+
+Price To Beat is more important than almost everything else.
+
+Hierarchy should be:
+
+1 Price To Beat
+
+2 Current Price
+
+3 Difference
+
+4 Position
+
+5 PnL
+
+6 Probability
+
+10 CARD STYLE
+
+Restore beautiful cards.
+
+Every panel must have
+
+Visible border
+
+Soft glow
+
+Rounded corners
+
+Dark background
+
+Consistent padding
+
+Consistent spacing
+
+Current borders almost disappear.
+
+Make every section feel like a premium module.
+
+11 TEXT CONTRAST
+
+Do NOT increase font size.
+
+Improve contrast only.
+
+Secondary text should be brighter.
+
+Labels easier to read.
+
+Dark theme remains.
+
+12 SYSTEM HEALTH
+
+Keep current location.
+
+Make it compact.
+
+Display as TWO COLUMNS.
+
+Example:
+
+Signal      100%
+
+Universe    100%
+
+Opportunity 100%
+
+Refresh     100%
+
+Strategy    100%
+
+Analytics   100%
+
+Risk        100%
+
+Exit        100%
+
+Execution   100%
+
+If necessary, add one placeholder/overall item so both columns balance perfectly.
+
+Do NOT display nine stacked rows.
+
+13 EXECUTION PIPELINE
+
+Keep current design.
+
+Only improve:
+
+spacing
+
+alignment
+
+glow
+
+label readability
+
+Pipeline should occupy more width than System Health.
+
+Suggested:
+
+System Health
+
+35%
+
+Execution Pipeline
+
+65%
+
+14 SPACING
+
+Normalize all padding.
+
+Current spacing is inconsistent.
+
+Every module should use the same spacing system.
+
+15 CONSISTENCY
+
+Every panel must share
+
+same border
+
+same radius
+
+same shadow
+
+same spacing
+
+same typography
+
+No module should feel visually different.
+
+16 RESPONSIVENESS
+
+Everything fits on one screen.
+
+No vertical scrolling.
+
+Only AI Activity may scroll internally.
+
+Market Universe must display all markets.
+
+17 FOOTER
+
+DO NOT TOUCH.
+
+Footer is finalized.
+
+18 LIVE CHART
+
+DO NOT redesign.
+
+Only resize according to the new layout.
+
+FINAL VALIDATION
+
+Before finishing verify:
+
+✓ Footer unchanged
+
+✓ Chart unchanged except width
+
+✓ AI Activity wider
+
+✓ Portfolio unchanged
+
+✓ Market Universe larger
+
+✓ 12 markets visible
+
+✓ No "3 Markets" text
+
+✓ Asset cards restored
+
+✓ Timeframes become sub-cards
+
+✓ Price To Beat visible
+
+✓ Current Price visible
+
+✓ Difference visible
+
+✓ YES probability visible
+
+✓ NO probability visible
+
+✓ Stake visible
+
+✓ Contracts visible
+
+✓ Entry Probability visible
+
+✓ Current Probability visible
+
+✓ Live PnL visible
+
+✓ Position Age visible
+
+✓ Engine Score visible
+
+✓ System Health in two columns
+
+✓ Execution Pipeline wider
+
+✓ Better borders
+
+✓ Better contrast
+
+✓ No backend changes
+
+✓ No AI changes
+
+✓ No paper trading changes
+
+✓ No strategy changes
+
+If everything above is complete, stop.
+
+Do not invent additional UI features.
+
+Do not redesign beyond this specification.
+
+Saya juga ingin menambahkan satu instruksi penting untuk Replit:
+
+Setelah revisi ini selesai, anggap dashboard LimwanpoAI sebagai "UI Final". Jangan lagi mengubah struktur layout secara besar-besaran pada sesi berikutnya kecuali ada permintaan eksplisit dari pengguna. Fokus pengembangan selanjutnya harus berpindah ke peningkatan AI, kualitas prediksi, paper trading, evaluasi performa, dan kesiapan menuju live deployment, bukan lagi mengubah tampilan dashboard.

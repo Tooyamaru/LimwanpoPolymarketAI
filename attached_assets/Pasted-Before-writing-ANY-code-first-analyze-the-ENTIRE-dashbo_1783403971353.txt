@@ -1,0 +1,368 @@
+Before writing ANY code, first analyze the ENTIRE dashboard layout as a complete trading terminal.
+
+DO NOT immediately edit CSS or HTML.
+
+Think first like a Senior UI/UX Designer from Bloomberg Terminal, TradingView, Binance Desktop, or professional institutional trading software.
+
+========================================================
+MAIN GOAL
+========================================================
+
+This dashboard must become a PROFESSIONAL AI TRADING TERMINAL.
+
+Current score:
+8.4 / 10
+
+Target score:
+9.8 / 10
+
+The objective is NOT to make it prettier.
+
+The objective is:
+
+• higher information density
+• better hierarchy
+• faster scanning
+• better alignment
+• zero wasted space
+• professional institutional feeling
+
+========================================================
+VERY IMPORTANT
+========================================================
+
+DO NOT redesign the dashboard.
+
+DO NOT move major sections.
+
+DO NOT change colors.
+
+DO NOT change the overall layout.
+
+Only improve the existing design.
+
+========================================================
+PART 1
+Prediction Cards
+========================================================
+
+Current cards feel EMPTY.
+
+This is the biggest issue.
+
+A professional trading dashboard NEVER has empty cards.
+
+Every pixel should contain meaningful information.
+
+Current cards have almost 40~50% unused space.
+
+Recover all missing information.
+
+========================================================
+CARD LAYOUT
+========================================================
+
+NO POSITION
+
+------------------------------------------------
+
+Timeframe
+
+UP / DOWN
+
+TARGET
+(biggest number)
+
+Gap
+(smaller)
+
+Confidence
+
+Time Left
+
+Status
+
+------------------------------------------------
+
+ACTIVE POSITION
+
+------------------------------------------------
+
+Timeframe
+
+UP / DOWN
+
+TARGET
+
+Gap
+
+Entry
+
+Exposure
+
+Entries
+
+Confidence
+
+Time Left
+
+Status
+
+------------------------------------------------
+
+Everything must fit naturally without increasing card height.
+
+========================================================
+PART 2
+Visual Hierarchy
+========================================================
+
+Priority:
+
+1 Target
+
+2 Confidence
+
+3 Gap
+
+4 Entry
+
+5 Exposure
+
+6 Countdown
+
+7 Status
+
+Target should immediately attract the eye.
+
+Gap should clearly look secondary.
+
+Confidence should NOT disappear visually.
+
+========================================================
+PART 3
+Information Density
+========================================================
+
+Reduce empty vertical space.
+
+Compress internal spacing.
+
+Use whitespace only where it improves readability.
+
+Every card should feel alive.
+
+Avoid huge empty regions.
+
+========================================================
+PART 4
+Execution Pipeline
+========================================================
+
+Current Execution Pipeline still feels disconnected.
+
+Problems:
+
+• icons not perfectly centered
+• connector lines inconsistent
+• subtitles floating
+• spacing inconsistent
+• labels too far from icons
+• overall composition feels assembled instead of designed
+
+Rebuild this section while keeping the same concept.
+
+Goal:
+
+It should look like ONE COMPONENT.
+
+Node
+
+↓
+
+Label
+
+↓
+
+Subtitle
+
+↓
+
+Connector
+
+Everything perfectly aligned.
+
+Connector lines should visually connect every stage.
+
+Icons must have consistent spacing.
+
+No overlapping.
+
+No floating labels.
+
+========================================================
+PART 5
+Market Header
+========================================================
+
+Current:
+
+BTC
+$62,800
+2 Pred • $0 Exp
+
+Improve typography.
+
+Better spacing.
+
+Better alignment.
+
+More professional.
+
+Without increasing height.
+
+========================================================
+PART 6
+Borders
+========================================================
+
+Current borders are too equally bright.
+
+Inactive cards:
+
+lower border intensity
+
+Active cards:
+
+strong glow
+
+This creates hierarchy.
+
+========================================================
+PART 7
+Pixel Perfect Alignment
+========================================================
+
+Perform a complete alignment pass.
+
+Check:
+
+• margins
+
+• paddings
+
+• font sizes
+
+• baselines
+
+• icon alignment
+
+• label alignment
+
+• card spacing
+
+• chart spacing
+
+• activity spacing
+
+• execution pipeline spacing
+
+Everything must align to a consistent visual rhythm.
+
+========================================================
+PART 8
+Responsiveness
+========================================================
+
+Must remain perfect on
+
+1024×768
+
+1180×820
+
+1366×1024
+
+Landscape
+
+No clipping.
+
+No overflow.
+
+No hidden content.
+
+========================================================
+PART 9
+Before Coding
+========================================================
+
+FIRST:
+
+Analyze the current implementation.
+
+List EVERY weakness.
+
+Explain WHY it is a weakness.
+
+Then propose your solution.
+
+Only after the analysis is approved should you modify the code.
+
+========================================================
+PART 10
+Coding Rules
+========================================================
+
+Never remove information.
+
+Never simplify cards by deleting data.
+
+Never replace information with empty whitespace.
+
+Always preserve trading functionality.
+
+Only improve hierarchy and layout.
+
+Do not touch backend.
+
+Do not touch websocket.
+
+Do not touch prediction logic.
+
+Only frontend.
+
+========================================================
+PART 11
+Final Review
+========================================================
+
+After implementation perform a COMPLETE UI AUDIT.
+
+Check:
+
+✓ information density
+
+✓ hierarchy
+
+✓ alignment
+
+✓ spacing
+
+✓ readability
+
+✓ consistency
+
+✓ responsiveness
+
+✓ execution pipeline
+
+✓ prediction cards
+
+✓ market headers
+
+✓ activity panel
+
+✓ portfolio panel
+
+Then explain what changed and why each change improves professional usability.
+
+Do NOT stop until the dashboard genuinely looks like a professional institutional trading terminal.

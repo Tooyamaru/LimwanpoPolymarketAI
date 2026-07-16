@@ -1,0 +1,300 @@
+FINAL MARKET UNIVERSE UI REFINEMENT (PHASE NEXT)
+
+Objective
+
+Further refine the Market Universe so it feels like a professional institutional Prediction Market Terminal.
+
+This phase is purely UI/UX refinement.
+
+IMPORTANT
+
+- Frontend ONLY
+- Do NOT touch backend
+- Do NOT touch APIs
+- Do NOT touch database
+- Do NOT touch engine logic
+- Do NOT touch trading logic
+- Do NOT change any calculations
+
+Only improve the presentation.
+
+==================================================
+1. MAKE THE CARD STATE-AWARE
+==================================================
+
+The card should have TWO layouts.
+
+-----------------------------------
+STATE A
+No Active Position
+-----------------------------------
+
+Display ONLY:
+
+• UP / DOWN probabilities
+• Target
+• Gap
+• Confidence
+• Time Left
+• Status
+
+No Entry.
+No Exposure.
+No Entries.
+
+Do NOT leave placeholders.
+
+No empty rows.
+
+Keep the card very clean.
+
+-----------------------------------
+STATE B
+Active Position Exists
+-----------------------------------
+
+When AI has entered the market, automatically expand the card and display:
+
+UP / DOWN
+
+TARGET      GAP
+
+ENTRY        EXPOSURE
+
+ENTRIES      CONFIDENCE
+
+⏳ Time Left
+
+STATUS
+
+The card becomes more informative ONLY after a position exists.
+
+==================================================
+2. REMOVE TEXT-BASED PREDICTION
+==================================================
+
+Never display
+
+Prediction:
+UP
+
+or
+
+Prediction:
+DOWN
+
+Instead...
+
+The UP / DOWN probability itself communicates the decision.
+
+==================================================
+3. GLOW THE ACTIVE SIDE
+==================================================
+
+If AI selects UP
+
+UP becomes:
+
+• brighter
+• glowing green
+• slightly larger
+• visually dominant
+
+DOWN becomes slightly dimmed.
+
+-----------------------------------
+
+If AI selects DOWN
+
+DOWN becomes:
+
+• brighter
+• glowing red
+• slightly larger
+
+UP becomes dimmed.
+
+-----------------------------------
+
+If AI has NO position
+
+Both remain normal brightness.
+
+No glow.
+
+No dimming.
+
+==================================================
+4. IMPROVE TARGET SECTION
+==================================================
+
+Target is more important than Gap.
+
+Increase visual hierarchy.
+
+Examples:
+
+TARGET
+
+62,812
+
+Gap +38
+
+or
+
+Target 62,812
+
+Gap +38
+
+Do not let Gap dominate the layout.
+
+==================================================
+5. CONFIDENCE ROW
+==================================================
+
+When NO position
+
+Display
+
+CONFIDENCE
+
+24%
+
+-----------------------------------
+
+When ACTIVE position
+
+Display
+
+ENTRIES      CONFIDENCE
+
+3            91%
+
+This uses the empty horizontal space efficiently.
+
+==================================================
+6. HEADER TERMINOLOGY
+==================================================
+
+Replace remaining trading terminology.
+
+Current:
+
+Open Position
+Capital Used
+
+Replace with:
+
+Active Predictions
+Exposure
+
+This dashboard is a Prediction Market dashboard,
+NOT a futures trading terminal.
+
+==================================================
+7. TIME LEFT
+==================================================
+
+Keep the live countdown.
+
+Simplify its appearance.
+
+Instead of
+
+TIME LEFT
+
+22h 16m
+
+Display simply
+
+⏳ 22h 16m
+
+No large label required.
+
+The countdown updates every second.
+
+==================================================
+8. KEEP CURRENT PRICE IN HEADER
+==================================================
+
+Keep
+
+BTC     $62,865
+
+ETH     $1,770
+
+etc.
+
+Do NOT move it.
+
+Current implementation is correct.
+
+==================================================
+9. KEEP TARGET & GAP ALWAYS VISIBLE
+==================================================
+
+Never allow Target or Gap to disappear.
+
+Even on:
+
+• iPad Landscape
+• smaller screens
+
+Target must always remain visible.
+
+==================================================
+10. VISUAL PRIORITY
+==================================================
+
+The user should immediately see this order:
+
+1. UP / DOWN probability
+2. Target
+3. Gap
+4. Confidence
+5. Time Left
+6. Status
+
+If a position exists:
+
+Entry
+Exposure
+Entries
+
+appear naturally between Target and Confidence.
+
+==================================================
+11. DESIGN PHILOSOPHY
+==================================================
+
+The dashboard should no longer feel like a crypto trading terminal.
+
+It should feel like a professional Prediction Market decision terminal.
+
+Minimal.
+
+Fast to read.
+
+Information appears only when relevant.
+
+Avoid empty placeholders.
+
+Avoid unnecessary labels.
+
+Use whitespace intelligently.
+
+Every visible element should help the user make a prediction decision.
+
+==================================================
+FINAL GOAL
+==================================================
+
+When there is NO position:
+
+The card feels extremely clean.
+
+When AI enters:
+
+The card automatically becomes richer with execution information.
+
+The UI should communicate AI intent visually, without requiring the user to read extra text.

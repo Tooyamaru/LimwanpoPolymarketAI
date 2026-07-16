@@ -1,0 +1,674 @@
+LIMWANPO AI — RESTORE LIVE CARD DATA PIPELINE AFTER SSL FIX
+
+Konteks:
+
+Gamma SSL sudah berhasil diperbaiki.
+
+Live results sebelumnya:
+
+- Gamma production client berhasil
+- 240 markets upserted
+- gamma_status = GAMMA_OK
+- gamma_series_ok = 12
+- gamma_series_failed = 0
+- 697/697 tests passed
+- dashboard menampilkan 12 markets
+
+Tetapi screenshot terbaru menunjukkan regresi:
+
+- 12 market cards muncul
+- countdown muncul
+- semua engine 100%
+- AI Activity feed hidup
+
+Namun field market card kosong:
+
+- TARGET = —
+- PNL = —
+- IN = —
+- OUT = —
+- GAP = —
+- SPREAD = —
+- Chart BTC kosong
+- 0 SIGNALS
+- 0 PREDICTIONS
+- Coverage = $0
+- Active Predictions = 0
+
+Artinya:
+
+Gamma → Market Universe sudah hidup
+
+tetapi salah satu layer berikut putus:
+
+- Price Snapshot
+- Signal Engine
+- Opportunity Engine
+- Decision Engine
+- Card Summary API
+- Frontend field mapping
+
+TUGAS:
+
+Temukan dan perbaiki regresi data pipeline.
+Jangan mulai dari nol.
+Jangan redesign UI.
+Jangan rollback SSL fix.
+Jangan hapus countdown.
+Jangan hapus PNL/IN/OUT/LOTS.
+Jangan buat dummy market/price/signal.
+Jangan hardcode angka agar card terlihat terisi.
+Jangan ubah AI formula sebelum root cause ditemukan.
+
+==================================================
+STEP 1 — CAPTURE CURRENT RUNTIME STATE
+==================================================
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+- health endpoint
+- detailed health endpoint
+- workflow logs terbaru
+
+Tampilkan:
+
+- current UTC time
+- app uptime
+- PostgreSQL status
+- Redis status
+- Gamma status
+- Universe Worker status
+- Price Worker status
+- Signal Worker status
+- Opportunity Worker status
+- Strategy Worker status
+- Risk Worker status
+- Decision Worker status
+- Execution Worker status
+
+==================================================
+STEP 2 — DATABASE TABLE COUNTS
+==================================================
+
+Query:
+
+SELECT COUNT(*) FROM market_universe;
+SELECT status, COUNT(*) FROM market_universe GROUP BY status;
+SELECT COUNT(*) FROM market_price_snapshots;
+SELECT COUNT(*) FROM signals;
+SELECT COUNT(*) FROM opportunities;
+SELECT COUNT(*) FROM trade_decisions;
+SELECT COUNT(*) FROM risk_events;
+SELECT COUNT(*) FROM positions;
+SELECT COUNT(*) FROM orders;
+
+Juga tampilkan latest timestamp untuk:
+
+- latest market_universe updated_at
+- latest price snapshot captured_at
+- latest signal generated_at
+- latest opportunity calculated_at
+- latest decision decided_at
+
+Klasifikasikan setiap stage:
+
+- HEALTHY
+- EMPTY
+- STALE
+- ERROR
+
+==================================================
+STEP 3 — VERIFY ACTIVE MARKET MAPPING
+==================================================
+
+Ambil 12 active markets yang dipakai dashboard.
+
+Untuk setiap market tampilkan:
+
+- asset
+- timeframe
+- condition_id
+- yes_token_id
+- no_token_id
+- lifecycle_state
+- start_time
+- end_time
+- status
+- execution_allowed
+
+Pastikan:
+
+- exactly 12 active dashboard markets
+- mapping asset/timeframe benar
+- token IDs tidak null
+- no duplicate condition_id
+- no duplicate token mapping
+- countdown target timestamp valid
+
+==================================================
+STEP 4 — PRICE SNAPSHOT PIPELINE
+==================================================
+
+Audit file:
+
+- market_price_service.py
+- market_price_repository.py
+- market_price_snapshot model
+- CLOB client
+- price worker loop
+- /api/v1/price/active
+- frontend price polling function
+
+Untuk setiap 12 active markets cek:
+
+- latest price row exists?
+- yes_bid
+- yes_ask
+- yes_mid
+- no_bid
+- no_ask
+- no_mid
+- spread_yes
+- spread_no
+- captured_at
+- age_seconds
+
+Expected:
+
+- price snapshot fresh
+- age within worker freshness threshold
+- one row per condition_id
+- no shared row across cards
+
+Jika market_price_snapshots = 0:
+
+- inspect Price Worker logs
+- inspect CLOB request failures
+- inspect token_id mapping
+- inspect active universe query
+- inspect worker scheduling after restart
+
+Jangan fallback ke 0.50/0.51.
+
+==================================================
+STEP 5 — PRICE API VALIDATION
+==================================================
+
+Call:
+
+GET /api/v1/price/active
+
+Tampilkan exact response count dan sample rows.
+
+Expected:
+
+- 12 rows
+- condition_id matches active universe
+- real bid/ask/mid/spread values
+- freshness fields
+- trading activity state fields
+
+Jika endpoint kosong atau error:
+
+- inspect router registration
+- inspect repository query
+- inspect time guards
+- inspect response schema validation errors
+- inspect field name mismatch after recent model changes
+
+==================================================
+STEP 6 — SIGNAL ENGINE
+==================================================
+
+Audit:
+
+- signal_engine.py
+- signal repository
+- signal worker loop
+- /api/v1/signals/latest
+
+For each active market:
+
+- does latest price exist?
+- is a signal required for current seed state?
+- last signal timestamp
+- signal type
+- confidence
+- skip reason if no signal
+
+Important:
+
+0 SIGNALS may be valid if no CLOB change,
+but the UI must not confuse:
+
+- “no new signal this cycle”
+with
+- “signal pipeline broken”
+
+Show:
+
+- total active markets processed
+- signals emitted
+- signals skipped
+- exact skip reasons
+
+==================================================
+STEP 7 — OPPORTUNITY ENGINE
+==================================================
+
+Audit:
+
+- opportunity_engine.py
+- opportunity repository
+- opportunity API
+- opportunity worker loop
+
+For each active market show:
+
+- latest price input
+- latest signal input
+- opportunity row exists?
+- opportunity score
+- sub-scores
+- calculated_at
+- skip reason
+
+If opportunities = 0:
+
+- find exact gate that skipped all markets
+- do not lower threshold
+- do not fabricate opportunity
+
+==================================================
+STEP 8 — DECISION PIPELINE
+==================================================
+
+Audit:
+
+- strategy_engine.py
+- risk_engine.py
+- decision_engine.py
+- trade_decision repository/API
+
+For each active market show:
+
+- strategy decision
+- confidence
+- risk score
+- risk gated
+- final decision
+- reason
+- decided_at
+
+Important:
+
+AI Activity feed shows WAIT events in screenshot,
+but header shows 0 predictions.
+
+Investigate whether:
+
+- AI feed reads DecisionLog
+- header reads trade_decisions
+- two different sources are out of sync
+- decisions are logged but not persisted
+- API filter excludes current decisions
+- status enum mismatch
+- condition_id rollover mismatch
+
+This discrepancy must be resolved.
+
+==================================================
+STEP 9 — TARGET / GAP SOURCE
+==================================================
+
+Audit target and gap flow.
+
+For every card:
+
+TARGET source:
+- opening/reference price
+- asset-specific source
+- timeframe-specific start price
+- timestamp
+
+GAP:
+- current spot price - target/opening price
+- exact formula
+- raw values
+- displayed value
+
+If TARGET/GAP are empty:
+
+Check:
+
+- Binance/reference price worker
+- opening_price persistence
+- frontend field names
+- null handling
+- rollover mapping
+- asset/timeframe dictionary keys
+
+Do not use static fallback.
+
+==================================================
+STEP 10 — CARD SUMMARY API
+==================================================
+
+Audit:
+
+- card_summary_repository.py
+- card summary schema
+- card summary API router
+- frontend loadCardSummaries()
+
+Call endpoint and show:
+
+- response count
+- condition_id keys
+- PNL
+- IN count/amount
+- OUT count/amount
+- LOTS count
+
+Expected:
+
+No positions:
+- PNL null
+- IN 0 / $0.00
+- OUT 0 / $0.00
+- LOTS 0
+
+Important:
+
+PNL may correctly be “—” if no position.
+
+But IN/OUT should display numeric zero,
+not an empty dash.
+
+Fix frontend semantics:
+
+- PNL = —
+- IN = 0 / $0.00
+- OUT = 0 / $0.00
+- LOTS = 0
+
+If API returns correct zeros but UI shows dashes:
+- frontend mapping bug
+
+If API itself returns null/missing:
+- backend aggregation/schema bug
+
+==================================================
+STEP 11 — FRONTEND FIELD MAPPING
+==================================================
+
+Read current renderCard() and all data loaders.
+
+Trace exact field mapping for:
+
+- target
+- pnl
+- bet_in_count
+- bet_in_amount
+- bet_out_count
+- bet_out_amount
+- open_lot_count
+- gap
+- spread
+- countdown
+- probability
+- decision
+
+For each field document:
+
+- backend endpoint
+- JSON field
+- frontend dictionary
+- render variable
+- displayed text
+
+Search for:
+
+- wrong endpoint path
+- wrong plural/singular route
+- renamed schema field
+- condition_id key mismatch
+- stale old property names
+- null coalescing to dash
+- load order race
+- Promise.all missing card summary/price fetch
+- fingerprint preventing rerender
+
+==================================================
+STEP 12 — HEADER COUNTERS
+==================================================
+
+Audit header values:
+
+- 12 MARKETS
+- 0 SIGNALS
+- 0 PREDICTIONS
+
+Determine source endpoint for each counter.
+
+Expected semantics:
+
+- markets = active universe count
+- signals = latest/recent signal count or current-cycle signals
+- predictions = active persisted predictions/decisions
+
+Make sure counters are not:
+
+- reading stale tables
+- using wrong status filter
+- using expired condition_ids
+- using a broken endpoint
+- resetting to zero after a fetch error
+
+Do not hardcode counts.
+
+==================================================
+STEP 13 — CHART DATA
+==================================================
+
+Audit BTC chart flow:
+
+- chart data endpoint
+- Binance/reference source
+- polling/WebSocket
+- chart initialization
+- current asset/timeframe mapping
+
+Screenshot shows chart blank.
+
+Check:
+
+- network request
+- API response
+- JS errors
+- data array length
+- timestamp parsing
+- field rename
+- current price null
+- chart rerender after startup
+
+Restore real chart data only.
+No fake candles.
+
+==================================================
+STEP 14 — FIX ROOT CAUSE MINIMALLY
+==================================================
+
+Only after root cause is proven:
+
+Fix minimal files.
+
+Possible categories:
+
+- WORKER_NOT_STARTED
+- ROUTER_NOT_REGISTERED
+- SCHEMA_FIELD_MISMATCH
+- FRONTEND_ENDPOINT_MISMATCH
+- CONDITION_ID_MAPPING_BUG
+- ROLLOVER_STALE_KEY
+- PRICE_API_EMPTY
+- SIGNAL_API_FILTER_BUG
+- DECISION_PERSISTENCE_BUG
+- FRONTEND_NULL_RENDERING_BUG
+- CHART_DATA_FETCH_BUG
+
+Do not touch unrelated strategy/risk/multi-entry code.
+
+==================================================
+STEP 15 — TESTS
+==================================================
+
+Add/update tests:
+
+1. 12 active universe markets map uniquely
+2. Price API returns one row per active condition_id
+3. Missing price shows N/A, not fake values
+4. Signal worker processes active markets
+5. Opportunity row generated when valid inputs exist
+6. Decision logs and persisted trade decisions stay consistent
+7. Card summary no-position returns:
+   - PNL null
+   - IN 0
+   - OUT 0
+   - LOTS 0
+8. Frontend renders IN/OUT zeros, not dash
+9. Target/gap field mapping correct
+10. Header counters use correct endpoints
+11. Chart receives real candle data
+12. Restart does not leave dashboard permanently empty
+
+Run:
+
+- python -m compileall -q backend/app
+- price tests
+- signal tests
+- opportunity tests
+- decision tests
+- card summary tests
+- API tests
+- frontend/JS tests if available
+- full suite
+
+==================================================
+STEP 16 — LIVE AFTER VALIDATION
+==================================================
+
+Restart workflow.
+
+Wait at least one complete cycle.
+
+Capture:
+
+- DB counts
+- API responses
+- worker logs
+- dashboard screenshot
+
+Expected:
+
+- 12 markets
+- price cards populated
+- TARGET visible
+- GAP visible
+- SPREAD visible
+- chart populated
+- counters accurate
+- PNL —
+- IN 0 / $0.00 if no entries
+- OUT 0 / $0.00 if no exits
+- LOTS 0 if no positions
+- countdown remains visible
+
+Signals/opportunities/decisions may remain zero only if valid skip reasons are shown.
+
+==================================================
+STEP 17 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- hardcoded target
+- hardcoded spread
+- hardcoded signal count
+- hardcoded prediction count
+- fake candles
+- default PNL
+- default IN/OUT
+- shared condition_id
+- stale card cache
+- wrong endpoint
+- catch ignored
+- empty success
+- all engines nominal
+
+Classify:
+
+- REAL_DATA
+- SAFE_EMPTY_STATE
+- UI_FORMATTING
+- TEST_ONLY
+- INVALID_FAKE
+- PIPELINE_BUG
+- FIXED
+
+No unresolved INVALID.
+
+==================================================
+STEP 18 — FINAL RESPONSE
+==================================================
+
+Answer:
+
+1. Files read
+2. Runtime status
+3. DB table counts
+4. Active market mapping
+5. Price pipeline findings
+6. Signal findings
+7. Opportunity findings
+8. Decision findings
+9. Target/GAP findings
+10. Card summary findings
+11. Frontend mapping findings
+12. Header counter findings
+13. Chart findings
+14. Root cause
+15. Files changed
+16. Tests run
+17. Live after screenshot
+18. Remaining risks
+19. Final status
+20. Exact next step
+
+Final status:
+
+- LIVE CARD DATA PIPELINE: PASS
+- LIVE CARD DATA PIPELINE: PASS WITH NOTES
+- LIVE CARD DATA PIPELINE: PARTIAL
+- LIVE CARD DATA PIPELINE: FAIL
+
+Use PASS only if:
+
+- card source data is real
+- price/target/gap/spread populate
+- chart populates
+- counters are accurate
+- card summary zeros render honestly
+- no fake fallback
+- countdown remains intact
+- tests pass
+
+Jangan jawab setup complete.
+Jangan defer.
+Jangan membuat dummy data.
+Jangan menurunkan threshold.
+Jangan rollback SSL fix.
+Kerjakan diagnosis dan fix sekarang.

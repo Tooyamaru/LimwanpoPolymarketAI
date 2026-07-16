@@ -1,0 +1,597 @@
+LIMWANPO AI — DASHBOARD VALUE INTEGRITY AUDIT
+
+Konteks:
+Dashboard menampilkan 12 market Polymarket:
+- BTC 5M / 15M / 1H
+- ETH 5M / 15M / 1H
+- SOL 5M / 15M / 1H
+- XRP 5M / 15M / 1H
+
+Masalah yang terlihat dari dashboard:
+- UP/DOWN hampir semuanya 50.5% / 49.5%
+- CONF hampir semuanya 24%
+- SPREAD hampir semuanya 1.00%
+- PROFIT hampir semuanya +$10.20
+- Hampir semua keputusan WAIT
+- Banyak nilai sama walaupun asset dan timeframe berbeda
+
+Ini bisa saja berasal dari market real yang masih flat, tetapi harus dibuktikan.
+Jangan menganggap benar hanya karena pipeline hidup.
+
+TUGAS:
+Lakukan DASHBOARD VALUE INTEGRITY AUDIT.
+
+Tujuan:
+Membuktikan asal-usul setiap angka di setiap market card dari raw source → database → engine formula → API response → frontend display.
+
+ATURAN WAJIB:
+- JANGAN ubah UI terlebih dahulu.
+- JANGAN redesign.
+- JANGAN tambah fitur baru.
+- JANGAN tambah dummy/random/fake data.
+- JANGAN hardcode nilai berbeda hanya supaya dashboard terlihat bervariasi.
+- JANGAN mengubah threshold sebelum root cause terbukti.
+- JANGAN menyebut data “real” tanpa menunjukkan raw evidence.
+- JANGAN menyamarkan default/fallback sebagai hasil AI.
+- Audit code dan data yang benar-benar sedang berjalan sekarang.
+
+==================================================
+STEP 1 — READ CURRENT DATA FLOW
+==================================================
+
+Baca file yang berhubungan dengan:
+
+Backend:
+- market universe / universe sync
+- Gamma client
+- CLOB client
+- orderbook worker/service
+- signal engine
+- opportunity engine
+- strategy engine
+- risk engine
+- decision engine
+- portfolio allocation / sizing
+- API endpoint dashboard / market cards
+- schemas yang mengirim data ke frontend
+
+Frontend:
+- file yang merender market card
+- function renderCard / equivalent
+- mapping field API → UI
+- formatting / rounding
+- fallback/default values
+
+Cari field berikut:
+
+- up_probability
+- down_probability
+- yes_price
+- no_price
+- yes_bid
+- yes_ask
+- spread
+- confidence
+- gap
+- target
+- profit
+- decision
+- status
+- countdown
+- opportunity_score
+- signal_confidence
+- entry_quality_score
+- risk_score
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+==================================================
+STEP 2 — CAPTURE ONE FULL LIVE SNAPSHOT
+==================================================
+
+Ambil satu snapshot live pada timestamp yang sama untuk seluruh 12 market.
+
+Untuk setiap market tampilkan:
+
+- asset
+- timeframe
+- title/question
+- condition_id
+- yes_token_id
+- no_token_id
+- market status
+- end_time
+- data timestamp
+- Gamma raw fields
+- CLOB raw fields
+- DB row terbaru
+- API response yang dipakai dashboard
+- nilai yang tampil di UI
+
+Jangan gabungkan data dari timestamp berbeda tanpa memberi label.
+
+==================================================
+STEP 3 — TRACE UP / DOWN PROBABILITY
+==================================================
+
+Untuk setiap market, buktikan:
+
+- raw source UP probability
+- raw source DOWN probability
+- apakah berasal dari:
+  - Gamma outcomePrices
+  - CLOB midpoint
+  - best bid/ask
+  - database cache
+  - formula internal
+  - fallback/default
+
+Tampilkan:
+
+- raw value
+- formula
+- rounded value
+- displayed value
+- source timestamp
+
+Contoh format:
+
+BTC 5M
+condition_id: ...
+raw yes_bid: ...
+raw yes_ask: ...
+midpoint: ...
+raw no value: ...
+displayed UP: 50.5%
+displayed DOWN: 49.5%
+classification: REAL_CLOB / REAL_GAMMA / DERIVED / DEFAULT / FALLBACK / STALE / UNKNOWN
+
+Jika semua 12 market sama:
+- buktikan raw source memang sama.
+- jika karena fallback/default, tandai INVALID_DEFAULT atau INVALID_FALLBACK.
+- jika karena stale shared cache atau wrong market mapping, tandai BUG.
+
+==================================================
+STEP 4 — TRACE SPREAD
+==================================================
+
+Untuk setiap market tampilkan:
+
+- yes_bid
+- yes_ask
+- no_bid
+- no_ask jika tersedia/derived
+- raw spread
+- spread formula
+- displayed spread
+- timestamp
+
+Audit apakah 1.00% berasal dari:
+- bid/ask real
+- clamp
+- fixed minimum
+- default
+- rounding
+- shared value
+- missing orderbook fallback
+
+Jika semua selalu 1.00%, cari:
+
+- hardcoded 0.01
+- default spread
+- min/max clamp
+- frontend fallback
+- stale orderbook reused across cards
+
+==================================================
+STEP 5 — TRACE CONFIDENCE
+==================================================
+
+Untuk setiap market tampilkan semua input confidence:
+
+- signal confidence
+- opportunity score
+- strategy score
+- market quality
+- liquidity/depth factor
+- spread factor
+- volatility
+- momentum
+- trend
+- conflict penalty
+- risk adjustment
+- dynamic weight contribution
+- final raw confidence
+- rounded/displayed confidence
+
+Tampilkan formula lengkap dan angka aktual.
+
+Jika semua tampil 24%:
+- cek apakah 24 berasal dari fixed AMM-init path
+- default confidence
+- fallback score
+- constant opportunity score
+- missing signal_confidence
+- rounding
+- shared object/reference bug
+
+Klasifikasikan:
+- REAL_COMPUTED
+- DERIVED_FROM_REAL_DATA
+- DEFAULT
+- FALLBACK
+- CONSTANT
+- STALE
+- BUG
+- UNKNOWN
+
+Tidak boleh ada UNKNOWN pada hasil akhir.
+
+==================================================
+STEP 6 — TRACE TARGET
+==================================================
+
+Untuk setiap market tampilkan:
+
+- source spot/reference price
+- target formula
+- timeframe-specific adjustment
+- direction
+- raw target
+- displayed target
+- timestamp
+
+Pastikan:
+- BTC target tidak dipakai untuk ETH/SOL/XRP
+- timeframe 5M/15M/1H tidak memakai shared target secara salah
+- tidak ada static offset
+- tidak ada old cached price
+
+Klasifikasikan:
+- REAL_REFERENCE_PRICE
+- DERIVED
+- DEFAULT
+- STALE
+- WRONG_ASSET_MAPPING
+- BUG
+
+==================================================
+STEP 7 — TRACE PROFIT
+==================================================
+
+Untuk setiap card tampilkan:
+
+- side assumption
+- entry price
+- target/settlement assumption
+- quantity
+- position_size_usdc
+- probability
+- expected payout
+- expected profit
+- raw formula
+- displayed profit
+
+Audit kenapa hampir semua +$10.20.
+
+Cari apakah profit berasal dari:
+- fixed $10 position size
+- constant payout assumption
+- placeholder
+- same entry price 0.50
+- frontend fixed text
+- shared value
+- actual expected value formula
+
+Jika profit bukan realized/expected profit yang valid:
+- rename/classify correctly.
+- jangan tampilkan sebagai profit bila sebenarnya potential payout atau fixed simulation amount.
+
+==================================================
+STEP 8 — TRACE GAP
+==================================================
+
+Untuk setiap market buktikan arti GAP:
+
+- formula
+- units
+- source price
+- target/reference
+- raw result
+- displayed result
+
+Pastikan:
+- BTC gap memakai BTC
+- ETH gap memakai ETH
+- SOL gap memakai SOL
+- XRP gap memakai XRP
+- sign benar
+- decimal scaling benar
+- tidak ada cross-asset mapping
+
+==================================================
+STEP 9 — TRACE WAIT / BUY DECISION
+==================================================
+
+Untuk setiap market tampilkan:
+
+- raw decision
+- decision timestamp
+- opportunity score
+- signal confidence
+- strategy score
+- risk score
+- risk_gated
+- conflict_detected
+- threshold values
+- exact WAIT reason
+- exact BUY requirements yang gagal/lolos
+
+Contoh:
+
+BTC 5M:
+confidence = 24
+minimum = 30
+risk_gated = false
+conflict = true
+decision = WAIT
+reason = CONFIDENCE_BELOW_THRESHOLD + CONFLICT
+
+Jangan hanya menulis “low confidence”.
+Tampilkan nilai aktual dan threshold.
+
+==================================================
+STEP 10 — CHECK MARKET MAPPING INTEGRITY
+==================================================
+
+Audit apakah setiap card benar-benar memakai market yang berbeda.
+
+Untuk seluruh 12 card cek uniqueness:
+
+- condition_id
+- yes_token_id
+- no_token_id
+- opportunity row id
+- signal row id
+- decision row id
+- orderbook timestamp
+
+Cari bug seperti:
+
+- same condition_id reused
+- same orderbook object reused
+- same latest row applied to all cards
+- dictionary key hanya asset tanpa timeframe
+- dictionary key hanya timeframe tanpa asset
+- frontend index mismatch
+- shared mutable object
+- stale API cache
+- fallback to first market
+
+Output:
+- uniqueness table
+- duplicate mapping count
+- wrong mapping count
+
+==================================================
+STEP 11 — CHECK DEFAULT / FALLBACK VALUES
+==================================================
+
+Search seluruh backend dan frontend:
+
+- 50.5
+- 49.5
+- 24
+- 34
+- 1.00
+- 0.01
+- 10.20
+- 10.0
+- 0.5
+- default
+- fallback
+- placeholder
+- seed
+- mock
+- dummy
+- neutral
+- AMM-init
+- opening price
+- if missing
+- or 50
+- or 24
+- || 0.5
+- ?? 0.5
+
+Untuk setiap match klasifikasikan:
+
+- SAFE_CONFIG
+- REAL_FORMULA
+- UI_FORMATTING
+- TEST_ONLY
+- DOCUMENTED_AMM_INIT
+- INVALID_DEFAULT
+- INVALID_FALLBACK
+- PLACEHOLDER
+- BUG
+- FIXED
+
+==================================================
+STEP 12 — CROSS-MARKET VARIANCE REPORT
+==================================================
+
+Buat table untuk 12 market:
+
+- asset
+- timeframe
+- condition_id
+- UP
+- DOWN
+- spread
+- confidence
+- target
+- profit
+- gap
+- decision
+- data timestamp
+
+Hitung:
+
+- number of unique UP values
+- unique spread values
+- unique confidence values
+- unique profit values
+- unique decisions
+- standard deviation / variance jika relevan
+
+Untuk field yang identik, jelaskan penyebab pastinya:
+
+- REAL_MARKET_FLAT
+- SAME_CONFIG_INPUT
+- DEFAULT
+- ROUNDING_COLLAPSE
+- SHARED_CACHE
+- WRONG_MAPPING
+- BUG
+
+==================================================
+STEP 13 — REMEDIATION RULES
+==================================================
+
+Jika ditemukan bug:
+- perbaiki minimal.
+- jangan redesign.
+
+Jika ditemukan fallback/default:
+- jangan sembunyikan.
+- gunakan null / NOT_AVAILABLE / INSUFFICIENT_DATA jika tidak ada data real.
+- UI harus menampilkan N/A atau data unavailable, bukan angka seolah-olah real.
+
+Jika nilai sama karena rounding:
+- tampilkan raw precision di audit.
+- jangan ubah UI kecuali rounding membuat data berbeda terlihat identik secara menyesatkan.
+
+Jika market benar-benar flat:
+- jangan paksa variasi.
+- dokumentasikan raw evidence bahwa tiap market punya condition_id/token/orderbook berbeda tetapi nilai kebetulan sama.
+
+Jika profit adalah fixed simulation amount:
+- perbaiki label menjadi POTENTIAL PAYOUT / SIMULATED RETURN jika itu arti sebenarnya.
+- jangan menyebut PROFIT jika belum realized atau belum valid expected value.
+
+==================================================
+STEP 14 — TESTS
+==================================================
+
+Tambahkan/update tests untuk:
+
+- each card maps to unique condition_id
+- each timeframe maps correctly
+- missing price returns N/A, not default 50.5
+- missing confidence returns N/A/NOT_AVAILABLE, not 24
+- missing spread returns N/A, not 1.00%
+- profit formula changes when entry price/quantity changes
+- target changes by asset/reference input
+- no shared object across market cards
+- WAIT reason includes actual threshold evidence
+
+Jalankan:
+
+- python -m compileall -q backend/app
+- relevant backend tests
+- frontend tests jika ada
+- workflow restart
+- capture API output after one full cycle
+
+==================================================
+STEP 15 — UPDATE AUDIT REPORT
+==================================================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md dengan section:
+
+DASHBOARD VALUE INTEGRITY AUDIT
+
+Isi wajib:
+
+1. Live snapshot timestamp
+2. 12-market source mapping
+3. Probability trace
+4. Spread trace
+5. Confidence trace
+6. Target trace
+7. Profit trace
+8. Gap trace
+9. Decision trace
+10. Cross-market variance table
+11. Default/fallback search
+12. Bugs found
+13. Files changed
+14. Before/after evidence
+15. Tests run
+16. Remaining risks
+17. Final status
+
+Final status harus salah satu:
+
+- VALUE INTEGRITY: PASS
+- VALUE INTEGRITY: PASS WITH REMEDIATION
+- VALUE INTEGRITY: PARTIAL
+- VALUE INTEGRITY: FAIL
+
+Gunakan PASS hanya jika:
+- setiap nilai dapat ditelusuri ke raw source dan formula
+- condition/token mapping unik dan benar
+- tidak ada default/fallback menyamar sebagai data real
+- tidak ada shared/stale mapping bug
+- profit label/formula valid
+- WAIT/BUY reason explainable
+- tests pass atau hanya failure lama yang terdokumentasi
+
+Gunakan PASS WITH REMEDIATION jika:
+- bug/default ditemukan dan diperbaiki
+- current output sudah jujur setelah fix
+
+Gunakan PARTIAL jika:
+- audit selesai tapi beberapa nilai belum dapat ditelusuri
+
+Gunakan FAIL jika:
+- angka palsu/default ditampilkan sebagai data real
+- banyak card memakai source row yang sama secara salah
+- formula tidak dapat dibuktikan
+- profit/confidence/spread ternyata hardcoded dan belum diperbaiki
+
+==================================================
+STEP 16 — FINAL RESPONSE FORMAT
+==================================================
+
+Jawab dengan format:
+
+1. Files read
+2. Snapshot timestamp
+3. 12-market source mapping
+4. Probability findings
+5. Spread findings
+6. Confidence findings
+7. Target findings
+8. Profit findings
+9. Gap findings
+10. Decision findings
+11. Cross-market variance result
+12. Default/fallback search
+13. Bugs found
+14. Files changed
+15. Tests run
+16. Audit report update
+17. Remaining risks
+18. VALUE INTEGRITY status
+19. Exact next recommended step
+
+Jangan jawab umum.
+Jangan hanya bilang “data real”.
+Jangan menganggap angka sama itu benar tanpa raw evidence.
+Jangan membuat variasi palsu.
+Jangan menutupi N/A dengan default.

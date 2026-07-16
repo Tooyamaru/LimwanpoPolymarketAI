@@ -1,0 +1,149 @@
+STOP.
+
+Do NOT redesign anything.
+
+Do NOT modify UI.
+
+Do NOT change CSS.
+
+Do NOT touch layout.
+
+Continue exactly from the previous debugging session.
+
+Current findings:
+
+* Root cause identified:
+
+  * watchdog kills the backend because `dynamic_weight` is monitored.
+  * `WATCHDOG_RESTART_SECONDS = 600`
+  * `DYNAMIC_WEIGHT_INTERVAL_SECONDS = 1800`
+  * `DYNAMIC_WEIGHT_RUN_ON_STARTUP = False`
+  * therefore the worker never sends a heartbeat before watchdog timeout.
+  * watchdog calls `sys.exit(1)`
+  * uvicorn dies
+  * frontend receives empty responses
+  * cards become "—"
+
+The previous fix already added an initial heartbeat inside:
+
+```
+run_dynamic_weight_loop()
+```
+
+before the first waiting period.
+
+DO NOT remove that fix.
+
+Your task is to CONTINUE from there.
+
+Follow these steps exactly.
+
+---
+
+## STEP 1
+
+Start the backend.
+
+Verify that uvicorn remains alive for at least 5 minutes.
+
+Do not assume.
+
+Verify using logs.
+
+---
+
+## STEP 2
+
+Check these endpoints manually:
+
+* /api/v1/feed/recent
+* /api/v1/cards
+* /api/v1/market
+* /api/v1/dashboard
+
+For every endpoint print:
+
+HTTP status
+
+returned JSON
+
+number of objects
+
+Do not summarize.
+
+Show the raw result.
+
+---
+
+## STEP 3
+
+Compare:
+
+Backend JSON
+
+↓
+
+Frontend fetch()
+
+↓
+
+renderCard()
+
+↓
+
+DOM
+
+Find the first location where valid data disappears.
+
+That is the actual bug.
+
+---
+
+## STEP 4
+
+If backend returns valid data but UI is empty:
+
+Do NOT modify backend.
+
+Find the frontend bug only.
+
+---
+
+## STEP 5
+
+If backend still returns `{}` or empty arrays:
+
+Trace backwards until discovering exactly which worker or service failed to populate the data.
+
+---
+
+## STEP 6
+
+Do not guess.
+
+Do not speculate.
+
+Every conclusion must come from:
+
+logs
+
+API responses
+
+browser console
+
+network tab
+
+Only fix confirmed bugs.
+
+Continue until:
+
+* backend stays alive
+* watchdog no longer kills the server
+* every API returns valid JSON
+* market cards display live data again
+
+Only after everything works, provide a short summary of:
+
+1. Root cause
+2. Files changed
+3. Why the fix works

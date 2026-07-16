@@ -1,0 +1,162 @@
+Lakukan final UI refinement khusus untuk Market Universe.
+
+JANGAN mengubah backend, API, engine, trading logic, maupun database.
+Hanya ubah HTML/CSS/layout rendering.
+
+==================================================
+1. HEADER CARD LEBIH RINGKAS
+==================================================
+
+Kurangi tinggi header setiap asset.
+
+Saat ini:
+
+Active Predictions : 2
+Exposure : $0
+
+Terlalu tinggi.
+
+Ubah menjadi satu baris:
+
+Predictions 2 • Exposure $0
+
+atau
+
+2 Predictions
+$0 Exposure
+
+Gunakan font kecil sehingga tinggi header turun sekitar 40%.
+
+==================================================
+2. TARGET HARUS MENJADI FOKUS
+==================================================
+
+Target adalah informasi terpenting.
+
+Perbesar:
+
+- font Target
+- weight
+- brightness
+
+Gap cukup menjadi secondary info.
+
+Contoh visual:
+
+TARGET
+
+62,812
+
+Gap +110
+
+Target minimal 40% lebih besar daripada Gap.
+
+==================================================
+3. TIME LEFT
+==================================================
+
+Jangan berada terlalu bawah.
+
+Posisi:
+
+Confidence
+
+⏳ 22h 13m
+
+MONITORING
+
+Status harus menjadi elemen terakhir.
+
+==================================================
+4. HILANGKAN RUANG KOSONG
+==================================================
+
+Kurangi:
+
+- margin
+- padding
+- gap antar row
+
+agar informasi naik ke atas.
+
+Targetnya:
+
+card terasa lebih padat tetapi tetap nyaman dibaca.
+
+==================================================
+5. IPAD LANDSCAPE LAYOUT
+==================================================
+
+Tambahkan media query khusus untuk:
+
+1024x768
+1180x820
+1366x1024
+
+Pada mode landscape:
+
+- tinggi card bertambah sedikit
+- padding diperkecil
+- font sedikit disesuaikan
+- Target/Gap tidak pernah terpotong
+- seluruh informasi harus terlihat tanpa scrolling.
+
+==================================================
+6. PRIORITAS VISUAL
+==================================================
+
+Urutan perhatian mata harus menjadi:
+
+UP/DOWN
+
+↓
+
+TARGET
+
+↓
+
+GAP
+
+↓
+
+ENTRY / EXPOSURE (jika ada)
+
+↓
+
+ENTRIES + CONFIDENCE
+
+↓
+
+⏳ TIME LEFT
+
+↓
+
+STATUS
+
+==================================================
+7. JANGAN MERUBAH
+==================================================
+
+Jangan mengubah:
+
+- glow UP/DOWN
+- countdown logic
+- monitoring logic
+- trading logic
+- backend
+- websocket
+- API
+- polling
+
+Hanya layout dan styling.
+
+==================================================
+HASIL AKHIR
+==================================================
+
+Saya ingin dashboard terlihat seperti terminal trading profesional Bloomberg/TradingView:
+
+- lebih padat
+- informasi penting langsung terlihat
+- tidak ada ruang kosong berlebihan
+- sempurna untuk iPad Landscape.

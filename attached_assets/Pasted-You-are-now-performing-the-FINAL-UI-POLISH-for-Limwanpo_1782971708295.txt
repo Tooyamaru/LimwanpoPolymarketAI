@@ -1,0 +1,141 @@
+You are now performing the FINAL UI POLISH for LimwanpoPolymarketAI.
+
+This is NOT a redesign.
+
+This is NOT a layout update.
+
+This is NOT a feature addition.
+
+This is the final visual refinement before development moves permanently to backend, engine integration, and paper trading.
+
+## IMPORTANT
+
+Treat the current dashboard as the approved design.
+
+Do NOT redesign anything.
+
+Do NOT move panels.
+
+Do NOT resize sections.
+
+Do NOT change the layout hierarchy.
+
+Do NOT change HTML structure.
+
+Do NOT touch JavaScript logic.
+
+Do NOT modify Python, API, WebSocket, trading logic, or backend.
+
+Only perform tiny visual refinements if they clearly improve readability without changing the visual identity.
+
+If a change cannot be noticed without side-by-side comparison, do not make it.
+
+The goal is to preserve the current appearance.
+
+## Visual Principles
+
+The interface should feel like a Bloomberg Terminal, CQG, or professional institutional trading platform.
+
+Quiet.
+
+Minimal.
+
+Dense.
+
+Readable.
+
+Data-first.
+
+Never futuristic.
+
+Never gaming.
+
+Never flashy.
+
+The interface itself should disappear and let the market data become the focus.
+
+## Preserve
+
+Keep exactly:
+
+* overall layout
+* spacing
+* proportions
+* panel sizes
+* typography hierarchy
+* chart dominance
+* market card layout
+* pipeline layout
+* system health layout
+* footer layout
+* feed layout
+* color palette
+
+Do not introduce new colors.
+
+Do not increase glow.
+
+Do not add gradients.
+
+Do not add effects.
+
+Do not increase animation.
+
+If anything, reduce visual noise.
+
+## Only Allow
+
+Small improvements such as:
+
+* correcting inconsistent padding
+* fixing 1–2px alignment issues
+* improving text legibility
+* removing unnecessary borders
+* reducing visual clutter
+* making spacing more consistent
+
+Only if objectively beneficial.
+
+## Forbidden
+
+No redesign.
+
+No component replacement.
+
+No new widgets.
+
+No new panels.
+
+No new animations.
+
+No new shadows.
+
+No new decorative effects.
+
+No font changes.
+
+No hierarchy changes.
+
+No responsive redesign.
+
+No experimental styling.
+
+## Final Rule
+
+If you are unsure whether something should be changed:
+
+DO NOT CHANGE IT.
+
+Once this pass is complete, consider the UI frozen.
+
+Future work must move to:
+
+1. Engine integration
+2. End-to-end data flow
+3. Paper trading
+4. Portfolio management
+5. Risk management
+6. Analytics
+7. Performance optimization
+
+UI development is officially complete after this pass.

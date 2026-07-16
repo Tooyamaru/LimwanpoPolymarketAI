@@ -1,0 +1,353 @@
+# LIMWANPO AI — MARKET UNIVERSE & RESPONSIVE STABILIZATION
+
+## EXECUTE IMMEDIATELY — DO NOT STOP UNTIL ALL TASKS ARE COMPLETE
+
+Read first (mandatory):
+
+* CONSTITUTION.md
+* PROJECT_RULES.md
+* DATA_RULES.md
+* UI_RULES.md
+* PHASE_GATE.md
+* AI_GUARDIAN.md
+* SOURCE_AUDIT.md
+* replit.md
+* .agents/memory/product-constitution.md
+
+Perform Guardian validation first.
+
+If Guardian = PASS
+
+→ Continue.
+
+If Guardian = FAIL
+
+→ Stop and explain why.
+
+---
+
+# OBJECTIVE
+
+This is NOT a redesign.
+
+This is the FINAL stabilization pass before entering the next phase.
+
+Your goal is to make the dashboard production quality.
+
+DO NOT create new features.
+
+DO NOT remove information.
+
+DO NOT simplify the dashboard.
+
+Only stabilize and polish.
+
+---
+
+# TASK 1
+
+## MARKET UNIVERSE FINAL STABILIZATION
+
+The Market Universe must become the strongest visual component.
+
+Keep:
+
+* Asset
+* Timeframe
+* UP %
+* DOWN %
+* TARGET
+* GAP
+* SPREAD
+* REWARD
+* CONFIDENCE
+* COUNTDOWN
+* STATUS
+
+DO NOT replace
+
+UP / DOWN
+
+with
+
+YES / NO.
+
+Keep UP and DOWN permanently.
+
+Remove permanently:
+
+* Volume
+* Liquidity
+
+Do NOT modify:
+
+Resolution.
+
+Resolution must stay exactly as it is.
+
+---
+
+### SPREAD
+
+Spread MUST come from the official Polymarket CLOB.
+
+Never use:
+
+1%
+
+0.5%
+
+or any default value.
+
+Spread must always be calculated from
+
+bestAsk
+
+and
+
+bestBid.
+
+---
+
+### REWARD
+
+Reward must be calculated using the current market odds.
+
+Never hardcode.
+
+---
+
+### GAP
+
+Verify Gap calculation again.
+
+Especially XRP.
+
+If opening price is incorrect,
+
+fix the source,
+
+NOT the calculation.
+
+---
+
+### LAYOUT
+
+Market cards currently contain too much empty space.
+
+Improve spacing.
+
+Everything should feel balanced.
+
+The information hierarchy should be:
+
+Asset
+
+↓
+
+UP / DOWN
+
+↓
+
+TARGET
+
+↓
+
+GAP
+
+↓
+
+SPREAD
+
+↓
+
+REWARD
+
+↓
+
+CONFIDENCE
+
+↓
+
+COUNTDOWN
+
+↓
+
+STATUS
+
+No overlapping.
+
+No clipping.
+
+No unnecessary empty area.
+
+---
+
+# TASK 2
+
+## RESPONSIVE STABILIZATION
+
+Test ALL layouts.
+
+Required resolutions:
+
+1920×1080
+
+2560×1440
+
+1536×864
+
+1366×768
+
+1366×1024 (iPad Pro Landscape)
+
+1180×820
+
+1024×768
+
+Requirements:
+
+No overlap.
+
+No clipping.
+
+No hidden panels.
+
+No horizontal scrolling.
+
+No footer covering content.
+
+No Pipeline clipping.
+
+No System Health clipping.
+
+No Feed clipping.
+
+No Chart clipping.
+
+No Prediction Workspace clipping.
+
+Market Universe may scroll internally.
+
+The entire page MUST NOT scroll vertically on supported desktop/iPad landscape layouts.
+
+---
+
+# TASK 3
+
+## SYSTEM HEALTH
+
+Keep only the current reduced engine list.
+
+Do NOT add more engines.
+
+Do NOT remove existing engines.
+
+Verify:
+
+every engine shown
+
+actually exists
+
+inside the backend.
+
+No placeholder engines.
+
+No duplicated engines.
+
+No fake status.
+
+---
+
+# TASK 4
+
+## PREDICTION PIPELINE
+
+Do NOT redesign.
+
+Do NOT rename.
+
+Do NOT reorder.
+
+Only verify that every pipeline stage corresponds to a real engine or real processing step inside LIMWANPO AI.
+
+If a stage has no implementation,
+
+report it.
+
+Do not invent one.
+
+---
+
+# TASK 5
+
+## FINAL VALIDATION
+
+After all fixes are complete:
+
+Perform a complete regression audit.
+
+Verify:
+
+✓ Market Universe
+
+✓ Prediction Workspace
+
+✓ Chart
+
+✓ AI Activity Feed
+
+✓ System Health
+
+✓ Pipeline
+
+✓ Responsive Layout
+
+✓ Desktop
+
+✓ Laptop
+
+✓ iPad Landscape
+
+Produce a PASS / FAIL table.
+
+Do NOT stop until every item passes.
+
+If one item fails,
+
+fix it,
+
+run validation again,
+
+repeat until all PASS.
+
+---
+
+# IMPORTANT
+
+DO NOT stop after one fix.
+
+DO NOT ask for confirmation between tasks.
+
+Continue until ALL tasks are finished.
+
+Only stop when:
+
+* every layout is stable,
+* every panel is visible,
+* every Market Universe card is correct,
+* every responsive breakpoint passes,
+* every validation returns PASS.
+
+Then provide:
+
+1. Summary of changes.
+2. PASS / FAIL validation table.
+3. Remaining risks (if any).
+4. Recommendation for entering the next phase.
+
+No code redesign.
+
+No feature expansion.
+
+Production-quality stabilization only.

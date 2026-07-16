@@ -1,0 +1,783 @@
+LIMWANPO AI — RESUME CARD PNL + RESTORE COUNTDOWN + MULTI-ENTRY / MULTI-EXIT PER MARKET
+
+Konteks current codebase:
+
+Pekerjaan sebelumnya sudah dilakukan:
+
+- Label POTENTIAL sudah dihapus dari market card.
+- Market card sekarang memakai PNL nyata dari position data.
+- IN dan OUT sudah ditambahkan.
+- Endpoint card summary sudah dibuat.
+- Mapping berdasarkan condition_id.
+- Repository tests terkait card summary sudah pass.
+- Dashboard saat ini menampilkan:
+  - TARGET
+  - PNL
+  - IN
+  - OUT
+  - GAP
+  - SPREAD
+- Tetapi COUNTDOWN yang sebelumnya ada di card hilang.
+- Requirement project sejak awal adalah:
+  SATU MARKET / CARD HARUS BISA MEMILIKI LEBIH DARI SATU ENTRY / POSISI.
+
+TUGAS SEKARANG:
+
+1. Pertahankan PNL / IN / OUT yang sudah dibuat.
+2. Kembalikan countdown di sebelah timeframe 5M / 15M / 1H.
+3. Audit dan implementasikan multi-entry serta multi-exit per condition_id.
+4. Jangan merusak layout dashboard.
+5. Jangan mengulang pekerjaan dari nol.
+
+ATURAN WAJIB:
+
+- JANGAN redesign dashboard.
+- JANGAN ubah ukuran panel utama.
+- JANGAN menghapus PNL / IN / OUT.
+- JANGAN mengembalikan POTENTIAL.
+- JANGAN membuat fake PnL.
+- JANGAN membuat dummy position.
+- JANGAN membatasi satu entry hanya karena condition_id sama.
+- JANGAN menghapus duplicate execution protection.
+- JANGAN membuat unlimited entry.
+- JANGAN menambah real wallet/trading.
+- Tetap paper trading.
+- Semua mapping harus menggunakan condition_id.
+
+==================================================
+PART A — VERIFY CURRENT IMPLEMENTATION
+==================================================
+
+Baca:
+
+Frontend:
+- backend/app/static/index.html
+- renderCard()
+- card summary polling/loading function
+- countdown formatting function
+- market lifecycle display logic
+
+Backend:
+- card_summary_repository.py
+- card_summary schema
+- positions API/router
+- position model
+- order model
+- trade_decision model
+- execution_engine.py
+- exit_engine.py
+- risk_engine.py
+- position_service.py
+- position_repository.py
+- order_repository.py
+- trade_decision_repository.py
+- portfolio service/repository
+- settings.py
+- database migration files
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+Pastikan current implementation benar-benar memiliki:
+
+- PNL per condition_id
+- bet_in_count
+- bet_in_amount_usdc
+- bet_out_count
+- bet_out_amount_usdc
+- frontend PNL / IN / OUT
+- tidak ada UI POTENTIAL aktif
+
+==================================================
+PART B — RESTORE COUNTDOWN NEXT TO TIMEFRAME
+==================================================
+
+Countdown harus dikembalikan tanpa menambah row baru.
+
+Target tampilan:
+
+BTC  5M · 04:32
+
+atau:
+
+BTC  5M  04:32
+
+Untuk 15M:
+
+BTC  15M · 12:18
+
+Untuk 1H:
+
+BTC  1H · 48:09
+
+Letakkan countdown tepat di sebelah badge timeframe:
+
+[BTC] [5M] [04:32]
+
+Jangan meletakkan countdown kembali di bagian bawah card.
+
+==================================================
+COUNTDOWN RULES
+==================================================
+
+Gunakan lifecycle state dan timestamp resmi:
+
+PRE_MARKET:
+- countdown menuju start_time
+- prefix opsional: OPENS 04:32
+
+ACTIVE:
+- countdown menuju end_time
+- tampilkan format ringkas:
+  - MM:SS jika kurang dari 1 jam
+  - HH:MM jika 1 jam atau lebih
+
+EXPIRED:
+- tampilkan EXPIRED
+- jangan countdown negatif
+
+RESOLUTION_PENDING:
+- tampilkan PENDING
+
+RESOLVED:
+- tampilkan RESOLVED
+
+INVALID_TIME_STATE:
+- tampilkan —
+
+Gunakan UTC internal, tetapi countdown berupa durasi sehingga tidak perlu menampilkan timezone.
+
+Pastikan timer update setiap 1 detik tanpa reload seluruh card jika memungkinkan.
+
+==================================================
+COUNTDOWN SAFETY
+==================================================
+
+Countdown harus berasal dari:
+
+- market.start_time
+- market.end_time
+- lifecycle_state
+
+Jangan berasal dari:
+
+- timeframe label saja
+- hardcoded 5/15/60 menit
+- tanggal parsing dari title jika field resmi tersedia
+- shared timer satu card untuk semua condition_id
+
+Setiap condition_id harus punya target timestamp sendiri.
+
+==================================================
+PART C — AUDIT EXISTING SINGLE-POSITION BLOCKER
+==================================================
+
+Cari seluruh code:
+
+- DUPLICATE_POSITION
+- duplicate condition
+- existing_open_position
+- already open
+- one position per market
+- position exists
+- condition_id uniqueness
+- MAX_OPEN_POSITIONS
+- idempotency
+- duplicate execution
+- source_decision_id
+- source_order_id
+
+Dokumentasikan:
+
+- file
+- function
+- current condition
+- apakah entry kedua diblokir hanya karena condition_id sama
+- apakah database punya unique constraint pada condition_id
+- apakah valid multi-entry tercampur dengan retry duplicate
+
+==================================================
+PART D — DEFINE MULTI-ENTRY POSITION LOTS
+==================================================
+
+Satu condition_id boleh mempunyai beberapa position lots.
+
+Setiap valid entry harus membuat lot baru.
+
+Required lot fields atau equivalent existing fields:
+
+- id
+- condition_id
+- asset
+- timeframe
+- side
+- entry_sequence / entry_number
+- entry_price
+- quantity
+- remaining_quantity
+- notional_usdc
+- opened_at
+- status:
+  - OPEN
+  - PARTIAL
+  - CLOSED
+- source_decision_id
+- source_order_id
+- realized_pnl
+- unrealized_pnl
+- exit_price
+- closed_at
+- close_reason
+
+Jangan overwrite lot sebelumnya.
+
+Contoh:
+
+BTC 5M / condition_id ABC
+
+Lot #1:
+- LONG_NO
+- entry 0.49
+- quantity 20
+- notional $9.80
+
+Lot #2:
+- LONG_NO
+- entry 0.46
+- quantity 10
+- notional $4.60
+
+Lot #3:
+- LONG_NO
+- entry 0.44
+- quantity 15
+- notional $6.60
+
+==================================================
+PART E — IDEMPOTENCY VS VALID ADDITIONAL ENTRY
+==================================================
+
+Bedakan dengan tegas:
+
+INVALID_DUPLICATE_EXECUTION:
+- trade_decision.id sama
+- order.id sama
+- execution_key sama
+- retry request yang sama
+- event yang sama diproses dua kali
+
+VALID_ADDITIONAL_ENTRY:
+- decision_id baru
+- risk approval baru
+- timestamp baru
+- market masih ACTIVE
+- cooldown selesai
+- exposure belum melewati limit
+- side sesuai aturan
+- quantity valid
+
+Duplicate guard harus memakai:
+
+- source_decision_id
+- source_order_id
+- execution_key
+
+Jangan memakai condition_id sebagai idempotency key.
+
+==================================================
+PART F — MULTI-ENTRY RISK SETTINGS
+==================================================
+
+Tambahkan atau audit settings:
+
+- MAX_ENTRIES_PER_MARKET
+- MAX_OPEN_LOTS_PER_MARKET
+- MAX_EXPOSURE_PER_MARKET_USDC
+- MAX_EXPOSURE_PER_ASSET_USDC
+- MAX_TOTAL_EXPOSURE_USDC
+- MIN_SECONDS_BETWEEN_ENTRIES
+- MAX_SAME_SIDE_ENTRIES
+- ALLOW_OPPOSITE_SIDE_HEDGE
+- MAX_ENTRY_NOTIONAL_USDC
+- MIN_ENTRY_NOTIONAL_USDC
+
+Default harus konservatif.
+
+Contoh aman:
+
+MAX_ENTRIES_PER_MARKET = 5
+MAX_OPEN_LOTS_PER_MARKET = 5
+MAX_EXPOSURE_PER_MARKET_USDC = 50
+MIN_SECONDS_BETWEEN_ENTRIES = 30
+ALLOW_OPPOSITE_SIDE_HEDGE = false
+
+Jangan membuat unlimited entries.
+
+==================================================
+PART G — SCALE-IN RULES
+==================================================
+
+Entry tambahan hanya valid jika:
+
+- lifecycle_state == ACTIVE
+- execution_allowed == true
+- orderbook fresh
+- market tidak expired
+- decision baru
+- risk approval baru
+- cooldown selesai
+- exposure cap aman
+- opportunity/confidence masih memenuhi aturan
+- quantity > 0
+- tidak duplicate execution
+
+Simpan scale-in reason:
+
+- SIGNAL_STRENGTHENED
+- CONFIDENCE_INCREASED
+- BETTER_ENTRY_PRICE
+- ORDER_FLOW_CONFIRMED
+- PARTIAL_ALLOCATION
+- REBALANCE
+- REENTRY_AFTER_PARTIAL_EXIT
+
+Jangan scale-in tanpa reason.
+
+==================================================
+PART H — SAME SIDE / OPPOSITE SIDE
+==================================================
+
+Default requirement:
+
+- multiple LONG_YES lots: allowed
+- multiple LONG_NO lots: allowed
+- LONG_YES + LONG_NO bersamaan: blocked by default
+
+Jika opposite side ditemukan dan hedge disabled:
+
+- reject dengan OPPOSITE_SIDE_CONFLICT
+
+Jika hedge mode diaktifkan suatu hari nanti:
+- harus explicit setting
+- jangan aktif default
+
+==================================================
+PART I — PARTIAL EXIT
+==================================================
+
+Implement partial exit.
+
+Support:
+
+- close quantity tertentu
+- close satu lot
+- close beberapa lot
+- close semua remaining lots
+- force close saat expiry
+
+Gunakan policy jelas:
+
+Default:
+FIFO
+
+Fields yang harus tercatat:
+
+- position_id / lot_id
+- close_quantity
+- exit_price
+- exit_notional
+- realized_pnl
+- remaining_quantity
+- exit_reason
+- closed_at
+
+Rules:
+
+Jika remaining_quantity > 0:
+- status PARTIAL atau OPEN sesuai model
+
+Jika remaining_quantity == 0:
+- status CLOSED
+
+Tidak boleh close lebih besar dari remaining_quantity.
+
+==================================================
+PART J — EXPIRY EXIT FOR MULTIPLE LOTS
+==================================================
+
+Saat market expired/resolved:
+
+- cari semua remaining OPEN/PARTIAL lots pada condition_id
+- force-close seluruh remaining quantity
+
+LONG_YES:
+- forced_exit_price = final_yes_price
+
+LONG_NO:
+- forced_exit_price = final_no_price
+
+Hitung realized PnL per lot.
+
+Jangan:
+
+- memakai stale CLOB
+- hanya menutup satu lot
+- meninggalkan lot lain OPEN
+- double-close lot yang sudah closed
+
+==================================================
+PART K — CARD SUMMARY AGGREGATION
+==================================================
+
+Pertahankan endpoint card summary yang sudah dibuat.
+
+Per condition_id, return:
+
+- has_position
+- current_side:
+  - YES
+  - NO
+  - MIXED
+  - NONE
+- open_lot_count
+- partial_lot_count
+- closed_lot_count
+- total_entry_count
+- total_exit_count
+- total_quantity
+- remaining_quantity
+- total_entry_notional_usdc
+- total_exit_notional_usdc
+- open_exposure_usdc
+- weighted_average_entry_price
+- realized_pnl
+- unrealized_pnl
+- total_pnl
+- latest_entry_at
+- latest_exit_at
+
+Weighted average:
+
+weighted_average_entry_price =
+sum(entry_price × remaining_quantity)
+/
+sum(remaining_quantity)
+
+==================================================
+PART L — CARD DISPLAY
+==================================================
+
+Final card layout harus compact dan tidak overflow.
+
+Header row:
+
+BTC   5M · 04:32
+
+Probability row:
+
+UP 50.5%    DOWN 49.5%
+
+Target/PnL row:
+
+TARGET 62,802      PNL —
+
+Activity row:
+
+IN 0 / $0.00       OUT 0 / $0.00
+
+Bottom metrics:
+
+LOTS 0     GAP +48     SPREAD 1.00%
+
+Atau jika LOTS tidak muat:
+
+IN 3 · $30
+OUT 1 · $9.80
+
+Tetap pertahankan visual hierarchy.
+
+==================================================
+PNL DISPLAY RULES
+==================================================
+
+No position:
+
+PNL —
+
+IN 0 / $0.00
+OUT 0 / $0.00
+LOTS 0
+
+Open positions:
+
+PNL = realized_pnl + unrealized_pnl
+
+Positive:
++$x.xx
+
+Negative:
+-$x.xx
+
+Zero:
+$0.00
+
+Never hide minus sign.
+Jangan hanya mengandalkan warna merah/hijau.
+
+==================================================
+PART M — IN / OUT RULES
+==================================================
+
+IN count:
+
+jumlah executed entry events:
+
+- OPEN_LONG_YES
+- OPEN_LONG_NO
+
+IN amount:
+
+sum actual entry notional:
+
+entry_price × quantity
+
+OUT count:
+
+jumlah executed exit events / partial exit events
+
+OUT amount:
+
+sum actual exit notional:
+
+exit_price × close_quantity
+
+Jangan menghitung:
+
+- WAIT
+- WATCH
+- BLOCKED
+- REJECTED
+- FAILED
+- PENDING
+- duplicate retry
+- decision yang belum executed
+
+==================================================
+PART N — DATABASE CONSTRAINT AUDIT
+==================================================
+
+Periksa indexes/constraints:
+
+- positions.condition_id
+- orders.condition_id
+- trade_decisions.condition_id
+
+Jika condition_id unique:
+- migration aman untuk menghapus constraint tersebut
+- jangan drop data
+
+Unique/idempotent constraints seharusnya pada:
+
+- source_decision_id
+- source_order_id
+- execution_key
+
+Bukan condition_id.
+
+==================================================
+PART O — TESTS
+==================================================
+
+Tambahkan/update tests:
+
+COUNTDOWN:
+
+1. Active market countdown menuju end_time
+2. Pre-market countdown menuju start_time
+3. Expired tidak menunjukkan angka negatif
+4. Different cards use different timestamps
+5. Timer formats MM:SS / HH:MM correctly
+
+MULTI-ENTRY:
+
+6. Entry pertama berhasil
+7. Entry kedua condition_id sama berhasil
+8. Entry ketiga condition_id sama berhasil
+9. Same decision retry diblokir
+10. Exposure cap block additional entry
+11. Cooldown works
+12. Multiple same-side entries allowed
+13. Opposite-side blocked when hedge disabled
+14. Weighted average correct
+15. Partial exit correct
+16. Multiple partial exits correct
+17. Final close correct
+18. Expiry closes all remaining lots
+19. Card IN count correct
+20. Card OUT count correct
+21. Card amounts correct
+22. PnL aggregation correct
+23. Different condition_ids never mix
+24. Duplicate execution does not create new lot
+25. Negative PnL keeps minus sign
+26. No position displays PNL —
+
+Run:
+
+- python -m compileall -q backend/app
+- card summary tests
+- position tests
+- execution tests
+- exit tests
+- risk tests
+- frontend/JS tests jika ada
+- workflow restart
+- screenshot dashboard
+
+==================================================
+PART P — LIVE VALIDATION
+==================================================
+
+Tampilkan untuk 12 cards:
+
+- asset
+- timeframe
+- countdown
+- condition_id
+- open_lot_count
+- total_entry_count
+- total_exit_count
+- weighted_average_entry_price
+- exposure
+- realized_pnl
+- unrealized_pnl
+- total_pnl
+- displayed PNL
+- displayed IN
+- displayed OUT
+
+Untuk satu market yang memiliki multiple entry natural:
+
+Tampilkan:
+
+- lot IDs
+- decision IDs
+- order IDs
+- entry sequence
+- entry price
+- quantity
+- remaining quantity
+- scale-in reason
+- weighted average
+- total exposure
+- PnL
+
+Jika belum ada natural multi-entry:
+
+- jangan fabricate
+- status:
+  PENDING LIVE MULTI-ENTRY VALIDATION
+
+==================================================
+PART Q — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- POTENTIAL
+- STAKE_DEFAULT
+- +10.20
+- DUPLICATE_POSITION
+- one position per market
+- condition_id unique
+- overwrite position
+- unlimited entry
+- fake pnl
+- estimated profit
+- duplicate execution
+- remaining_quantity
+- partial exit
+- weighted average
+- MAX_ENTRIES_PER_MARKET
+- countdown
+- end_time
+- start_time
+
+Klasifikasikan:
+
+- REAL_POSITION_DATA
+- REAL_PNL_FORMULA
+- VALID_IDEMPOTENCY
+- INVALID_SINGLE_POSITION_LIMIT
+- SAFE_RISK_LIMIT
+- UI_FORMATTING
+- TEST_ONLY
+- FIXED
+- PENDING_LIVE_PROOF
+
+No unresolved INVALID at final.
+
+==================================================
+FINAL RESPONSE FORMAT
+==================================================
+
+Jawab:
+
+1. Files read
+2. Existing card-summary state
+3. Countdown restoration
+4. Existing single-position blocker
+5. DB constraints
+6. Multi-entry implementation
+7. Idempotency behavior
+8. Risk limits
+9. Scale-in behavior
+10. Partial exit
+11. Expiry multi-lot close
+12. Card aggregation
+13. Frontend result
+14. Tests run
+15. Live validation
+16. Files changed
+17. Remaining risks
+18. Final status
+19. Exact next step
+
+Final statuses:
+
+CARD POSITION PNL:
+- PASS
+- PASS WITH REMEDIATION
+- PARTIAL
+- FAIL
+
+MULTI-ENTRY POSITIONING:
+- PASS
+- PASS WITH REMEDIATION
+- PENDING LIVE VALIDATION
+- FAIL
+
+COUNTDOWN RESTORATION:
+- PASS
+- FAIL
+
+Gunakan PASS hanya jika:
+
+- countdown kembali di sebelah timeframe
+- PNL/IN/OUT tetap berfungsi
+- valid second entry per condition_id supported
+- duplicate retry tetap diblokir
+- exposure/cooldown limits aktif
+- partial exit bekerja
+- expiry menutup semua lots
+- card aggregation benar
+- no fake data
+- tests pass
+
+Jangan menjawab setup complete.
+Jangan defer.
+Jangan membuat follow-up task.
+Kerjakan dari current codebase.

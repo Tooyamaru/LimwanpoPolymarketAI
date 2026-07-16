@@ -1,0 +1,110 @@
+You have completed the end-to-end pipeline audit and successfully restored the trading flow. The system is now generating Signals → Opportunities → Strategy Decisions → Risk Approval → Orders → Positions. Before making any additional code changes, perform a second engineering audit focused on trading quality rather than simply making trades happen.
+
+Your objective is NOT to increase the number of trades. Your objective is to maximize long-term paper trading quality and positive expectancy.
+
+Perform a complete review of the following areas:
+
+1. Signal Engine
+
+* Verify whether the new thresholds are statistically justified.
+* Determine whether the reduced thresholds introduce excessive market noise.
+* Analyze whether thresholds should become adaptive instead of fixed.
+* If no change is required, explain why.
+
+2. Opportunity Engine
+
+* Review the current scoring model.
+* Evaluate whether spread, deviation and expiry alone are sufficient.
+* Recommend additional scoring factors only if they materially improve trading quality.
+* Avoid adding unnecessary complexity.
+
+3. Strategy Engine
+
+* Verify whether SCORE_OPEN, SCORE_WATCH and confidence thresholds are now properly calibrated.
+* Confirm that the strategy is opening trades because of real opportunity quality, not because thresholds were artificially lowered.
+* Recommend recalibration only if supported by data.
+
+4. Position Sizing
+
+* Review whether lowering score tiers weakens capital allocation logic.
+* If possible, improve confidence calculation instead of lowering sizing requirements.
+* Preserve risk discipline.
+
+5. Mark-to-Market Pricing
+
+* Verify whether unrealized PnL is calculated from Bid, Ask or Mid price.
+* Determine whether the immediate stop-loss behavior is caused by spread accounting.
+* If necessary, redesign valuation logic so spread is not treated as realized loss.
+
+6. Exit Engine
+    Audit every exit path:
+
+* Stop Loss
+* Take Profit
+* Trailing Stop
+* Time Exit
+* Strategy Exit
+* Risk Exit
+
+Confirm each one functions correctly during paper trading.
+
+7. Capital Management
+    Review:
+
+* consecutive loss logic
+* cooldown mechanism
+* daily loss limits
+* exposure limits
+* kill switch reset behavior
+
+Ensure they behave realistically during long-running paper trading.
+
+8. Performance Analytics
+    Verify that the system can calculate and store:
+
+* Win Rate
+* Average Win
+* Average Loss
+* Expectancy
+* Profit Factor
+* Sharpe Ratio
+* Maximum Drawdown
+* Recovery Factor
+* MAE
+* MFE
+* Average Holding Time
+* Signal Precision
+* Opportunity Conversion Rate
+
+If any metric is missing, implement it only if it directly improves trading evaluation.
+
+9. Paper Trading Realism
+    Audit whether the simulator correctly models:
+
+* spread
+* fees
+* slippage
+* execution latency
+* order fills
+* partial fills (if supported)
+
+10. Final Report
+
+Do NOT immediately modify code.
+
+First produce a detailed engineering report containing:
+
+* Current pipeline status
+* Remaining weaknesses
+* Root causes
+* Expected trading impact
+* Recommended fixes ranked by expected improvement to profitability
+* Risk assessment for every proposed modification
+
+Only after the report is approved should implementation begin.
+
+Maintain the existing architecture.
+
+Do not introduce unnecessary abstraction, unnecessary refactoring, or over-engineering.
+
+Prioritize real trading performance, robustness, and measurable edge over increasing trade frequency.

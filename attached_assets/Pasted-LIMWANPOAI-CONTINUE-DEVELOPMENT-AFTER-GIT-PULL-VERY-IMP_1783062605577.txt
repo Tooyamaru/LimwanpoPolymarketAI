@@ -1,0 +1,465 @@
+LIMWANPOAI — CONTINUE DEVELOPMENT AFTER GIT PULL
+VERY IMPORTANT
+
+Before writing ANY code:
+
+Read the entire backend and frontend.
+Understand the existing dashboard.
+Understand every API already available.
+DO NOT change any trading logic.
+DO NOT change paper trading logic.
+DO NOT modify database schema unless absolutely necessary.
+Maintain backward compatibility.
+Existing tests MUST continue passing.
+CRITICAL PROJECT IDENTITY
+
+You MUST permanently understand this project.
+
+This is NOT
+
+Binance
+Bybit
+Forex
+MT5
+TradingView
+Stock Trading
+
+This project is a
+
+POLYMARKET AI
+
+The bot trades YES and NO outcome contracts.
+
+Everything shown on the dashboard must reflect Polymarket concepts.
+
+NOT candlestick trading.
+
+NOT long/short leverage.
+
+NOT technical analysis dashboard.
+
+POLYMARKET TERMINOLOGY
+
+Use these concepts everywhere.
+
+Market
+
+Outcome
+
+YES
+
+NO
+
+Probability
+
+YES Price
+
+NO Price
+
+Spread
+
+Edge
+
+Expected Value
+
+Confidence
+
+Market Stage
+
+Liquidity
+
+Order Status
+
+Position
+
+Portfolio
+
+Risk
+
+Never use terminology like
+
+RSI
+
+MACD
+
+Leverage
+
+Margin
+
+Liquidation
+
+Pips
+
+TP
+
+SL
+
+Forex
+
+Ticker Tape
+
+Stock Exchange
+
+unless already required internally.
+
+MAIN OBJECTIVE
+
+This phase is
+
+100% UI/UX refinement.
+
+Backend logic stays exactly the same.
+
+No engine changes.
+
+No strategy changes.
+
+No scoring changes.
+
+No database redesign.
+
+Only present existing information much better.
+
+DASHBOARD REDESIGN
+
+Implement ALL items below.
+
+1 PORTFOLIO CARD
+
+Redesign completely.
+
+Make it feel like Bloomberg Terminal.
+
+Large Total Equity
+
+Today's PnL
+
+Open Exposure
+
+Open Positions
+
+Win Rate
+
+Daily Return
+
+Total Return
+
+Current Capital
+
+Everything aligned cleanly.
+
+Large numbers.
+
+Small labels.
+
+Good spacing.
+
+2 LIVE CHART
+
+DO NOT CHANGE.
+
+Keep current chart.
+
+Do not replace it.
+
+Do not redesign it.
+
+3 SYSTEM HEALTH
+
+Remove
+
+OK
+
+GOOD
+
+PERFECT
+
+Instead show
+
+Example
+
+Signal Engine
+
+98%
+
+Opportunity Engine
+
+100%
+
+Strategy Engine
+
+96%
+
+Execution
+
+100%
+
+Risk
+
+99%
+
+Health score only.
+
+Color coded.
+
+Green
+
+Yellow
+
+Red
+
+4 MARKET UNIVERSE
+
+This is the biggest redesign.
+
+Current version is too small.
+
+Cards are difficult to read.
+
+Must show ALL markets directly.
+
+Avoid scrolling if possible.
+
+Fit all markets intelligently.
+
+Reduce whitespace.
+
+Reduce oversized fonts.
+
+Smaller but clearer cards.
+
+Each market card MUST contain:
+
+Asset
+
+Timeframe
+
+YES Price
+
+NO Price
+
+Spread
+
+Current Position
+
+BUY YES
+
+BUY NO
+
+NONE
+
+Entry Price
+
+Current Price
+
+Current Probability
+
+PnL
+
+PnL %
+
+Confidence
+
+Status
+
+Waiting
+
+Watching
+
+Executing
+
+Open
+
+Closed
+
+Small movement indicator
+
+▲
+
+▼
+
+No giant typography.
+
+Everything must fit cleanly.
+
+This is a Polymarket dashboard.
+
+NOT TradingView.
+
+5 PANEL TITLES
+
+Every panel needs a title.
+
+No icon-only panels.
+
+Examples
+
+Portfolio
+
+Live Probability
+
+Market Universe
+
+AI Activity
+
+System Health
+
+Execution Pipeline
+
+6 PIPELINE
+
+Keep existing animation.
+
+Improve spacing.
+
+Improve typography.
+
+Improve alignment.
+
+Do NOT redesign logic.
+
+7 HEADER
+
+Current header is oversized.
+
+Reduce height.
+
+Reduce font size.
+
+More professional.
+
+Compact institutional style.
+
+8 FOOTER
+
+DO NOT TOUCH.
+
+Footer remains exactly as it is.
+
+9 AI FEED + AI THINKING
+
+Merge them.
+
+Single panel.
+
+Title
+
+AI Activity
+
+Chronological feed.
+
+Include
+
+Thinking
+
+Signals
+
+Strategy
+
+Risk
+
+Execution
+
+Position updates
+
+Everything together.
+
+This saves dashboard space.
+
+10 GENERAL VISUAL POLISH
+
+Current dashboard still feels unfinished.
+
+Improve
+
+Typography
+
+Spacing
+
+Alignment
+
+Borders
+
+Glass effect
+
+Card shadows
+
+Consistency
+
+Readable hierarchy
+
+Reduce oversized text.
+
+Increase information density.
+
+No clutter.
+
+Professional.
+
+Institutional.
+
+DESIGN STYLE
+
+Target
+
+Bloomberg Terminal
+
+Modern Glass UI
+
+NOT gaming UI.
+
+NOT crypto exchange.
+
+NOT TradingView clone.
+
+Dark.
+
+Elegant.
+
+Minimal.
+
+Professional.
+
+IMPORTANT
+
+DO NOT invent fake values.
+
+Only display existing backend data.
+
+If backend already exposes a field,
+
+display it.
+
+If not,
+
+leave placeholder logic without changing backend.
+
+IMPLEMENTATION ORDER
+
+1 Read project
+
+2 Read dashboard
+
+3 Read APIs
+
+4 Read current CSS
+
+5 Produce redesign plan
+
+6 Implement incrementally
+
+7 Verify responsive layout
+
+8 Ensure all existing functionality remains unchanged
+
+9 Run existing tests
+
+10 Deliver summary of UI changes only
+
+DO NOT modify trading logic.
+
+DO NOT modify paper trading.
+
+DO NOT modify AI strategy.
+
+Only improve presentation of existing Polymarket information.

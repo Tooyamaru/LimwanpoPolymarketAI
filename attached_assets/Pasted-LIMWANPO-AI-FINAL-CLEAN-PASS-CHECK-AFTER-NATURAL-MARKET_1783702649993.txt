@@ -1,0 +1,283 @@
+LIMWANPO AI — FINAL CLEAN PASS CHECK AFTER NATURAL MARKET EXPIRY
+
+Konteks:
+Status terakhir:
+
+AI DECISION INTEGRITY: PASS — PENDING NATURAL RESOLUTION LIVE PROOF
+
+Alasan pending:
+Saat verifikasi terakhir:
+
+* expired_markets = 0
+* future_markets = 496
+* outcome_learnings = 0
+* direct_resolution = 0
+* pnl_proxy = 0
+* soonest expiry = 2026-07-11 02:45 UTC
+
+TUGAS SEKARANG:
+Cek apakah sudah ada market Polymarket yang expired/resolved secara natural dan apakah Outcome Learning sudah menghasilkan DIRECT_POLYMARKET_RESOLUTION live proof.
+
+JANGAN mulai dari nol.
+JANGAN redo Phase 9B/9C/9D.
+JANGAN ubah UI.
+JANGAN redesign.
+JANGAN tambah provider baru.
+JANGAN tambah dummy data.
+JANGAN tambah fake outcome.
+JANGAN tambah assumed winner.
+JANGAN pakai live probability sebagai resolved outcome.
+JANGAN klaim clean PASS kalau direct_resolution masih 0.
+
+==================================================
+STEP 1 — VERIFY CURRENT STATE
+
+Jalankan:
+
+* git status
+* python -m compileall -q backend/app
+
+Pastikan Phase 9D code masih ada:
+
+* OUTCOME_SOURCE_DIRECT
+* OUTCOME_SOURCE_PROXY
+* OUTCOME_SOURCE_NONE
+* MarketResolutionResult
+* fetch_market_resolution
+* _parse_outcome_prices
+* outcome_source column
+* winning_side column
+* winning_token_id column
+* final_yes_price column
+* final_no_price column
+* resolution_note column
+
+==================================================
+STEP 2 — CHECK EXPIRED MARKET COUNT
+
+Query database:
+
+* total market_universe rows
+* count end_time < now
+* count end_time > now
+* expired markets with condition_id
+* expired markets with yes_token_id / no_token_id
+* expired markets already evaluated
+* expired markets not yet evaluated
+
+Jika expired_markets masih 0:
+
+* tulis NO_RESOLVED_MARKET_AVAILABLE_YET
+* final status tetap AI DECISION INTEGRITY: PASS — PENDING NATURAL RESOLUTION LIVE PROOF
+* jangan coding ulang
+
+Jika expired_markets > 0:
+
+* lanjut Step 3
+
+==================================================
+STEP 3 — RUN OUTCOME LEARNING CYCLE
+
+Jalankan Outcome Learning cycle atau tunggu worker cycle.
+
+Cek log:
+
+* expired_markets
+* evaluated
+* direct_resolution
+* pnl_proxy
+* skipped
+* errors
+
+Target clean PASS:
+
+direct_resolution >= 1
+
+Jika direct_resolution = 0:
+
+* cek apakah market voided/cancelled
+* cek apakah Gamma belum closed
+* cek apakah already_evaluated
+* cek apakah no decision/no position
+* jangan klaim clean PASS
+
+==================================================
+STEP 4 — VERIFY GAMMA RAW RESOLUTION
+
+Untuk minimal 1 market expired yang dievaluasi, tampilkan:
+
+DB market row:
+
+* condition_id
+* question / title
+* series_slug
+* yes_token_id
+* no_token_id
+* end_time
+* market status
+
+Gamma raw fields:
+
+* conditionId
+* question/title
+* closed
+* active
+* archived
+* outcomePrices
+* clobTokenIds
+* endDate
+* condition_id match true/false
+* token mapping true/false
+
+Valid resolution hanya jika:
+
+YES wins:
+
+* closed=true
+* outcomePrices YES >= 0.99
+* outcomePrices NO <= 0.01
+
+NO wins:
+
+* closed=true
+* outcomePrices YES <= 0.01
+* outcomePrices NO >= 0.99
+
+Void/cancel:
+
+* outcomePrices [0,0]
+* jangan hitung sebagai correct/incorrect prediction
+
+Live probability:
+
+* outcomePrices seperti 0.51/0.49
+* jangan klaim resolved
+
+==================================================
+STEP 5 — VERIFY OUTCOME_LEARNINGS ROW
+
+Query latest outcome_learnings row.
+
+Tampilkan:
+
+* id
+* condition_id
+* prediction
+* correct
+* outcome_source
+* winning_side
+* winning_token_id
+* final_yes_price
+* final_no_price
+* resolution_note
+* actual_pnl
+* evaluated_at
+
+Clean PASS hanya jika:
+
+* outcome_source = DIRECT_POLYMARKET_RESOLUTION
+* winning_side = YES atau NO
+* winning_token_id cocok dengan yes_token_id / no_token_id
+* final_yes_price / final_no_price menunjukkan 1/0 atau 0/1
+* correct dihitung dari prediction vs winning_side
+* actual_pnl hanya economic context, bukan primary correctness source
+
+==================================================
+STEP 6 — VERIFY DOWNSTREAM EFFECT
+
+Cek:
+
+* engine_performance_stats rows
+* engine_weights rows
+* confidence calibration jika ada
+* dynamic weight latest run jika ada
+* already_evaluated(condition_id) mencegah duplicate outcome
+
+Pastikan outcome_source label tidak hilang di downstream.
+
+==================================================
+STEP 7 — RED FLAG SEARCH
+
+Search backend:
+
+* fake outcome
+* synthetic outcome
+* assumed outcome
+* default winner
+* hardcoded winner
+* outcome_source
+* winning_side
+* direct_resolution
+* pnl_proxy
+* realized_pnl
+* outcomePrices
+
+Klasifikasikan:
+
+* REAL_DATA
+* DIRECT_POLYMARKET_RESOLUTION
+* REALIZED_PNL_PROXY
+* SAFE
+* TEST_ONLY
+* INVALID
+
+Jika ada INVALID:
+
+* perbaiki
+* final status FAIL sampai bersih
+
+==================================================
+STEP 8 — UPDATE AUDIT REPORT
+
+Update AI_DECISION_INTEGRITY_AUDIT.md section:
+
+PHASE 9D NATURAL RESOLUTION LIVE PROOF
+
+Isi:
+
+1. Market checked
+2. DB market row
+3. Gamma raw resolution evidence
+4. OutcomeLearning row
+5. direct_resolution counter
+6. pnl_proxy counter
+7. Downstream effect
+8. Red flag search result
+9. Final status
+
+Final status:
+
+Jika direct_resolution >= 1 dan OutcomeLearning row valid:
+AI DECISION INTEGRITY: PASS
+
+Jika expired market belum ada:
+AI DECISION INTEGRITY: PASS — PENDING NATURAL RESOLUTION LIVE PROOF
+
+Jika hanya REALIZED_PNL_PROXY:
+AI DECISION INTEGRITY: PASS WITH CAVEATS
+
+Jika fake/default/assumed outcome ditemukan:
+AI DECISION INTEGRITY: FAIL
+
+==================================================
+STEP 9 — FINAL RESPONSE FORMAT
+
+Jawab dengan format:
+
+1. Files/code verified
+2. Expired market count
+3. Outcome learning cycle result
+4. Market checked
+5. Gamma raw resolution evidence
+6. OutcomeLearning row
+7. direct_resolution counter
+8. pnl_proxy counter
+9. Downstream effect
+10. Red flag search
+11. Audit report update
+12. Final status
+13. Exact next step
+
+Jangan jawab umum.
+Jangan fabricate resolved market.
+Jangan klaim clean PASS kalau direct_resolution masih 0.

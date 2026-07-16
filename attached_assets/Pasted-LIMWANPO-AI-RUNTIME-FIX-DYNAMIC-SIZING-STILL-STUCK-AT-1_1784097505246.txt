@@ -1,0 +1,575 @@
+LIMWANPO AI — RUNTIME FIX:
+DYNAMIC SIZING STILL STUCK AT $10 + REMOVE LEGACY DUPLICATE_POSITION BLOCK
+
+Konteks:
+
+Implementasi sebelumnya mengklaim:
+
+- POSITION_SIZE_MIN_USDC = 1.0
+- MIN_ENTRY_NOTIONAL_USDC = 1.0
+- continuous sizing aktif
+- LOT berdasarkan entry_sequence
+- 731/731 tests pass
+
+Tetapi screenshot live terbaru menunjukkan:
+
+AI LIVE TRADES masih berisi transaksi:
+
+- ETH 15M DOWN $10.00 @ 0.500
+- XRP 1H DOWN $10.00 @ 0.500
+- XRP 15M DOWN $10.00 @ 0.500
+- SOL 1H DOWN $10.00 @ 0.500
+- SOL 15M DOWN $10.00 @ 0.500
+
+Semua tetap tepat $10.00.
+
+Selain itu footer alert menampilkan:
+
+DUPLICATE_POSITION risk rule should have prevented this
+
+Padahal requirement sistem adalah:
+
+- multiple entries per market allowed
+- LOT 1 / LOT 2 / LOT 3 per condition_id
+- duplicate retry blocked by order/decision identity
+- bukan block berdasarkan condition_id
+
+TUGAS:
+
+Temukan jalur runtime yang masih menghasilkan fixed $10.
+Pastikan continuous sizing benar-benar digunakan end-to-end.
+Hapus legacy DUPLICATE_POSITION enforcement yang bertentangan dengan multi-entry.
+Jangan ubah UI.
+Jangan redesign.
+Jangan membuat variasi nominal palsu.
+Jangan random.
+Jangan menurunkan risk protection lain.
+Tetap paper trading.
+
+==================================================
+STEP 1 — CAPTURE CURRENT RUNTIME EVIDENCE
+==================================================
+
+Sebelum edit code, query 20 trade_decisions dan orders terbaru.
+
+Tampilkan:
+
+- decision_id
+- condition_id
+- asset
+- timeframe
+- decision
+- status
+- position_quality_score
+- raw_position_size_usdc
+- adjusted_position_size_usdc
+- position_size_usdc
+- risk clamp reason
+- order_id
+- requested_price
+- filled_price
+- quantity
+- actual_notional = filled_price × quantity
+- created_at / decided_at
+
+Tentukan di tahap mana angka berubah menjadi $10:
+
+- Position Sizing Engine output
+- TradeDecision persistence
+- Risk Engine
+- Execution Engine
+- Order creation
+- Position creation
+- Live Trades API
+
+Jangan hanya membaca screenshot.
+
+==================================================
+STEP 2 — TRACE ONE REAL $10 TRADE END-TO-END
+==================================================
+
+Pilih satu trade terbaru yang tampil $10.
+
+Trace:
+
+Signal inputs
+→ Opportunity score
+→ Decision confidence
+→ Position quality score
+→ raw size
+→ adjusted size
+→ final size
+→ risk clamp
+→ quantity
+→ filled notional
+→ live trade API
+→ frontend display
+
+Tampilkan nilai aktual di setiap tahap.
+
+Klasifikasikan root cause:
+
+- SIZING_ENGINE_NOT_CALLED
+- LEGACY_SIZING_SERVICE_CALLED
+- DECISION_DEFAULT_10
+- RISK_FLOOR_10
+- EXECUTION_FALLBACK_10
+- DB_COLUMN_NOT_PERSISTED
+- OLD_TRADE_HISTORY_ONLY
+- LIVE_API_WRONG_FIELD
+- FRONTEND_FORMAT_BUG
+- SAME_INPUTS_PRODUCE_SAME_SIZE
+
+==================================================
+STEP 3 — VERIFY WHICH SIZING IMPLEMENTATION IS ACTIVE
+==================================================
+
+Search seluruh project:
+
+- PositionSizingEngine
+- PositionSizingService
+- calculate(
+- position_size_usdc
+- raw_position_size_usdc
+- adjusted_position_size_usdc
+- final_position_size_usdc
+- POSITION_SIZE_MIN_USDC
+- MIN_ENTRY_NOTIONAL_USDC
+- POSITION_SIZING_LOT_UNIT_USDC
+- POSITION_SIZE_MEDIUM_USDC
+- DEFAULT_POSITION_SIZE
+- STAKE_DEFAULT
+- 10.0
+- max(10
+- or 10
+- fallback 10
+
+Pastikan Strategy Engine hanya memanggil SATU implementation sizing aktif.
+
+Jika ada:
+
+- old position_sizing_service.py
+- new position_sizing_engine.py
+
+tentukan mana yang dipakai runtime.
+
+Jangan biarkan dua sizing path aktif bersamaan.
+
+==================================================
+STEP 4 — VERIFY CONTINUOUS SIZING FORMULA
+==================================================
+
+Current sizing harus menghasilkan nilai continuous.
+
+Minimum:
+
+$1.00
+
+Maximum:
+
+sesuai MAX_ENTRY_NOTIONAL_USDC / exposure caps.
+
+Contoh valid:
+
+- quality rendah valid → $1.00–$2.xx
+- quality sedang → $3.xx–$10.xx
+- quality tinggi → lebih besar
+- hasil dibulatkan 2 decimal
+
+Jangan menggunakan:
+
+lot_count × $10
+
+Jangan menggunakan tier fixed:
+
+$10 / $25 / $50
+
+Jangan mengubah size menjadi $10 hanya karena lot_count=1.
+
+LOT adalah entry sequence, bukan dollar unit.
+
+==================================================
+STEP 5 — PERSIST SIZING PROVENANCE
+==================================================
+
+Pastikan TradeDecision menyimpan:
+
+- position_quality_score
+- raw_position_size_usdc
+- adjusted_position_size_usdc
+- position_size_usdc final
+- sizing_reason
+- risk_clamp_reason
+
+Jika kolom belum ada:
+- buat migration idempotent
+- backward compatible
+
+Jika sudah ada:
+- pastikan Strategy Engine mengirim nilainya
+- repository insert/update menyimpannya
+- API dapat membacanya
+
+Tidak boleh final size hilang lalu fallback ke $10.
+
+==================================================
+STEP 6 — RISK ENGINE CLAMP AUDIT
+==================================================
+
+Audit seluruh risk sizing path.
+
+Allowed:
+
+- shrink karena available capital
+- shrink karena market exposure
+- shrink karena asset exposure
+- shrink karena total exposure
+
+Rules:
+
+- jika allowed size >= $1 → shrink ke allowed size
+- jika allowed size < $1 → block
+- jangan clamp naik ke $10
+- jangan gunakan minimum lama $5/$10
+- reason harus eksplisit
+
+Tampilkan:
+
+requested size
+allowed max
+final approved size
+reason
+
+==================================================
+STEP 7 — EXECUTION ENGINE AUDIT
+==================================================
+
+Audit entry execution.
+
+Expected:
+
+approved_size = trade_decision.position_size_usdc
+
+quantity =
+approved_size / executable_price
+
+actual_notional =
+quantity × filled_price
+
+Jangan:
+
+- use default $10
+- use fixed quantity 20
+- infer notional from LOT number
+- replace missing size silently
+
+Jika position_size_usdc missing/null:
+
+- block
+- reason MISSING_POSITION_SIZE
+- jangan fallback ke $10
+
+==================================================
+STEP 8 — LIVE TRADES API AUDIT
+==================================================
+
+AI LIVE TRADES nominal harus berasal dari:
+
+filled_price × quantity
+
+Pastikan tidak berasal dari:
+
+- requested $10 default
+- lot unit
+- position_size fallback
+- hardcoded display
+
+Trace satu row API ke satu Order row.
+
+Expected:
+
+API notional_usdc == DB filled_price × quantity
+
+==================================================
+STEP 9 — DIFFERENTIATE HISTORICAL VS NEW TRADES
+==================================================
+
+Screenshot mungkin masih menampilkan trade lama sebelum sizing fix.
+
+Tambahkan classification:
+
+- PRE_DYNAMIC_SIZING
+- POST_DYNAMIC_SIZING
+
+Gunakan deployed_at / migration timestamp / created_at.
+
+Jangan menilai trade lama sebagai bukti fix gagal.
+
+Tetapi setelah deploy, ambil minimal 5 keputusan/order baru dan buktikan nominalnya.
+
+==================================================
+STEP 10 — REMOVE LEGACY DUPLICATE_POSITION RULE
+==================================================
+
+Search:
+
+- DUPLICATE_POSITION
+- duplicate position
+- existing open position
+- one position per condition_id
+- should have prevented this
+- condition_id already open
+- same market position block
+
+Requirement:
+
+VALID MULTI-ENTRY:
+- same condition_id
+- new decision_id
+- new order_id
+- new execution event
+- risk approved
+- cooldown passed
+- exposure safe
+- same-side allowed
+
+INVALID DUPLICATE:
+- same order_id
+- same decision_id
+- same execution key
+- same fill processed twice
+
+Remove or replace any rule that blocks only because condition_id already has an OPEN position.
+
+Rename semantic alert:
+
+DUPLICATE_POSITION
+→ DUPLICATE_EXECUTION
+
+or:
+
+SAME_ORDER_REPLAY
+
+Jangan menghapus idempotency.
+
+==================================================
+STEP 11 — FIX ALERT MESSAGE
+==================================================
+
+Footer alert currently says:
+
+DUPLICATE_POSITION risk rule should have prevented this
+
+This is misleading under multi-entry design.
+
+Audit source:
+
+- alert_service.py
+- risk_events
+- monitoring rules
+- footer ticker API
+
+Replace with accurate alert based on real condition:
+
+If same order replay:
+- DUPLICATE_EXECUTION
+
+If too many lots:
+- MAX_OPEN_LOTS_PER_MARKET
+
+If exposure exceeded:
+- MARKET_EXPOSURE_HIGH
+
+If valid multi-entry:
+- no alert
+
+Do not hide a real integrity problem.
+
+==================================================
+STEP 12 — MULTI-ENTRY VALIDATION
+==================================================
+
+For same condition_id:
+
+Entry #1:
+- size may be $1.xx
+
+Entry #2:
+- new fresh sizing
+- size may differ
+
+Entry #3:
+- new fresh sizing
+- size may differ
+
+Verify:
+
+- lot IDs unique
+- order IDs unique
+- decision IDs unique
+- entry_sequence 1,2,3
+- no DUPLICATE_POSITION block
+- risk/exposure/cooldown still active
+
+==================================================
+STEP 13 — LIVE POST-FIX VALIDATION
+==================================================
+
+Restart workflow.
+
+Record deployment timestamp.
+
+Observe at least 5 NEW entry orders after deployment.
+
+For each show:
+
+- asset
+- timeframe
+- condition_id
+- decision_id
+- position_quality_score
+- raw size
+- adjusted size
+- final size
+- clamp reason
+- filled price
+- quantity
+- actual notional
+- entry_sequence
+
+Summary:
+
+- unique final sizes count
+- min
+- max
+- average
+- exact $1 count
+- exact $10 count
+- other-size count
+
+Expected:
+
+- all sizes >= $1
+- not all post-fix entries exactly $10
+- if inputs truly identical, explain with raw evidence
+- no fabricated diversity
+
+==================================================
+STEP 14 — TESTS
+==================================================
+
+Add/update tests:
+
+1. Strategy uses active continuous sizing implementation
+2. No legacy sizing path called
+3. final size persisted to TradeDecision
+4. missing final size blocks execution
+5. no $10 fallback in Execution Engine
+6. quantity = approved_size / price
+7. actual notional matches fill
+8. risk shrink can produce $1.xx
+9. shrink below $1 blocks
+10. same condition new order allowed
+11. same order replay blocked
+12. DUPLICATE_POSITION legacy alert removed
+13. live trades uses actual notional
+14. historical trade classification correct
+15. post-fix size distribution test
+
+Run:
+
+- python -m compileall -q backend/app
+- sizing tests
+- strategy tests
+- risk tests
+- execution tests
+- alert tests
+- live trades tests
+- full suite
+
+==================================================
+STEP 15 — RED FLAG SEARCH
+==================================================
+
+Search production code:
+
+- position_size_usdc = 10
+- default 10
+- fallback 10
+- fixed quantity 20
+- lot_count * 10
+- LOT_UNIT_USDC
+- DUPLICATE_POSITION
+- should have prevented this
+- max(10
+- or 10
+
+Classify:
+
+- SAFE_TEST
+- HISTORICAL_DATA
+- SAFE_CONFIG_MAX
+- INVALID_FIXED_STAKE
+- INVALID_LEGACY_RULE
+- VALID_IDEMPOTENCY
+- FIXED
+
+No unresolved INVALID.
+
+==================================================
+STEP 16 — FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Files read
+2. Current $10 root cause
+3. Historical vs new trade classification
+4. Active sizing implementation
+5. Continuous formula
+6. Persistence result
+7. Risk clamp result
+8. Execution result
+9. Live Trades API result
+10. DUPLICATE_POSITION root cause
+11. Alert fix
+12. Multi-entry result
+13. Tests run
+14. Post-fix live size distribution
+15. Files changed
+16. Remaining risks
+17. Final statuses
+18. Exact next step
+
+Final statuses:
+
+DYNAMIC POSITION SIZING:
+- PASS
+- PASS WITH NOTES
+- PENDING POST-FIX LIVE PROOF
+- FAIL
+
+MULTI-ENTRY LEGACY BLOCKER:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+RUNTIME NOTIONAL INTEGRITY:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+Use PASS only if:
+
+- post-fix trades use final dynamic size
+- no hidden $10 fallback
+- order notional matches approved size
+- valid multi-entry not blocked
+- duplicate replay still blocked
+- misleading legacy alert removed
+- tests pass
+
+Jangan jawab setup complete.
+Jangan defer.
+Jangan membuat fake varied sizes.
+Kerjakan diagnosis dan fix dari current codebase.

@@ -1,0 +1,254 @@
+LIMWANPO AI
+STEP 2 — SOURCE STABILIZATION
+
+Before touching ANY code, read ALL mandatory project files.
+
+Mandatory order:
+
+1. CONSTITUTION.md
+2. PROJECT_RULES.md
+3. DATA_RULES.md
+4. UI_RULES.md
+5. PHASE_GATE.md
+6. AI_GUARDIAN.md
+7. replit.md
+8. .agents/memory/product-constitution.md
+
+If one file is missing:
+
+STOP.
+Report which file is missing.
+Do not continue.
+
+--------------------------------------------------
+
+PROJECT IDENTITY
+
+This is NOT a trading application.
+
+This is NOT a crypto terminal.
+
+This is NOT an exchange dashboard.
+
+This is a
+
+LIMWANPO AI
+Polymarket Probability Intelligence Platform
+
+Everything displayed must represent probability intelligence.
+
+Never convert the project into a trading platform.
+
+--------------------------------------------------
+
+MISSION
+
+Do NOT redesign.
+
+Do NOT improve UI.
+
+Do NOT touch CSS.
+
+Do NOT touch layout.
+
+Do NOT touch spacing.
+
+Do NOT touch fonts.
+
+Do NOT touch colors.
+
+This step is ONLY:
+
+SOURCE STABILIZATION.
+
+--------------------------------------------------
+
+YOUR JOB
+
+Audit EVERY value rendered on the dashboard.
+
+Trace every value back to its origin.
+
+Create a complete dependency map.
+
+Nothing else.
+
+--------------------------------------------------
+
+FOR EVERY VALUE FIND:
+
+1.
+Where is it rendered?
+
+(file + function)
+
+2.
+Where is it calculated?
+
+(file + function)
+
+3.
+What API supplies it?
+
+4.
+What endpoint?
+
+5.
+What raw field?
+
+6.
+Who transforms it?
+
+7.
+Is it cached?
+
+8.
+Is it duplicated?
+
+9.
+Is it placeholder?
+
+10.
+Is it random?
+
+11.
+Is it hardcoded?
+
+12.
+Can it disappear?
+
+--------------------------------------------------
+
+CLASSIFY EVERY VALUE
+
+Choose ONLY one:
+
+POLYMARKET CLOB
+
+POLYMARKET GAMMA
+
+Internal AI Calculation
+
+Binance Context Data
+
+Chainlink Context Data
+
+Hardcoded
+
+Placeholder
+
+Unknown
+
+--------------------------------------------------
+
+REPORT
+
+Create a table like:
+
+Field
+
+↓
+
+Rendered At
+
+↓
+
+Calculated At
+
+↓
+
+API
+
+↓
+
+Endpoint
+
+↓
+
+Raw Field
+
+↓
+
+Transformation
+
+↓
+
+Final Value
+
+↓
+
+Status
+
+--------------------------------------------------
+
+FORBIDDEN
+
+Do NOT fix.
+
+Do NOT optimize.
+
+Do NOT rename.
+
+Do NOT remove.
+
+Do NOT redesign.
+
+Do NOT rewrite.
+
+Only audit.
+
+--------------------------------------------------
+
+SPECIAL RULE
+
+Market Universe
+
+must be 100% Polymarket.
+
+No Bid.
+
+No Ask.
+
+No Orderbook.
+
+No Spread.
+
+No Trading Metrics.
+
+Chart
+
+may use Binance.
+
+may use Chainlink.
+
+Everything else
+
+must remain Polymarket.
+
+--------------------------------------------------
+
+WHEN FINISHED
+
+Produce:
+
+SOURCE_AUDIT.md
+
+Containing:
+
+Every displayed value.
+
+Every dependency.
+
+Every API.
+
+Every endpoint.
+
+Every transformation.
+
+Every risk.
+
+Then STOP.
+
+Wait for approval.
+
+Do NOT continue automatically.

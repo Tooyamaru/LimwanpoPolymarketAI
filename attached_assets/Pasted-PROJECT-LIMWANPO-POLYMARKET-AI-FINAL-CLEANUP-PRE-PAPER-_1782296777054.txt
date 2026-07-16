@@ -1,0 +1,345 @@
+PROJECT: LIMWANPO POLYMARKET AI
+
+FINAL CLEANUP & PRE-PAPER-TRADING AUDIT
+
+IMPORTANT:
+
+Ini bukan task untuk menambah fitur baru.
+
+Ini bukan task untuk membuat dashboard baru.
+
+Ini bukan task untuk melakukan redesign UI.
+
+Fokus task ini adalah:
+
+1. Menghapus technical debt
+2. Menghapus sisa-sisa eksperimen dashboard lama
+3. Menghapus dead code
+4. Menghapus duplicate implementation
+5. Menghapus unused services
+6. Menghapus unused assets
+7. Memastikan architecture siap masuk paper trading
+
+==================================================
+PHASE 1
+FULL PROJECT INVENTORY
+======================
+
+Lakukan scan seluruh repository.
+
+Buat laporan:
+
+* Semua folder
+* Semua modules
+* Semua services
+* Semua schedulers
+* Semua engines
+* Semua dashboards
+* Semua API endpoints
+* Semua background tasks
+* Semua cron jobs
+* Semua configs
+* Semua environment variables
+
+Kelompokkan menjadi:
+
+ACTIVE
+LEGACY
+UNUSED
+UNKNOWN
+
+Jangan menghapus apapun dulu.
+
+==================================================
+PHASE 2
+DASHBOARD CLEANUP
+=================
+
+Project telah melewati banyak versi dashboard:
+
+V1
+V2
+V3
+V4
+V4.5
+V5
+
+Cari seluruh:
+
+* old dashboard files
+* dashboard backups
+* dashboard copies
+* dashboard experiments
+* abandoned CSS
+* abandoned JS
+* abandoned widgets
+* abandoned components
+
+Cari:
+
+index_old
+dashboard_old
+dashboard_v1
+dashboard_v2
+dashboard_backup
+dashboard_copy
+
+atau nama serupa.
+
+Cari seluruh CSS class yang tidak pernah digunakan.
+
+Cari seluruh JS function yang tidak pernah dipanggil.
+
+Cari seluruh HTML block yang tidak pernah dirender.
+
+Hasil:
+
+KEEP
+REMOVE
+
+Dashboard final harus hanya memiliki:
+
+ONE SOURCE OF TRUTH
+
+Tidak boleh ada dashboard legacy tersisa.
+
+==================================================
+PHASE 3
+UNUSED FILE DETECTION
+=====================
+
+Cari seluruh file yang:
+
+* tidak pernah diimport
+* tidak pernah dipanggil
+* tidak pernah direferensikan
+
+Termasuk:
+
+Python
+JavaScript
+TypeScript
+HTML
+CSS
+JSON
+
+Laporkan:
+
+SAFE TO DELETE
+
+Jangan delete otomatis.
+
+==================================================
+PHASE 4
+UNUSED DEPENDENCIES
+===================
+
+Audit:
+
+requirements.txt
+package.json
+
+Cari:
+
+unused libraries
+unused packages
+
+Contoh:
+
+library terinstall
+tetapi tidak pernah dipakai
+
+Laporkan:
+
+KEEP
+REMOVE
+
+==================================================
+PHASE 5
+UNUSED CONFIGURATION
+====================
+
+Audit:
+
+.env
+settings
+config files
+
+Cari:
+
+* environment variables yang tidak dipakai
+* feature flags yang tidak dipakai
+* legacy configs
+* deprecated configs
+
+Laporkan:
+
+ACTIVE
+UNUSED
+
+==================================================
+PHASE 6
+POLYMARKET SPECIALIZATION AUDIT
+===============================
+
+LimwanpoAI sekarang hanya fokus pada:
+
+Polymarket Up/Down Markets
+
+Audit seluruh codebase.
+
+Cari logic yang berasal dari:
+
+generic crypto trading
+spot trading
+futures trading
+order book trading
+market discovery systems
+
+yang sudah tidak relevan.
+
+Laporkan:
+
+REQUIRED
+LEGACY
+REMOVE
+
+==================================================
+PHASE 7
+ENGINE VALIDATION
+=================
+
+Audit:
+
+Universe Engine
+Signal Engine
+Opportunity Engine
+Strategy Engine
+Risk Engine
+Execution Engine
+Exit Engine
+Analytics Engine
+
+Untuk setiap engine:
+
+1. Apakah masih digunakan?
+2. Apakah ada duplicate implementation?
+3. Apakah ada fallback lama?
+4. Apakah ada dead branch?
+5. Apakah ada unreachable code?
+
+Laporkan.
+
+==================================================
+PHASE 8
+SCORING SYSTEM AUDIT
+====================
+
+Lakukan audit penuh Opportunity Score.
+
+Jelaskan:
+
+* seluruh faktor pembentuk score
+* bobot masing-masing faktor
+* score calculation flow
+* faktor dominan
+* faktor redundan
+* faktor yang tidak berpengaruh
+
+Cari:
+
+score components yang tidak pernah aktif.
+
+Laporkan.
+
+Jangan ubah formula.
+
+==================================================
+PHASE 9
+API AUDIT
+=========
+
+Audit seluruh endpoint.
+
+Cari:
+
+* endpoint tidak digunakan
+* endpoint legacy
+* endpoint duplicate
+* endpoint tidak pernah dipanggil dashboard
+
+Laporkan.
+
+==================================================
+PHASE 10
+SCHEDULER AUDIT
+===============
+
+Audit:
+
+cron jobs
+background jobs
+scheduled jobs
+
+Cari:
+
+* scheduler mati
+* scheduler duplikat
+* scheduler tidak memiliki consumer
+
+Laporkan.
+
+==================================================
+PHASE 11
+PERFORMANCE AUDIT
+=================
+
+Cari:
+
+* polling berlebihan
+* refresh berlebihan
+* duplicate API calls
+* duplicate calculations
+* memory leaks
+* repeated scoring
+
+Laporkan.
+
+==================================================
+PHASE 12
+FINAL REPORT
+============
+
+JANGAN melakukan perubahan besar terlebih dahulu.
+
+Buat laporan akhir:
+
+1. Files safe to delete
+2. Code safe to delete
+3. Dependencies safe to delete
+4. Config safe to delete
+5. APIs safe to delete
+6. Dashboard artifacts safe to delete
+7. Estimated reduction:
+
+   * file count
+   * LOC
+   * dependencies
+   * memory usage
+
+Setelah laporan selesai:
+
+WAIT FOR APPROVAL
+
+Jangan menghapus apapun sebelum approval diberikan.
+
+GOAL:
+
+Membuat Limwanpo Polymarket AI menjadi:
+
+LEAN
+CLEAN
+AUDITABLE
+MAINTAINABLE
+
+dan siap masuk fase PAPER TRADING.

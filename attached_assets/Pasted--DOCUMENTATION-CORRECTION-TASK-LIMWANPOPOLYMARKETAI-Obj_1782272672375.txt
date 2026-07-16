@@ -1,0 +1,287 @@
+# DOCUMENTATION CORRECTION TASK — LIMWANPOPOLYMARKETAI
+
+## Objective
+
+Review and correct all project documentation so that the business model, architecture assumptions, audit assumptions, and future development direction accurately reflect the real purpose of LimwanpoPolymarketAI.
+
+This is NOT a code change task.
+
+Do NOT modify application logic.
+
+Do NOT modify database schema.
+
+Do NOT modify APIs.
+
+Do NOT modify roadmap phases.
+
+Do NOT modify layer numbering.
+
+Documentation only.
+
+---
+
+# CRITICAL PROJECT IDENTITY
+
+The official project name is:
+
+**LimwanpoPolymarketAI**
+
+This project is a:
+
+**Polymarket Quant Bot**
+
+It is NOT:
+
+* Crypto trading bot
+* Binance trading bot
+* Spot trading bot
+* Futures trading bot
+* Arbitrage bot
+* Market making bot
+* High frequency trading bot
+* CEX execution engine
+
+Any documentation that implies the system trades cryptocurrencies directly must be corrected.
+
+---
+
+# BUSINESS MODEL
+
+LimwanpoPolymarketAI does NOT trade BTC, ETH, SOL, or XRP.
+
+The system trades:
+
+* YES contracts
+* NO contracts
+
+on:
+
+Polymarket prediction markets.
+
+Examples:
+
+* Will BTC be above X at Y time?
+* Will ETH be above X at Y time?
+* Will SOL be above X at Y time?
+* Will XRP be above X at Y time?
+
+The actual instruments being traded are:
+
+YES and NO contracts.
+
+BTC, ETH, SOL, and XRP are prediction targets only.
+
+They are NOT traded assets.
+
+---
+
+# ROLE OF BINANCE AND CHAINLINK
+
+Binance and Chainlink are external data sources.
+
+They are used only for:
+
+* Signal generation
+* Market analysis
+* Probability estimation
+* Quantitative modeling
+
+The system never executes trades on Binance.
+
+The system never opens futures positions.
+
+The system never opens spot positions.
+
+The system never sends orders to a centralized exchange.
+
+All execution occurs exclusively on Polymarket.
+
+---
+
+# QUANT PHILOSOPHY
+
+LimwanpoPolymarketAI is NOT a direction-prediction bot.
+
+The goal is NOT:
+
+"Predict if BTC goes up."
+
+The goal IS:
+
+"Detect probability mispricing."
+
+Example:
+
+Market YES probability:
+95%
+
+Model probability:
+80%
+
+Even if the model believes the event is likely,
+
+BUY YES may still be a bad trade.
+
+The system must evaluate:
+
+Model Probability
+
+versus
+
+Market Implied Probability
+
+and determine whether YES or NO is mispriced.
+
+This principle should be documented clearly.
+
+---
+
+# POSITION PHILOSOPHY
+
+Multiple entries are allowed.
+
+Multiple positions on the same market may be valid.
+
+Multiple positions on the same condition_id may be valid if exposure rules permit.
+
+Do NOT assume:
+
+one market = one position.
+
+Do NOT automatically classify repeated entries as bugs.
+
+Exposure management is more important than position count.
+
+Any documentation implying a strict one-position-per-market rule should be reviewed and corrected.
+
+---
+
+# PROFIT TAKING PHILOSOPHY
+
+The system is allowed to close positions before market settlement.
+
+Waiting for event resolution is NOT mandatory.
+
+Valid workflow:
+
+OPEN YES
+→ position becomes profitable
+→ CLOSE POSITION
+→ realize profit
+
+This is expected behavior.
+
+This is not an error.
+
+This is not a failed prediction.
+
+This is a normal Polymarket trading workflow.
+
+Documentation must clearly explain this distinction.
+
+---
+
+# AUDIT ASSUMPTIONS
+
+All future audits must use:
+
+Prediction Market assumptions
+
+NOT:
+
+Spot Trading assumptions
+
+NOT:
+
+Futures Trading assumptions
+
+NOT:
+
+Binance assumptions
+
+Examples of invalid audit findings:
+
+* "Position should stay open until expiry."
+* "Multiple entries are always duplicate positions."
+* "BTC should be the traded asset."
+* "Take-profit must follow futures logic."
+
+These assumptions are incorrect for this project.
+
+---
+
+# README STRUCTURE REQUIREMENT
+
+README.md must become the single source of truth.
+
+README must contain detailed explanations for:
+
+1. Project Identity
+2. Business Model
+3. Traded Instruments
+4. Role of Binance and Chainlink
+5. Prediction Market Structure
+6. Quant Philosophy
+7. Position and Exposure Philosophy
+8. Profit Taking Philosophy
+9. Audit Assumptions
+10. Layer Architecture Overview
+
+---
+
+# PROJECT_STATUS.md
+
+Keep concise.
+
+Do not duplicate README content.
+
+Use a short reference:
+
+"LimwanpoPolymarketAI is a Polymarket Quant Bot.
+See README.md for complete business-model documentation."
+
+---
+
+# ROADMAP_NEXT_PHASE.md
+
+Keep concise.
+
+Do not duplicate README content.
+
+Use a short architecture reminder:
+
+"All future layers must follow Polymarket prediction-market mechanics.
+See README.md for complete business-model documentation."
+
+---
+
+# NEXT_BUILD_TASKS.md
+
+Keep concise.
+
+Add only essential development rules.
+
+Reference README for full details.
+
+---
+
+# IMPORTANT
+
+README.md must become the authoritative source.
+
+PROJECT_STATUS.md, ROADMAP_NEXT_PHASE.md, and NEXT_BUILD_TASKS.md must reference README instead of duplicating large blocks of business-model text.
+
+This prevents future documentation drift and inconsistent interpretations by developers or AI builders.
+
+---
+
+# EXPECTED RESULT
+
+After completion:
+
+* AI builders understand this is a Polymarket Quant Bot.
+* AI builders stop treating it as a crypto trading bot.
+* Future audits use prediction-market assumptions.
+* Documentation becomes consistent.
+* README becomes the single source of truth.
+* Future Layer 11 development aligns with actual Polymarket mechanics.

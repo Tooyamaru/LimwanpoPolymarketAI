@@ -1,0 +1,504 @@
+# LIMWANPO AI — AI DECISION INTEGRITY AUDIT + REMEDIATION
+
+STOP.
+
+JANGAN mengubah UI.
+JANGAN mengubah layout.
+JANGAN redesign.
+JANGAN menambah provider baru.
+JANGAN membuat dummy.
+JANGAN membuat random value.
+JANGAN membuat fake reasoning.
+JANGAN menganggap default atau fallback sebagai data real.
+
+MODE:
+AUDITOR + EXECUTOR.
+
+Target utama:
+
+Buktikan apakah setiap keputusan AI:
+
+- BUY_YES
+- BUY_NO
+- WAIT
+- READY
+- ENTRY
+- BLOCKED
+
+benar-benar berasal dari data real Polymarket dan formula engine yang valid.
+
+Jika ditemukan rule sementara, stub, default, fallback, stale input, atau data palsu:
+langsung perbaiki tanpa menunggu approval lagi.
+
+==================================================
+STEP 1 — READ FIRST
+==================================================
+
+Baca seluruh file berikut sebelum menulis kode:
+
+- CONSTITUTION.md
+- PROJECT_RULES.md
+- DATA_RULES.md
+- AI_GUARDIAN.md
+- SOURCE_AUDIT.md
+- REAL_DATA_AUDIT.md
+- PHASE_GATE.md
+- replit.md
+
+Lalu baca seluruh implementasi aktual di:
+
+- backend/app/services/signal_engine.py
+- backend/app/services/opportunity_engine.py
+- backend/app/services/strategy_engine.py
+- backend/app/services/risk_engine.py
+- backend/app/services/decision_engine.py
+- backend/app/services/outcome_learning_service.py
+- backend/app/services/dynamic_weight_service.py
+- backend/app/services/market_quality_engine.py
+- backend/app/services/market_context_engine.py
+- backend/app/services/orderbook_engine.py
+- backend/app/services/momentum_engine.py
+- backend/app/services/trend_engine.py
+- backend/app/services/volatility_engine.py
+- backend/app/services/funding_engine.py
+- backend/app/services/news_engine.py
+- backend/app/workers/engine_workers.py
+- seluruh schema/model/repository yang dipakai engine tersebut
+- backend/app/config/settings.py
+
+Jangan menyimpulkan dari nama file.
+Baca formula sebenarnya.
+
+==================================================
+STEP 2 — ENGINE INVENTORY
+==================================================
+
+Untuk setiap engine, dokumentasikan:
+
+- tujuan engine
+- input data
+- sumber input
+- DB table/column
+- formula
+- constants
+- thresholds
+- weights
+- fallback
+- cache
+- output
+- output table
+- consumer berikutnya
+- interval worker
+- behavior ketika input null
+- behavior ketika market rollover
+
+Engine wajib:
+
+1. Signal Engine
+2. Opportunity Engine
+3. Strategy Engine
+4. Risk Engine
+5. Decision Engine
+6. Market Quality Engine
+7. Market Context Engine
+8. Momentum Engine
+9. Trend Engine
+10. Volatility Engine
+11. Orderbook Engine
+12. Funding Engine
+13. News Engine
+14. Outcome Learning
+15. Dynamic Weight
+
+==================================================
+STEP 3 — CLASSIFICATION
+==================================================
+
+Klasifikasikan setiap input dan output sebagai:
+
+- REAL_POLYMARKET
+- DERIVED_FROM_POLYMARKET
+- INTERNAL_ENGINE_FROM_REAL_DATA
+- CONFIGURATION
+- DOCUMENTED_STUB
+- INVALID_FAKE
+- INVALID_RANDOM
+- INVALID_DEFAULT
+- INVALID_FALLBACK
+- INVALID_STALE
+- UNKNOWN
+
+Tidak boleh ada UNKNOWN saat tugas selesai.
+
+DOCUMENTED_STUB tidak boleh dianggap PASS untuk AI Decision Integrity.
+
+==================================================
+STEP 4 — SIGNAL ENGINE TRACE
+==================================================
+
+Trace satu contoh nyata untuk:
+
+- BTC 5m
+- ETH 15m
+- SOL 1H
+- XRP 5m
+
+Tunjukkan:
+
+raw CLOB snapshot
+→ derived features
+→ signal type
+→ severity
+→ direction
+→ confidence formula
+→ final confidence_score
+→ DB signal row
+
+Buktikan angka confidence secara matematis.
+
+Audit apakah confidence:
+
+- terlalu konstan
+- memakai fallback
+- memakai stale snapshot
+- memakai default severity
+- mengabaikan market-specific input
+
+Jika sama karena input memang identik, dokumentasikan.
+Jika sama karena bug, perbaiki.
+
+==================================================
+STEP 5 — OPPORTUNITY ENGINE TRACE
+==================================================
+
+Breakdown opportunity_score sepenuhnya.
+
+Tampilkan komponen seperti:
+
+- signal confidence contribution
+- spread contribution
+- liquidity/orderbook contribution
+- market quality
+- volatility
+- time remaining
+- direction quality
+- penalties
+- bonuses
+
+Untuk setiap komponen:
+
+- source
+- formula
+- max/min
+- weight
+- actual value
+- contribution ke score
+
+Tidak boleh hanya menyebut “computed”.
+
+Buktikan angka akhirnya.
+
+Audit apakah semua market mendapat score yang sama karena:
+- input real identik
+- formula terlalu sederhana
+- fallback/default
+- stale mapping
+- missing feature
+
+Perbaiki jika bug.
+
+==================================================
+STEP 6 — STRATEGY ENGINE TRACE
+==================================================
+
+Untuk satu market nyata, trace:
+
+Opportunity
+→ strategy candidate
+→ selected direction
+→ position size/allocation
+→ entry condition
+→ rejection reason
+→ stored strategy/decision row
+
+Audit seluruh hardcoded threshold.
+
+Untuk setiap threshold tentukan:
+
+- konfigurasi resmi
+- hasil tuning
+- temporary value
+- unexplained magic number
+
+Magic number tanpa penjelasan harus dipindahkan ke settings atau didokumentasikan.
+
+==================================================
+STEP 7 — RISK ENGINE TRACE
+==================================================
+
+Audit:
+
+- max position size
+- exposure
+- available capital
+- confidence threshold
+- spread threshold
+- liquidity threshold
+- cooldown
+- duplicate position rule
+- market expiry rule
+- drawdown rule
+- blocked reason
+
+Trace satu APPROVED dan satu BLOCKED case.
+
+Buktikan semua keputusan risk memakai data real.
+
+Jangan biarkan BLOCKED hanya karena placeholder/default yang salah.
+
+==================================================
+STEP 8 — DECISION ENGINE TRACE
+==================================================
+
+Untuk satu market, tampilkan alur lengkap:
+
+Signal
+→ Opportunity
+→ Strategy
+→ Risk
+→ Decision
+
+Jelaskan kenapa hasil akhirnya:
+
+- BUY_YES
+- BUY_NO
+- WAIT
+- BLOCKED
+
+Tampilkan seluruh input yang memengaruhi keputusan.
+
+Audit apakah WAIT terlalu dominan karena:
+
+- threshold terlalu tinggi
+- input missing
+- news stub
+- weight default
+- confidence terlalu rendah
+- stale opportunity
+- decision mapping salah
+
+Perbaiki hanya jika ditemukan bug atau default tak valid.
+
+==================================================
+STEP 9 — NEWS ENGINE
+==================================================
+
+News Engine saat ini diduga stub NEUTRAL / 0.0.
+
+Audit dan jawab:
+
+- Apakah output stub masuk ke Decision Engine?
+- Apakah Decision Engine memperlakukan stub sebagai data nyata?
+- Apakah stub menurunkan confidence?
+- Apakah stub memblokir keputusan?
+- Apakah stub hanya bersifat netral dan tidak berpengaruh?
+
+Jika stub memengaruhi keputusan:
+itu INVALID.
+
+Perbaiki agar stub tidak dianggap sebagai evidence.
+
+Jangan tambah provider berita baru.
+Gunakan nullable/not_available state jika data belum ada.
+
+==================================================
+STEP 10 — DYNAMIC WEIGHT
+==================================================
+
+Audit default weight 50.0.
+
+Jawab:
+
+- Kapan dipakai?
+- Mengapa 50.0?
+- Apakah memengaruhi keputusan sebelum learning tersedia?
+- Apakah dianggap learned weight padahal belum?
+- Apakah UI/API membedakan default vs learned?
+
+Jika default dipakai sebagai learned evidence:
+perbaiki.
+
+Harus ada status jelas:
+
+- DEFAULT
+- LEARNED
+- INSUFFICIENT_HISTORY
+
+==================================================
+STEP 11 — OUTCOME LEARNING
+==================================================
+
+Audit:
+
+Prediction
+→ resolved market
+→ actual outcome
+→ correctness
+→ feature attribution
+→ weight adjustment
+→ persistence
+→ next decision consumption
+
+Pastikan:
+
+- outcome berasal dari Polymarket resolution real
+- market mapping memakai condition_id benar
+- tidak ada fake outcome
+- tidak ada synthetic win/loss
+- learning benar-benar dikonsumsi engine berikutnya
+
+Jika learning hanya menulis DB tetapi tidak pernah digunakan:
+anggap belum selesai.
+
+==================================================
+STEP 12 — ROLLOVER SAFETY
+==================================================
+
+Pastikan semua engine berhenti memakai market lama setelah rollover.
+
+Audit:
+
+- signal condition_id
+- opportunity condition_id
+- strategy condition_id
+- risk condition_id
+- decision condition_id
+- outcome condition_id
+
+Tidak boleh ada engine output baru untuk market yang sudah tidak active.
+
+Cari stale cache dan stale repository result.
+
+==================================================
+STEP 13 — SEARCH FOR INVALID LOGIC
+==================================================
+
+Cari seluruh codebase untuk:
+
+- random
+- Math.random
+- mock
+- fake
+- dummy
+- placeholder
+- default_score
+- default_confidence
+- fallback_score
+- neutral_score
+- hardcoded decision
+- hardcoded direction
+- fixed opportunity score
+- fixed severity
+- fixed regime
+- test values leaking into production
+- static AI reasoning
+- fabricated explanation
+
+Setiap temuan:
+- lokasi
+- dampak
+- consumer
+- remediation
+
+==================================================
+STEP 14 — REMEDIATION
+==================================================
+
+Langsung perbaiki seluruh item INVALID.
+
+Perubahan boleh pada:
+
+- engine service
+- repository
+- schema
+- worker
+- settings
+- endpoint
+- mapping frontend jika field salah
+
+Dilarang:
+
+- redesign UI
+- menambah fake replacement
+- menambah provider eksternal baru
+- menyembunyikan nilai bermasalah
+
+Jika data belum tersedia:
+gunakan null/not_available dan pastikan engine tidak menganggapnya sebagai evidence.
+
+==================================================
+STEP 15 — LIVE VALIDATION
+==================================================
+
+Wajib validasi live minimal:
+
+- BTC 5m
+- ETH 15m
+- SOL 1H
+- XRP 5m
+
+Untuk setiap contoh tampilkan:
+
+1. Polymarket raw market/CLOB data
+2. DB snapshot
+3. Signal row
+4. Opportunity row
+5. Strategy row
+6. Risk row
+7. Decision row
+8. Final reason
+9. Final confidence
+10. Final direction
+
+Semua condition_id harus sama.
+
+==================================================
+STEP 16 — OUTPUT FILE
+==================================================
+
+Buat:
+
+AI_DECISION_INTEGRITY_AUDIT.md
+
+Isinya:
+
+1. Engine inventory
+2. Input/output map
+3. Formula breakdown
+4. Threshold table
+5. Defaults/fallbacks/stubs
+6. Bugs ditemukan
+7. Root cause
+8. Files diubah
+9. Before/after behavior
+10. Four end-to-end examples
+11. Remaining risks
+12. Final PASS/FAIL table
+
+Final status hanya boleh:
+
+AI DECISION INTEGRITY: PASS
+
+jika:
+
+- tidak ada UNKNOWN
+- tidak ada INVALID
+- stub tidak memengaruhi keputusan
+- default tidak disamarkan sebagai learned data
+- semua keputusan dapat dijelaskan dari data real
+- learning memakai outcome real
+- rollover tidak menghasilkan stale decision
+
+Jika masih ada satu hal belum terbukti:
+jangan klaim PASS.
+Lanjut audit dan remediation sampai benar-benar selesai.

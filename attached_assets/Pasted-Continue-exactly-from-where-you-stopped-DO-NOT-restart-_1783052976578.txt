@@ -1,0 +1,272 @@
+Continue exactly from where you stopped.
+
+DO NOT restart from the beginning.
+
+The previous implementation already completed:
+
+✅ settings.py updates
+✅ order.py updates
+✅ position.py updates
+✅ signal_confidence.py updates
+
+Continue from there.
+
+=====================================================
+PHASE 4 — COMPLETE IMPLEMENTATION
+=====================================================
+
+This is production paper-trading calibration.
+
+Do NOT redesign the architecture.
+
+Do NOT refactor unrelated code.
+
+Do NOT change APIs unless required.
+
+Only implement the remaining Phase 4 tasks.
+
+=====================================================
+TASK 1
+EXIT ENGINE
+=====================================================
+
+Modify exit_engine.py.
+
+Current stop loss is still using the old static logic.
+
+Implement spread-aware stop loss.
+
+Requirements:
+
+1.
+Calculate estimated entry spread cost.
+
+2.
+Minimum stop loss must never be smaller than:
+
+spread_cost × 2.5
+
+3.
+Respect EXIT_STOP_LOSS_USDC as absolute floor.
+
+Final stop should be:
+
+max(
+EXIT_STOP_LOSS_USDC,
+spread_cost * EXIT_STOP_MULTIPLIER
+)
+
+where multiplier defaults to 2.5.
+
+Do NOT change take profit.
+
+Do NOT change expiry exits.
+
+Do NOT change invalidation exits.
+
+=====================================================
+TASK 2
+POSITION SIZING
+=====================================================
+
+Modify position_sizing_service.py.
+
+Current score tiers no longer make sense.
+
+Implement:
+
+30 → SMALL
+
+38 → MEDIUM
+
+50 → LARGE
+
+Current markets (~34 score) should allocate SMALL size.
+
+Do NOT modify risk limits.
+
+=====================================================
+TASK 3
+EXECUTION ENGINE
+=====================================================
+
+Modify execution_engine.py.
+
+Implement paper trading fee simulation.
+
+Requirements:
+
+Fee rate configurable.
+
+Store:
+
+entry_fee_usdc
+
+exit_fee_usdc
+
+total_fee_usdc
+
+Deduct fees from realized PnL.
+
+No slippage yet.
+
+No partial fills.
+
+=====================================================
+TASK 4
+DATABASE
+=====================================================
+
+Update database migration.
+
+Add missing columns safely.
+
+Only ALTER TABLE IF NOT EXISTS style.
+
+Never destroy data.
+
+=====================================================
+TASK 5
+PERFORMANCE ANALYTICS
+=====================================================
+
+Extend performance_analytics_service.py.
+
+Implement:
+
+Average Holding Time
+
+Average MAE
+
+Average MFE
+
+Signal Precision
+
+Opportunity Conversion Rate
+
+Average Fee
+
+Average Net PnL
+
+Net Profit
+
+Gross Profit
+
+Gross Loss
+
+Everything must be exposed through analytics API.
+
+=====================================================
+TASK 6
+SCHEMAS
+=====================================================
+
+Update analytics schemas.
+
+Include every new metric.
+
+Do not break compatibility.
+
+=====================================================
+TASK 7
+SIGNAL CONFIDENCE
+=====================================================
+
+The new signal_confidence.py already exists.
+
+Wire it into signal_engine.py.
+
+Every generated signal must use the new confidence calculation.
+
+=====================================================
+TASK 8
+HEALTH
+=====================================================
+
+Keep existing heartbeat.
+
+Add:
+
+last_successful_trade
+
+last_signal
+
+last_opportunity
+
+last_strategy
+
+last_execution
+
+last_exit
+
+Expose through health endpoint.
+
+=====================================================
+TASK 9
+TESTS
+=====================================================
+
+Update every affected unit test.
+
+Add tests for:
+
+spread-aware stop
+
+fee deduction
+
+analytics metrics
+
+confidence calculation
+
+database migration
+
+health endpoint
+
+No test removal.
+
+=====================================================
+TASK 10
+FINAL VALIDATION
+=====================================================
+
+Run:
+
+pytest
+
+Target:
+
+359 existing tests
+
+plus all new tests
+
+Everything must pass.
+
+=====================================================
+FINAL REPORT
+=====================================================
+
+After implementation provide ONLY:
+
+1.
+Files modified.
+
+2.
+Number of tests before.
+
+3.
+Number of tests after.
+
+4.
+Pass count.
+
+5.
+Any migrations added.
+
+6.
+Any backward compatibility concerns.
+
+Do NOT stop midway.
+
+Do NOT ask questions.
+
+Finish the entire Phase 4 implementation before responding.

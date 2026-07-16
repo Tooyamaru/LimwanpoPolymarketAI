@@ -1,0 +1,382 @@
+LIMWANPO AI — FINAL DASHBOARD POLISH (POLYMARKET VERSION)
+IMPORTANT
+
+Sebelum mengubah apa pun, pahami bahwa ini BUKAN AI Trading Dashboard.
+
+Ini adalah AI Polymarket Dashboard.
+
+Seluruh UI harus mengikuti konsep Polymarket.
+
+Yang menjadi fokus utama adalah:
+
+Price To Beat
+Current Price
+Probability
+BUY YES / BUY NO
+Confidence
+Position
+Stake
+PnL
+
+Bukan indikator trading seperti RSI, EMA, MACD, dsb.
+
+JANGAN mengubah backend, engine, API, database, ataupun logic trading.
+
+Frontend only.
+
+Footer HARUS tetap sama.
+
+Chart HARUS tetap sama.
+
+1. PORTFOLIO
+
+Biarkan layout sekarang.
+
+Tidak perlu perubahan besar.
+
+Semua nominal harus menggunakan format uang.
+
+Contoh
+
+$400.00
+$25.30
+-$1.20
+
+jangan
+
+400
+25
+2. LIVE PROBABILITY
+
+JANGAN DIUBAH.
+
+Chart sudah final.
+
+3. AI ACTIVITY
+
+Biarkan posisi sekarang.
+
+Tidak perlu dipindah.
+
+Lebarkan sedikit panel bila diperlukan.
+
+Tampilkan sekitar 18–22 log.
+
+Tidak perlu fitur tambahan.
+
+4. MARKET UNIVERSE
+
+Ini bagian TERPENTING.
+
+Harus menjadi fokus dashboard.
+
+Setiap asset (BTC ETH SOL XRP)
+
+tetap mempunyai 3 timeframe
+
+5M
+
+15M
+
+1H
+
+tetapi setiap timeframe harus berupa CARD sendiri.
+
+Misal
+
+BTC
+
+-------------------
+5M
+-------------------
+
+Price To Beat
+
+61800
+
+Current Price
+
+61742
+
+Difference
+
+-58
+
+Prediction
+
+BUY YES
+
+Confidence
+
+91%
+
+Position
+
+BUY YES
+atau
+BUY NO
+atau
+NO POSITION
+
+Stake
+
+$25
+
+Contracts
+
+3
+
+PnL
+
++$2.30
+
+Age
+
+00:03:22
+
+AI Score
+
+91/100
+
+Status
+
+TRADING
+
+Jika belum ada posisi
+
+Position
+
+NO POSITION
+
+BUKAN
+
+NONE
+5. HEADER MARKET
+
+Hilangkan
+
+3 MARKETS
+
+Ganti menjadi
+
+Open Position : X
+
+Capital Used : $XX
+
+Contoh
+
+Open Position : 2
+
+Capital Used : $46
+6. PRICE TO BEAT
+
+WAJIB.
+
+Ini inti Polymarket.
+
+Harus menggunakan data market.
+
+Format
+
+Price To Beat
+
+61,800
+
+Current Price
+
+61,742
+
+Difference
+
+-58
+
+Hijau bila menang.
+
+Merah bila kalah.
+
+Jika strike price dapat diparsing dari market question,
+
+gunakan strike tersebut.
+
+Jika tidak,
+
+fallback seperti sekarang.
+
+7. AI SCORE
+
+Perbesar.
+
+Jangan hanya
+
+34
+
+menjadi
+
+AI Score
+
+34 /100
+
+lebih jelas.
+
+8. BORDER
+
+Semua card diberi border cyan.
+
+Sedikit glow.
+
+Lebih jelas dibanding sekarang.
+
+9. SYSTEM HEALTH
+
+Jangan diubah layout besar.
+
+Tetap di kiri bawah.
+
+Tetapi rapikan.
+
+Format menjadi
+
+Signal Engine ............100%
+
+Opportunity Engine .......100%
+
+Strategy Engine ..........100%
+
+Risk Engine ..............100%
+
+Execution Engine .........100%
+
+Exit Engine ..............100%
+
+Universe Sync ............100%
+
+Price Refresh ............100%
+
+Analytics Engine .........100%
+
+Jangan ada tulisan
+
+OK
+
+GOOD
+
+PERFECT
+
+Cukup
+
+100%
+
+Semua rata kanan.
+
+Label rata kiri.
+
+Spacing lebih longgar.
+
+10. HAPUS DEBUG INFO
+
+Jika masih ada
+
+DB
+
+REDIS
+
+UPTIME
+
+VERSION
+
+MARKETS
+
+hapus semuanya.
+
+Tidak berguna untuk user.
+
+11. EXECUTION PIPELINE
+
+Pipeline tetap.
+
+Tetapi lebih rapi.
+
+Icon sedikit lebih kecil.
+
+Label sedikit lebih besar.
+
+Connector sedikit lebih tipis.
+
+Tidak boleh ada overlap.
+
+Jangan memenuhi layar.
+
+12. FONT
+
+Ukuran sekarang sudah bagus.
+
+JANGAN diperbesar.
+
+Yang diperbaiki hanya
+
+contrast
+opacity
+glow
+
+agar lebih mudah dibaca.
+
+13. FOOTER
+
+JANGAN DIUBAH.
+
+Tetap persis seperti sekarang.
+
+14. RESPONSIVE
+
+Pastikan seluruh dashboard
+
+1920x1080
+
+1366x768
+
+dan laptop normal
+
+langsung terlihat
+
+tanpa vertical scroll.
+
+Market Universe harus tetap menjadi area terbesar.
+
+15. YANG HARUS TETAP
+
+✅ Backend
+
+✅ API
+
+✅ Database
+
+✅ Engine
+
+✅ Trading Logic
+
+✅ Chart
+
+✅ Footer
+
+Tidak boleh berubah.
+
+Frontend only.
+
+TARGET AKHIR
+
+Dashboard harus terlihat seperti professional institutional AI terminal khusus Polymarket, bukan trading bot.
+
+Ketika seseorang melihat dashboard, mereka langsung memahami bahwa AI sedang mengambil keputusan berdasarkan:
+
+Price To Beat
+Current Price
+Probability
+BUY YES / BUY NO
+Confidence
+Stake
+PnL
+AI Score
+
+Bukan berdasarkan indikator trading tradisional.
+
+Lakukan seluruh perubahan dalam satu implementasi yang konsisten. Jangan mengubah backend atau logic apa pun.

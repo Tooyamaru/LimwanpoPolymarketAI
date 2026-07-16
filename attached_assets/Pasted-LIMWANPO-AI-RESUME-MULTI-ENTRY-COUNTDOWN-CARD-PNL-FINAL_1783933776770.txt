@@ -1,0 +1,460 @@
+LIMWANPO AI — RESUME MULTI-ENTRY / COUNTDOWN / CARD PNL FINALIZATION
+
+Konteks:
+
+Pengerjaan sebelumnya berhenti karena daily quota saat sedang memeriksa test regression.
+
+Yang sudah dikerjakan pada current codebase:
+
+- Countdown dipulihkan di sebelah timeframe 5M / 15M / 1H.
+- Position model mulai mendukung multi-lot.
+- remaining_quantity ditambahkan.
+- Multi-entry settings dan risk rules ditambahkan.
+- Risk Engine diperbarui untuk multiple entries per condition_id.
+- Position Service diperbarui untuk:
+  - entry_sequence
+  - scale_in_reason
+  - partial exit
+- Exit Engine dan Execution Engine diperbarui untuk close_quantity / multi-lot.
+- Card summary schema/repository/API diperbarui.
+- Frontend card menampilkan:
+  - PNL
+  - IN
+  - OUT
+  - LOTS
+  - countdown
+- Database migration ditambahkan.
+- 26/26 Risk Engine tests sudah pass.
+
+Quota habis saat:
+- memeriksa test_execution_engine.py failures
+- membandingkan lifecycle-state code terhadap git diff
+- belum ada final full validation
+
+TUGAS:
+
+Resume dari current codebase.
+Jangan mulai dari nol.
+Jangan hapus perubahan yang sudah ada.
+Jangan redesign UI.
+Jangan mengembalikan POTENTIAL.
+Jangan membatasi satu posisi per condition_id.
+Jangan menghapus duplicate execution protection.
+Jangan membuat fake multi-entry.
+
+==================================================
+STEP 1 — VERIFY CURRENT DIFF
+==================================================
+
+Jalankan:
+
+- git status
+- git diff --stat
+- git diff
+- python -m compileall -q backend/app
+
+Daftar semua file yang berubah.
+
+Pastikan current diff mencakup secara wajar:
+
+- position model
+- database migration
+- settings
+- position repository
+- risk engine
+- position service
+- exit engine
+- execution engine
+- card summary repository/schema/API
+- frontend index.html
+- tests
+
+Jangan percaya log sebelumnya tanpa membaca code current.
+
+==================================================
+STEP 2 — VERIFY COUNTDOWN
+==================================================
+
+Periksa frontend.
+
+Countdown harus tampil tepat di sebelah timeframe:
+
+BTC  5M · 04:32
+
+Rules:
+
+- PRE_MARKET → menuju start_time
+- ACTIVE → menuju end_time
+- EXPIRED → EXPIRED
+- RESOLUTION_PENDING → PENDING
+- RESOLVED → RESOLVED
+- invalid timestamp → —
+
+Format:
+
+- kurang dari 1 jam: MM:SS
+- 1 jam atau lebih: HH:MM
+
+Pastikan:
+- update setiap detik
+- setiap card memakai timestamp condition_id masing-masing
+- tidak shared timer
+- tidak hardcoded berdasarkan 5M/15M/1H saja
+- countdown tidak negatif
+
+==================================================
+STEP 3 — VERIFY MULTI-ENTRY MODEL
+==================================================
+
+Audit Position model dan migration.
+
+Pastikan tersedia atau equivalent:
+
+- entry_sequence
+- remaining_quantity
+- scale_in_reason
+- source_decision_id
+- source_order_id
+- status OPEN/PARTIAL/CLOSED
+
+Pastikan tidak ada unique constraint yang memaksa:
+
+positions.condition_id unique
+
+Satu condition_id harus dapat memiliki beberapa position rows/lots.
+
+==================================================
+STEP 4 — VERIFY IDEMPOTENCY
+==================================================
+
+Valid additional entry:
+
+- same condition_id
+- new decision_id
+- new order_id
+- new execution event
+- risk approved
+- exposure/cooldown valid
+
+Harus berhasil membuat lot baru.
+
+Invalid duplicate:
+
+- same decision_id
+- same order_id
+- same execution key
+- retry event sama
+
+Harus diblokir.
+
+Jangan memakai condition_id sebagai duplicate key.
+
+==================================================
+STEP 5 — FIX EXECUTION ENGINE TEST FAILURES
+==================================================
+
+Jalankan:
+
+python -m pytest backend/app/tests/test_execution_engine.py -vv
+
+Untuk setiap failure:
+
+- test name
+- expected
+- actual
+- root cause
+- NEW_REGRESSION atau PRE_EXISTING
+
+Periksa khusus:
+
+- lifecycle_state MagicMock / mock drift
+- new remaining_quantity fields
+- new DB query calls
+- new idempotency check
+- source_decision_id / source_order_id
+- close_quantity handling
+
+Perbaiki fixture/mock jika production behavior benar.
+
+Perbaiki production code hanya jika memang bug.
+
+Jangan mengubah assertion asal pass.
+
+==================================================
+STEP 6 — EXIT ENGINE TESTS
+==================================================
+
+Jalankan:
+
+python -m pytest backend/app/tests/test_exit_engine.py -vv
+
+Validasi:
+
+- full close satu lot
+- partial close
+- multiple partial exits
+- remaining_quantity tidak negatif
+- final close mengubah status CLOSED
+- expiry menutup semua OPEN/PARTIAL lots
+- forced_exit_price digunakan untuk setiap lot
+- tidak double-close
+
+==================================================
+STEP 7 — POSITION SERVICE TESTS
+==================================================
+
+Tambahkan atau jalankan tests:
+
+1. Entry pertama condition_id ABC berhasil
+2. Entry kedua condition_id ABC berhasil
+3. Entry ketiga condition_id ABC berhasil
+4. Ketiganya menghasilkan lot IDs berbeda
+5. Same decision retry tidak membuat lot baru
+6. entry_sequence bertambah
+7. weighted average benar
+8. partial exit benar
+9. final exit benar
+10. remaining_quantity benar
+11. PnL per lot benar
+12. total PnL aggregation benar
+
+==================================================
+STEP 8 — RISK LIMITS VALIDATION
+==================================================
+
+Pastikan settings dan Risk Engine benar-benar memakai:
+
+- MAX_ENTRIES_PER_MARKET
+- MAX_OPEN_LOTS_PER_MARKET
+- MAX_EXPOSURE_PER_MARKET_USDC
+- MAX_EXPOSURE_PER_ASSET_USDC
+- MAX_TOTAL_EXPOSURE_USDC
+- MIN_SECONDS_BETWEEN_ENTRIES
+- MAX_SAME_SIDE_ENTRIES
+- ALLOW_OPPOSITE_SIDE_HEDGE
+
+Validasi:
+
+- valid entry kedua tidak diblokir DUPLICATE_POSITION
+- exposure cap tetap block
+- cooldown tetap block
+- same-side allowed
+- opposite-side blocked jika hedge false
+
+==================================================
+STEP 9 — CARD SUMMARY VALIDATION
+==================================================
+
+Per condition_id, endpoint harus return:
+
+- open_lot_count
+- partial_lot_count
+- closed_lot_count
+- total_entry_count
+- total_exit_count
+- total_entry_notional_usdc
+- total_exit_notional_usdc
+- weighted_average_entry_price
+- open_exposure_usdc
+- realized_pnl
+- unrealized_pnl
+- total_pnl
+- current_side
+
+Pastikan:
+
+- IN count hanya executed entries
+- OUT count hanya executed exit events
+- retry tidak double-count
+- condition_id berbeda tidak bercampur
+- no position:
+  - PNL null/—
+  - IN 0 / $0.00
+  - OUT 0 / $0.00
+  - LOTS 0
+
+==================================================
+STEP 10 — FRONTEND VALIDATION
+==================================================
+
+Card final harus seperti:
+
+BTC  5M · 04:32
+
+UP 50.5%       DOWN 49.5%
+
+TARGET 62,802  PNL -$0.20
+
+IN 2 / $20.00  OUT 1 / $9.80
+
+LOTS 1   GAP +48   SPREAD 1.00%
+
+Pastikan:
+
+- minus sign terlihat untuk PnL negatif
+- no position menunjukkan PNL —
+- countdown terlihat
+- tidak overflow
+- POTENTIAL tidak ada
+- tidak ada +$10.20 default
+- card tetap compact
+
+==================================================
+STEP 11 — FULL RELEVANT TESTS
+==================================================
+
+Jalankan:
+
+- python -m compileall -q backend/app
+- test_risk_engine.py
+- test_execution_engine.py
+- test_exit_engine.py
+- position service tests
+- position repository tests
+- card summary tests
+- portfolio tests
+
+Setelah itu jalankan full suite jika memungkinkan.
+
+Pisahkan hasil:
+
+- PASSED
+- NEW_FAILURE
+- PRE_EXISTING_UNRELATED
+
+Jangan klaim full clean jika masih ada failure.
+
+==================================================
+STEP 12 — LIVE DATABASE VALIDATION
+==================================================
+
+Query database:
+
+- positions grouped by condition_id
+- condition_id dengan lebih dari satu lot
+- entry_sequence values
+- remaining_quantity
+- source_decision_id
+- source_order_id
+- open/partial/closed counts
+
+Jika belum ada natural multi-entry:
+
+- jangan fabricate
+- status:
+  MULTI-ENTRY POSITIONING: PENDING LIVE VALIDATION
+
+Tetapi tetap buktikan via test bahwa entry kedua valid didukung.
+
+==================================================
+STEP 13 — SCREENSHOT
+==================================================
+
+Restart workflow.
+
+Ambil screenshot dashboard.
+
+Pastikan terlihat:
+
+- countdown di sebelah timeframe
+- PNL
+- IN
+- OUT
+- LOTS
+- no POTENTIAL
+- no card overflow
+
+==================================================
+STEP 14 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- POTENTIAL
+- +10.20
+- STAKE_DEFAULT
+- DUPLICATE_POSITION
+- one position per market
+- condition_id unique
+- overwrite position
+- unlimited entry
+- remaining_quantity
+- partial exit
+- source_decision_id
+- source_order_id
+- MAX_ENTRIES_PER_MARKET
+- countdown
+
+Klasifikasikan:
+
+- FIXED
+- VALID_IDEMPOTENCY
+- SAFE_RISK_LIMIT
+- REAL_POSITION_DATA
+- UI_FORMATTING
+- TEST_ONLY
+- INVALID_SINGLE_POSITION_LIMIT
+- PENDING_LIVE_PROOF
+
+No unresolved INVALID.
+
+==================================================
+STEP 15 — FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Files read
+2. Git diff summary
+3. Countdown result
+4. Multi-entry model result
+5. Idempotency result
+6. Risk limits result
+7. Partial exit result
+8. Expiry multi-lot result
+9. Card summary result
+10. Frontend screenshot result
+11. Risk tests
+12. Execution tests
+13. Exit tests
+14. Other tests
+15. Live DB validation
+16. Remaining risks
+17. Final statuses
+18. Exact next step
+
+Final statuses:
+
+COUNTDOWN RESTORATION:
+- PASS
+- FAIL
+
+CARD POSITION PNL:
+- PASS
+- PASS WITH REMEDIATION
+- PARTIAL
+- FAIL
+
+MULTI-ENTRY POSITIONING:
+- PASS
+- PASS WITH REMEDIATION
+- PENDING LIVE VALIDATION
+- FAIL
+
+Gunakan MULTI-ENTRY PASS hanya jika:
+
+- entry kedua same condition_id didukung
+- retry duplicate diblokir
+- risk limits aktif
+- partial exit bekerja
+- expiry menutup semua lots
+- aggregation benar
+- relevant tests pass
+
+Jika code/tests sudah benar tetapi belum ada natural multi-entry:
+- MULTI-ENTRY POSITIONING: PENDING LIVE VALIDATION
+
+Jangan menjawab setup complete.
+Jangan defer.
+Jangan buat follow-up task.
+Selesaikan current implementation.

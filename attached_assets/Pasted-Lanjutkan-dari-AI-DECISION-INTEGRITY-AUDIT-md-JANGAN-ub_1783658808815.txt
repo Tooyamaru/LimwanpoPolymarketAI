@@ -1,0 +1,78 @@
+Lanjutkan dari AI_DECISION_INTEGRITY_AUDIT.md.
+
+JANGAN ubah UI.
+JANGAN redesign.
+JANGAN tambah provider baru.
+JANGAN tambah dummy/random/fake data.
+JANGAN klaim production PASS sebelum semua remaining risks diselesaikan atau dibuktikan aman.
+
+Target sekarang: PHASE 9B — REMAINING RISKS REMEDIATION + HARD EVIDENCE TRACE.
+
+Kerjakan hanya hal berikut:
+
+1. Opportunity Engine Constants
+
+* Pindahkan multiplier/tier penting seperti 600.0, 2000.0, score cap, discovery tier, spread threshold, dan opportunity scoring constants ke settings.py atau config resmi.
+* Jangan ubah formula behavior kecuali diperlukan.
+* Dokumentasikan before/after bahwa hasil score tetap sama setelah constants dipindahkan.
+
+2. Dynamic Weight None Fallback
+
+* Audit dynamic_weight_service.py terutama bagian accuracy = perf.accuracy or 50.0.
+* Jika perf.accuracy None, jangan diam-diam dianggap 50.0 sebagai real historical accuracy.
+* Ubah menjadi status INSUFFICIENT_HISTORY / NOT_AVAILABLE / NO_UPDATE, atau skip adjustment.
+* Pastikan DEFAULT tidak pernah disamarkan sebagai learned evidence.
+* Update AI_DECISION_INTEGRITY_AUDIT.md dengan before/after.
+
+3. Outcome Learning Resolution Evidence
+
+* Audit apakah project sudah punya Polymarket/Gamma resolution field, resolved status, outcome, winning token, atau closed market result.
+* Jika sudah ada di integration yang existing, gunakan itu sebagai evidence tambahan.
+* Jangan tambah provider baru.
+* Jika belum tersedia, tulis eksplisit: outcome learning saat ini berbasis realized_pnl, bukan direct market resolution.
+* Jangan klaim “learning uses real resolved outcome” kecuali benar-benar ada direct resolution evidence dari Polymarket/Gamma.
+
+4. Four Market Hard Evidence Trace
+   Untuk BTC 5m, ETH 15m, SOL 1H, XRP 5m, tampilkan trace aktual walaupun market sedang flat.
+
+Untuk setiap market wajib tampilkan:
+
+* asset
+* timeframe
+* condition_id
+* token_id YES/NO
+* raw CLOB snapshot
+* DB market_price_snapshot
+* signal row
+* opportunity row
+* strategy row
+* risk row
+* decision row
+* final action
+* final confidence
+* reason
+* apakah semua row memakai condition_id yang sama
+
+Jangan hanya tulis “logs confirm”.
+Harus tampilkan angka/value aktual dari database atau response API.
+
+5. PASS Reclassification
+   Update final status menjadi salah satu:
+
+* AI DECISION INTEGRITY: PASS
+* AI DECISION INTEGRITY: PASS WITH CAVEATS
+* AI DECISION INTEGRITY: FAIL
+
+Gunakan PASS murni hanya jika:
+
+* remaining risks selesai
+* no UNKNOWN
+* no INVALID
+* no hidden default/fallback
+* live trace 4 market ada dengan angka aktual
+* outcome learning evidence jelas
+* dynamic weight tidak menyamarkan default sebagai learned
+* rollover safety terbukti
+
+Jika masih ada caveat, jangan tulis PASS murni.
+Tulis PASS WITH CAVEATS dan jelaskan caveat-nya.

@@ -1,0 +1,25 @@
+Masalahnya jelas: btc_candles.py sudah ada tapi tidak pernah didaftarkan ke api_router. Plus frontend masih fetch langsung ke Binance. Saya perbaiki semuanya sekarang.
+Now I'll update the frontend fetchBtcCandles to use the internal endpoint with full logging, then restart:
+Uvicorn ada di requirements.txt tapi belum ter-install. Saya install semua dependensi sekarang.
+Backend running, candles arriving (80 candles, btcSeries.data().length: 80). Taking screenshot to verify visual output.
+Chart berhasil tampil dengan 80 candle dari endpoint internal. Sekarang code review wajib:
+Review menemukan bug: HTTPException yang di-raise untuk 403/429/451 tertangkap oleh except Exception. Saya perbaiki sekarang.
+Menambahkan except HTTPException: raise agar 403/429/451 tidak tertelan oleh except Exception, dan membersihkan import yang tidak terpakai.
+Semua berhasil. Berikut ringkasan yang dikerjakan dan bukti verifikasi:
+
+Perubahan yang dilakukan:
+
+backend/app/api/v1/btc_candles.py — Endpoint proxy diperbarui dengan logging lengkap:
+Log request start, URL Binance, status code, jumlah candle, elapsed time
+Deteksi khusus: HTTP 403 (geo-block), 429 (rate limit), 451 (region block), timeout, DNS/connect failure
+Bug HTTPException tertelan except Exception diperbaiki dengan except HTTPException: raise
+backend/app/api/v1/__init__.py — Router btc_candles_router didaftarkan (sebelumnya tidak pernah di-include, itulah akar masalahnya)
+backend/app/static/index.html — fetchBtcCandles() sekarang memanggil /api/v1/btc/candles (bukan api.binance.com langsung), dengan logging frontend: HTTP status, elapsed time, jumlah candle, isi error lengkap jika gagal
+Bukti verifikasi dari screenshot + log:
+
+Check	Hasil
+Backend berhasil ambil candle	✅ [BTC-CANDLES] Candles received: 80
+Frontend HTTP status	✅ HTTP status=200 elapsed=457ms
+series.setData() dipanggil	✅ Stage 12: render started — setData
+Jumlah candle > 0	✅ candles.length: 80
+Chart terlihat di browser	✅ Screenshot menunjukkan candlestick BTC dengan data real (~$59,720)

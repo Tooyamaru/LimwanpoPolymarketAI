@@ -1,0 +1,182 @@
+PHASE 2
+
+Proceed to Phase 2.
+
+IMPORTANT
+
+This phase is still NON-DESTRUCTIVE.
+
+Do NOT rename:
+
+- database tables
+- SQLAlchemy models
+- repositories
+- services
+- workers
+- engine classes
+- API routes
+- scheduler
+- business logic
+- enums
+
+No migrations.
+
+No SQL.
+
+No runtime behaviour changes.
+
+No learning system changes.
+
+--------------------------------------------------
+
+GOAL
+
+Rename ONLY the API response labels and UI-facing terminology.
+
+Internal code must remain exactly the same.
+
+The backend should still use:
+
+trade_decisions
+positions
+orders
+portfolio
+execution_engine
+
+internally.
+
+Only the JSON returned to the frontend and the visible frontend wording may change.
+
+--------------------------------------------------
+
+Rename UI/API presentation vocabulary.
+
+Portfolio
+→ Prediction Workspace
+
+Position
+→ Prediction Record
+
+Trade
+→ Prediction
+
+Open Position
+→ Active Prediction
+
+Closed Position
+→ Resolved Prediction
+
+Execution
+→ Prediction Tracking
+
+Entry
+→ Prediction Open
+
+Exit
+→ Prediction Resolution
+
+Exposure
+→ Coverage
+
+PnL
+→ Prediction Outcome
+
+Realized PnL
+→ Resolution Result
+
+Unrealized PnL
+→ Live Prediction State
+
+Capital
+→ Budget
+
+Stake
+→ Allocation
+
+--------------------------------------------------
+
+IMPORTANT
+
+If a JSON response currently contains:
+
+{
+    "position_count":5
+}
+
+do NOT rename the internal variable.
+
+Instead expose:
+
+{
+    "prediction_count":5
+}
+
+using aliases, serializers, response models, or transformation layers.
+
+Never rename the internal storage.
+
+--------------------------------------------------
+
+Likewise
+
+position_id
+
+may be exposed as
+
+prediction_id
+
+without renaming the database column.
+
+--------------------------------------------------
+
+Do NOT modify:
+
+database schema
+
+SQLAlchemy models
+
+repository queries
+
+worker logic
+
+engine logic
+
+Outcome Learning
+
+Calibration
+
+Dynamic Weights
+
+Engine Performance
+
+--------------------------------------------------
+
+After completion provide:
+
+1.
+
+List every response model changed.
+
+2.
+
+List every frontend component affected.
+
+3.
+
+List every alias introduced.
+
+4.
+
+Confirm
+
+No DB changes.
+
+No API path changes.
+
+No runtime logic changes.
+
+No learning changes.
+
+Then STOP.
+
+Wait for Phase 3 approval.

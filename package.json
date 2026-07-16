@@ -1,0 +1,20 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "Production-grade quantitative trading infrastructure for Polymarket prediction markets. Integrates live price feeds from Binance and Polymarket CLOB to analyze, score, screen, and paper-trade \"Up-or-Down\" binary outcome markets for BTC, ETH, SOL, and XRP.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vitejs/plugin-react": "^6.0.3",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.3"
+  }
+}

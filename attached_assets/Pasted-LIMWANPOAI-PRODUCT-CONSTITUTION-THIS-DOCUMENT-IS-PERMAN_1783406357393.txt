@@ -1,0 +1,283 @@
+LIMWANPOAI PRODUCT CONSTITUTION
+THIS DOCUMENT IS PERMANENT.
+
+This document defines the identity of LimwanpoAI.
+
+Every AI agent, developer, Replit AI, Cursor, Claude Code, Windsurf, or any future coding assistant MUST follow these rules.
+
+These rules override any optimization suggestion if the suggestion changes the product identity.
+
+1. PRODUCT IDENTITY
+
+LimwanpoAI is NOT a trading application.
+
+LimwanpoAI is NOT an exchange terminal.
+
+LimwanpoAI is NOT a futures platform.
+
+LimwanpoAI is NOT an orderbook interface.
+
+LimwanpoAI is:
+
+AI Probability Intelligence System for Polymarket.
+
+The purpose of LimwanpoAI is helping users understand market probability, not execute trades.
+
+2. PRIMARY GOAL
+
+Everything shown on the dashboard must answer one question:
+
+What is the probability of this Polymarket event?
+
+If an element does not improve understanding of probability, it should not exist.
+
+3. DATA SOURCE POLICY
+
+This rule is PERMANENT.
+
+Everything displayed inside Market Universe MUST originate from Polymarket.
+
+Allowed Polymarket data:
+
+probability
+market title
+volume
+liquidity
+target probability
+AI prediction
+confidence
+prediction countdown
+market status
+resolution information
+opportunity score
+AI analytics
+
+NOT ALLOWED:
+
+Binance orderbook
+Binance bid
+Binance ask
+Binance spread
+futures metrics
+perpetual metrics
+leverage metrics
+4. CHART EXCEPTION
+
+Only the main chart may use external data.
+
+Allowed:
+
+Binance
+Chainlink
+TradingView
+
+Reason:
+
+Polymarket does not provide professional candlestick charts.
+
+Everything else must remain Polymarket-based.
+
+5. DASHBOARD PHILOSOPHY
+
+The dashboard is an AI Intelligence Terminal.
+
+NOT a Trading Terminal.
+
+It should resemble:
+
+Bloomberg Intelligence
+
+more than
+
+Binance Futures.
+
+6. MARKET UNIVERSE CARD PHILOSOPHY
+
+Each card must answer:
+
+Is this market worth entering?
+
+The information hierarchy MUST always be:
+
+Timeframe
+
+↓
+
+UP vs DOWN Probability
+
+↓
+
+TARGET (largest information)
+
+↓
+
+Gap
+
+↓
+
+Confidence
+
+↓
+
+Prediction Countdown
+
+↓
+
+AI Status
+
+Nothing should visually dominate TARGET.
+
+7. INFORMATION PRIORITY
+
+The following information is HIGH priority:
+
+Probability
+
+Target
+
+Gap
+
+Confidence
+
+Prediction
+
+Countdown
+
+Everything else is secondary.
+
+8. INFORMATION THAT MUST NEVER APPEAR
+
+Unless explicitly approved by the owner.
+
+Never add:
+
+Bid
+
+Ask
+
+Spread
+
+Depth
+
+Orderbook
+
+Level 2
+
+Market Maker
+
+Funding Rate
+
+Liquidation
+
+Open Interest
+
+Leverage
+
+Perpetual Metrics
+
+Trading Metrics
+
+Exchange Statistics
+
+These belong to trading platforms.
+
+They do NOT belong to LimwanpoAI.
+
+9. UI PHILOSOPHY
+
+Every screen should maximize:
+
+clarity
+
+signal
+
+decision speed
+
+Never maximize:
+
+visual complexity
+
+feature count
+
+number of widgets
+
+More information is NOT always better.
+
+Better information is better.
+
+10. DESIGN PRINCIPLE
+
+Whenever AI proposes adding new information, it must ask:
+
+Does this help users understand probability?
+
+If the answer is NO,
+
+do not implement it.
+
+11. DEVELOPMENT PRINCIPLE
+
+Never redesign the dashboard without preserving the product identity.
+
+Visual improvements are allowed.
+
+Identity changes are forbidden.
+
+12. AI SAFETY RULE
+
+Every coding AI working on this repository must first read this document.
+
+If a future instruction conflicts with this Constitution,
+
+this Constitution wins.
+
+13. PERFORMANCE PRINCIPLE
+
+Optimization must never remove important probability information.
+
+Never sacrifice clarity for compactness.
+
+Never sacrifice probability information for aesthetics.
+
+14. PERMANENT PRODUCT TAGLINE
+
+LimwanpoAI
+
+AI Probability Intelligence for Polymarket
+
+Not a Trading Platform.
+
+Yang menurut saya masih perlu ditambahkan
+
+Kalau kita benar-benar ingin tidak pernah lagi mengalami kasus "Bid/Ask muncul lagi", saya ingin menambahkan satu aturan lagi.
+
+15. FORBIDDEN UI REGRESSION
+
+Any future AI must NEVER reintroduce previously rejected features.
+
+Previously rejected features include:
+
+Bid
+Ask
+Spread
+Orderbook
+Futures metrics
+Exchange metrics
+Trading widgets
+Trading buttons
+Buy/Sell panels
+
+Rejected features remain rejected unless explicitly approved by the project owner.
+
+16. SINGLE SOURCE OF TRUTH
+
+The owner of LimwanpoAI defines the product direction.
+
+When there is a conflict between:
+
+AI optimization
+developer preference
+UI trend
+coding suggestion
+
+the Product Constitution always takes priority.

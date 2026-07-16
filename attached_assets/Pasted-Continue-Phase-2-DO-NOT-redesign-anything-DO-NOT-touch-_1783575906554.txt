@@ -1,0 +1,170 @@
+Continue Phase 2.
+
+DO NOT redesign anything.
+
+DO NOT touch CSS.
+
+DO NOT modify layout.
+
+The UI is already approved.
+
+Your job is ONLY to finish the incomplete backend/data-flow work from the previous session.
+
+The previous session stopped because the quota expired before verification.
+
+==================================================
+FIRST
+==================================================
+
+Before writing ANY code:
+
+1. Read every modification that was already made.
+
+2. Verify whether each modification is COMPLETE.
+
+Do NOT assume.
+
+Actually inspect the code.
+
+Verify:
+
+- backend/app/api/v1/health.py
+- backend/app/api/v1/opportunities.py
+- backend/app/api/v1/signals.py
+- backend/app/repositories/opportunity_repository.py
+- backend/app/database.py
+- backend/app/static/index.html
+
+==================================================
+VERIFY THESE ITEMS
+==================================================
+
+1.
+
+healthData frontend
+
+Confirm:
+
+loadHealth()
+
+↓
+
+healthData assignment
+
+↓
+
+updatePipeCounts()
+
+↓
+
+Pipeline nodes use REAL backend values.
+
+2.
+
+Signals endpoint
+
+Verify:
+
+TTL cache
+
+Cache hit
+
+Cache miss
+
+Limit works correctly.
+
+3.
+
+Opportunities endpoint
+
+Verify:
+
+limit parameter
+
+repository
+
+router
+
+cache
+
+frontend
+
+all use the same value.
+
+4.
+
+Database indexes
+
+Verify every new index actually exists.
+
+Run EXPLAIN if necessary.
+
+5.
+
+Health endpoint
+
+Verify new COUNT queries.
+
+Verify response schema.
+
+Verify frontend consumes them.
+
+6.
+
+Pipeline
+
+Every node must represent REAL engine state.
+
+NO hardcoded numbers.
+
+NO placeholders.
+
+7.
+
+AI Activity
+
+Remove every WAIT placeholder.
+
+Only show real DecisionLog / RiskEvent / Signal entries.
+
+8.
+
+Market Universe
+
+Verify every "-" shown on cards.
+
+Trace the entire data flow until the reason is found.
+
+Fix only the missing data.
+
+Do NOT fake values.
+
+==================================================
+AFTER IMPLEMENTATION
+==================================================
+
+Perform a COMPLETE verification.
+
+Produce a PASS / FAIL table.
+
+For every objective show:
+
+PASS
+
+or
+
+FAIL
+
+with explanation.
+
+==================================================
+IMPORTANT
+==================================================
+
+Never say "implemented".
+
+Never assume.
+
+Actually verify every file.
+
+Only finish when every Phase 2 requirement is verified PASS.

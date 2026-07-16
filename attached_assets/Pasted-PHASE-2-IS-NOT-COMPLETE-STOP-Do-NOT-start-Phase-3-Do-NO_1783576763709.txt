@@ -1,0 +1,251 @@
+PHASE 2 IS NOT COMPLETE.
+
+STOP.
+
+Do NOT start Phase 3.
+
+Do NOT redesign anything.
+
+Do NOT change CSS.
+
+Do NOT touch layout.
+
+The dashboard screenshot proves Phase 2 is still incomplete.
+
+Current problems:
+
+1.
+Market Universe cards still display
+
+TARGET -
+GAP -
+SPREAD -
+REWARD -
+
+Only CONF appears.
+
+This is NOT acceptable.
+
+Do NOT tell me "data is unavailable".
+
+Trace the COMPLETE data flow until the root cause is found.
+
+Start from
+
+backend database
+↓
+
+MarketUniverse repository
+↓
+
+Opportunity repository
+
+↓
+
+Price Snapshot
+
+↓
+
+Universe endpoint
+
+↓
+
+Frontend fetch
+
+↓
+
+renderCard()
+
+↓
+
+DOM
+
+Report exactly where the value becomes null.
+
+Fix the root cause.
+
+Do NOT fake values.
+
+------------------------------------------------
+
+2.
+
+Verify opening_price.
+
+Verify current_price.
+
+Verify yes_bid.
+
+Verify yes_ask.
+
+Verify yes_mid.
+
+Verify opportunity_score.
+
+Verify confidence_score.
+
+For every missing field explain
+
+WHY
+
+not just WHERE.
+
+------------------------------------------------
+
+3.
+
+Verify backend workers.
+
+Which worker is responsible for filling
+
+opening_price
+
+market snapshot
+
+clob snapshot
+
+opportunity
+
+signal
+
+Report if any worker is not running.
+
+------------------------------------------------
+
+4.
+
+Check every API.
+
+Open browser DevTools.
+
+Inspect every request.
+
+Show
+
+Response JSON
+
+for
+
+/api/v1/universe
+
+/api/v1/opportunities
+
+/api/v1/signals
+
+/api/v1/price
+
+/api/v1/clob
+
+Find exactly which response already contains NULL.
+
+------------------------------------------------
+
+5.
+
+Pipeline is still incorrect.
+
+Do NOT display simple COUNT(*).
+
+Each node must represent actual engine state.
+
+Universe
+
+↓
+
+Signal
+
+↓
+
+Opportunity
+
+↓
+
+Strategy
+
+↓
+
+Risk
+
+↓
+
+Prediction
+
+Each number must come from the engine responsible for that stage.
+
+Explain every source.
+
+------------------------------------------------
+
+6.
+
+AI Activity still mostly shows
+
+prediction blocked
+
+duplicate position
+
+Rebuild the feed ordering.
+
+Priority should become
+
+Decision
+
+Risk
+
+Opportunity
+
+Signal
+
+Latest first.
+
+Do not remove any real event.
+
+Only improve ordering.
+
+------------------------------------------------
+
+7.
+
+After fixing everything,
+
+verify:
+
+BTC card
+
+ETH card
+
+SOL card
+
+XRP card
+
+must ALL display
+
+TARGET
+
+GAP
+
+SPREAD
+
+REWARD
+
+CONF
+
+MONITORING
+
+using REAL backend values.
+
+------------------------------------------------
+
+At the end produce:
+
+ROOT CAUSE ANALYSIS
+
+FILES CHANGED
+
+WHY IT FAILED
+
+WHY THE FIX WORKS
+
+Take a screenshot after the fix.
+
+Do NOT say PASS until every market card is fully populated.

@@ -1,0 +1,232 @@
+Audit #5 – Verification of Replacement Markets and Price Discovery
+
+IMPORTANT:
+
+Do NOT assume previous conclusions are correct.
+
+Previous audits proved:
+
+* Original 5m/15m markets stayed frozen.
+* No real-time linkage to Binance was detected.
+* Depth updates appeared scheduled.
+* Original contracts expired and rolled to new token IDs.
+
+However, new evidence has appeared:
+
+* Replacement BTC/5m market observed around mid ≈ 0.875.
+* This contradicts the hypothesis that all markets remain permanently at 0.50.
+
+The purpose of this audit is to determine whether:
+
+A) Market prices are actually formed by traders.
+
+B) Markets are repriced only during creation/rollover.
+
+C) AMM performs hidden pricing updates.
+
+D) Previous conclusions were artifacts of observing expired markets.
+
+=========================================================
+PART 1 — REPLACEMENT MARKET FORENSICS
+=====================================
+
+For every replacement market found:
+
+BTC
+ETH
+SOL
+XRP
+
+Across:
+
+5m
+15m
+1H
+
+Collect:
+
+* token id
+* market id
+* creation timestamp
+* first observable order book
+* first observable trade
+* initial best bid
+* initial best ask
+* initial mid
+
+Answer:
+
+1. Was the market initially seeded at 0.50?
+2. If not, what was the seed probability?
+3. How long after creation was the first trade?
+4. Did the first trade change the price?
+
+Generate:
+
+REPLACEMENT_FORENSICS.md
+
+=========================================================
+PART 2 — TRADE-DRIVEN PRICE DISCOVERY TEST
+==========================================
+
+Using trade history:
+
+For every trade:
+
+* timestamp
+* side
+* size
+* execution price
+
+Match against order book snapshots before and after.
+
+Determine:
+
+1. Did trade move best bid?
+2. Did trade move best ask?
+3. Did trade move mid?
+4. Did trade move depth only?
+
+Produce event tables.
+
+Generate:
+
+PRICE_DISCOVERY_AUDIT.md
+
+=========================================================
+PART 3 — LIVE MARKET BEHAVIOR
+=============================
+
+Continue monitoring active replacement markets.
+
+Every 10 seconds:
+
+* best bid
+* best ask
+* mid
+* spread
+* top5 bid depth
+* top5 ask depth
+
+Duration:
+
+30 minutes minimum.
+
+Measure:
+
+* number of mid-price changes
+* number of spread changes
+* number of depth changes
+
+Answer:
+
+Is the market truly frozen?
+
+or
+
+Does it exhibit active price discovery?
+
+Generate:
+
+LIVE_BEHAVIOR_AUDIT.md
+
+=========================================================
+PART 4 — BINANCE LINKAGE RECHECK
+================================
+
+Do NOT use expired contracts.
+
+Use ONLY active replacement markets.
+
+Run:
+
+Pearson
+Spearman
+Lag analysis
+
+for:
+
+10s
+20s
+30s
+60s
+120s
+
+Compare:
+
+spot returns
+
+vs
+
+market mid changes
+
+Determine:
+
+* real linkage
+* delayed linkage
+* no linkage
+
+Generate:
+
+ACTIVE_LINKAGE_AUDIT.md
+
+=========================================================
+PART 5 — FINAL HYPOTHESIS UPDATE
+================================
+
+Re-evaluate all prior conclusions.
+
+Test:
+
+H0:
+Underlying-driven AMM
+
+H1:
+Scheduled rebalancing AMM
+
+H2:
+Trader-driven price discovery
+
+H3:
+Fixed-seed liquidity only
+
+For each hypothesis provide:
+
+* evidence supporting
+* evidence contradicting
+* confidence score
+
+IMPORTANT:
+
+Do not inherit conclusions from previous reports.
+
+Treat every hypothesis as open.
+
+Explicitly state:
+
+"What evidence would falsify this hypothesis?"
+
+Generate:
+
+UPDATED_FINAL_HYPOTHESIS.md
+
+=========================================================
+QUALITY CONTROL
+===============
+
+Before final conclusions:
+
+1. Report sample sizes.
+2. Report missing data.
+3. Report expiry effects.
+4. Report survivorship bias risk.
+5. Report whether observing only expired markets could have created misleading conclusions.
+
+Final goal:
+
+Determine whether Polymarket price formation comes from:
+
+* AMM pricing,
+* trader activity,
+* scheduled seeding,
+* or some combination of these mechanisms.

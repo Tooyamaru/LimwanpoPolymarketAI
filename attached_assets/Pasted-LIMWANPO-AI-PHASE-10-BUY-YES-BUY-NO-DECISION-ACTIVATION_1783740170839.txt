@@ -1,0 +1,390 @@
+LIMWANPO AI — PHASE 10 BUY_YES / BUY_NO DECISION ACTIVATION AUDIT
+
+Konteks:
+Phase 9D selesai.
+
+Final status:
+AI DECISION INTEGRITY: PASS
+
+Bukti:
+
+* expired_markets = 12
+* evaluated = 12
+* direct_resolution = 8
+* pnl_proxy = 0
+* outcome_source = DIRECT_POLYMARKET_RESOLUTION
+* Gamma raw evidence confirmed closed=True + outcomePrices ["1","0"]
+* OutcomeLearning rows sudah menyimpan winning_side / final_yes_price / final_no_price dari direct Polymarket/Gamma resolution
+
+Masalah tersisa:
+Outcome Learning sudah bisa membaca hasil market, tetapi sebagian besar decision masih WAIT / BLOCKED.
+Karena WAIT tidak punya binary correctness, engine_performance_stats wins/losses masih 0.
+
+Target Phase 10:
+Audit kenapa BUY_YES / BUY_NO belum atau jarang muncul, tanpa menurunkan standar safety dan tanpa membuat fake signal.
+
+ATURAN WAJIB:
+
+* JANGAN ubah UI.
+* JANGAN redesign.
+* JANGAN tambah provider baru.
+* JANGAN tambah dummy data.
+* JANGAN tambah fake confidence.
+* JANGAN tambah fake BUY signal.
+* JANGAN menurunkan threshold sembarangan hanya supaya BUY muncul.
+* JANGAN membuat hardcoded BUY_YES / BUY_NO.
+* Semua perubahan harus berdasarkan formula, data real, dan alasan audit.
+
+==================================================
+STEP 1 — READ CURRENT STATE
+===========================
+
+Baca file:
+
+* AI_DECISION_INTEGRITY_AUDIT.md
+* backend/app/services/decision_engine.py
+* backend/app/services/strategy_engine.py
+* backend/app/services/risk_engine.py
+* backend/app/services/opportunity_engine.py
+* backend/app/services/signal_engine.py
+* backend/app/services/outcome_learning_service.py
+* backend/app/services/dynamic_weight_service.py
+* backend/app/config/settings.py
+* backend/app/repositories/opportunity_repository.py
+* backend/app/repositories/decision_repository.py jika ada
+* backend/app/models/decision_log.py
+* backend/app/models/trade_decision.py
+* backend/app/models/outcome_learning.py
+
+Lalu jalankan:
+
+* git diff
+* git status
+* python -m compileall -q backend/app
+
+==================================================
+STEP 2 — DECISION DISTRIBUTION AUDIT
+====================================
+
+Query database untuk 24 jam terakhir atau seluruh available data:
+
+Hitung jumlah:
+
+* BUY_YES
+* BUY_NO
+* WAIT
+* BLOCKED
+* READY
+* ENTRY
+* OPEN_LONG_YES
+* OPEN_LONG_NO
+* SKIP
+* RISK_APPROVED
+* RISK_BLOCKED
+
+Pisahkan per table jika ada:
+
+* decision_logs
+* trade_decisions
+* risk_events
+* outcome_learnings
+
+Tampilkan:
+
+* total decisions
+* percentage WAIT
+* percentage BUY/OPEN
+* percentage BLOCKED
+* top 10 block reasons
+* top 10 wait reasons
+
+Jangan menyimpulkan sebelum lihat angka.
+
+==================================================
+STEP 3 — WAIT ROOT CAUSE AUDIT
+==============================
+
+Untuk minimal 20 decision_logs terbaru yang hasilnya WAIT:
+
+Trace seluruh penyebab:
+
+* market_quality gate
+* consensus vote_score
+* entry_quality_score
+* confidence threshold
+* risk_score
+* conflict_detected
+* news confidence
+* opportunity score
+* signal confidence
+* spread
+* liquidity
+* portfolio limits
+* max open positions
+* duplicate position
+* missing data
+* stale data
+* not enough history
+
+Klasifikasikan WAIT root cause:
+
+* REAL_LOW_CONFIDENCE
+* REAL_MARKET_CONFLICT
+* REAL_RISK_GATE
+* PORTFOLIO_LIMIT
+* MISSING_DATA
+* THRESHOLD_TOO_STRICT
+* BUG
+* STALE_DATA
+* DEFAULT_OR_FALLBACK
+* UNKNOWN
+
+Tidak boleh ada UNKNOWN setelah audit.
+
+==================================================
+STEP 4 — BLOCKED ROOT CAUSE AUDIT
+=================================
+
+Untuk risk_events / trade_decisions yang BLOCKED:
+
+Tampilkan:
+
+* condition_id
+* decision
+* opportunity_score
+* signal_confidence
+* risk reason
+* open_positions_count
+* max open positions
+* daily trades
+* daily pnl
+* duplicate position status
+* market active status
+
+Audit apakah BLOCKED benar karena real risk atau karena konfigurasi terlalu ketat.
+
+Klasifikasikan:
+
+* VALID_PORTFOLIO_LIMIT
+* VALID_DUPLICATE_POSITION
+* VALID_DRAWDOWN_LIMIT
+* VALID_DAILY_TRADE_LIMIT
+* VALID_SPREAD_FILTER
+* VALID_LIQUIDITY_FILTER
+* CONFIG_TOO_STRICT
+* BUG
+* STALE_MARKET
+* UNKNOWN
+
+==================================================
+STEP 5 — BUY_YES / BUY_NO PATH AUDIT
+====================================
+
+Cari semua condition yang harus terpenuhi agar BUY_YES / BUY_NO muncul.
+
+Dokumentasikan:
+
+* minimum opportunity_score
+* minimum signal_confidence
+* minimum decision confidence
+* minimum entry_quality_score
+* vote_score threshold
+* risk_score threshold
+* market_quality threshold
+* spread threshold
+* liquidity threshold
+* portfolio position limits
+* duplicate position rule
+* cooldown
+* expiry rule
+
+Untuk setiap threshold:
+
+* source file
+* source setting
+* current value
+* reason / docstring
+* data distribution actual
+* apakah threshold realistis terhadap market Polymarket saat ini
+
+Jangan langsung ubah threshold.
+Buktikan dulu apakah threshold terlalu tinggi atau data memang belum mendukung BUY.
+
+==================================================
+STEP 6 — PORTFOLIO / PAPER POSITION STATE AUDIT
+===============================================
+
+Audit apakah BUY/ENTRY tidak muncul karena portfolio sudah penuh.
+
+Tampilkan:
+
+* open_positions count
+* max_open_positions
+* positions per asset
+* positions per timeframe
+* duplicate condition_id
+* daily trades
+* daily loss
+* exposure
+* capital
+* apakah posisi lama / paper positions harus di-close setelah market expired
+
+Jika open_positions tetap penuh karena expired market tidak ditutup:
+
+* itu bug.
+* perbaiki exit/position lifecycle.
+* Jangan cuma naikkan max_open_positions.
+
+Jika memang portfolio penuh secara valid:
+
+* dokumentasikan.
+* Jangan paksa BUY.
+
+==================================================
+STEP 7 — EXPIRED POSITION / EXIT ENGINE AUDIT
+=============================================
+
+Karena Phase 9D sudah membuktikan market resolution, audit apakah expired market positions juga ditutup benar.
+
+Cek:
+
+* apakah positions untuk expired condition_id masih OPEN
+* apakah ExitEngine menutup posisi saat market expired/resolved
+* apakah realized_pnl dihitung dari final_yes_price/final_no_price atau exit CLOB
+* apakah risk engine masih menghitung expired positions sebagai open exposure
+* apakah expired positions menyebabkan MAX_OPEN_POSITIONS terus BLOCKED
+
+Jika expired positions masih dianggap open:
+
+* perbaiki.
+* gunakan direct resolution evidence untuk close paper positions secara benar.
+* pastikan tidak ada fake PnL.
+* yes position value = final_yes_price
+* no position value = final_no_price
+
+==================================================
+STEP 8 — SAFE REMEDIATION RULE
+==============================
+
+Jika ditemukan bug:
+
+* perbaiki.
+
+Jika ditemukan stale/expired position:
+
+* perbaiki lifecycle.
+
+Jika ditemukan threshold terlalu ketat:
+
+* jangan ubah langsung.
+* buat recommendation table:
+
+  * current threshold
+  * observed distribution
+  * proposed threshold
+  * risk impact
+  * whether code changed or only recommended
+
+Jika perubahan threshold memang sangat jelas dan aman:
+
+* lakukan minimal.
+* dokumentasikan before/after.
+* jangan membuat BUY palsu.
+
+Jika data belum cukup:
+
+* tulis DATA_INSUFFICIENT.
+* jangan paksa BUY.
+
+==================================================
+STEP 9 — TEST / VALIDATION
+==========================
+
+Jalankan:
+
+* python -m compileall -q backend/app
+* pytest untuk decision / strategy / risk / outcome learning jika ada
+* workflow restart
+* cek logs satu full cycle
+
+Search ulang:
+
+* hardcoded BUY
+* forced BUY
+* fake confidence
+* synthetic signal
+* assumed edge
+* random
+* mock
+* dummy
+* default_confidence
+* fallback_score
+* stale position
+* expired position
+* max open positions
+
+Klasifikasikan:
+
+* SAFE
+* CONFIGURATION
+* REAL_DATA
+* TEST_ONLY
+* INVALID
+* FIXED
+
+==================================================
+STEP 10 — UPDATE AUDIT REPORT
+=============================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md dengan section:
+
+PHASE 10 — BUY_YES / BUY_NO DECISION ACTIVATION AUDIT
+
+Isi wajib:
+
+1. Decision distribution
+2. WAIT root cause table
+3. BLOCKED root cause table
+4. BUY path requirements
+5. Threshold audit
+6. Portfolio / position state audit
+7. Expired position lifecycle audit
+8. Bugs found
+9. Files changed
+10. Before/after behavior
+11. Tests run
+12. Remaining risks
+13. Final recommendation
+
+Final status gunakan:
+
+* DECISION ACTIVATION: PASS
+* DECISION ACTIVATION: PASS WITH REMEDIATION
+* DECISION ACTIVATION: BLOCKED BY VALID RISK
+* DECISION ACTIVATION: FAIL
+
+Jangan ubah status AI DECISION INTEGRITY yang sudah PASS, kecuali ditemukan fake/stale/default decision baru.
+
+==================================================
+STEP 11 — FINAL RESPONSE FORMAT
+===============================
+
+Jawab dengan format:
+
+1. Files read
+2. Decision distribution
+3. WAIT root causes
+4. BLOCKED root causes
+5. BUY path requirements
+6. Portfolio state
+7. Expired position lifecycle result
+8. Bugs found
+9. Files changed
+10. Tests run
+11. Remaining risks
+12. Decision Activation status
+13. Exact next recommended step
+
+Jangan jawab umum.
+Jangan klaim BUY aktif jika belum ada bukti.
+Jangan paksa BUY.

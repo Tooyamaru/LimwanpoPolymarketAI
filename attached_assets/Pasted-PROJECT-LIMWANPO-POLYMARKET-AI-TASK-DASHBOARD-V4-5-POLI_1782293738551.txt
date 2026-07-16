@@ -1,0 +1,433 @@
+PROJECT: LIMWANPO POLYMARKET AI
+
+TASK: DASHBOARD V4.5 POLISH PASS
+
+IMPORTANT RULES
+
+DO NOT redesign layout.
+
+DO NOT move panels.
+
+DO NOT add sidebar.
+
+DO NOT add submenu.
+
+DO NOT remove any existing panels.
+
+DO NOT change backend APIs.
+
+DO NOT change trading logic.
+
+DO NOT touch Layers 1–16.
+
+DO NOT modify any engine.
+
+ONLY improve visuals, readability, animations, hierarchy, and cyberpunk feel.
+
+The dashboard structure is FINAL.
+
+Current panels must remain:
+
+* Universe / 12 Markets
+* AI Current Target
+* AI Decision Engine
+* Market Opportunity Heatmap
+* Active Position
+* System Health
+* Performance
+* Capital Protection
+* Kill Switch
+* Header
+* Footer
+
+==================================================
+PHASE 1 — GLOBAL VISUAL POLISH
+==============================
+
+Apply premium cyberpunk styling.
+
+Dashboard should feel like:
+
+* professional trading terminal
+* hedge fund command center
+* Polymarket AI operator console
+
+NOT like:
+
+* admin panel
+* database viewer
+* CRUD dashboard
+
+Use:
+
+background:
+very dark navy / black
+
+accent colors:
+
+cyan
+electric blue
+neon green
+purple
+magenta
+
+Add subtle radial background gradients.
+
+Example:
+
+radial glow behind center panels.
+
+Must remain elegant.
+
+No excessive RGB gamer effects.
+
+==================================================
+PHASE 2 — PANEL DEPTH
+=====================
+
+Every major panel should have:
+
+soft neon border
+
+subtle glow
+
+inner shadow
+
+Example:
+
+box-shadow:
+0 0 6px rgba(0,255,255,.20),
+0 0 20px rgba(0,255,255,.06);
+
+Panels must appear layered and premium.
+
+==================================================
+PHASE 3 — AI CURRENT TARGET
+===========================
+
+This is the most important panel.
+
+Keep current layout.
+
+Add:
+
+large holographic crosshair icon
+
+animated scan lines
+
+subtle pulse animation
+
+When score >= 85:
+
+panel glows stronger
+
+When score >= 90:
+
+panel becomes dominant visual element
+
+Current Target panel must instantly attract attention.
+
+This is the brain focus of the AI.
+
+==================================================
+PHASE 4 — MARKET ROW POLISH
+===========================
+
+Keep all 12 market rows.
+
+Improve:
+
+spacing
+
+alignment
+
+font hierarchy
+
+score readability
+
+sparkline visibility
+
+YES badges:
+
+green glow
+
+NO badges:
+
+magenta glow
+
+Add smooth hover animation:
+
+transform scale(1.02)
+
+transition 200ms
+
+==================================================
+PHASE 5 — HEATMAP POLISH
+========================
+
+Keep existing heatmap.
+
+Do not redesign.
+
+Improve:
+
+cell glow
+
+score readability
+
+hover interaction
+
+When score changes:
+
+animate value transition
+
+When score >= 85:
+
+cell should visibly stand out
+
+When score >= 90:
+
+cell should feel "hot"
+
+Heatmap must become one of the strongest visual elements.
+
+==================================================
+PHASE 6 — AI DECISION ENGINE
+============================
+
+Keep current pipeline.
+
+Keep all stages.
+
+Keep all metrics.
+
+Add:
+
+animated particles moving left → right
+
+soft flow animation
+
+stage glow
+
+active stage pulse
+
+Pipeline should feel alive.
+
+Like data is continuously moving through the AI.
+
+==================================================
+PHASE 7 — ACTIVE POSITION PANEL
+===============================
+
+When position exists:
+
+make it visually dominant.
+
+Display:
+
+asset
+
+timeframe
+
+direction
+
+entry
+
+current
+
+PnL
+
+with large typography.
+
+When no position exists:
+
+keep current waiting state.
+
+Improve animation:
+
+breathing pulse
+
+radar sweep effect
+
+small scanning animation
+
+Text:
+
+WAITING FOR SIGNAL
+
+AI IS MONITORING ALL MARKETS
+
+==================================================
+PHASE 8 — SYSTEM HEALTH
+=======================
+
+Keep existing grid.
+
+Add:
+
+soft blinking green indicators
+
+status transition animations
+
+health glow
+
+Must feel alive.
+
+NOT static.
+
+==================================================
+PHASE 9 — PERFORMANCE SECTION
+=============================
+
+Keep:
+
+Win Rate
+
+Net PnL
+
+Trades
+
+Max Drawdown
+
+Add:
+
+micro sparklines
+
+animated counters
+
+smooth transitions
+
+Make the section feel like a trading terminal.
+
+==================================================
+PHASE 10 — CAPITAL PROTECTION
+=============================
+
+Keep:
+
+Daily Loss
+
+Weekly Loss
+
+Loss Streak
+
+Drawdown
+
+Kill Switch
+
+Add:
+
+animated progress bars
+
+smooth fill transitions
+
+glow based on utilization
+
+Green:
+
+safe
+
+Yellow:
+
+warning
+
+Red:
+
+danger
+
+==================================================
+PHASE 11 — HEADER
+=================
+
+Keep current layout.
+
+Increase branding quality.
+
+Logo:
+
+LIMWANPO // POLYMARKET AI
+
+must be more prominent.
+
+Add subtle glow.
+
+Keep:
+
+PAPER MODE
+
+ENGINE COUNT
+
+UPTIME
+
+UTC CLOCK
+
+==================================================
+PHASE 12 — FOOTER
+=================
+
+Keep footer.
+
+Improve styling.
+
+Display:
+
+UNIVERSE:
+BTC ETH SOL XRP
+
+TIMEFRAMES:
+5M 15M 1H
+
+MARKETS:
+12
+
+VERSION
+
+Use terminal-style appearance.
+
+==================================================
+PHASE 13 — ANIMATIONS
+=====================
+
+All animations must be:
+
+smooth
+
+premium
+
+subtle
+
+No flashy RGB effects.
+
+No excessive movement.
+
+No lag.
+
+Target:
+
+60fps
+
+GPU-friendly CSS animations only.
+
+==================================================
+FINAL OBJECTIVE
+===============
+
+After completion, the dashboard should look like:
+
+A professional cyberpunk Polymarket AI trading terminal.
+
+Not a website.
+
+Not an admin panel.
+
+Not a CRUD dashboard.
+
+The operator should immediately understand:
+
+* what market the AI wants
+* where opportunities exist
+* whether positions are open
+* whether the system is healthy
+* whether capital protection is active
+
+while preserving the current V4 layout completely.

@@ -1,0 +1,237 @@
+FINAL LAYOUT AUDIT - LIMWANPO POLYMARKET AI
+
+PRIORITY: PERFECT FULLSCREEN TERMINAL LAYOUT
+
+Jangan menambahkan fitur baru.
+Jangan mengubah backend.
+Jangan mengubah API.
+Jangan mengubah trading engine.
+Fokus hanya pada layout, visual hierarchy, dan responsive behavior.
+
+⸻
+
+1. DASHBOARD HARUS BENAR-BENAR FIT KE LAYAR
+
+Saat ini dashboard masih terlihat seperti memiliki tinggi tetap (fixed height).
+
+Akibatnya:
+
+* terdapat ruang kosong
+* proporsi antar section kurang seimbang
+* dashboard terasa seperti halaman web biasa
+
+Target:
+
+Dashboard harus terlihat seperti Bloomberg Terminal.
+
+Gunakan viewport penuh.
+
+Gunakan:
+
+* 100dvh
+* flex layout
+* grid minmax()
+* clamp()
+
+JANGAN menggunakan tinggi pixel tetap.
+
+Seluruh dashboard harus selalu mengisi tinggi layar.
+
+Tidak boleh ada area kosong.
+
+⸻
+
+2. MARKET UNIVERSE MASIH TERLALU PENDEK
+
+Area Market Universe berhenti terlalu cepat.
+
+Akibatnya muncul ruang kosong besar.
+
+Yang saya inginkan:
+
+Market Universe menjadi area fleksibel.
+
+Ia harus otomatis mengambil seluruh ruang yang tersedia.
+
+Semua border kolom harus sampai ke bawah.
+
+Tidak boleh ada panel yang berhenti di tengah.
+
+⸻
+
+3. AI DECISION ENGINE HARUS MENEMPEL KE MARKET UNIVERSE
+
+Saat ini masih terlihat seperti section terpisah.
+
+Saya ingin:
+
+Market Universe
+
+↓
+
+AI Decision Engine
+
+↓
+
+Thinking Feed
+
+↓
+
+Live Feed
+
+↓
+
+Footer
+
+Semua menjadi satu kesatuan visual.
+
+Jangan ada gap yang terasa kosong.
+
+⸻
+
+4. FOOTER HARUS SELALU MENEMPEL DI PALING BAWAH
+
+Footer tidak boleh ikut terdorong.
+
+Footer harus selalu berada di bawah viewport.
+
+Walaupun isi dashboard berubah.
+
+Footer menggunakan flex-shrink:0.
+
+⸻
+
+5. MARKET CARD HARUS MENGISI TINGGI COLUMN
+
+Sekarang isi card hanya berada di atas.
+
+Bagian bawah kosong.
+
+Yang saya inginkan:
+
+setiap card memiliki tinggi penuh.
+
+Background.
+
+Border.
+
+Glow.
+
+Semua sampai bawah.
+
+⸻
+
+6. HEADER MASIH TERLALU TINGGI
+
+Kurangi tinggi header sekitar 10–15%.
+
+Dashboard akan mendapatkan ruang vertikal tambahan.
+
+⸻
+
+7. CHART MENJADI FOKUS UTAMA
+
+Chart masih terasa sedikit kecil.
+
+Naikkan tinggi chart sekitar 5–8%.
+
+Portfolio dan System Health mengikuti.
+
+Chart tetap menjadi elemen paling dominan.
+
+⸻
+
+8. MARKET CARD GRID HARUS PROPORSIONAL
+
+Saat layar tinggi:
+
+Market card ikut membesar.
+
+Saat layar rendah:
+
+Market card ikut mengecil.
+
+Gunakan:
+
+minmax()
+
+clamp()
+
+aspect ratio
+
+Jangan fixed height.
+
+⸻
+
+9. FEED HARUS MEMANFAATKAN RUANG
+
+Thinking Feed dan Live Feed masih memiliki area kosong.
+
+Buat feed otomatis mengisi tinggi yang tersedia.
+
+Target:
+
+minimal 5–6 log terlihat.
+
+Tanpa scroll.
+
+⸻
+
+10. RESPONSIVE YANG BENAR
+
+Dashboard harus terlihat premium pada:
+
+iPad
+
+Laptop
+
+Desktop
+
+Ultrawide
+
+Tidak boleh ada:
+
+* ruang kosong besar
+* panel terlalu tinggi
+* panel terlalu pendek
+* scroll horizontal
+
+⸻
+
+11. SAFE AREA IOS
+
+Perhatikan:
+
+env(safe-area-inset-top)
+
+env(safe-area-inset-bottom)
+
+env(safe-area-inset-left)
+
+env(safe-area-inset-right)
+
+Dashboard tidak boleh tertutup Dynamic Island maupun Home Indicator.
+
+⸻
+
+12. PIXEL PERFECT
+
+Setelah seluruh perubahan selesai:
+
+Lakukan visual audit terakhir.
+
+Pastikan:
+
+✓ seluruh viewport terisi
+
+✓ tidak ada ruang kosong
+
+✓ seluruh panel sejajar
+
+✓ seluruh border tersambung
+
+✓ footer benar-benar berada di bawah
+
+✓ dashboard terlihat seperti terminal trading institusional
+
+Jangan berhenti sampai hasil benar-benar pixel perfect.

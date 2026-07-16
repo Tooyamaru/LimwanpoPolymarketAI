@@ -1,0 +1,215 @@
+Lakukan penyempurnaan UI terakhir pada LIMWANPO POLYMARKET AI.
+
+## UI FREEZE RULE
+
+Ini adalah penyempurnaan UI terakhir.
+
+Setelah pekerjaan ini selesai, seluruh pengembangan HARUS berpindah ke backend intelligence:
+
+* Market Scanner Engine
+* Market Evaluation Engine
+* Opportunity Ranking Engine
+* Confidence Engine
+* Decision Engine
+* Risk Engine Integration
+* Paper Trading Engine
+* Trade Management
+* Performance Analytics
+* AI Learning
+
+Jangan melakukan redesign layout, mengganti warna, mengubah grid, atau memindahkan panel kecuali memang diperlukan untuk memperbaiki readability.
+
+---
+
+# TASK 1 — MARKET UNIVERSE
+
+Panel kiri sudah menggunakan struktur Asset Group.
+
+Pertahankan struktur:
+
+BTC
+
+* 5m
+* 15m
+* 1H
+
+ETH
+
+* 5m
+* 15m
+* 1H
+
+SOL
+
+* 5m
+* 15m
+* 1H
+
+XRP
+
+* 5m
+* 15m
+* 1H
+
+Hapus seluruh subtitle yang tidak diperlukan.
+
+JANGAN tampilkan lagi:
+
+* BTC · ETH · SOL · XRP
+* 5m · 15m · 1H
+* POLYMARKET UP/DOWN MARKETS
+
+MARKET UNIVERSE langsung diikuti daftar market.
+
+---
+
+# TASK 2 — AI CURRENT TARGET
+
+Sekarang tampilannya masih kurang natural.
+
+Jangan tampilkan:
+
+Analyzing...
+
+dengan ukuran besar.
+
+Gunakan status yang lebih profesional.
+
+Contoh:
+
+Waiting for Scanner
+
+atau
+
+Scanner Initializing
+
+Ukurannya harus lebih kecil daripada tulisan:
+
+BTC 5m
+
+Tetap jadikan:
+
+BTC 5m
+
+sebagai fokus utama panel.
+
+Jangan tampilkan angka placeholder seperti:
+
+24
+
+sampai Scanner Engine selesai dibuat.
+
+---
+
+# TASK 3 — TOP 3
+
+Selama Opportunity Ranking Engine belum selesai:
+
+tetap tampilkan:
+
+Waiting...
+
+Jangan tampilkan score placeholder.
+
+---
+
+# TASK 4 — POSITIONS PANEL
+
+Ini adalah panel yang saat ini paling sulit dibaca.
+
+Perbaiki typography.
+
+Yang diinginkan:
+
+NO ACTIVE POSITION
+
+AI is scanning markets
+
+Waiting for confidence threshold
+
+Paper Mode Active
+
+Perubahan:
+
+* jangan gunakan ALL CAPS untuk penjelasan
+* naikkan font 1–2px
+* opacity sedikit dinaikkan
+* line-height dibuat lebih rapat
+
+Tetap pertahankan style dashboard.
+
+---
+
+# TASK 5 — LAST CLOSED
+
+Hilangkan icon lingkaran kosong.
+
+Jika belum ada transaksi cukup tampilkan:
+
+No trades yet
+
+dengan typography yang bersih.
+
+---
+
+# TASK 6 — RESPONSIVE REVIEW
+
+Sebelum UI dianggap FINAL lakukan pengecekan responsive.
+
+Minimal:
+
+1920×1080
+
+1600×900
+
+1366×768
+
+1280×720
+
+1024×768
+
+768×1024
+
+820×1180
+
+Pastikan:
+
+* tidak ada panel bertabrakan
+* tidak ada tulisan terpotong
+* chart tetap proporsional
+* heatmap tetap terbaca
+* KPI tetap rapi
+* Decision Engine tidak pecah
+* Feed tidak overlap
+* Position Panel tetap utuh
+
+Perbaiki hanya CSS responsive bila diperlukan.
+
+JANGAN mengubah layout utama.
+
+---
+
+# TASK 7 — FINAL UI FREEZE
+
+Setelah semua pekerjaan di atas selesai:
+
+anggap UI FINAL.
+
+Setelah itu seluruh development harus fokus ke AI.
+
+Roadmap berikutnya:
+
+1. Market Scanner Engine
+2. Market Evaluation Engine
+3. Opportunity Ranking Engine
+4. Confidence Engine
+5. Decision Engine
+6. Risk Engine Integration
+7. Paper Trading Engine
+8. Trade Management
+9. Performance Analytics
+10. AI Learning
+
+Tidak boleh lagi melakukan redesign UI kecuali muncul fitur baru yang memang membutuhkan komponen visual baru.
+
+Sebelum selesai, lakukan code review dan pastikan tidak ada CSS conflict, JavaScript error, ataupun perubahan yang merusak layout.

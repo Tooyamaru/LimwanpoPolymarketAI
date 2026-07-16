@@ -1,0 +1,245 @@
+LIMWANPO AI — PHASE 12B MONITORING REMEDIATION CLOSEOUT
+
+Konteks:
+Phase 12 sudah selesai dengan status:
+
+MONITORING SAFETY: PASS WITH REMEDIATION
+
+Yang sudah dibuat:
+
+* alert_service.py
+* schemas/alert.py
+* api/v1/alerts.py
+* GET /api/v1/alerts/summary
+* test_alert_service.py
+* AI_DECISION_INTEGRITY_AUDIT.md updated
+* 15 alert service tests pass
+* live snapshot returns truthful OK with no fake alerts
+
+Remaining remediation:
+
+1. Missing aiosqlite test dependency causes recurring test-infra errors.
+2. Alert endpoint belum dipasang ke dashboard atau scheduled poller.
+3. Beberapa alert memakai proxy karena schema belum punya real FAILED / risk_gated fields.
+
+Tugas:
+Tutup remediation yang aman tanpa mengubah trading logic.
+
+JANGAN ubah UI besar-besaran.
+JANGAN redesign.
+JANGAN ubah decision/risk/execution formula.
+JANGAN tambah real trading.
+JANGAN tambah wallet.
+JANGAN tambah fake alert.
+JANGAN hardcode OK.
+
+==================================================
+STEP 1 — READ CURRENT STATE
+===========================
+
+Baca:
+
+* AI_DECISION_INTEGRITY_AUDIT.md
+* pyproject.toml / requirements.txt / uv.lock jika ada
+* backend/app/services/alert_service.py
+* backend/app/schemas/alert.py
+* backend/app/api/v1/alerts.py
+* backend/app/api/v1/**init**.py
+* backend/app/services/engine_health.py
+* backend/app/services/watchdog.py
+* backend/app/models/trade_decision.py
+* backend/app/models/risk_event.py
+* test_alert_service.py
+* failing test files related to aiosqlite
+
+Jalankan:
+
+* git status
+* git diff
+* python -m compileall -q backend/app
+
+==================================================
+STEP 2 — FIX TEST INFRA GAP
+===========================
+
+Investigate missing aiosqlite.
+
+If project uses requirements.txt:
+
+* add aiosqlite to requirements.txt
+
+If project uses pyproject.toml:
+
+* add aiosqlite to dependencies/dev dependencies as appropriate
+
+If both exist:
+
+* follow the project’s existing dependency pattern
+
+Then run:
+
+* python -m pytest tests that previously failed due to aiosqlite
+* python -m pytest test_alert_service.py
+* relevant monitoring/health tests
+* full suite if feasible
+
+Classify failures:
+
+* FIXED
+* PRE_EXISTING_UNRELATED
+* NEW_FAILURE
+
+Do not claim full clean if full suite still fails.
+
+==================================================
+STEP 3 — ALERT ENDPOINT LIVE VALIDATION
+=======================================
+
+Restart workflow.
+
+Call:
+
+GET /api/v1/alerts/summary
+
+Validate response:
+
+* status
+* generated_at
+* alerts[]
+* summary.critical
+* summary.warning
+* summary.info
+
+Ensure:
+
+* endpoint is read-only
+* no DB mutation
+* no trade trigger
+* no execution trigger
+* no secrets exposed
+* no hardcoded OK if query fails
+
+If possible, simulate one safe DB-only condition in test, not production:
+
+* duplicate position
+* expired position open
+* monitoring query failure
+
+Do not fabricate production alerts.
+
+==================================================
+STEP 4 — OPTIONAL DASHBOARD BINDING CHECK
+=========================================
+
+If dashboard already has Health Monitor and safe minimal binding exists:
+
+* wire /api/v1/alerts/summary to existing health monitor area without redesign
+
+If UI change is risky:
+
+* do not touch UI
+* document endpoint as operator/API-only for now
+
+Do not redesign layout.
+
+==================================================
+STEP 5 — ALERT PROXY TRANSPARENCY
+=================================
+
+Document current proxy alerts:
+
+* EXECUTION_ERROR_SPIKE derived from available trade_decision status/schema
+* RISK_GATE_STUCK derived from available risk_events / decision state
+
+For each proxy:
+
+* explain why true field is missing
+* what schema field would make it better later
+* whether current proxy is safe
+* false positive / false negative risk
+
+Do not add schema fields unless clearly necessary and safe.
+
+==================================================
+STEP 6 — RED FLAG SEARCH
+========================
+
+Search backend:
+
+* hardcoded OK
+* always healthy
+* fake alert
+* dummy alert
+* mock alert
+* except: pass
+* ignore error
+* wallet
+* private_key
+* signer
+* place_order
+* post_order
+* create_order
+
+Classify:
+
+* SAFE
+* TEST_ONLY
+* REAL_MONITORING
+* CONFIG_DISABLED
+* INVALID_FAKE
+* FIXED
+
+No INVALID_FAKE allowed.
+
+==================================================
+STEP 7 — UPDATE AUDIT REPORT
+============================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md with section:
+
+PHASE 12B — MONITORING REMEDIATION CLOSEOUT
+
+Include:
+
+1. Dependency remediation
+2. Tests before/after
+3. Alert endpoint live validation
+4. Dashboard binding decision
+5. Proxy alert transparency
+6. Red flag search
+7. Files changed
+8. Remaining risks
+9. Final status
+
+Final status:
+
+* MONITORING REMEDIATION: PASS
+  if aiosqlite/test-infra gap is fixed and endpoint works.
+
+* MONITORING REMEDIATION: PASS WITH NOTES
+  if endpoint works but dashboard binding is intentionally deferred.
+
+* MONITORING REMEDIATION: PARTIAL
+  if dependency issue remains.
+
+* MONITORING REMEDIATION: FAIL
+  if fake alert / hardcoded OK / query failure hidden.
+
+==================================================
+STEP 8 — FINAL RESPONSE FORMAT
+==============================
+
+Answer with:
+
+1. Files read
+2. Dependency fix
+3. Tests run
+4. Alert endpoint result
+5. Dashboard binding decision
+6. Proxy alert transparency
+7. Red flag search
+8. Files changed
+9. Audit report update
+10. Remaining risks
+11. Monitoring Remediation status
+12. Exact next recommended step

@@ -1,0 +1,255 @@
+You are continuing an existing project.
+
+DO NOT rewrite existing architecture.
+
+Respect current project structure.
+
+Goal:
+
+Sprint 2 = Data Collection Layer
+
+Build production-grade collectors.
+
+Do not build trading.
+
+Do not build dashboard.
+
+Do not build AI.
+
+=================================================
+
+TASK 1
+
+Implement Binance Spot Collector.
+
+File:
+
+backend/app/collector/binance_spot.py
+
+Requirements:
+
+- Use Binance public APIs
+- Async implementation
+- Collect:
+
+BTCUSDT
+ETHUSDT
+SOLUSDT
+XRPUSDT
+
+Data:
+
+- last price
+- bid
+- ask
+- volume
+- timestamp
+
+Create Pydantic models.
+
+=================================================
+
+TASK 2
+
+Implement Polymarket Collector.
+
+File:
+
+backend/app/collector/polymarket.py
+
+Requirements:
+
+Discover active markets automatically.
+
+Only keep markets matching:
+
+BTC
+ETH
+SOL
+XRP
+
+and
+
+5m
+15m
+1H
+
+Collect:
+
+- market id
+- title
+- yes price
+- no price
+- liquidity
+- volume
+- end time
+
+Must be async.
+
+=================================================
+
+TASK 3
+
+Create SQLAlchemy models.
+
+Create:
+
+backend/app/models/
+
+Files:
+
+market.py
+market_snapshot.py
+
+Fields:
+
+Market:
+
+id
+asset
+timeframe
+polymarket_market_id
+title
+start_time
+end_time
+status
+
+MarketSnapshot:
+
+id
+market_id
+timestamp
+
+yes_price
+no_price
+
+liquidity
+volume
+
+binance_price
+
+=================================================
+
+TASK 4
+
+Create repository layer.
+
+backend/app/services/
+
+market_repository.py
+
+Functions:
+
+save_market()
+
+update_market()
+
+save_snapshot()
+
+get_active_markets()
+
+=================================================
+
+TASK 5
+
+Create collector scheduler.
+
+Run every:
+
+5 seconds
+
+Flow:
+
+Binance
+↓
+Polymarket
+↓
+Save PostgreSQL
+
+=================================================
+
+TASK 6
+
+Create API endpoints.
+
+GET /api/v1/markets
+
+GET /api/v1/markets/active
+
+GET /api/v1/markets/latest
+
+=================================================
+
+TASK 7
+
+Improve health endpoint.
+
+Include:
+
+version
+uptime
+
+=================================================
+
+TASK 8
+
+Testing
+
+Create tests for:
+
+- Binance collector
+- Market repository
+- Health endpoint
+
+=================================================
+
+TASK 9
+
+Documentation
+
+Update README.
+
+Add:
+
+Sprint 2 architecture.
+
+=================================================
+
+TASK 10
+
+Git
+
+Before finishing:
+
+1. Run tests
+2. Verify application starts
+3. Verify collectors run
+4. Create commit
+
+Commit message:
+
+[Sprint 2] Data Collection Layer
+
+5. Push to GitHub
+
+=================================================
+
+IMPORTANT
+
+No trading.
+
+No execution engine.
+
+No dashboard.
+
+No probability engine.
+
+No confidence engine.
+
+Data collection only.
+
+Output:
+
+Show all files created and modified.
+Show test results.
+Show commit hash.

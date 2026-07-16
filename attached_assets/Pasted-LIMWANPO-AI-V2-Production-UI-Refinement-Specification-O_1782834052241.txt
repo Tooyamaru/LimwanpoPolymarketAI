@@ -1,0 +1,420 @@
+LIMWANPO AI — V2 Production UI Refinement Specification
+
+OBJECTIVE
+
+Sebelum melakukan perubahan apa pun, lakukan audit project terlebih dahulu.
+
+Cari apakah dashboard V2 / mockup terakhir sudah ada di project.
+
+Cari file yang berkaitan dengan:
+
+* index.html
+* dashboard.html
+* app/static/index.html
+* templates/*
+* assets/*
+* css/*
+* js/*
+* dashboard_v2
+* redesign
+* live chart
+* market universe
+* ai pipeline
+
+Jika dashboard V2 ditemukan:
+
+* JANGAN membuat dashboard baru.
+* JANGAN membuat layout baru.
+* JANGAN membuat mockup baru.
+* JANGAN mengubah backend.
+* JANGAN mengubah API.
+* JANGAN mengubah data flow.
+* JANGAN mengubah struktur grid.
+* JANGAN memindahkan panel.
+
+Lakukan refinement langsung pada dashboard V2 tersebut.
+
+Semua perubahan harus bersifat polishing visual.
+
+⸻
+
+GLOBAL RULES
+
+Dashboard ini sudah mendekati final.
+
+Target pekerjaan ini adalah meningkatkan kualitas visual tanpa mengubah identitas dashboard.
+
+Tidak boleh ada redesign.
+
+Tidak boleh ada perubahan workflow.
+
+Tidak boleh ada perubahan ukuran grid.
+
+Tidak boleh ada perubahan backend.
+
+Tidak boleh ada perubahan API.
+
+Semua panel harus tetap berada di posisi sekarang.
+
+⸻
+
+PART A
+
+1. LOGO
+
+Kembalikan logo ke versi lama.
+
+Gunakan style typography lama.
+
+Tetap gunakan:
+
+LIMWANPO // POLYMARKET AI
+
+Hapus seluruh subtitle kecil di bawah logo seperti:
+
+MISSION CONTROL
+
+PAPER MODE V2
+
+atau tulisan kecil lain.
+
+Karena bertabrakan dengan panel Portfolio.
+
+Header harus kembali bersih.
+
+⸻
+
+2. HEADER
+
+Kurangi tinggi header sekitar 15–20%.
+
+Tujuannya agar dashboard memiliki ruang vertikal lebih besar.
+
+Jangan mengubah posisi status pills.
+
+⸻
+
+3. PORTFOLIO PANEL
+
+Pertahankan layout sekarang.
+
+Jangan mengubah struktur.
+
+Perbaiki visual hierarchy.
+
+Angka utama:
+
+TOTAL VALUE
+
+CAPITAL
+
+WIN RATE
+
+TOTAL PNL
+
+harus lebih dominan.
+
+Label dibuat sedikit lebih redup.
+
+Spacing dibuat lebih rapi.
+
+⸻
+
+4. LIVE MARKET CHART
+
+Pertahankan layout sekarang.
+
+Jangan mengubah ukuran panel.
+
+Refinement:
+
+* floating info panel lebih modern
+* shadow lebih halus
+* active timeframe lebih jelas
+* glow lebih elegan
+
+Chart tetap menjadi pusat perhatian.
+
+⸻
+
+5. MARKET CARDS
+
+Pertahankan struktur sekarang.
+
+Jangan mengubah posisi elemen.
+
+Naikkan tinggi banner:
+
+YES
+
+NO
+
+sekitar 15%.
+
+Karena itu informasi utama.
+
+Countdown tetap di posisi sekarang.
+
+Confidence ring tetap di posisi sekarang.
+
+⸻
+
+6. AI PIPELINE
+
+Pertahankan animasi sekarang.
+
+Kurangi glow sekitar 20%.
+
+Supaya lebih elegan.
+
+⸻
+
+7. FOOTER
+
+Crypto ticker:
+
+JANGAN DIHAPUS.
+
+News ticker:
+
+JANGAN DIHAPUS.
+
+Pastikan footer benar-benar tampil.
+
+Saat ini footer hampir tidak pernah terlihat.
+
+Footer harus selalu berada di bagian paling bawah dashboard.
+
+Pastikan pengguna dapat melihat:
+
+Crypto ticker
+
+News ticker
+
+tanpa harus kehilangan fungsinya.
+
+⸻
+
+PART B
+
+8. FOOTER VISIBILITY
+
+Audit apakah footer benar-benar dirender.
+
+Jika footer hanya berada di luar viewport maka perbaiki layout.
+
+Target:
+
+Footer selalu terlihat.
+
+Bukan tersembunyi di bawah dashboard.
+
+⸻
+
+9. PIPELINE HEIGHT
+
+Pipeline terlalu tinggi.
+
+Kurangi tinggi sekitar 20%.
+
+Node tetap besar.
+
+Animasi tetap hidup.
+
+Jangan mengubah urutan node.
+
+⸻
+
+10. MARKET CARD HEIGHT
+
+Card asset terlalu tinggi.
+
+Kurangi tinggi sekitar 15–20%.
+
+Informasi tetap sama.
+
+Jangan menghapus apa pun.
+
+Dashboard harus terasa lebih padat seperti terminal profesional.
+
+⸻
+
+11. PANEL BORDER
+
+Saat ini border terlalu dominan.
+
+Kurangi:
+
+* opacity
+* glow
+* brightness
+
+Isi panel harus menjadi fokus.
+
+Bukan kotaknya.
+
+⸻
+
+12. TYPOGRAPHY HIERARCHY
+
+Perjelas hierarchy.
+
+Contoh:
+
+BTC
+
+harus jauh lebih dominan daripada
+
+3 MARKETS
+
+Hal yang sama berlaku di seluruh dashboard.
+
+⸻
+
+13. EMPTY STATE
+
+Saat belum ada sinyal:
+
+Jangan hanya tampilkan:
+
+NO AI PREDICTS
+
+Tambahkan status kecil seperti:
+
+Waiting Scanner…
+
+Collecting Market Data…
+
+Waiting AI Confirmation…
+
+Supaya dashboard terasa hidup.
+
+⸻
+
+14. SYSTEM HEALTH
+
+Pertahankan layout.
+
+Kurangi vertical spacing.
+
+List dibuat lebih rapat.
+
+Tidak perlu redesign.
+
+⸻
+
+15. CHART INFO PANEL
+
+Harga saat ini harus menjadi fokus utama.
+
+Perbesar angka price.
+
+24H High
+
+24H Low
+
+Volume
+
+Open Interest
+
+dibuat sedikit lebih kecil.
+
+⸻
+
+16. CONFIDENCE RING
+
+Pertahankan ring.
+
+Perbesar angka di tengah.
+
+Ring harus tetap elegan.
+
+⸻
+
+17. STATUS PILLS
+
+Saat ini semua hampir sama.
+
+Perjelas hierarchy.
+
+Misalnya:
+
+ENGINES → hijau
+
+MARKETS → cyan
+
+SIGNALS → ungu
+
+POSITIONS → merah
+
+CAPITAL → hijau
+
+Perbedaan visual harus lebih jelas.
+
+⸻
+
+18. GLOBAL SPACING
+
+Audit seluruh margin.
+
+Kurangi vertical whitespace sekitar 5–10px di area yang terlalu longgar.
+
+Dashboard harus terasa lebih padat.
+
+⸻
+
+19. HERO SECTION
+
+Chart adalah inti dashboard.
+
+Chart harus menjadi elemen paling dominan.
+
+Tanpa memperbesar ukuran grid.
+
+Caranya:
+
+* header sedikit dipadatkan
+* pipeline sedikit dipendekkan
+* market card sedikit dipendekkan
+
+Sehingga chart mendapatkan ruang visual lebih besar.
+
+⸻
+
+FINAL CHECKLIST
+
+Sebelum selesai, pastikan:
+
+✓ Tidak ada redesign.
+
+✓ Tidak ada panel yang berpindah.
+
+✓ Tidak ada perubahan backend.
+
+✓ Tidak ada perubahan API.
+
+✓ Tidak ada perubahan data flow.
+
+✓ Footer benar-benar terlihat.
+
+✓ Logo kembali ke versi lama.
+
+✓ Subtitle logo dihapus.
+
+✓ Header lebih ramping.
+
+✓ Chart menjadi fokus utama.
+
+✓ Pipeline lebih elegan.
+
+✓ Market card lebih padat.
+
+✓ Border lebih halus.
+
+✓ Typography lebih jelas.
+
+✓ Empty state lebih hidup.
+
+✓ Dashboard tetap mempertahankan identitas cyber terminal LIMWANPO AI.
+
+Target akhir adalah dashboard trading AI yang terasa seperti terminal profesional premium (Bloomberg, institutional trading desk), namun tetap mempertahankan identitas visual LIMWANPO AI tanpa mengubah struktur maupun fungsionalitas yang sudah ada.

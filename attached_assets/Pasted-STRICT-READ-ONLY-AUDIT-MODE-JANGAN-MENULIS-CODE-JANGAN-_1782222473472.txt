@@ -1,0 +1,89 @@
+STRICT READ-ONLY AUDIT MODE
+
+JANGAN MENULIS CODE.
+JANGAN MEMBUAT FILE BARU.
+JANGAN MEMODIFIKASI FILE APAPUN.
+JANGAN MENAMBAHKAN FITUR APAPUN.
+JANGAN MELAKUKAN REFACTOR.
+JANGAN MEMPERBAIKI BUG.
+
+Tugas Anda hanya melakukan VERIFIKASI IMPLEMENTASI LAYER 10 berdasarkan source code yang ada saat ini.
+
+Audit seluruh repository dan berikan bukti file + line number untuk setiap kesimpulan.
+
+Verifikasi secara khusus:
+
+1. Apakah Layer 10 benar-benar sudah diimplementasikan.
+2. Apakah file berikut benar-benar ada:
+   - backend/app/repositories/portfolio_repository.py
+   - backend/app/services/portfolio_service.py
+   - backend/app/schemas/portfolio.py
+   - backend/app/api/v1/portfolio.py
+   - backend/app/tests/test_portfolio_repository.py
+   - backend/app/tests/test_portfolio_service.py
+   - backend/app/tests/test_portfolio_api.py
+
+3. Verifikasi isi masing-masing file:
+   - fungsi yang tersedia
+   - class yang tersedia
+   - endpoint yang tersedia
+   - schema yang tersedia
+
+4. Verifikasi router registration:
+   - api/v1/__init__.py
+   - app startup registration
+   - total router count
+
+5. Verifikasi endpoint berikut benar-benar ada:
+   - GET /api/v1/portfolio/summary
+   - GET /api/v1/portfolio/positions
+   - GET /api/v1/portfolio/orders
+   - GET /api/v1/portfolio/risk
+   - GET /api/v1/portfolio/pnl
+
+6. Verifikasi repository benar-benar READ ONLY:
+   - tidak ada INSERT
+   - tidak ada UPDATE
+   - tidak ada DELETE
+
+7. Verifikasi service layer:
+   - hanya delegasi ke repository
+   - tidak ada business logic yang melanggar pola arsitektur
+
+8. Verifikasi test:
+   - jumlah test aktual
+   - nama test
+   - cakupan test
+   - apakah benar 35 test
+
+9. Verifikasi dokumentasi:
+   - README.md
+   - PROJECT_STATUS.md
+   - ROADMAP_NEXT_PHASE.md
+   - NEXT_BUILD_TASKS.md
+
+10. Tentukan status proyek saat ini:
+    - Current Layer
+    - Current Phase
+    - Next Approved Layer
+
+Output wajib:
+
+SECTION A — FILE EXISTENCE CHECK
+SECTION B — ROUTER CHECK
+SECTION C — ENDPOINT CHECK
+SECTION D — REPOSITORY CHECK
+SECTION E — TEST CHECK
+SECTION F — DOCUMENTATION CHECK
+SECTION G — CURRENT PROJECT POSITION
+
+Untuk setiap item berikan:
+- VERIFIED
+- NOT FOUND
+- PARTIALLY VERIFIED
+
+Sertakan bukti file dan line number.
+Tidak boleh ada asumsi.
+Tidak boleh ada rekomendasi fitur baru.
+Tidak boleh menulis code.
+Hanya audit dan verifikasi fakta berdasarkan source code yang ada.

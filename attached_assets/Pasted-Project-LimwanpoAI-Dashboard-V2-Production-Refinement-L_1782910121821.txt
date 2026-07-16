@@ -1,0 +1,442 @@
+Project: LimwanpoAI – Dashboard V2 Production Refinement
+
+Lakukan seluruh perubahan berikut pada dashboard production yang ada sekarang.
+
+PENTING
+
+* Jangan mengubah struktur layout.
+* Jangan mengubah grid.
+* Jangan mengubah ukuran panel utama.
+* Jangan mengubah posisi setiap section.
+* Jangan menghapus fitur yang sudah bekerja.
+* Jangan membuat desain baru.
+* Fokus hanya pada refinement visual, UX, animasi, dan hierarchy.
+* Pertahankan seluruh backend, API, endpoint, websocket, dan data flow yang sudah berjalan.
+
+⸻
+
+A. LOGO (WAJIB)
+
+Kembalikan logo seperti mockup premium sebelumnya.
+
+Target:
+
+* LIMWANPO warna cyan.
+* POLYMARKET AI warna magenta.
+* Glow 2 layer.
+* Letter spacing besar.
+* Font lebih tebal.
+* Tambahkan vertical accent line di kiri logo.
+* Tambahkan subtle neon glow.
+* Jangan ada subtitle.
+* Hapus seluruh tulisan yang berada di bawah logo karena bertabrakan dengan panel lain.
+
+Logo harus kembali menjadi fokus utama dashboard.
+
+⸻
+
+B. HEADER
+
+Jangan ubah layout.
+
+Tetapi buat header terasa lebih premium.
+
+Tambahkan:
+
+* subtle animated scan line
+* glow lebih halus
+* separator lebih elegan
+* energy line tipis
+* depth lebih tinggi
+
+Header harus terasa seperti Bloomberg Terminal.
+
+⸻
+
+C. PORTFOLIO PANEL
+
+Jangan ubah posisi.
+
+Perbaiki visual:
+
+* angka 10–15% lebih besar
+* glow pada value
+* hierarchy lebih jelas
+* border gradient tipis
+* icon kecil setiap metric
+* hover halus
+
+⸻
+
+D. LIVE MARKET CHART
+
+Chart tetap menggunakan LightweightCharts.
+
+Tetapi tambahkan:
+
+* floating price panel lebih modern
+* live pulse indicator
+* gradient glow
+* better crosshair
+* volume histogram bila tersedia
+* harga live lebih dominan
+
+Jangan mengubah ukuran chart.
+
+⸻
+
+E. SYSTEM HEALTH
+
+Jangan ubah layout.
+
+Tambahkan:
+
+* status dot pulse
+* vertical glow line
+* subtle animation
+* spacing lebih rapi
+
+⸻
+
+F. MARKET UNIVERSE
+
+Jangan ubah grid.
+
+Perbaiki:
+
+Jika belum ada data:
+
+JANGAN tampil kosong.
+
+Gunakan status seperti:
+
+Loading…
+
+Waiting…
+
+Syncing…
+
+Monitoring…
+
+Scanning…
+
+Fetching…
+
+Never tampilkan panel kosong.
+
+⸻
+
+G. ASSET HEADER
+
+Pertahankan:
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+Tetapi:
+
+* lebih bold
+* glow lebih baik
+* subtitle lebih redup
+* hierarchy lebih jelas
+
+⸻
+
+H. CONFIDENCE RING
+
+Perbesar sekitar 20%.
+
+Tambahkan:
+
+* animated arc
+* glow
+* smooth progress animation
+
+⸻
+
+I. COUNTDOWN
+
+Countdown terlalu dominan.
+
+Kurangi sekitar 20%.
+
+Hierarchy harus:
+
+Asset Name
+
+↓
+
+Prediction
+
+↓
+
+Confidence
+
+↓
+
+Countdown
+
+⸻
+
+J. PREDICTION BANNER
+
+YES / NO harus lebih premium.
+
+Tambahkan:
+
+* gradient
+* glow
+* shadow
+* stronger border
+* smooth transition
+
+⸻
+
+K. TYPOGRAPHY
+
+Audit seluruh font.
+
+Pastikan:
+
+* ukuran konsisten
+* hierarchy jelas
+* spacing rapi
+* tidak ada text terlalu kecil
+
+⸻
+
+L. AI PIPELINE
+
+Pertahankan layout.
+
+Upgrade visual:
+
+* moving particles
+* dual energy beam
+* animated dashed orbit
+* pulse saat active
+* connector lebih hidup
+
+⸻
+
+M. AI THINKING FEED
+
+Upgrade menjadi terminal AI.
+
+Gunakan badge:
+
+INFO
+
+SYS
+
+RISK
+
+EXEC
+
+SIGNAL
+
+UNIV
+
+EXIT
+
+Warnai badge sesuai kategori.
+
+Timestamp lebih jelas.
+
+Tetap maksimal 5 line.
+
+⸻
+
+N. AI LIVE FEED
+
+Sama seperti Thinking Feed.
+
+Tetap maksimal 5 line.
+
+⸻
+
+O. FOOTER (WAJIB)
+
+Footer Bloomberg belum ada.
+
+Buat footer penuh di bawah dashboard.
+
+Isi:
+
+Crypto ticker:
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+BNB
+
+DOGE
+
+News ticker
+
+Running terus.
+
+Scrolling halus.
+
+Tidak mengganggu layout.
+
+⸻
+
+P. BORDER HIERARCHY
+
+Saat ini semua border hampir sama.
+
+Bedakan:
+
+Header
+
+Portfolio
+
+Chart
+
+Market
+
+Pipeline
+
+Feed
+
+System Health
+
+Menggunakan opacity berbeda.
+
+⸻
+
+Q. MICRO ANIMATION
+
+Tambahkan:
+
+* pulse
+* blink
+* scan
+* energy flow
+* glow breathing
+* smooth hover
+
+Jangan berlebihan.
+
+Target:
+
+Alive but elegant.
+
+⸻
+
+R. LOADING STATE
+
+Semua panel harus memiliki loading state.
+
+Gunakan:
+
+fade
+
+terminal typing
+
+loading pulse
+
+skeleton glow
+
+sebelum data muncul.
+
+⸻
+
+S. RESPONSIVE
+
+Pastikan seluruh refinement tetap sempurna pada:
+
+Desktop
+
+Laptop
+
+Tablet
+
+iPad Safari
+
+Chrome
+
+Firefox
+
+Edge
+
+Tidak boleh muncul overflow.
+
+Tidak boleh muncul horizontal scroll.
+
+⸻
+
+T. PERFORMANCE
+
+Semua animasi menggunakan:
+
+transform
+
+opacity
+
+requestAnimationFrame bila diperlukan
+
+hindari repaint berat
+
+Tetap 60 FPS.
+
+⸻
+
+U. FINAL QUALITY CHECK
+
+Sebelum selesai, lakukan audit mandiri.
+
+Pastikan:
+
+✓ Logo premium kembali.
+
+✓ Subtitle bawah logo hilang.
+
+✓ Header lebih hidup.
+
+✓ Portfolio lebih premium.
+
+✓ Chart lebih elegan.
+
+✓ System Health lebih menarik.
+
+✓ Market card tidak pernah kosong.
+
+✓ Confidence ring lebih besar.
+
+✓ Countdown lebih proporsional.
+
+✓ Prediction banner lebih kuat.
+
+✓ Typography konsisten.
+
+✓ Pipeline lebih hidup.
+
+✓ AI Thinking Feed lebih premium.
+
+✓ AI Live Feed lebih premium.
+
+✓ Footer crypto ticker + news ticker benar-benar ada dan terlihat.
+
+✓ Border hierarchy lebih baik.
+
+✓ Micro animation konsisten.
+
+✓ Loading state ada.
+
+✓ Tidak ada layout bergeser.
+
+✓ Tidak ada fitur lama yang rusak.
+
+Target akhir adalah dashboard dengan kualitas visual setara terminal trading institusional (Bloomberg Terminal, TradingView Premium, atau platform hedge fund), sambil mempertahankan seluruh fungsionalitas yang sudah berjalan.

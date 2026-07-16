@@ -1,0 +1,313 @@
+PROMPT FINAL — LIMWANPO AI MARKET UNIVERSE (FINAL UI)
+OBJECTIVE
+
+Refine ONLY the frontend UI of the Market Universe.
+
+Do NOT change backend.
+
+Do NOT change APIs.
+
+Do NOT change database.
+
+Do NOT redesign the whole dashboard.
+
+Only improve the information hierarchy so it feels like a professional AI Prediction Terminal for Polymarket.
+
+1. HEADER MARKET
+
+Keep the current header.
+
+Only display:
+
+₿ BTC   $62,918
+Ξ ETH   $1,765
+◎ SOL   $80.42
+✕ XRP   $1.1415
+
+Current Price appears ONLY here.
+
+Never display Current Price again inside timeframe cards.
+
+2. UP / DOWN PROBABILITY
+
+This becomes the primary visual indicator.
+
+Example:
+
+UP        DOWN
+50.8%     49.2%
+
+AI decision is represented ONLY by the glow.
+
+Rules:
+
+If AI chooses UP
+
+• UP text + probability = bright green + glow
+
+• DOWN = dimmed
+
+If AI chooses DOWN
+
+• DOWN text + probability = bright red + glow
+
+• UP = dimmed
+
+If AI has NOT entered yet
+
+Neither side glows.
+
+Both stay normal brightness.
+
+DO NOT display:
+
+Prediction UP
+
+Prediction DOWN
+
+LONG
+
+SHORT
+
+LONG YES
+
+LONG NO
+
+Those are removed completely.
+
+The glow already communicates AI direction.
+
+3. TARGET
+
+Rename
+
+Price To Beat
+
+to
+
+Target
+
+Keep Target inside every timeframe.
+
+Each timeframe has its own Target.
+
+4. GAP
+
+Rename
+
+Difference
+
+to
+
+Gap
+
+Keep per timeframe.
+
+5. ENTRY
+
+Only display Entry after AI has entered.
+
+Example
+
+Entry
+50.7%
+
+If AI has not entered,
+
+hide the row completely.
+
+Do NOT display placeholders.
+
+6. EXPOSURE
+
+Replace Size with
+
+Exposure
+
+Example
+
+Exposure
+$40
+
+Only visible if AI currently has an active position.
+
+Hide completely if no position exists.
+
+7. ENTRIES
+
+Display how many entries AI has accumulated.
+
+Example
+
+Entries
+4
+
+NOT
+
+4/5
+
+3/5
+
+2/8
+
+Never display limits.
+
+Only display total entries executed.
+
+Hide when AI has no position.
+
+8. CONFIDENCE
+
+Rename
+
+AI Score
+
+to
+
+Confidence
+
+Keep percentage.
+
+Example
+
+Confidence
+84%
+9. EXPIRES
+
+Replace
+
+Held
+
+with
+
+Expires
+
+Display remaining market time.
+
+Example
+
+04:17
+
+Countdown updates live.
+
+10. STATUS
+
+Keep
+
+WAITING
+
+READY
+
+MONITORING
+
+TRADING
+
+EXIT READY
+
+RESOLVED
+
+Remove LIVE completely.
+
+11. REMOVE COMPLETELY
+
+Delete permanently:
+
+Contracts
+Bid
+Ask
+Spread
+LONG
+SHORT
+Position
+LONG YES
+LONG NO
+Current Price inside timeframe cards
+
+No placeholders.
+
+No empty labels.
+
+12. FINAL CARD ORDER
+
+Each timeframe card should become:
+
+UP            DOWN
+50.8%         49.2%
+
+Target        Gap
+62950         -81
+
+(Only when AI entered)
+
+Entry         Exposure
+50.7%         $40
+
+Entries       Confidence
+4             84%
+
+Expires
+04:17
+
+Status
+TRADING
+
+If AI has NOT entered
+
+the card becomes
+
+UP            DOWN
+50.8%         49.2%
+
+Target        Gap
+62950         -81
+
+Confidence
+84%
+
+Expires
+04:17
+
+Status
+MONITORING
+
+Notice:
+
+Entry
+
+Exposure
+
+Entries
+
+are completely hidden until AI actually opens a position.
+
+13. DESIGN RULES
+
+Do NOT redesign colors.
+
+Do NOT redesign spacing.
+
+Do NOT redesign typography.
+
+Do NOT redesign animations.
+
+Only improve information hierarchy.
+
+The dashboard must still look like LIMWANPO AI.
+
+14. IMPORTANT
+
+Before writing code,
+
+inspect the current implementation.
+
+Extend existing components.
+
+Do NOT duplicate HTML.
+
+Do NOT duplicate CSS.
+
+Do NOT duplicate JS.
+
+Do NOT create parallel render functions.
+
+Reuse the existing architecture.

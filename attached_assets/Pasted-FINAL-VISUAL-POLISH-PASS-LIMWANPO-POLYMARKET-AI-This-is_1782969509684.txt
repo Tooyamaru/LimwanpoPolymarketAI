@@ -1,0 +1,157 @@
+FINAL VISUAL POLISH PASS — LIMWANPO POLYMARKET AI
+
+This is NOT a redesign.
+
+Keep the exact layout, structure, spacing proportions, backend, HTML hierarchy, IDs, JS, and functionality exactly as they are.
+
+Only perform a premium UI/UX readability and visual polish.
+
+=========================
+TYPOGRAPHY
+=========================
+
+Increase overall readability without making the dashboard look larger.
+
+Use a stronger typography hierarchy.
+
+Section titles:
+- font-weight:500–600
+- increase brightness by 20%
+- maintain current size
+
+Secondary labels:
+- brighten approximately 25%
+- minimum readable contrast
+- never pure gray
+
+Metadata:
+(POS, CAPITAL, PnL, Volume, Session, 24H H, etc.)
+
+Increase opacity so they remain subtle but immediately readable.
+
+Hero numbers:
+Increase visual weight by about 10%.
+
+Portfolio values should become visually dominant after the chart.
+
+=========================
+MARKET CARDS
+=========================
+
+Keep the current layout.
+
+Improve depth by:
+
+- slightly brighter borders
+- soft inner glow
+- subtle glass effect
+- better separation between label/value pairs
+
+Increase vertical breathing room by 2–3px.
+
+Do NOT enlarge the cards.
+
+=========================
+PIPELINE
+=========================
+
+The AI Decision Engine should feel alive.
+
+Improve:
+
+- active node glow
+- connection line brightness
+- pulse animation smoothness
+- icon clarity
+- active node emphasis
+
+Do NOT increase section height.
+
+=========================
+SYSTEM HEALTH
+=========================
+
+Reduce green status dot size by ~10%.
+
+Increase engine label readability.
+
+Maintain alignment.
+
+=========================
+CHART
+=========================
+
+Keep the current size.
+
+Reduce grid opacity slightly.
+
+Increase candle visual contrast.
+
+Improve current price label readability.
+
+Do not change TradingView behavior.
+
+=========================
+FEEDS
+=========================
+
+Increase:
+
+- feed font ~10%
+- timestamp readability
+- badge readability
+- line spacing
+
+Keep exactly the same height.
+
+Show 5–6 entries comfortably.
+
+=========================
+FOOTER
+=========================
+
+Improve ticker readability.
+
+Increase spacing between assets.
+
+Maintain height.
+
+Keep smooth scrolling.
+
+=========================
+SPACING
+=========================
+
+Normalize whitespace everywhere.
+
+Use a consistent 3–4px rhythm.
+
+Nothing should feel cramped.
+
+Nothing should feel oversized.
+
+=========================
+COLORS
+=========================
+
+Keep the Limwanpo color palette.
+
+Do NOT introduce new colors.
+
+Only improve contrast and readability.
+
+=========================
+IMPORTANT
+=========================
+
+This is a premium enterprise polish pass.
+
+Do NOT redesign.
+
+Do NOT move components.
+
+Do NOT change layout.
+
+Do NOT modify backend.
+
+Only improve typography, hierarchy, spacing, glass effects, depth, readability, and overall visual refinement until the dashboard feels comparable to a Bloomberg Terminal, TradingView Premium, or institutional trading workstation.

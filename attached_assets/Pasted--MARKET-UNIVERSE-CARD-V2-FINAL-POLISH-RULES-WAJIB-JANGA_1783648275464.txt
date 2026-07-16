@@ -1,0 +1,377 @@
+# MARKET UNIVERSE CARD V2 (FINAL POLISH)
+
+## RULES (WAJIB)
+
+* JANGAN mengubah arsitektur project.
+* JANGAN mengubah backend.
+* JANGAN membuat dummy data.
+* JANGAN membuat endpoint baru.
+* JANGAN mengubah logic AI Engine.
+* JANGAN mengubah Prediction Engine.
+* JANGAN mengubah database.
+* JANGAN mengubah API.
+* Semua data WAJIB berasal dari data realtime yang sudah ada sekarang.
+
+Gunakan hanya:
+
+* /api/v1/universe/active
+* /api/v1/price/active
+* /api/v1/opportunities
+* /api/v1/signals/latest
+* /api/v1/decision
+
+---
+
+# TUJUAN
+
+Market Universe Card harus terlihat jauh lebih bersih, profesional, dan mudah dibaca.
+
+Bukan menambah informasi.
+
+Tetapi menata ulang informasi yang sudah ada.
+
+---
+
+# LAYOUT BARU
+
+```
+BTC      5M
+
+UP 50.5%            DOWN 49.5%
+
+TARGET 62,684       PROFIT +$10.20
+
+CONF 68%   GAP +53.5   SPREAD 1.00%
+
+⏳22h15m            ● WAIT
+```
+
+Urutan wajib seperti di atas.
+
+Jangan diubah.
+
+---
+
+# DATA
+
+## UP
+
+Real yes_mid
+
+## DOWN
+
+Real no_mid
+
+## TARGET
+
+opening_price
+
+## GAP
+
+currentPrice - openingPrice
+
+## CONF
+
+confidence AI
+
+## SPREAD
+
+spread asli dari orderbook
+
+## PROFIT
+
+REAL PROFIT
+
+Bukan persen.
+
+Format:
+
++$10.20
+
+Profit dihitung dari:
+
+stake default aplikasi
+
+menggunakan
+
+direction AI
+
+BUY_YES memakai yes_mid
+
+BUY_NO memakai no_mid
+
+Tidak boleh fake.
+
+Tidak boleh random.
+
+---
+
+# STATUS
+
+Gunakan Decision Engine.
+
+Status hanya boleh:
+
+WAIT
+
+READY
+
+ENTRY
+
+MONITORING
+
+CLOSED
+
+Tidak boleh hardcode.
+
+---
+
+# SPACING (SANGAT PENTING)
+
+Rapikan spacing supaya card terasa lega tetapi tetap padat.
+
+## HEADER
+
+BTC
+
+5M
+
+jarak vertikal:
+
+2-3 px
+
+---
+
+## UP DOWN
+
+beri jarak atas:
+
+4 px
+
+beri jarak bawah:
+
+5 px
+
+UP kiri
+
+DOWN kanan
+
+selalu sejajar
+
+---
+
+## TARGET PROFIT
+
+Ini bagian paling penting.
+
+TARGET value
+
+font paling besar.
+
+PROFIT sedikit lebih kecil.
+
+TARGET dan PROFIT harus berada di satu garis horizontal.
+
+beri ruang antar kolom sekitar 20-24 px.
+
+---
+
+## ROW CONF GAP SPREAD
+
+Gunakan 3 kolom yang benar-benar rata.
+
+```
+CONF 68%
+
+GAP +53
+
+SPREAD 1%
+```
+
+Semua center secara vertikal.
+
+Semua memiliki lebar yang sama.
+
+Tidak boleh ada yang mepet.
+
+---
+
+## BOTTOM
+
+Countdown kiri
+
+Status kanan
+
+Vertical align center.
+
+Status badge tidak boleh terlalu tinggi.
+
+Gunakan padding kecil.
+
+---
+
+# FONT HIERARCHY
+
+BTC
+
+16
+
+bold
+
+TARGET value
+
+15
+
+bold
+
+PROFIT
+
+14
+
+bold
+
+CONF GAP SPREAD
+
+12
+
+Countdown
+
+11
+
+Status
+
+11
+
+Semua font mengikuti style dashboard sekarang.
+
+Jangan mengganti font.
+
+---
+
+# COLOR
+
+Pertahankan seluruh tema sekarang.
+
+TARGET
+
+kuning
+
+PROFIT
+
+hijau
+
+CONF
+
+cyan
+
+GAP
+
+hijau / merah
+
+SPREAD
+
+kuning
+
+WAIT
+
+merah
+
+READY
+
+hijau
+
+ENTRY
+
+kuning
+
+MONITORING
+
+cyan
+
+---
+
+# CARD HEIGHT
+
+JANGAN memperbesar card.
+
+Justru buat isi card lebih padat.
+
+Target tinggi card turun sekitar 15-20%.
+
+Landscape harus jauh lebih nyaman.
+
+Tidak boleh terasa memanjang ke bawah.
+
+---
+
+# CSS
+
+Hanya edit CSS yang diperlukan.
+
+Kurangi:
+
+* padding vertical
+* margin vertical
+* gap antar row
+
+Tetapi:
+
+JANGAN membuat card terlihat sesak.
+
+Gunakan white space yang konsisten.
+
+---
+
+# RESPONSIVE
+
+Landscape desktop
+
+Landscape tablet
+
+iPad
+
+Semua tetap rapi.
+
+Tidak boleh overflow.
+
+Tidak boleh text terpotong.
+
+---
+
+# YANG TIDAK BOLEH BERUBAH
+
+* Chart
+* AI Feed
+* Portfolio
+* Prediction Workspace
+* Footer
+* Pipeline
+* Engine
+* Logic
+* Backend
+* API
+* Database
+
+Hanya Market Universe Card.
+
+---
+
+# SEBELUM SELESAI
+
+Lakukan review sendiri:
+
+✅ Semua data realtime
+
+✅ Tidak ada dummy
+
+✅ Tidak ada hardcode
+
+✅ Tidak ada perubahan arsitektur
+
+✅ Layout persis seperti desain di atas
+
+✅ Spacing sudah lebih rapi
+
+✅ Landscape lebih nyaman
+
+Jika semua lolos baru simpan perubahan.

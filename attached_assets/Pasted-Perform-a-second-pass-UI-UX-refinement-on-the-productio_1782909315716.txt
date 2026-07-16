@@ -1,0 +1,356 @@
+Perform a second-pass UI/UX refinement on the production dashboard.
+
+IMPORTANT:
+This is NOT a redesign.
+Do NOT modify backend logic, APIs, trading engine, HTML structure, business logic, data flow, or overall layout.
+
+Only improve CSS, responsive layout, spacing, typography, and lightweight UI JavaScript.
+
+====================================================
+MAIN OBJECTIVE
+====================================================
+
+The dashboard should feel like a professional institutional trading terminal.
+
+Current version successfully removes page scrolling, but now the layout feels compressed.
+
+Do NOT simply shrink every section.
+
+Instead, rebalance the layout so every major module has the correct visual importance.
+
+====================================================
+1. USE PROPER CSS GRID LAYOUT
+====================================================
+
+Replace the current "compress everything to fit" approach with a proper viewport grid.
+
+Target layout:
+
+Header
+≈30px
+
+Top Dashboard
+(Portfolio + Chart + System Health)
+≈250-270px
+
+Market Universe
+flex:1 (remaining height)
+
+AI Decision Pipeline
+≈105-115px
+
+AI Thinking Feed + AI Live Feed
+≈90-100px
+
+Footer
+≈22-24px
+
+The Market Universe should consume only the remaining space.
+
+Do NOT shrink Pipeline or Feeds to make Market Universe larger.
+
+====================================================
+2. MARKET UNIVERSE
+====================================================
+
+Current Market Universe occupies too much of the screen.
+
+Reduce its vertical dominance.
+
+The Market Universe should become the ONLY flexible area.
+
+If content exceeds available height:
+
+Use internal scrolling ONLY inside Market Universe.
+
+Never allow the page itself to scroll.
+
+====================================================
+3. MARKET CARDS
+====================================================
+
+Current cards still contain too much unused space.
+
+Reduce:
+
+top padding
+
+bottom padding
+
+timer spacing
+
+footer spacing
+
+internal gaps
+
+approximately another 15%.
+
+Do NOT remove information.
+
+Improve information density.
+
+====================================================
+4. COUNTDOWN
+====================================================
+
+Countdown timer is visually too dominant.
+
+Reduce font size about 20%.
+
+Reduce opacity slightly.
+
+Asset name should remain the strongest visual element.
+
+====================================================
+5. ASSET HEADER
+====================================================
+
+Increase hierarchy.
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+must remain bold and visually dominant.
+
+Subtitle:
+
+"3 Markets"
+
+should become smaller and lighter.
+
+====================================================
+6. STATUS MESSAGE
+====================================================
+
+Dynamic status messages are good.
+
+Keep them.
+
+Examples:
+
+Tracking Order Flow...
+
+Aggregating Ticks...
+
+Measuring Volatility...
+
+Syncing Price Feed...
+
+Continue rotating different messages until AI data is available.
+
+====================================================
+7. CHART PANEL
+====================================================
+
+Chart currently feels too short.
+
+Increase chart height slightly.
+
+Target:
+
+260-280px
+
+Chart should become the visual center of the dashboard again.
+
+====================================================
+8. PORTFOLIO PANEL
+====================================================
+
+Increase emphasis on portfolio numbers.
+
+TOTAL VALUE
+
+CAPITAL
+
+TOTAL PNL
+
+should immediately stand out.
+
+Increase main values about 10-15%.
+
+Secondary labels should remain muted.
+
+====================================================
+9. AI DECISION PIPELINE
+====================================================
+
+Current pipeline became too compressed.
+
+Increase node readability.
+
+Do NOT increase total section height significantly.
+
+Instead:
+
+Reduce empty vertical padding.
+
+Keep node size readable.
+
+Maintain subtle glow.
+
+Maintain moving data-flow animation.
+
+Pipeline should clearly communicate AI workflow.
+
+====================================================
+10. AI THINKING FEED
+====================================================
+
+Current feed is too short.
+
+Increase height enough to display at least 4-5 log lines.
+
+Keep internal scrolling.
+
+Newest entries remain visible.
+
+====================================================
+11. AI LIVE FEED
+====================================================
+
+Same treatment.
+
+Display multiple log lines.
+
+Internal scrolling only.
+
+====================================================
+12. SYSTEM HEALTH
+====================================================
+
+Improve spacing consistency.
+
+Keep green indicators.
+
+Improve alignment.
+
+Avoid excessive empty space.
+
+====================================================
+13. TYPOGRAPHY
+====================================================
+
+Strengthen hierarchy throughout dashboard.
+
+Primary:
+Portfolio Value
+BTC Price
+Asset Names
+
+Secondary:
+Labels
+Countdown
+Statistics
+
+Use opacity and font weight instead of additional colors.
+
+====================================================
+14. BORDER SYSTEM
+====================================================
+
+Reduce border opacity another 10%.
+
+Panels should separate naturally.
+
+Borders should never dominate.
+
+====================================================
+15. GLOW SYSTEM
+====================================================
+
+Reduce glow intensity slightly.
+
+Keep premium cyber-terminal appearance.
+
+Avoid excessive neon.
+
+====================================================
+16. RESPONSIVE RULES
+====================================================
+
+Create proper responsive layouts for:
+
+Desktop Large
+
+Desktop
+
+Laptop
+
+iPad Landscape
+
+iPad Portrait
+
+Do NOT simply scale everything down.
+
+Instead rebalance section heights.
+
+====================================================
+17. PERFORMANCE
+====================================================
+
+Avoid expensive animations.
+
+Keep rendering smooth.
+
+Do not introduce layout shifts.
+
+====================================================
+18. DO NOT CHANGE
+====================================================
+
+Do NOT modify:
+
+Backend
+
+Trading engine
+
+AI logic
+
+Signals
+
+Market engine
+
+Database
+
+APIs
+
+Grid structure
+
+Business logic
+
+Only improve presentation.
+
+====================================================
+19. FINAL VALIDATION
+====================================================
+
+Verify before completion:
+
+✓ No page scrolling
+
+✓ Only Market Universe scrolls internally when needed
+
+✓ Chart is visually dominant
+
+✓ Portfolio numbers are more prominent
+
+✓ Pipeline remains readable
+
+✓ AI Thinking Feed displays at least 4-5 log lines
+
+✓ AI Live Feed displays at least 4-5 log lines
+
+✓ Market cards are more compact
+
+✓ Countdown is smaller than asset name
+
+✓ Dashboard feels balanced instead of compressed
+
+✓ Professional institutional trading terminal appearance maintained
+
+Implement all refinements in one coordinated pass.

@@ -1,0 +1,543 @@
+LIMWANPO AI — PHASE 2 CONTINUATION (STRICT MODE)
+
+Previous Replit stopped because of quota.
+
+You MUST continue.
+
+DO NOT restart.
+
+DO NOT summarize.
+
+DO NOT rewrite previous work.
+
+Continue exactly where the previous audit stopped.
+
+This is an architecture continuation only.
+
+NO CODE MODIFICATION.
+
+NO REFACTOR.
+
+NO FILE DELETION.
+
+NO DATABASE CHANGES.
+
+NO UI CHANGES.
+
+NO AUTO FIXES.
+
+Only perform architecture verification.
+
+⸻
+
+STEP 1
+
+First verify these files actually exist.
+
+If any file does not exist, recreate it completely.
+
+* PHASE2_ARCHITECTURE_MIGRATION.md
+* FRONTEND_DEPENDENCY_MAP.md
+* BACKEND_DEPENDENCY_MAP.md
+* IDENTITY_CONFLICT_REPORT.md
+* FINAL_ARCHITECTURE_DECISION.md
+
+Do NOT assume they exist.
+
+Verify.
+
+⸻
+
+STEP 2
+
+Perform a FULL CROSS VALIDATION.
+
+Do NOT trust previous audit.
+
+Re-audit every statement.
+
+Cross check:
+
+Frontend
+
+↓
+
+API
+
+↓
+
+Router
+
+↓
+
+Service
+
+↓
+
+Repository
+
+↓
+
+Model
+
+↓
+
+Database
+
+↓
+
+Worker
+
+↓
+
+Engine
+
+↓
+
+Feedback Loop
+
+Every dependency must be validated.
+
+If one dependency cannot be proven,
+
+mark it as
+
+UNKNOWN
+
+instead of guessing.
+
+⸻
+
+STEP 3
+
+Audit every frontend fetch() again.
+
+Verify ALL fetch() inside
+
+backend/app/static/index.html
+
+For every fetch:
+
+show
+
+Function name
+
+↓
+
+Exact URL
+
+↓
+
+Router
+
+↓
+
+Service
+
+↓
+
+Repository
+
+↓
+
+Database tables
+
+↓
+
+Worker dependency
+
+↓
+
+Refresh interval
+
+↓
+
+Whether actually used
+
+↓
+
+Dead
+
+↓
+
+Unused
+
+↓
+
+Internal only
+
+⸻
+
+STEP 4
+
+Verify every backend endpoint.
+
+Produce a complete table.
+
+Columns:
+
+Method
+
+Path
+
+Router
+
+Service
+
+Repository
+
+Tables
+
+Frontend Consumer?
+
+Worker Consumer?
+
+Internal Only?
+
+Dead?
+
+Safe to remove?
+
+Do NOT miss any endpoint.
+
+⸻
+
+STEP 5
+
+Rebuild the backend dependency graph.
+
+Every engine must include
+
+Workers
+
+↓
+
+Services
+
+↓
+
+Repositories
+
+↓
+
+Models
+
+↓
+
+Tables
+
+↓
+
+External APIs
+
+↓
+
+Feedback loops
+
+Include:
+
+MarketUniverse
+
+MarketPrice
+
+Signal
+
+Momentum
+
+Trend
+
+Volatility
+
+Orderbook
+
+MarketQuality
+
+MarketContext
+
+Funding
+
+News
+
+Decision
+
+Strategy
+
+Risk
+
+Execution
+
+Exit
+
+Position
+
+Portfolio
+
+Capital
+
+Analytics
+
+Outcome Learning
+
+Dynamic Weight
+
+Confidence Calibration
+
+Engine Performance
+
+Engine Scorecard
+
+Market Reference
+
+Market Type Performance
+
+Everything.
+
+⸻
+
+STEP 6
+
+Re-audit identity conflicts.
+
+Search entire repository.
+
+Search these words:
+
+trade
+
+trading
+
+portfolio
+
+position
+
+execution
+
+capital
+
+PnL
+
+order
+
+orders
+
+risk
+
+entry
+
+exit
+
+broker
+
+exchange
+
+strategy
+
+long
+
+short
+
+BUY
+
+SELL
+
+LONG_YES
+
+LONG_NO
+
+SELL_YES
+
+SELL_NO
+
+PENDING
+
+FILLED
+
+FAILED
+
+WAIT
+
+SKIP
+
+RISK_APPROVED
+
+RISK_BLOCKED
+
+EXECUTED
+
+For every occurrence show:
+
+File
+
+Line
+
+Reason
+
+Should Keep?
+
+Rename?
+
+Delete?
+
+Replacement Name
+
+⸻
+
+STEP 7
+
+Audit Outcome Learning.
+
+This is the most important part.
+
+Determine whether Outcome Learning currently depends on
+
+paper trading
+
+or
+
+resolved Polymarket outcomes.
+
+If paper trading is still required,
+
+prove WHY.
+
+Show exact dependency chain.
+
+⸻
+
+STEP 8
+
+Audit Calibration.
+
+Determine what Confidence Calibration consumes.
+
+Determine what Dynamic Weight consumes.
+
+Determine what Engine Performance consumes.
+
+Determine whether removing Layers 6–16 would break:
+
+Outcome Learning
+
+Confidence Calibration
+
+Dynamic Weight
+
+Engine Performance
+
+Engine Scorecard
+
+If yes,
+
+prove it.
+
+Do not speculate.
+
+⸻
+
+STEP 9
+
+Challenge the previous conclusion.
+
+Do NOT automatically accept
+
+Option A.
+
+Recalculate from scratch.
+
+Compare
+
+OPTION A
+
+Rename execution layer.
+
+vs
+
+OPTION B
+
+Remove execution layer.
+
+vs
+
+OPTION C
+
+Convert execution layer into Prediction Tracking Layer.
+
+Score each option on:
+
+Identity
+
+Maintainability
+
+Performance
+
+Learning
+
+Calibration
+
+Future Expansion
+
+Technical Debt
+
+Migration Cost
+
+Safety
+
+Then provide a new recommendation.
+
+⸻
+
+STEP 10
+
+Produce one final report.
+
+Name:
+
+FINAL_ARCHITECTURE_VERIFICATION.md
+
+This replaces every previous audit.
+
+Include:
+
+Complete dependency graph
+
+Complete endpoint graph
+
+Complete identity audit
+
+Complete learning dependency audit
+
+Complete calibration audit
+
+Final recommendation
+
+Migration roadmap
+
+Confidence level
+
+Unknown areas (if any)
+
+Nothing may be guessed.
+
+Everything must be backed by source code.
+
+⸻
+
+STRICT RULES
+
+Never assume.
+
+Never infer.
+
+Never summarize without evidence.
+
+Never mark PASS unless every dependency has been verified.
+
+If anything cannot be verified,
+
+write
+
+UNKNOWN
+
+instead of inventing an answer.
+
+This is the final architecture verification for LIMWANPO AI.

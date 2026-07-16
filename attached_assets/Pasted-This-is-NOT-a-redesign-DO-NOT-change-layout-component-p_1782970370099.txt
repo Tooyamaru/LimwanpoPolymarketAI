@@ -1,0 +1,354 @@
+This is NOT a redesign.
+
+DO NOT change:
+- layout
+- component positions
+- grid
+- panel sizes
+- responsive behavior
+- backend
+- websocket
+- python
+- javascript logic
+
+Only improve visual quality.
+
+=================================================
+1. PERFECT TYPOGRAPHY
+=================================================
+
+Every text must have a clear hierarchy.
+
+Current typography still feels flat.
+
+Improve hierarchy like Bloomberg Terminal.
+
+Use approximately:
+
+Hero Numbers
+30-32px
+weight 900
+
+Large Values
+20-22px
+weight 700
+
+Card Values
+15-17px
+weight 600
+
+Panel Titles
+10-11px
+weight 700
+
+Labels
+9-10px
+weight 500
+
+Metadata
+9px
+weight 400
+
+Increase line-height everywhere.
+
+Increase letter spacing for uppercase titles.
+
+Numbers must use
+
+font-variant-numeric: tabular-nums;
+
+=================================================
+2. REMOVE THE "THIN FONT" LOOK
+=================================================
+
+Many labels still appear too thin.
+
+Increase weight slightly.
+
+Current interface feels like:
+
+weight 300-400
+
+Target:
+
+500-700
+
+without becoming bold.
+
+=================================================
+3. IMPROVE COLOR HIERARCHY
+=================================================
+
+Currently almost everything has similar brightness.
+
+Create stronger hierarchy.
+
+Primary Text
+
+almost white
+
+Secondary
+
+soft blue
+
+Metadata
+
+grey-blue
+
+Inactive
+
+lower opacity
+
+Never let important values use the same brightness as helper labels.
+
+=================================================
+4. PANEL DEPTH
+=================================================
+
+Panels still feel flat.
+
+Increase depth using:
+
+subtle inner shadows
+
+soft top highlight
+
+soft cyan edge
+
+dark gradient background
+
+without making it glossy.
+
+Institutional.
+
+Not gaming UI.
+
+=================================================
+5. MARKET CARDS
+=================================================
+
+Cards still feel empty.
+
+Improve spacing.
+
+Increase padding.
+
+Improve internal alignment.
+
+Improve divider lines.
+
+Improve title/value spacing.
+
+Nothing should touch borders.
+
+=================================================
+6. PORTFOLIO PANEL
+=================================================
+
+Portfolio should feel premium.
+
+Improve spacing between:
+
+Title
+
+Value
+
+Subtext
+
+Increase emphasis of:
+
+Capital
+
+PnL
+
+Daily Loss
+
+without changing size of cards.
+
+=================================================
+7. HEALTH PANEL
+=================================================
+
+Dots should feel alive.
+
+Not blinking aggressively.
+
+Use soft breathing animation.
+
+Improve spacing between
+
+dot
+
+label
+
+status
+
+Status text should align perfectly.
+
+=================================================
+8. CHART PANEL
+=================================================
+
+Do NOT resize chart.
+
+Improve only visual quality.
+
+Increase contrast between:
+
+grid
+
+candles
+
+labels
+
+price
+
+Current grid is slightly too dominant.
+
+Grid should sit further into background.
+
+Price labels should become cleaner.
+
+=================================================
+9. HEADER
+=================================================
+
+Header is close.
+
+Improve polish.
+
+Perfect vertical alignment.
+
+Equal padding.
+
+Equal badge height.
+
+Improve spacing around logo.
+
+Time should align perfectly.
+
+=================================================
+10. PIPELINE
+=================================================
+
+Current pipeline is good.
+
+Improve polish only.
+
+Glow should be smoother.
+
+Energy beam should feel continuous.
+
+Node animation should look expensive.
+
+No flashy effects.
+
+Institutional.
+
+=================================================
+11. FEEDS
+=================================================
+
+Feeds still feel slightly compressed.
+
+Increase:
+
+line height
+
+padding
+
+badge spacing
+
+Improve readability.
+
+Make scanning easier.
+
+=================================================
+12. FOOTER TICKER
+=================================================
+
+Improve readability.
+
+Increase spacing between:
+
+symbol
+
+price
+
+change
+
+news
+
+Make news feel secondary.
+
+Prices should dominate.
+
+=================================================
+13. CONSISTENT SPACING
+=================================================
+
+Audit entire UI.
+
+Remove every inconsistent gap.
+
+Every padding
+
+margin
+
+spacing
+
+alignment
+
+must follow one design system.
+
+Nothing should feel random.
+
+=================================================
+14. PIXEL PERFECT ALIGNMENT
+=================================================
+
+Every title
+
+every value
+
+every icon
+
+every badge
+
+every divider
+
+must align on a common visual grid.
+
+No element should appear shifted by even 1-2px.
+
+=================================================
+15. PREMIUM FINISH
+=================================================
+
+Final objective:
+
+This dashboard should immediately give the impression that it was designed by a senior product designer from:
+
+Bloomberg
+
+TradingView
+
+Coinbase Institutional
+
+FalconX
+
+Jane Street
+
+Citadel
+
+without changing the current layout.
+
+Keep the cyber aesthetic.
+
+Keep the neon palette.
+
+Keep the current structure.
+
+Only elevate craftsmanship, typography, spacing, polish, consistency and premium feel.
+
+Backend must remain untouched.

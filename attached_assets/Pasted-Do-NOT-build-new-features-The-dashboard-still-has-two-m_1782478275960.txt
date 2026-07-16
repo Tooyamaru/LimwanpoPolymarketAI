@@ -1,0 +1,150 @@
+Do NOT build new features.
+
+The dashboard still has two major problems:
+
+1. The entire dashboard is NOT fully responsive.
+2. The BTC Candles chart is completely blank.
+
+Your task is to perform a COMPLETE RESPONSIVE + CHART PIPELINE AUDIT ONLY.
+
+DO NOT redesign the UI.
+
+DO NOT change colors, typography, spacing, animations, or visual style.
+
+DO NOT add new functionality.
+
+Preserve the current design exactly.
+
+⸻
+
+PART A — RESPONSIVE LAYOUT AUDIT
+
+The dashboard must fit perfectly on:
+
+* Desktop
+* Laptop
+* iPad Landscape
+* iPad Portrait
+* Mobile
+
+Requirements:
+
+1. No horizontal scrolling.
+2. No clipped panels.
+3. No hidden widgets.
+4. No panel may extend outside the viewport.
+5. The right-side panels must remain visible.
+6. Heatmap must resize automatically.
+7. All dashboard panels must scale proportionally.
+8. Grid columns must adapt dynamically instead of using fixed widths.
+9. Remove any fixed-width layout preventing responsive scaling.
+
+Audit every occurrence of:
+
+* width
+* min-width
+* max-width
+* flex
+* grid-template-columns
+* grid-template-rows
+* overflow
+* overflow-x
+* position
+
+Verify every container from:
+
+body
+app
+dashboard
+main
+main-grid
+content-grid
+cards
+chart panels
+heatmap
+sidebar
+right panels
+
+Replace rigid desktop-only layouts with responsive CSS Grid/Flexbox where necessary while preserving the current appearance.
+
+⸻
+
+PART B — BTC CHART PIPELINE AUDIT
+
+The BTC Candles panel is still completely blank.
+
+Do NOT work on CSS unless it directly affects chart rendering.
+
+Audit the entire rendering pipeline step by step.
+
+Verify:
+
+1. Chart container exists.
+2. Container has non-zero width.
+3. Container has non-zero height.
+4. Canvas/SVG is actually created.
+5. Chart library initializes successfully.
+6. ResizeObserver is active.
+7. chart.resize() is executed after layout completion.
+8. Binance API request succeeds.
+9. Candle data is valid.
+10. Candle array length is correct.
+11. Data transformation succeeds.
+12. Render function executes.
+13. Chart actually draws.
+14. Live updates continue working.
+15. No race condition exists between responsive layout initialization and chart creation.
+16. No JavaScript exception interrupts rendering.
+
+Add temporary debug logs for every stage:
+
+* Chart container found
+* Container size
+* Chart initialized
+* Canvas created
+* Binance fetch started
+* Binance fetch completed
+* Candle count
+* Render started
+* Render completed
+* Resize executed
+* Live update executed
+
+If any stage fails, identify the exact root cause and fix it.
+
+⸻
+
+FINAL VALIDATION
+
+Before finishing, verify all of the following:
+
+✓ Header fully visible
+✓ Dashboard fits Desktop
+✓ Dashboard fits Laptop
+✓ Dashboard fits iPad Landscape
+✓ Dashboard fits iPad Portrait
+✓ Dashboard fits Mobile
+✓ No horizontal scrolling
+✓ No clipped panels
+✓ Heatmap scales correctly
+✓ BTC Candles chart renders live Binance candles
+✓ ResizeObserver works
+✓ Live candle updates continue
+✓ Footer ticker still works
+✓ Zero browser console errors
+✓ Zero backend runtime errors
+
+Finally provide:
+
+A. Root cause(s) found.
+B. Every code change made.
+C. Before vs after behavior.
+D. Screenshots of:
+
+* Desktop
+* iPad Landscape
+* iPad Portrait
+* Mobile
+* BTC Candles chart successfully rendering live data.
+
+Do not consider the task complete until the dashboard is fully responsive and the BTC Candles chart is visibly rendering live Binance candle data.

@@ -1,0 +1,338 @@
+# LIMWANPO AI — PHASE NEXT
+# MARKET REFERENCE ARCHITECTURE (IMPORTANT)
+
+Sebelum mengubah apapun, pahami dahulu project ini.
+
+=========================================================
+PROJECT IDENTITY
+=========================================================
+
+INI BUKAN AI TRADING DASHBOARD.
+
+INI ADALAH AI POLYMARKET DASHBOARD.
+
+Seluruh sistem harus mengikuti cara kerja market POLYMARKET.
+
+Jangan membuat asumsi seperti trading exchange biasa.
+
+=========================================================
+CURRENT STATUS
+=========================================================
+
+Dashboard frontend sudah hampir selesai.
+
+Market Universe sudah menggunakan:
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+dengan timeframe
+
+5M
+
+15M
+
+1H
+
+Saat ini frontend sudah menghitung Price To Beat menggunakan:
+
+market.start_time
+
+↓
+
+Binance historical candle
+
+↓
+
+Open Price
+
+↓
+
+Price To Beat
+
+Secara visual ini sudah benar.
+
+Namun arsitekturnya BELUM benar.
+
+=========================================================
+OBJECTIVE
+=========================================================
+
+Pindahkan seluruh logika "Price To Beat" menjadi backend service.
+
+Frontend TIDAK BOLEH lagi menghitung historical candle.
+
+Frontend hanya membaca data.
+
+=========================================================
+TARGET ARCHITECTURE
+=========================================================
+
+Polymarket
+        │
+        ▼
+Market Discovery
+        │
+        ▼
+Market Reference Service
+        │
+        ▼
+Database
+(opening_price)
+        │
+        ▼
+API
+        │
+        ▼
+Dashboard
+
+=========================================================
+MARKET REFERENCE SERVICE
+=========================================================
+
+Buat service baru.
+
+Tugas service:
+
+Saat market baru ditemukan
+
+ambil
+
+asset
+
+timeframe
+
+start_time
+
+condition_id
+
+slug
+
+question
+
+Kemudian:
+
+=========================================================
+
+gunakan Binance Historical Candle
+
+sesuai asset:
+
+BTCUSDT
+
+ETHUSDT
+
+SOLUSDT
+
+XRPUSDT
+
+=========================================================
+
+cari candle yang sesuai dengan
+
+market.start_time
+
+ambil
+
+OPEN PRICE
+
+itulah
+
+opening_price
+
+atau
+
+price_to_beat
+
+=========================================================
+
+Simpan ke database.
+
+JANGAN dihitung lagi oleh frontend.
+
+=========================================================
+DATABASE
+=========================================================
+
+Tambahkan field jika belum ada:
+
+opening_price
+
+opening_price_source
+
+opening_price_timestamp
+
+reference_status
+
+Misalnya:
+
+opening_price = 62584.00
+
+opening_price_source = Binance
+
+opening_price_timestamp = 2026-07-04T11:35:00Z
+
+reference_status = READY
+
+=========================================================
+API
+=========================================================
+
+Endpoint universe harus langsung mengembalikan:
+
+condition_id
+
+asset
+
+timeframe
+
+question
+
+start_time
+
+opening_price
+
+current_probability
+
+yes_probability
+
+no_probability
+
+status
+
+Frontend tidak boleh melakukan lookup lagi.
+
+=========================================================
+FRONTEND
+=========================================================
+
+Hapus seluruh proses:
+
+fetch historical candles
+
+binary search candle
+
+lookup candle
+
+openPriceCache
+
+parse strike
+
+historical cache
+
+Frontend cukup membaca:
+
+market.opening_price
+
+Current Price tetap berasal dari Binance Live Price.
+
+Difference tetap:
+
+Current Price
+
+-
+
+Opening Price
+
+=========================================================
+IMPORTANT
+=========================================================
+
+Jangan mengubah:
+
+Dashboard Layout
+
+Chart
+
+Portfolio
+
+Execution Pipeline
+
+System Health
+
+Footer
+
+AI Activity
+
+Trading Engine
+
+Paper Trading
+
+Semua perubahan hanya pada:
+
+Backend
+
+Database
+
+API
+
+Market Reference Service
+
+Frontend hanya disederhanakan agar membaca API.
+
+=========================================================
+LONG TERM
+=========================================================
+
+Arsitektur ini harus siap untuk:
+
+5M
+
+15M
+
+1H
+
+4H
+
+Daily
+
+Weekly
+
+Monthly
+
+Yearly
+
+Tanpa perlu mengubah frontend lagi.
+
+=========================================================
+SELF REVIEW
+=========================================================
+
+Sebelum selesai lakukan review.
+
+Checklist:
+
+✓ Frontend tidak menghitung historical candle lagi.
+
+✓ opening_price berasal dari backend.
+
+✓ Backend hanya menghitung sekali ketika market ditemukan.
+
+✓ Database menyimpan opening_price permanen.
+
+✓ API mengirim opening_price.
+
+✓ Dashboard hanya membaca data.
+
+✓ Current Price tetap live Binance.
+
+✓ Difference dihitung dari:
+
+Current Price
+
+-
+
+Opening Price.
+
+✓ Struktur siap untuk seluruh timeframe Polymarket.
+
+Jika salah satu poin belum terpenuhi, lanjutkan sampai seluruh checklist selesai.
+
+Jangan berhenti hanya karena kode berhasil dijalankan.
+
+Berhenti hanya jika arsitektur sudah sesuai desain di atas.

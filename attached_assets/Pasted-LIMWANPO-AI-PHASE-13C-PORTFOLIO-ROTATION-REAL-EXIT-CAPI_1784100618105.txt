@@ -1,0 +1,591 @@
+LIMWANPO AI — PHASE 13C PORTFOLIO ROTATION + REAL EXIT + CAPITAL/PNL LIVE VALIDATION
+
+Konteks:
+
+Current live state:
+
+- Dynamic position sizing sudah aktif
+- Entry baru bernilai sekitar $2.19, bukan fixed $10
+- Multi-entry dan multi-lot sudah aktif
+- AI LIVE TRADES menampilkan entry nyata
+- Header menunjukkan banyak OPEN LOTS
+- Portfolio exposure hampir penuh:
+  - open exposure ≈ $199.42
+  - configured cap = $200
+- Akibatnya banyak keputusan baru BLOCKED oleh:
+  PORTFOLIO_EXPOSURE_LIMIT
+- Sampai sekarang belum terlihat:
+  - PARTIAL EXIT
+  - FINAL EXIT
+  - EXPIRY EXIT
+  - modal available bertambah kembali
+  - realized PnL berubah
+  - open exposure turun
+
+Masalah utama:
+
+AI terus membuka posisi sampai exposure penuh, tetapi belum terlihat melakukan rotasi modal.
+
+Target:
+
+1. Temukan kenapa Exit Engine belum menghasilkan exit nyata.
+2. Pastikan partial exit, final exit, dan expiry exit benar-benar bekerja.
+3. Pastikan modal kembali tersedia setelah exit.
+4. Pastikan realized/unrealized/total PnL berubah benar.
+5. Pastikan AI LIVE TRADES menampilkan event OUT nyata.
+6. Jangan menaikkan portfolio exposure cap sebagai solusi utama.
+7. Jangan membuat fake exit.
+8. Jangan mengubah UI besar-besaran.
+9. Jangan menurunkan risk protection tanpa bukti.
+
+==================================================
+STEP 1 — CAPTURE CURRENT POSITION STATE
+==================================================
+
+Query seluruh posisi OPEN/PARTIAL.
+
+Tampilkan:
+
+- position_id
+- condition_id
+- asset
+- timeframe
+- side
+- entry_sequence
+- entry_price
+- current_price
+- quantity
+- remaining_quantity
+- status
+- unrealized_pnl
+- realized_pnl
+- opened_at
+- market end_time
+- minutes_to_expiry
+- latest decision confidence
+- latest opportunity score
+
+Summary:
+
+- total open lots
+- total active positions
+- total open exposure
+- total unrealized PnL
+- total realized PnL
+- available capital
+- portfolio cap headroom
+
+==================================================
+STEP 2 — AUDIT EXIT ENGINE INPUTS
+==================================================
+
+Baca:
+
+- exit_engine.py
+- execution_engine.py close path
+- position_service.py close_position()
+- position_repository.py
+- order_repository.py
+- outcome_learning_service.py
+- market resolution / forced exit logic
+- settings.py exit thresholds
+
+Trace untuk setiap OPEN lot:
+
+- current mark price
+- gross PnL
+- net PnL after fees
+- hold duration
+- time to expiry
+- spread
+- market lifecycle state
+- profit target threshold
+- stop loss threshold
+- trailing stop threshold
+- fast profit threshold
+- stale price state
+- exit decision result
+- exact reason why no exit was created
+
+Jangan hanya bilang “threshold belum terpenuhi”.
+Tampilkan nilai aktual dibanding threshold.
+
+==================================================
+STEP 3 — FIND WHY NO EXITS OCCUR
+==================================================
+
+Klasifikasikan setiap OPEN lot ke salah satu:
+
+- PROFIT_TARGET_NOT_REACHED
+- STOP_LOSS_NOT_REACHED
+- TRAILING_STOP_NOT_ARMED
+- FAST_PROFIT_NOT_REACHED
+- MIN_HOLD_TIME_NOT_REACHED
+- EXPIRY_NOT_REACHED
+- PRICE_DATA_MISSING
+- STALE_ORDERBOOK
+- EXIT_ENGINE_NOT_RUNNING
+- EXIT_DECISION_NOT_PERSISTED
+- EXECUTION_CLOSE_NOT_RUNNING
+- CLOSE_ORDER_NOT_FILLED
+- POSITION_STATE_MISMATCH
+- OTHER
+
+Tampilkan count per reason.
+
+==================================================
+STEP 4 — VERIFY EXIT WORKER RUNTIME
+==================================================
+
+Pastikan Exit Engine worker benar-benar berjalan periodik.
+
+Tampilkan:
+
+- worker heartbeat
+- last cycle timestamp
+- positions evaluated
+- exit decisions created
+- partial exits created
+- final exits created
+- expiry exits created
+- skipped
+- errors
+
+Jika worker hanya hidup tetapi selalu menghasilkan 0 decision:
+- tampilkan alasan per posisi
+
+Jika worker tidak berjalan:
+- fix scheduler/registration
+- jangan mengubah threshold dulu
+
+==================================================
+STEP 5 — PARTIAL EXIT POLICY
+==================================================
+
+Audit apakah partial exit benar-benar bisa terpicu.
+
+Required policy:
+
+Partial exit boleh terjadi jika salah satu kondisi real terpenuhi, misalnya:
+
+- profit target tahap 1 tercapai
+- confidence menurun tetapi edge belum hilang total
+- exposure portfolio terlalu tinggi dan lot profitable
+- time-to-expiry makin pendek
+- trailing profit protection aktif
+
+Jangan membuat partial exit random.
+
+Setiap partial exit harus menyimpan:
+
+- position_id
+- close_quantity
+- remaining_quantity
+- exit_price
+- realized_pnl
+- exit_reason
+- close_order_id
+- closed_at / executed_at
+
+==================================================
+STEP 6 — FINAL EXIT POLICY
+==================================================
+
+Final exit harus terjadi jika:
+
+- final profit target tercapai
+- stop loss tercapai
+- edge/confidence hilang
+- opposite signal kuat muncul
+- market mendekati expiry sesuai rule
+- direct resolution tersedia
+- remaining quantity sudah kecil
+- trailing stop terpicu
+
+Jangan menutup posisi hanya untuk membebaskan modal tanpa alasan trading yang valid.
+
+==================================================
+STEP 7 — CAPITAL ROTATION RULE
+==================================================
+
+Implement atau audit capital rotation:
+
+Ketika exposure mendekati cap:
+
+1. Rank OPEN/PARTIAL positions berdasarkan:
+   - realized/unrealized PnL
+   - opportunity decay
+   - confidence decay
+   - time held
+   - time to expiry
+   - spread/liquidity
+   - current edge
+   - capital efficiency
+
+2. Jangan otomatis membuka posisi baru jika cap penuh.
+
+3. Cari posisi yang layak:
+   - partial take profit
+   - full exit
+   - expiry exit
+   - close due edge loss
+
+4. Setelah exit:
+   - exposure turun
+   - available capital naik
+   - new opportunities boleh diproses
+
+Tambahkan reason eksplisit:
+
+- CAPITAL_ROTATION_PARTIAL
+- CAPITAL_ROTATION_FULL
+- EDGE_DECAY_EXIT
+- LOW_CAPITAL_EFFICIENCY
+- PROFIT_RECYCLE
+- EXPIRY_RECYCLE
+
+Jangan menjadikan capital rotation sebagai alasan tunggal tanpa trading evidence.
+
+==================================================
+STEP 8 — CAPITAL ACCOUNTING
+==================================================
+
+Audit formula portfolio.
+
+Expected:
+
+open_exposure =
+sum remaining_quantity × entry_price
+atau existing approved exposure formula
+
+available_capital =
+initial_capital
++ realized_pnl
+- open_exposure
+- reserved capital
+- fees
+
+After entry:
+- open exposure naik
+- available turun
+
+After partial exit:
+- open exposure turun proporsional
+- realized PnL bertambah
+- available naik
+
+After final exit:
+- remaining exposure posisi jadi 0
+- realized PnL final
+- available bertambah sesuai hasil
+
+Jangan double-count returned principal.
+
+==================================================
+STEP 9 — PNL ACCOUNTING
+==================================================
+
+Per lot:
+
+unrealized_pnl =
+remaining_quantity × (current_exit_price - entry_price)
+
+realized_pnl =
+sum closed_quantity × (exit_price - entry_price) - fees
+
+total_pnl =
+realized_pnl + unrealized_pnl
+
+Portfolio:
+
+portfolio_realized_pnl =
+sum realized_pnl seluruh position
+
+portfolio_unrealized_pnl =
+sum unrealized_pnl OPEN/PARTIAL
+
+cumulative_outcome =
+realized + unrealized jika itu memang definisi dashboard
+
+Pastikan dashboard labels jujur:
+
+- Resolution Result = realized only
+- Cumulative Outcome = realized + unrealized
+atau dokumentasikan definisi existing
+
+==================================================
+STEP 10 — CLOSE EXECUTION
+==================================================
+
+Trace satu close end-to-end:
+
+Exit Engine
+→ CLOSE_POSITION TradeDecision
+→ Risk approval if applicable
+→ close Order
+→ filled_price
+→ close_quantity
+→ Position update
+→ realized_pnl
+→ remaining_quantity
+→ portfolio update
+→ card summary
+→ AI LIVE TRADES OUT row
+
+Jika tidak ada natural close:
+- jangan fabricate
+- gunakan tests dan runtime reason analysis
+- status PENDING LIVE EXIT PROOF
+
+==================================================
+STEP 11 — EXPIRY EXIT
+==================================================
+
+Pastikan semua old/expired positions diproses.
+
+Query:
+
+- OPEN/PARTIAL positions where market end_time < now
+- positions on old rolled-over condition_id
+- resolution status
+- direct resolution availability
+
+Expected:
+
+- direct resolution used if available
+- forced_exit_price per YES/NO side
+- all remaining lots closed
+- no expired lot left OPEN indefinitely
+
+Jika ada expired OPEN position:
+- fix immediately
+- classify as BLOCKER
+
+==================================================
+STEP 12 — AI LIVE TRADES OUT EVENTS
+==================================================
+
+Feed harus menampilkan:
+
+PARTIAL OUT
+FINAL OUT
+EXPIRY OUT
+
+Contoh:
+
+06:55:21  PARTIAL OUT  BTC 1H
+LOT 2 · $1.08 · PNL +$0.14
+
+07:02:44  FINAL OUT  SOL 1H
+LOT 1 · $2.31 · PNL -$0.07
+
+07:15:00  EXPIRY OUT  ETH 15M
+LOT 3 · $4.20 · PNL +$1.82
+
+No WAIT.
+No fake events.
+
+==================================================
+STEP 13 — DASHBOARD CAPITAL/PML VALIDATION
+==================================================
+
+After a real exit, verify screenshot values change:
+
+- Coverage / Open Exposure decreases
+- Available increases
+- Resolution Result changes if realized PnL exists
+- Cumulative Outcome changes
+- OPEN LOTS decreases or partial state changes
+- ACTIVE POSITIONS updates
+- EXECUTED TRADES increments
+- Card OUT count/amount increments
+- Card PNL updates
+- AI LIVE TRADES shows OUT event
+
+==================================================
+STEP 14 — SAFETY LIMITS
+==================================================
+
+Do not solve this by simply increasing:
+
+PORTFOLIO_MAX_EXPOSURE_USDC
+
+Keep current cap unless audit proves it is incorrect.
+
+Do not:
+
+- force-close all positions
+- disable stop rules
+- lower all thresholds blindly
+- create synthetic price movement
+- fabricate exits
+- mark order filled without execution path
+
+==================================================
+STEP 15 — TESTS
+==================================================
+
+Add/update tests:
+
+1. Exit Engine evaluates all OPEN/PARTIAL lots
+2. Profit target creates close decision
+3. Stop loss creates close decision
+4. Trailing stop creates close decision
+5. Partial exit reduces remaining_quantity
+6. Partial exit increases realized PnL
+7. Final exit closes lot
+8. Expiry exit closes all remaining lots
+9. Available capital increases after partial exit
+10. Available capital increases after final exit
+11. Open exposure decreases after exit
+12. Principal not double-counted
+13. Fees included correctly
+14. Card OUT count/amount updates
+15. AI LIVE TRADES shows partial exit
+16. AI LIVE TRADES shows final exit
+17. AI LIVE TRADES shows expiry exit
+18. No fake exit
+19. Old rolled-over position does not remain OPEN after resolution
+20. Portfolio cap can accept new entry after capital is freed
+
+Run:
+
+- python -m compileall -q backend/app
+- exit tests
+- execution close tests
+- position service tests
+- portfolio tests
+- card summary tests
+- live trades tests
+- outcome learning tests
+- full suite
+
+==================================================
+STEP 16 — LIVE OBSERVATION
+==================================================
+
+Restart workflow.
+
+Record deployment timestamp.
+
+Observe until one of these occurs naturally:
+
+- partial exit
+- final exit
+- expiry exit
+
+For each live exit show:
+
+- position_id
+- condition_id
+- asset/timeframe
+- entry price
+- exit price
+- close quantity
+- remaining quantity
+- realized PnL
+- exit reason
+- exposure before/after
+- available capital before/after
+- card state before/after
+- live trade event
+
+If no exit occurs during observation:
+- show exact reason distribution
+- do not claim PASS live
+- status PENDING LIVE EXIT PROOF
+
+==================================================
+STEP 17 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- exits_created=0
+- CLOSE_POSITION
+- PARTIAL_EXIT
+- FINAL_EXIT
+- EXPIRY_EXIT
+- hardcoded exit
+- fake pnl
+- forced close without reason
+- stale CLOB exit
+- open expired position
+- available capital
+- returned principal
+- double count
+- realized_pnl
+- unrealized_pnl
+
+Classify:
+
+- REAL_EXIT_LOGIC
+- REAL_PNL_FORMULA
+- SAFE_THRESHOLD
+- BLOCKER
+- INVALID_FAKE
+- ACCOUNTING_BUG
+- FIXED
+
+No unresolved BLOCKER/INVALID at final.
+
+==================================================
+STEP 18 — FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Files read
+2. Current open position state
+3. Exit worker runtime
+4. Why no exits were visible
+5. Partial exit findings
+6. Final exit findings
+7. Expiry exit findings
+8. Capital rotation findings
+9. Capital accounting
+10. PnL accounting
+11. Close execution trace
+12. Dashboard before/after
+13. Tests run
+14. Live exit evidence
+15. Files changed
+16. Remaining risks
+17. Final statuses
+18. Exact next step
+
+Final statuses:
+
+EXIT ENGINE:
+- PASS
+- PASS WITH NOTES
+- PENDING LIVE EXIT PROOF
+- FAIL
+
+CAPITAL ROTATION:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+PORTFOLIO ACCOUNTING:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+Use PASS only if:
+
+- real exit path works
+- exposure decreases after exit
+- available capital increases
+- PnL updates correctly
+- OUT count/amount updates
+- live trade feed shows real exit
+- expired positions do not remain stuck
+- tests pass
+- no fake exit
+
+Jangan jawab setup complete.
+Jangan defer.
+Jangan menaikkan exposure cap sebagai solusi utama.
+Kerjakan diagnosis dan fix dari current codebase.

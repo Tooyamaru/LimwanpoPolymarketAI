@@ -1,0 +1,197 @@
+CONTEXT
+
+Lanjutkan project LimwanpoAI dari kondisi terakhir.
+
+Semua perubahan sebelumnya sudah dianggap final.
+
+Dashboard UI sudah dibekukan (UI Freeze).
+
+JANGAN melakukan redesign.
+JANGAN melakukan polish visual.
+JANGAN mengubah layout.
+JANGAN mengubah warna.
+JANGAN mengubah typography.
+JANGAN mengubah spacing.
+JANGAN mengubah animasi.
+JANGAN melakukan CSS cleanup kecuali ditemukan bug objektif yang memengaruhi rendering.
+
+Rule utama:
+
+"If it isn't broken, don't touch it."
+
+Semua perubahan UI hanya boleh dilakukan bila ada bug nyata yang bisa dibuktikan.
+
+------------------------------------------------
+
+CURRENT STATUS
+
+- Dashboard Production V2
+- Backend berjalan
+- Test suite 233/233 PASS
+- UI dianggap final
+
+Mulai sekarang fokus sepenuhnya berpindah ke backend dan trading engine.
+
+------------------------------------------------
+
+WORKING METHOD
+
+Untuk setiap task:
+
+1. Audit dulu.
+2. Cari root cause.
+3. Jelaskan penyebab.
+4. Baru implementasi.
+5. Jalankan test.
+6. Pastikan tidak merusak modul lain.
+7. Laporkan hasil.
+
+Jangan pernah coding langsung tanpa audit.
+
+------------------------------------------------
+
+PRIORITY ROADMAP
+
+Kerjakan berurutan.
+
+PHASE 1
+
+Audit seluruh Layer 1–16.
+
+Untuk setiap layer tuliskan:
+
+- status
+- implemented / partial / missing
+- dependency
+- risk
+- next task
+
+------------------------------------------------
+
+PHASE 2
+
+Pastikan seluruh trading pipeline benar-benar bekerja.
+
+Market Data
+
+↓
+
+Feature Engineering
+
+↓
+
+Signal Engine
+
+↓
+
+Probability
+
+↓
+
+Confidence
+
+↓
+
+Risk Engine
+
+↓
+
+Position Sizing
+
+↓
+
+Portfolio Manager
+
+↓
+
+Execution Simulator
+
+↓
+
+Performance Analytics
+
+------------------------------------------------
+
+PHASE 3
+
+Bangun Paper Trading lengkap.
+
+Minimal memiliki:
+
+- open position
+- close position
+- realized pnl
+- unrealized pnl
+- fees
+- slippage
+- capital tracking
+- equity curve
+- drawdown
+- win rate
+- expectancy
+- profit factor
+- trade history
+
+------------------------------------------------
+
+PHASE 4
+
+Performance Analytics.
+
+Tambahkan:
+
+- Sharpe
+- Sortino
+- Max Drawdown
+- CAGR
+- Average Hold Time
+- Average Win
+- Average Loss
+- Kelly Fraction
+- Exposure
+- Market Breakdown
+
+------------------------------------------------
+
+PHASE 5
+
+Self Improvement.
+
+JANGAN membuat AI belajar sekarang.
+
+Pastikan dulu paper trading menghasilkan data yang cukup.
+
+Baru setelah data cukup,
+buat modul learning yang menggunakan hasil paper trading.
+
+------------------------------------------------
+
+IMPORTANT RULES
+
+Jangan membuat fitur baru hanya karena menarik.
+
+Jangan over-engineering.
+
+Setiap fitur baru harus menjawab:
+
+"Apakah ini meningkatkan trading performance?"
+
+Kalau jawabannya belum jelas,
+
+jangan implementasikan.
+
+------------------------------------------------
+
+OUTPUT FORMAT
+
+Untuk setiap sesi selalu laporkan:
+
+1. Audit
+2. Temuan
+3. Root Cause
+4. Perubahan
+5. Test Result
+6. Dampak
+7. Next Highest Priority
+
+Kerjakan satu tahap sampai benar-benar selesai sebelum pindah ke tahap berikutnya.

@@ -1,0 +1,358 @@
+PROJECT: LIMWANPO POLYMARKET AI
+
+DASHBOARD V6.5 FINAL POLISH (PRE PAPER-TRADING)
+
+IMPORTANT
+
+DO NOT:
+
+* change architecture
+* change backend logic
+* change trading logic
+* change scoring engine
+* change opportunity engine
+* change execution engine
+* add new panels
+* redesign dashboard
+
+This is a VISUAL + INFORMATION QUALITY polish only.
+
+Goal:
+
+Make dashboard production-ready before paper trading.
+
+==================================================
+TASK 1
+AI CURRENT TARGET UPGRADE
+
+Current target panel is still too numeric.
+
+Keep existing layout.
+
+Add stronger information hierarchy.
+
+Display:
+
+Market
+Timeframe
+Direction (UP / DOWN)
+
+Score
+Confidence
+Edge
+Spread
+
+Best Bid
+Best Ask
+
+Distance To Entry
+
+Add:
+
+Reason Summary
+
+Example:
+
+• Momentum rising
+• Spread acceptable
+• Volatility stable
+• Risk within threshold
+
+Maximum 4 reasons.
+
+No AI-generated text.
+
+Use existing engine outputs only.
+
+Direction must always be visible.
+
+UP = green
+DOWN = magenta/red
+
+==================================================
+TASK 2
+HEATMAP IMPROVEMENT
+
+Current heatmap looks empty.
+
+Keep same heatmap layout.
+
+Do NOT change grid structure.
+
+Improve information density.
+
+Each cell should show:
+
+Score
+Direction
+Edge
+
+Example:
+
+24
+▲ UP
++2.1%
+
+or
+
+91
+▼ DN
++5.4%
+
+Visual tiers:
+
+95+
+EXTREME
+
+90-94
+STRONG
+
+85-89
+GOOD
+
+70-84
+MODERATE
+
+<70
+WEAK
+
+Weak cells should remain visible but subdued.
+
+Highest-ranked opportunity should always be visually highlighted.
+
+==================================================
+TASK 3
+PIPELINE INFORMATION UPGRADE
+
+Current pipeline looks static.
+
+Keep current visual style.
+
+Add actual conversion counts.
+
+Example:
+
+UNIVERSE
+12 scanned
+
+SIGNALS
+15 found
+
+OPPS
+3 selected
+
+STRATEGY
+2 approved
+
+RISK
+1 passed
+
+EXECUTION
+0 filled
+
+Show percentages where available.
+
+Do not change engine logic.
+
+Display only.
+
+==================================================
+TASK 4
+ACTIVE TARGET DIRECTION
+
+Dashboard must NEVER display ambiguous signal state.
+
+Whenever target exists:
+
+Show:
+
+▲ UP
+
+or
+
+▼ DOWN
+
+directly beside market name.
+
+Large.
+
+Easy to see.
+
+Must be visible from distance.
+
+==================================================
+TASK 5
+TOP 3 OPPORTUNITIES
+
+Keep current Top 3 panel.
+
+Improve readability.
+
+Each row should display:
+
+Rank
+Market
+Direction
+Score
+
+Example:
+
+#1 BTC 5m ▲ UP 91
+
+#2 ETH 15m ▼ DN 88
+
+#3 SOL 5m ▲ UP 85
+
+Top rank receives stronger glow.
+
+==================================================
+TASK 6
+SYSTEM HEALTH
+
+Keep layout.
+
+Add:
+
+Last cycle time
+
+Example:
+
+Universe 0.12s
+Signal 0.24s
+Risk 0.18s
+
+Display only.
+
+No backend changes.
+
+==================================================
+TASK 7
+IPAD RESPONSIVE MODE
+
+VERY IMPORTANT
+
+Current dashboard only optimized for landscape.
+
+Add dedicated iPad portrait layout.
+
+Target widths:
+
+768px–1100px
+
+Portrait mode:
+
+Convert dashboard into stacked layout.
+
+Order:
+
+Current Target
+
+Pipeline
+
+Heatmap
+
+Positions
+
+KPI Row
+
+Feeds
+
+Capital Protection
+
+Do NOT remove any information.
+
+Do NOT hide panels.
+
+Only reflow layout.
+
+Landscape mode must remain unchanged.
+
+Desktop mode must remain unchanged.
+
+==================================================
+TASK 8
+TEXT READABILITY PASS
+
+Several labels are still too dark.
+
+Increase readability subtly.
+
+Improve:
+
+heatmap labels
+
+feed timestamps
+
+capital labels
+
+position labels
+
+pipeline labels
+
+system health labels
+
+footer labels
+
+No extra glow.
+
+No neon spam.
+
+No new animations.
+
+Professional trading-terminal look.
+
+==================================================
+TASK 9
+FINAL VALIDATION
+
+Verify:
+
+Desktop landscape
+
+iPad landscape
+
+iPad portrait
+
+No overflow
+
+No clipping
+
+No horizontal scroll
+
+No hidden panels
+
+No broken alignment
+
+No console errors
+
+No API errors
+
+==================================================
+TASK 10
+DO NOT TOUCH
+
+DO NOT MODIFY:
+
+Trading Logic
+
+Scoring Logic
+
+Opportunity Engine
+
+Risk Engine
+
+Execution Engine
+
+Capital Rules
+
+Backend Architecture
+
+API Structure
+
+This is a dashboard polish only.
+
+Goal:
+
+Dashboard 95% finished.
+
+Ready to move focus toward paper trading.

@@ -1,0 +1,256 @@
+# LIMWANPO POLYMARKET AI — CONTINUATION PROMPT
+
+You are continuing an existing production project.
+
+## CRITICAL RULES
+
+This project is **NOT** in redesign mode anymore.
+
+The UI has been frozen after dozens of refinement passes.
+
+Your job is now to preserve the interface and move development toward the trading engine.
+
+---
+
+# 1. UI IS LOCKED
+
+Assume the dashboard is FINAL unless an objective rendering bug exists.
+
+Do NOT redesign.
+
+Do NOT modernize.
+
+Do NOT "improve aesthetics."
+
+Do NOT change colors.
+
+Do NOT change spacing.
+
+Do NOT change typography.
+
+Do NOT change animations.
+
+Do NOT change layout.
+
+Do NOT change hierarchy.
+
+If you cannot point to an objective rendering bug, do not touch the UI.
+
+Examples of objective bugs:
+
+* duplicate IDs
+* duplicated CSS definitions
+* duplicated keyframes
+* clipped text
+* overlapping elements
+* broken alignment
+* invalid HTML
+* console errors
+* CSS that is no longer used
+* conflicting selectors that change rendering
+
+Everything else stays exactly as it is.
+
+---
+
+# 2. NEVER ACCUMULATE CSS
+
+This project went through many refinement passes.
+
+Never append another override block.
+
+Instead:
+
+* find the existing rule
+* replace it
+* delete obsolete rules
+* keep one authoritative definition
+
+Never create CSS debt.
+
+---
+
+# 3. BEFORE MODIFYING ANYTHING
+
+Always:
+
+1. Read the relevant HTML.
+2. Read the relevant CSS.
+3. Read the related JS.
+4. Understand the existing architecture.
+5. Then edit.
+
+Never blindly append.
+
+---
+
+# 4. DEVELOPMENT PRIORITY
+
+UI work is complete.
+
+Focus on backend functionality.
+
+Priority order:
+
+Layer 9
+Signal Engine validation
+
+↓
+
+Layer 10
+Opportunity Engine validation
+
+↓
+
+Layer 11
+Strategy Engine
+
+↓
+
+Layer 12
+Risk Engine
+
+↓
+
+Layer 13
+Execution Engine
+
+↓
+
+Layer 14
+Exit Engine
+
+↓
+
+Layer 15
+Analytics
+
+↓
+
+Layer 16
+Portfolio Management
+
+After Layer 16:
+
+Paper Trading
+
+↓
+
+Data Collection
+
+↓
+
+Performance Audit
+
+↓
+
+Improve Trading Edge
+
+Do NOT invent new architecture beyond Layer 16.
+
+---
+
+# 5. AVOID OVER-ENGINEERING
+
+If a feature does not directly improve:
+
+* profitability
+* execution quality
+* risk management
+* portfolio quality
+
+then don't build it.
+
+Keep the system lean.
+
+---
+
+# 6. WHEN FIXING BUGS
+
+Only make the minimum change necessary.
+
+Never rewrite entire files.
+
+Never refactor unrelated code.
+
+Never move code unless required.
+
+---
+
+# 7. BEFORE EVERY CHANGE
+
+State:
+
+What is objectively broken?
+
+Why is it broken?
+
+What is the smallest fix?
+
+If you cannot answer those three questions,
+
+DO NOT CHANGE ANYTHING.
+
+---
+
+# 8. CODE STYLE
+
+Prefer:
+
+small commits
+
+small diffs
+
+replace existing code
+
+never duplicate logic
+
+never duplicate CSS
+
+never duplicate JS
+
+never duplicate HTML
+
+---
+
+# 9. CURRENT UI STATUS
+
+The dashboard is considered complete.
+
+Institutional terminal styling has already been finalized.
+
+Typography hierarchy finalized.
+
+Spacing finalized.
+
+Pipeline finalized.
+
+Health panel finalized.
+
+Feed finalized.
+
+Footer finalized.
+
+Market cards finalized.
+
+Portfolio finalized.
+
+Chart finalized.
+
+Do not revisit these unless a rendering bug is found.
+
+---
+
+# 10. CURRENT TASK
+
+Audit the backend.
+
+Identify the next unfinished engine.
+
+Implement it cleanly.
+
+Do not touch the UI unless a real bug exists.
+
+If a UI change is proposed, first prove with evidence that it is objectively broken.
+
+Otherwise leave it untouched.

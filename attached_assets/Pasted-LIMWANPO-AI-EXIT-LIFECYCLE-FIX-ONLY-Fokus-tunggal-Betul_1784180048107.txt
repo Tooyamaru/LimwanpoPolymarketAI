@@ -1,0 +1,503 @@
+LIMWANPO AI — EXIT LIFECYCLE FIX ONLY
+
+Fokus tunggal:
+
+Betulkan seluruh jalur EXIT sampai terbukti runtime:
+
+ENTRY
+→ CLOSE_POSITION
+→ SELL/FORCED EXIT
+→ POSITION CLOSED/PARTIAL
+→ REALIZED PNL
+→ AVAILABLE CAPITAL NAIK
+→ OPEN EXPOSURE TURUN
+→ AI LIVE TRADES MENAMPILKAN OUT
+
+JANGAN membahas:
+- entry spam
+- jumlah open positions
+- UI redesign
+- sizing
+- exposure cap
+- risk entry
+- signal tuning lain
+- fitur baru
+
+Jangan keluar jalur.
+
+==================================================
+CURRENT CONFIRMED FINDINGS
+==================================================
+
+- Exit Engine berjalan.
+- Exit Engine mengevaluasi posisi setiap cycle.
+- Tidak ada error.
+- Banyak posisi tetap OPEN.
+- Belum ada CLOSED position pada runtime terbaru.
+- Belum ada realized PnL.
+- Belum ada modal kembali.
+- Opportunity Engine hanya update ACTIVE markets.
+- Posisi pada rolled/upcoming market membaca opportunity stale.
+- signal_count_1h dapat membeku dan membuat SIGNAL_INVALIDATION tidak pernah aktif.
+- Fix parsial sudah dibuat:
+  - direct signal count dari tabel signals untuk non-active markets
+  - MAX_HOLD safety backstop
+- Tetapi belum ada bukti end-to-end EXIT berhasil setelah fix.
+
+==================================================
+STEP 1 — VERIFY CURRENT EXIT CODE
+==================================================
+
+Baca current code:
+
+- exit_engine.py
+- execution_engine.py close path
+- risk_engine.py CLOSE_POSITION handling
+- position_service.py close/partial close
+- position_repository.py
+- order_repository.py
+- trade_decision model/repository
+- settings.py
+- market resolution logic
+- live_trades.py
+- card_summary_repository.py
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+Pastikan current fix benar-benar ada:
+
+- direct signal lookup untuk stale/non-active market
+- MAX_HOLD trigger
+- PARTIAL position boleh ditutup lagi
+- missing exit price retry
+- tidak ada forced_exit_price=0.5 fallback
+
+==================================================
+STEP 2 — TRACE EVERY OPEN POSITION EXIT STATE
+==================================================
+
+Untuk setiap OPEN/PARTIAL position tampilkan:
+
+- position_id
+- condition_id
+- asset
+- timeframe
+- side
+- entry_price
+- executable_exit_price
+- quantity
+- remaining_quantity
+- current unrealized PnL
+- age_minutes
+- market status
+- minutes_to_expiry
+- direct signal count last 60m
+- opportunity signal_count_1h
+- latest signal timestamp
+- MAX_HOLD threshold
+- exact trigger result
+
+Klasifikasikan satu per satu:
+
+- PROFIT_TARGET_NOT_REACHED
+- STOP_LOSS_NOT_REACHED
+- TRAILING_STOP_NOT_ARMED
+- FAST_PROFIT_NOT_REACHED
+- SIGNAL_INVALIDATION_NOT_REACHED
+- MAX_HOLD_NOT_REACHED
+- EXPIRY_NOT_REACHED
+- PRICE_UNAVAILABLE
+- STALE_MARKET_CONTEXT
+- EXIT_DECISION_PENDING
+- EXECUTION_RETRY
+- OTHER
+
+==================================================
+STEP 3 — FIX SIGNAL_INVALIDATION COMPLETELY
+==================================================
+
+SIGNAL_INVALIDATION tidak boleh bergantung pada stale opportunity row.
+
+Gunakan real query dari tabel signals:
+
+signal_count_1h =
+count signals
+where condition_id = position.condition_id
+and detected_at >= now - interval '1 hour'
+
+Gunakan ini untuk SEMUA posisi, bukan hanya non-active market.
+
+Reason:
+
+- active market juga bisa memiliki opportunity signal_count stale
+- direct signal table adalah source of truth
+
+Trigger:
+
+if position_age_minutes >= EXIT_SIGNAL_TIMEOUT_MINUTES
+and direct_signal_count_1h == 0:
+    create CLOSE_POSITION
+    exit_reason = SIGNAL_INVALIDATION
+
+Jangan gunakan cached opportunity count sebagai primary source.
+
+==================================================
+STEP 4 — MAX_HOLD GUARANTEED EXIT
+==================================================
+
+Pastikan setting eksplisit:
+
+EXIT_MAX_HOLD_MINUTES = nilai existing yang disetujui
+
+Trigger:
+
+if position_age_minutes >= EXIT_MAX_HOLD_MINUTES:
+    create CLOSE_POSITION
+    exit_reason = MAX_HOLD_EXIT
+
+MAX_HOLD harus berlaku untuk:
+
+- OPEN
+- PARTIAL
+- active market
+- upcoming/rolled market
+- old condition_id
+
+MAX_HOLD tidak boleh bergantung pada:
+- signal
+- opportunity
+- universe status active
+
+==================================================
+STEP 5 — EXIT PRICE PRIORITY
+==================================================
+
+Gunakan exit price dengan urutan:
+
+1. direct Polymarket resolution
+2. forced_exit_price dari real resolution
+3. fresh executable CLOB bid
+4. latest trusted stored price within freshness threshold
+5. PRICE_UNAVAILABLE → retry
+
+LONG_YES:
+- exit menggunakan YES bid
+
+LONG_NO:
+- exit menggunakan NO bid
+- jika derived:
+  no_bid = 1 - yes_ask
+
+Jangan gunakan:
+- 0.5 fallback
+- stale price tanpa validasi
+- ask sebagai executable sell price
+- fake resolution
+
+==================================================
+STEP 6 — CREATE CLOSE_POSITION DECISION
+==================================================
+
+Saat trigger terpenuhi, pastikan satu row dibuat:
+
+- decision = CLOSE_POSITION
+- status = PENDING
+- target_position_id
+- condition_id
+- asset
+- timeframe
+- exit_reason
+- forced_exit_price jika ada
+- close_quantity
+- decided_at
+
+Idempotency:
+
+- jangan membuat duplicate pending close untuk position yang sama
+- tetapi jika previous close FAILED_RETRYABLE dan retry allowed, proses lagi
+
+==================================================
+STEP 7 — RISK PASS FOR EXIT
+==================================================
+
+Audit Risk Engine.
+
+CLOSE_POSITION harus:
+
+- tidak diblok entry risk rules
+- tidak diblok exposure cap
+- tidak diblok max open positions
+- tetap melewati idempotency/integrity checks
+
+Expected:
+
+PENDING CLOSE_POSITION
+→ RISK_APPROVED
+
+Jika tetap PENDING/BLOCKED:
+- tampilkan exact reason
+- perbaiki hanya exit path
+
+==================================================
+STEP 8 — EXECUTION CLOSE PATH
+==================================================
+
+Trace:
+
+RISK_APPROVED CLOSE_POSITION
+→ create SELL_YES / SELL_NO order
+→ calculate close_quantity
+→ filled_price
+→ order FILLED
+→ position_service.close_position()
+
+Untuk expiry/direct resolution:
+- boleh close via forced resolution path
+- tetapi status dan accounting harus tetap konsisten
+- jika tidak membuat SELL order, harus ada explicit execution record/event
+
+Jangan menandai decision EXECUTED sebelum position benar-benar updated.
+
+==================================================
+STEP 9 — PARTIAL EXIT
+==================================================
+
+Jika close_quantity < remaining_quantity:
+
+- position status = PARTIAL
+- remaining_quantity berkurang
+- realized_pnl bertambah
+- closed_at tetap null
+- close_reason disimpan
+- OUT count bertambah
+- OUT amount bertambah
+
+Posisi PARTIAL harus bisa dievaluasi lagi pada cycle berikutnya.
+
+==================================================
+STEP 10 — FINAL EXIT
+==================================================
+
+Jika close_quantity >= remaining_quantity:
+
+- position status = CLOSED
+- remaining_quantity = 0
+- exit_price disimpan
+- realized_pnl final
+- closed_at disimpan
+- close_order_id disimpan
+- close_decision_id disimpan
+- unrealized_pnl = 0
+
+==================================================
+STEP 11 — CAPITAL AND PNL ACCOUNTING
+==================================================
+
+Sebelum exit capture:
+
+- open exposure
+- available capital
+- realized PnL
+- unrealized PnL
+
+Setelah exit capture:
+
+- open exposure turun
+- available capital naik
+- realized PnL berubah
+- unrealized PnL turun/menjadi 0 untuk posisi closed
+
+Formula:
+
+realized_pnl =
+close_quantity × (exit_price - entry_price) - exit_fee
+
+sesuaikan side LONG_YES/LONG_NO berdasarkan token price yang disimpan.
+
+Pastikan principal tidak dihitung dua kali.
+
+==================================================
+STEP 12 — AI LIVE TRADES OUT
+==================================================
+
+Setelah exit nyata:
+
+GET /api/v1/live-trades
+
+harus menampilkan:
+
+- PARTIAL OUT
+- FINAL OUT
+- EXPIRY OUT
+- MAX HOLD OUT
+- SIGNAL INVALIDATION OUT
+
+Data:
+
+- position_id
+- lot/entry_sequence
+- asset
+- timeframe
+- side
+- close quantity
+- exit price
+- notional
+- realized PnL
+- exit reason
+- timestamp
+
+No WAIT.
+No fake event.
+
+==================================================
+STEP 13 — CARD AND HEADER UPDATE
+==================================================
+
+Setelah exit, verifikasi:
+
+- LOTS turun atau menjadi PARTIAL
+- OUT count naik
+- OUT amount naik
+- PNL berubah
+- OPEN LOTS turun jika final close
+- ACTIVE POSITIONS turun jika last lot closed
+- EXECUTED TRADES naik
+- available capital berubah
+
+Jangan ubah layout.
+
+==================================================
+STEP 14 — TESTS
+==================================================
+
+Tambahkan/update tests:
+
+1. direct signal count drives SIGNAL_INVALIDATION
+2. stale opportunity count ignored
+3. MAX_HOLD creates CLOSE_POSITION
+4. MAX_HOLD works for PARTIAL
+5. missing price increments retry
+6. retry timeout behavior
+7. no 0.5 fallback
+8. LONG_YES uses YES bid
+9. LONG_NO uses NO bid
+10. pending duplicate close prevented
+11. failed retryable close can retry
+12. risk approves CLOSE_POSITION
+13. close decision not marked EXECUTED before position update
+14. partial close updates remaining quantity
+15. partial close updates realized PnL
+16. final close sets CLOSED
+17. final close sets remaining_quantity=0
+18. exposure decreases after close
+19. available capital increases
+20. live trades OUT event appears
+21. card OUT updates
+22. PARTIAL position can close again
+23. expired position does not remain OPEN
+24. no fake exit data
+
+Run:
+
+- python -m compileall -q backend/app
+- exit engine tests
+- execution close tests
+- risk exit tests
+- position service tests
+- portfolio tests
+- live trades tests
+- card summary tests
+- full suite
+
+==================================================
+STEP 15 — LIVE RUNTIME PROOF
+==================================================
+
+Restart workflow once.
+
+Do not keep restarting.
+
+Record deployment timestamp.
+
+Wait until first real exit occurs.
+
+Capture exact before/after:
+
+BEFORE:
+- position status
+- exposure
+- available capital
+- realized PnL
+- unrealized PnL
+
+EXIT:
+- close decision
+- risk approval
+- close order/execution
+- exit reason
+- exit price
+- close quantity
+
+AFTER:
+- position status CLOSED/PARTIAL
+- exposure lower
+- available capital higher
+- realized PnL updated
+- AI Live Trades OUT visible
+- card OUT visible
+
+Do not stop at “exit decision created”.
+Must prove position update and accounting.
+
+==================================================
+STEP 16 — FINAL RESPONSE
+==================================================
+
+Jawab hanya tentang EXIT:
+
+1. Files read
+2. Exit root cause
+3. Signal invalidation fix
+4. MAX_HOLD result
+5. Exit price source
+6. Close decision result
+7. Risk approval result
+8. Close execution result
+9. Position state result
+10. Capital before/after
+11. PnL before/after
+12. Live Trades OUT result
+13. Card/header update
+14. Tests run
+15. Live runtime proof
+16. Files changed
+17. Remaining EXIT risks
+18. Final status
+
+Final status:
+
+EXIT LIFECYCLE:
+- PASS
+- PASS WITH NOTES
+- PENDING LIVE EXIT PROOF
+- FAIL
+
+Use PASS only if:
+
+- at least one real position closes/partials
+- realized PnL changes
+- exposure decreases
+- available capital changes
+- OUT event appears
+- tests pass
+- no fake/default exit price
+
+Jangan membahas entry spam.
+Jangan mengubah entry logic.
+Jangan mengubah UI.
+Jangan menambah fitur lain.
+Fokus EXIT saja.

@@ -1,0 +1,295 @@
+# LIMWANPO POLYMARKET AI
+
+# FINAL UI FREEZE (LAST UI UPDATE)
+
+Ini adalah perubahan UI terakhir.
+
+Setelah seluruh pekerjaan di bawah selesai, UI dinyatakan **FINAL**.
+
+Tidak boleh lagi melakukan redesign, mengganti layout, memindahkan panel, mengubah warna utama, ataupun melakukan perubahan visual besar.
+
+Seluruh pengembangan berikutnya wajib fokus pada AI Engine.
+
+---
+
+# 1. MARKET UNIVERSE
+
+Panel kiri sudah menggunakan struktur Asset → Timeframe.
+
+Pertahankan struktur tersebut.
+
+Contoh:
+
+BTC
+
+* 5m
+* 15m
+* 1H
+
+ETH
+
+* 5m
+* 15m
+* 1H
+
+SOL
+
+* 5m
+* 15m
+* 1H
+
+XRP
+
+* 5m
+* 15m
+* 1H
+
+Jangan lagi menampilkan subtitle seperti:
+
+* BTC · ETH · SOL · XRP
+* 5m · 15m · 1H
+
+Subtitle tersebut harus dihapus seluruhnya.
+
+MARKET UNIVERSE langsung diikuti daftar asset.
+
+---
+
+# 2. TIMEFRAME
+
+Perbaiki typography:
+
+* 5m
+* 15m
+* 1H
+
+Agar sedikit lebih terlihat.
+
+Ketentuan:
+
+* sedikit lebih terang
+* sedikit lebih tebal
+* jangan terlalu mencolok
+* tetap menjadi secondary information
+
+---
+
+# 3. AI CURRENT TARGET
+
+Saat Scanner Engine belum selesai dibuat,
+
+jangan tampilkan:
+
+WAITING FOR SCANNER
+
+dengan ukuran besar.
+
+Gunakan status yang lebih natural.
+
+Contoh:
+
+Scanner Initializing...
+
+atau
+
+Waiting for Scanner...
+
+Status tersebut:
+
+* kecil
+* ringan
+* opacity sekitar 0.65
+* tidak mengambil perhatian utama panel
+
+Fokus utama panel tetap:
+
+BTC 5m
+
+---
+
+# 4. POSITION PANEL
+
+Perbaiki typography.
+
+Target tampilan:
+
+NO ACTIVE POSITION
+
+AI is scanning markets
+
+Waiting for confidence threshold
+
+Paper Mode Active
+
+Ketentuan:
+
+* hanya judul menggunakan uppercase
+* sisanya sentence case
+* font sekitar 9–10px
+* line-height lebih lega
+* opacity sekitar 0.70–0.80
+* lebih mudah dibaca
+
+---
+
+# 5. LAST CLOSED
+
+Jika belum ada transaksi cukup tampilkan:
+
+No trades yet
+
+Tidak perlu ikon.
+
+Naikkan sedikit ukuran font.
+
+---
+
+# 6. HAPUS FOOTER LAMA
+
+Footer berikut harus dihapus seluruhnya:
+
+BTC · ETH · SOL · XRP
+
+5M | 15M | 1H
+
+PAPER MODE
+
+Footer tersebut hanya mengulang informasi yang sudah ada pada dashboard.
+
+---
+
+# 7. GANTI MENJADI LIVE MARKET TICKER
+
+Gunakan seluruh area footer sebagai ticker harga real-time.
+
+Tampilkan:
+
+BTC
+Harga terbaru
+24H %
+
+ETH
+Harga terbaru
+24H %
+
+SOL
+Harga terbaru
+24H %
+
+XRP
+Harga terbaru
+24H %
+
+Contoh:
+
+BTC 60412 ▲0.82%
+
+ETH 3520 ▼0.41%
+
+SOL 171 ▲1.24%
+
+XRP 2.35 ▲0.55%
+
+---
+
+# 8. TICKER
+
+Ticker menggunakan data market yang sudah tersedia.
+
+Animasi:
+
+* bergerak perlahan dari kanan ke kiri
+* sangat halus
+* tidak mengganggu dashboard
+* tanpa glow
+* tanpa efek berlebihan
+
+Jika layar kecil,
+
+ticker boleh melakukan auto-scroll horizontal.
+
+---
+
+# 9. RESPONSIVE VALIDATION
+
+Lakukan pengecekan penuh pada:
+
+1920×1080
+
+1600×900
+
+1366×768
+
+1280×720
+
+1024×768
+
+768×1024 (Portrait)
+
+820×1180 (Portrait)
+
+Pastikan:
+
+* tidak ada panel bertabrakan
+* chart tetap proporsional
+* KPI tetap rapi
+* Position Panel tetap terbaca
+* Decision Engine tidak rusak
+* Feed tidak overlap
+* Market Universe tetap rapi
+* Live Market Ticker tetap berjalan dengan baik
+
+Perbaikan hanya boleh dilakukan pada CSS responsive.
+
+Jangan mengubah layout utama.
+
+---
+
+# 10. FINAL CODE REVIEW
+
+Sebelum selesai:
+
+* Browser Console = 0 Error
+* JavaScript Error = 0
+* CSS Conflict = 0
+* Placeholder lama = 0
+* Dummy value = 0
+
+---
+
+# 11. UI FREEZE
+
+Setelah seluruh pekerjaan selesai,
+
+UI dinyatakan FINAL.
+
+Tidak boleh lagi ada perubahan visual kecuali jika fitur AI baru benar-benar membutuhkan komponen visual tambahan.
+
+---
+
+# NEXT DEVELOPMENT ROADMAP
+
+Setelah UI Freeze selesai, seluruh development HARUS fokus pada core intelligence LIMWANPO POLYMARKET AI.
+
+Urutan roadmap:
+
+1. Market Scanner Engine
+2. Market Evaluation Engine
+3. Opportunity Ranking Engine
+4. Confidence Engine
+5. Decision Engine
+6. Risk Engine Integration
+7. Paper Trading Engine
+8. Trade Management Engine
+9. Performance Analytics Engine
+10. AI Learning & Continuous Improvement
+
+Seluruh fitur baru harus mendukung kemampuan AI dalam menganalisis market Yes/No Polymarket, meningkatkan kualitas keputusan, mengelola risiko, melakukan paper trading, mengevaluasi performa, dan meningkatkan model secara berkelanjutan.
+
+Di akhir pekerjaan berikan laporan singkat:
+
+* Responsive Review: PASS / FAIL
+* Code Review: PASS / FAIL
+* JavaScript Errors: 0
+* CSS Conflicts: 0
+* UI Freeze Status: COMPLETE

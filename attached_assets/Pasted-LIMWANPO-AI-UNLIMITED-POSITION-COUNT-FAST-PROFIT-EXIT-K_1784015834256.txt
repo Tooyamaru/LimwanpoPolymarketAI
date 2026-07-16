@@ -1,0 +1,518 @@
+LIMWANPO AI — UNLIMITED POSITION COUNT + FAST PROFIT EXIT
+
+Konteks:
+
+Requirement baru:
+
+1. Jumlah posisi/lot tidak boleh dibatasi oleh fixed position count.
+2. AI boleh membuka berapa pun lot selama modal dan exposure masih aman.
+3. Posisi tidak perlu menunggu market selesai.
+4. Jika setelah 2–5 detik atau kapan pun posisi sudah menghasilkan profit bersih, AI boleh keluar.
+5. Tetap paper trading.
+6. Jangan redesign dashboard.
+
+PENTING:
+
+UNLIMITED berarti:
+
+- tidak ada MAX_OPEN_POSITIONS count cap
+- tidak ada PORTFOLIO_MAX_OPEN_POSITIONS count cap
+- tidak ada MAX_ENTRIES_PER_MARKET count cap
+- tidak ada MAX_OPEN_LOTS_PER_MARKET count cap
+
+Tetapi tetap wajib ada:
+
+- available capital check
+- total exposure check
+- per-market exposure check
+- per-asset exposure check
+- entry size bounds
+- duplicate execution protection
+- cooldown atau signal-change protection
+- no repeated identical entry spam
+
+JANGAN membuat jumlah posisi unlimited sekaligus menghapus seluruh risk management.
+
+==================================================
+PART 1 — REMOVE FIXED POSITION COUNT LIMITS
+==================================================
+
+Audit seluruh code:
+
+- PORTFOLIO_MAX_OPEN_POSITIONS
+- MAX_OPEN_POSITIONS
+- MAX_ENTRIES_PER_MARKET
+- MAX_OPEN_LOTS_PER_MARKET
+- MAX_SAME_SIDE_ENTRIES
+- PORTFOLIO_POSITION_LIMIT
+- MAX_ENTRIES
+- MAX_LOTS
+
+Fixed count limits tersebut tidak boleh lagi memblokir entry.
+
+Replace semantic:
+
+OLD:
+if open_positions >= 5:
+    BLOCK
+
+NEW:
+if available_capital < required_notional:
+    BLOCK
+
+if total_exposure + proposed_notional > exposure_limit:
+    BLOCK
+
+if market_exposure + proposed_notional > market_exposure_limit:
+    BLOCK
+
+if asset_exposure + proposed_notional > asset_exposure_limit:
+    BLOCK
+
+Tidak boleh ada fixed limit seperti 5, 10, atau 20 position rows.
+
+==================================================
+PART 2 — KEEP EXPOSURE SAFETY
+==================================================
+
+Pertahankan atau tambahkan settings:
+
+- MAX_TOTAL_EXPOSURE_USDC
+- MAX_EXPOSURE_PER_MARKET_USDC
+- MAX_EXPOSURE_PER_ASSET_USDC
+- MAX_ENTRY_NOTIONAL_USDC
+- MIN_ENTRY_NOTIONAL_USDC
+- MIN_AVAILABLE_CAPITAL_RESERVE_USDC
+- MAX_PORTFOLIO_EXPOSURE_PERCENT
+
+Contoh:
+
+available_capital =
+initial_capital
++ realized_pnl
+- current_open_exposure
+
+Entry allowed jika:
+
+available_capital - proposed_notional
+>= minimum reserve
+
+Jangan menggunakan position count sebagai proxy exposure.
+
+==================================================
+PART 3 — PREVENT ENTRY SPAM
+==================================================
+
+Walaupun position count unlimited, jangan membuat lot baru setiap worker cycle.
+
+Entry tambahan harus mempunyai alasan baru:
+
+- opportunity score improved
+- price improved
+- confidence improved
+- order flow confirmation
+- signal changed
+- partial allocation continuation
+- re-entry after exit
+
+Identical signal + identical price + identical score:
+
+BLOCK:
+SCALE_IN_NO_IMPROVEMENT
+
+Duplicate decision/order:
+
+BLOCK:
+DUPLICATE_EXECUTION
+
+==================================================
+PART 4 — FAST EXIT CONFIGURATION
+==================================================
+
+Tambahkan settings:
+
+- EXIT_CHECK_INTERVAL_SECONDS
+- MIN_POSITION_HOLD_SECONDS
+- FAST_PROFIT_EXIT_ENABLED
+- FAST_PROFIT_TARGET_USDC
+- FAST_PROFIT_TARGET_PERCENT
+- MIN_NET_PROFIT_AFTER_COST_USDC
+- ESTIMATED_EXIT_COST_USDC
+- MAX_ACCEPTABLE_EXIT_SPREAD
+
+Contoh default:
+
+EXIT_CHECK_INTERVAL_SECONDS = 2
+MIN_POSITION_HOLD_SECONDS = 2
+FAST_PROFIT_EXIT_ENABLED = true
+FAST_PROFIT_TARGET_USDC = 0.05
+FAST_PROFIT_TARGET_PERCENT = 0.5
+MIN_NET_PROFIT_AFTER_COST_USDC = 0.03
+
+Jangan hardcode 2 atau 5 detik di engine.
+Gunakan settings.
+
+==================================================
+PART 5 — EXECUTABLE EXIT PRICE
+==================================================
+
+Profit exit wajib memakai harga yang benar-benar bisa dieksekusi.
+
+LONG_YES / UP:
+
+exit_price = current YES bid
+
+LONG_NO / DOWN:
+
+exit_price = current NO bid
+
+Jika NO bid diturunkan:
+
+no_bid = 1 - yes_ask
+
+Jangan memakai:
+
+- midpoint
+- yes_mid
+- target price
+- ask untuk menjual
+- stale price
+
+Jika orderbook stale/missing:
+
+- jangan exit normal
+- return PRICE_NOT_AVAILABLE / STALE_ORDERBOOK
+
+==================================================
+PART 6 — NET PROFIT FORMULA
+==================================================
+
+Gross PnL:
+
+gross_pnl =
+(exit_price - entry_price)
+× close_quantity
+
+Estimated costs:
+
+- spread impact
+- slippage estimate
+- configured paper fee jika ada
+
+Net PnL:
+
+net_pnl =
+gross_pnl
+- estimated_costs
+
+Fast exit hanya jika:
+
+net_pnl >= MIN_NET_PROFIT_AFTER_COST_USDC
+
+dan salah satu:
+
+gross_pnl >= FAST_PROFIT_TARGET_USDC
+
+atau
+
+profit_percent >= FAST_PROFIT_TARGET_PERCENT
+
+Jangan exit karena gross profit kecil tetapi setelah spread sebenarnya rugi.
+
+==================================================
+PART 7 — HOLD TIME
+==================================================
+
+Position boleh keluar setelah:
+
+now - opened_at >= MIN_POSITION_HOLD_SECONDS
+
+Jika target profit tercapai dalam 2 detik dan minimum hold = 2:
+
+boleh keluar.
+
+Jika target tercapai dalam 5 detik:
+
+boleh keluar.
+
+Tidak perlu menunggu market expiry.
+
+Market expiry hanya menjadi fallback force-close.
+
+==================================================
+PART 8 — PARTIAL VS FULL FAST EXIT
+==================================================
+
+Buat aturan configurable:
+
+FAST_EXIT_MODE:
+
+- FULL
+- PARTIAL
+- DYNAMIC
+
+FULL:
+- close seluruh remaining quantity
+
+PARTIAL:
+- close configured percentage
+
+DYNAMIC:
+- profit kecil → partial
+- profit kuat → full
+
+Contoh:
+
+FAST_EXIT_PARTIAL_PERCENT = 50
+
+Pastikan:
+
+- partial exit mengurangi remaining_quantity
+- OUT count bertambah
+- realized PnL benar
+- lot masih OPEN/PARTIAL jika tersisa
+- final exit menutup lot
+
+==================================================
+PART 9 — EXIT PRIORITY
+==================================================
+
+Exit Engine priority:
+
+1. Direct resolution / expiry safety
+2. Hard stop loss
+3. Risk emergency exit
+4. Fast net-profit exit
+5. Take-profit
+6. Signal weakening / reversal
+7. Time-to-expiry exit
+8. No trigger
+
+Jangan membuat profit exit mengalahkan emergency/risk exit.
+
+==================================================
+PART 10 — EXIT ENGINE FREQUENCY
+==================================================
+
+Audit worker interval.
+
+Jika Exit Engine sekarang 10 detik:
+
+ubah menjadi configurable 2–5 detik.
+
+Pastikan:
+
+- tidak membuat duplicate CLOSE_POSITION decisions
+- tidak membuat duplicate close orders
+- position lock/idempotency aktif
+- satu lot tidak diproses dua worker bersamaan
+
+Tambahkan check:
+
+existing pending/approved close decision for position_id
+
+Jika ada:
+
+skip DUPLICATE_EXIT_PENDING
+
+==================================================
+PART 11 — CONCURRENT ENTRY SAFETY
+==================================================
+
+Karena tidak ada count cap, entry concurrency tetap harus atomic pada capital/exposure.
+
+Gunakan transaction/locking yang sesuai:
+
+- lock portfolio/capital state
+- recalculate exposure inside transaction
+- reserve capital before creating position
+- rollback reservation if execution fails
+
+Target:
+
+20 simultaneous entry decisions tidak boleh memakai modal melebihi available capital.
+
+Tidak perlu membatasi jumlah rows, tetapi total notional harus aman.
+
+==================================================
+PART 12 — CARD / DASHBOARD
+==================================================
+
+Jangan ubah layout.
+
+Existing fields tetap:
+
+- LOTS
+- IN
+- OUT
+- PNL
+- AI LIVE TRADES
+
+Saat fast exit terjadi:
+
+AI LIVE TRADES tampil:
+
+12:41:08 IN BTC 5M DOWN $10.00 @0.500
+
+12:41:11 OUT BTC 5M DOWN $10.12 @0.506 PNL +$0.12
+
+LOTS turun.
+OUT bertambah.
+PNL berubah.
+
+Gunakan UP/DOWN, bukan YES/NO.
+
+==================================================
+PART 13 — TESTS
+==================================================
+
+Tambahkan tests:
+
+UNLIMITED POSITION COUNT:
+
+1. 5 positions allowed if exposure safe
+2. 20 positions allowed if exposure safe
+3. 100 position rows allowed if capital sufficient
+4. no fixed count block reason remains
+5. total exposure still blocks
+6. per-market exposure still blocks
+7. per-asset exposure still blocks
+8. insufficient capital blocks
+9. duplicate execution blocks
+10. identical signal scale-in blocked
+
+FAST EXIT:
+
+11. position exits after 2 seconds when net target met
+12. position does not exit before minimum hold
+13. LONG_YES uses yes_bid
+14. LONG_NO uses 1 - yes_ask
+15. midpoint is never used for exit
+16. stale price blocks exit
+17. gross profit but negative net profit does not exit
+18. partial fast exit works
+19. full fast exit works
+20. duplicate exit decision blocked
+21. OUT feed event generated
+22. PnL/card summary updates
+23. expiry fallback still works
+
+Run:
+
+- compileall
+- risk tests
+- execution tests
+- exit tests
+- position tests
+- card summary tests
+- live trades tests
+- concurrency tests
+- full suite
+
+==================================================
+PART 14 — LIVE VALIDATION
+==================================================
+
+Restart workflow.
+
+Observe:
+
+- entry count may exceed previous limit 5
+- no PORTFOLIO_POSITION_LIMIT blocks
+- exposure/capital blocks still work
+- exit engine checks every configured interval
+- profitable positions exit without waiting for expiry
+
+For each fast exit show:
+
+- position_id
+- held_seconds
+- entry_price
+- executable exit_price
+- gross_pnl
+- estimated_cost
+- net_pnl
+- exit reason
+- OUT event
+- card PnL
+
+Do not force prices or fabricate exits.
+
+==================================================
+PART 15 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- PORTFOLIO_POSITION_LIMIT
+- MAX_OPEN_POSITIONS
+- MAX_ENTRIES_PER_MARKET
+- MAX_OPEN_LOTS_PER_MARKET
+- fixed count block
+- unlimited exposure
+- midpoint exit
+- fake profit
+- hardcoded 2 seconds
+- duplicate exit
+- stale exit price
+
+Classify:
+
+- REMOVED_COUNT_LIMIT
+- SAFE_EXPOSURE_LIMIT
+- VALID_IDEMPOTENCY
+- REAL_EXIT_PRICE
+- INVALID
+- FIXED
+
+No unresolved INVALID.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Fixed count limits removed
+2. Exposure safeguards retained
+3. Capital concurrency protection
+4. Entry-spam protection
+5. Fast-exit settings
+6. Exit price formula
+7. Net-profit formula
+8. Minimum hold logic
+9. Partial/full exit behavior
+10. Exit worker interval
+11. Duplicate-exit protection
+12. Tests
+13. Live validation
+14. Files changed
+15. Remaining risks
+16. Final statuses
+17. Exact next step
+
+Final statuses:
+
+UNLIMITED POSITION COUNT:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+EXPOSURE SAFETY:
+- PASS
+- FAIL
+
+FAST PROFIT EXIT:
+- PASS
+- PASS WITH NOTES
+- NOT YET OBSERVED
+- FAIL
+
+EXIT IDEMPOTENCY:
+- PASS
+- FAIL
+
+Jangan redesign.
+Jangan fabricate.
+Jangan menghapus exposure/capital safety.
+Jangan menggunakan midpoint sebagai exit price.

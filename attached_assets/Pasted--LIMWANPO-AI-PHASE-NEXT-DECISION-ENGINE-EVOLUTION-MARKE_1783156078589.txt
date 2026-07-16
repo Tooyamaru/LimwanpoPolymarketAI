@@ -1,0 +1,449 @@
+# LIMWANPO AI — PHASE NEXT
+
+# DECISION ENGINE EVOLUTION
+
+# MARKET STRUCTURE FIRST
+
+## IMPORTANT
+
+Sebelum melakukan perubahan apapun, pahami filosofi berikut.
+
+LimwanpoAI BUKAN TradingView Bot.
+
+LimwanpoAI BUKAN Crypto Signal Bot.
+
+LimwanpoAI adalah AI yang mengambil keputusan pada MARKET POLYMARKET.
+
+Karena itu seluruh arsitektur Decision Engine harus berubah.
+
+Jangan lagi menjadikan indikator teknikal sebagai pusat keputusan.
+
+Indikator hanyalah salah satu referensi.
+
+======================================================
+RULE #1
+=======
+
+POLYMARKET ADALAH SOURCE OF TRUTH.
+
+Semua data market berikut berasal dari Polymarket.
+
+YES
+
+NO
+
+Bid
+
+Ask
+
+Spread
+
+Liquidity
+
+Volume
+
+Countdown
+
+Oracle
+
+Resolution
+
+Current Market State
+
+Semua data tersebut dianggap BENAR.
+
+Jangan dihitung ulang.
+
+Jangan diubah.
+
+Jangan diprediksi ulang.
+
+AI hanya MEMBACA.
+
+======================================================
+RULE #2
+=======
+
+Binance
+
+Orderbook
+
+Funding
+
+News
+
+Macro
+
+Whale
+
+Open Interest
+
+Volume
+
+Momentum
+
+Trend
+
+Semuanya hanya digunakan untuk MEMBANTU AI mengambil keputusan.
+
+Bukan menggantikan data Polymarket.
+
+======================================================
+NEW ARCHITECTURE
+================
+
+Bangun engine baru.
+
+======================================================
+
+1. POLYMARKET MARKET ENGINE
+   ======================================================
+
+Engine ini menjadi engine PALING PENTING.
+
+Input:
+
+YES Bid
+
+YES Ask
+
+NO Bid
+
+NO Ask
+
+Spread
+
+Liquidity
+
+Volume
+
+Countdown
+
+Oracle
+
+Resolution
+
+Current Market State
+
+Output:
+
+Market Score
+
+Market Quality
+
+Market Confidence
+
+Market Risk
+
+Reason
+
+Engine ini bertugas menjawab:
+
+Apakah market ini layak diperdagangkan?
+
+Bukan BUY.
+
+Bukan SELL.
+
+Hanya menjawab:
+
+GOOD MARKET
+
+AVERAGE MARKET
+
+BAD MARKET
+
+======================================================
+2. MARKET CONTEXT ENGINE
+========================
+
+AI tidak boleh melihat timeframe secara terpisah.
+
+Contoh
+
+BTC
+
+5M
+
+15M
+
+1H
+
+harus dianggap satu kesatuan.
+
+Engine harus membaca:
+
+Apakah
+
+5M
+
+15M
+
+1H
+
+sinkron.
+
+Output
+
+Aligned
+
+Mixed
+
+Conflict
+
+Confidence
+
+======================================================
+3. ORDERBOOK ENGINE
+===================
+
+Gunakan Binance.
+
+Analisis:
+
+Bid Volume
+
+Ask Volume
+
+Imbalance
+
+Large Orders
+
+Aggressive Buying
+
+Aggressive Selling
+
+Output:
+
+Bullish
+
+Neutral
+
+Bearish
+
+Confidence
+
+======================================================
+4. FUNDING ENGINE
+=================
+
+Gunakan Funding Rate.
+
+Open Interest.
+
+Long Short Ratio.
+
+Output
+
+Bullish
+
+Neutral
+
+Bearish
+
+======================================================
+5. NEWS ENGINE
+==============
+
+Gabungkan:
+
+Crypto News
+
+Macro News
+
+Breaking News
+
+Sentiment
+
+Output
+
+Positive
+
+Neutral
+
+Negative
+
+Confidence
+
+======================================================
+6. TECHNICAL ENGINE
+===================
+
+Engine lama
+
+Momentum
+
+Trend
+
+Volatility
+
+tetap dipakai.
+
+Tetapi sekarang dianggap sebagai:
+
+SUPPORTING ENGINE.
+
+Bukan PRIMARY ENGINE.
+
+======================================================
+DECISION ENGINE BARU
+====================
+
+Decision Engine TIDAK BOLEH lagi melakukan:
+
+Weighted Score sederhana.
+
+Misalnya:
+
+Momentum
+
+80
+
+Trend
+
+70
+
+BUY
+
+Itu tidak cukup.
+
+======================================================
+Decision Engine harus melakukan reasoning.
+
+Contoh:
+
+Market Quality
+
+Excellent
+
+Orderbook
+
+Bullish
+
+Momentum
+
+Bullish
+
+Trend
+
+Bullish
+
+Funding
+
+Neutral
+
+News
+
+Positive
+
+Market Context
+
+Aligned
+
+Risk
+
+Acceptable
+
+Decision
+
+BUY YES
+
+Confidence
+
+92%
+
+Reason
+
+Liquidity tinggi
+
+Spread kecil
+
+YES Bid meningkat
+
+Orderbook mendukung
+
+Trend selaras
+
+Tidak ada konflik antar timeframe
+
+======================================================
+OUTPUT
+======
+
+Decision
+
+BUY YES
+
+BUY NO
+
+WAIT
+
+Confidence
+
+Reason
+
+Supporting Engines
+
+======================================================
+DO NOT TOUCH
+============
+
+Dashboard
+
+CSS
+
+HTML
+
+Chart
+
+Portfolio
+
+System Health
+
+Execution Pipeline
+
+Footer
+
+AI Activity
+
+Paper Trading
+
+Market Universe UI
+
+======================================================
+IMPORTANT
+=========
+
+Fokus hanya backend.
+
+Semua engine baru harus modular.
+
+Semua engine memiliki:
+
+score
+
+confidence
+
+reason
+
+timestamp
+
+Semua engine dapat dipanggil melalui API masing-masing.
+
+======================================================
+GOAL
+====
+
+Setelah fase ini selesai,
+
+Decision AI tidak lagi menjadi AI berbasis indikator teknikal.
+
+Decision AI berubah menjadi AI yang membaca struktur market Polymarket terlebih dahulu, kemudian menggunakan Binance dan data eksternal sebagai konfirmasi keputusan.
+
+Dengan kata lain:
+
+Polymarket menentukan "apa yang sedang diperdagangkan."
+
+Engine lain membantu AI menentukan "apakah sekarang waktu terbaik untuk BUY YES, BUY NO, atau WAIT."
+
+Jangan melakukan perubahan di luar ruang lingkup ini.

@@ -1,0 +1,118 @@
+V6.6 FINAL UI POLISH
+
+IMPORTANT:
+
+* DO NOT redesign.
+* DO NOT change color palette.
+* DO NOT change visual identity.
+* DO NOT change backend logic.
+* DO NOT change engine workflow.
+* ONLY polish the existing UI.
+
+OBJECTIVES:
+
+1. HEATMAP READABILITY
+
+* Current heatmap cells look compressed and mostly empty.
+* Increase readability of each cell.
+* Display:
+    * Score (large)
+    * Direction (UP / DOWN / NEUTRAL)
+    * Edge %
+* Auto-hide fields that have no value.
+* Ensure text remains readable on iPad portrait.
+
+2. RESPONSIVE TABLET + MOBILE
+
+* Dashboard must fully support:
+    * iPad landscape
+    * iPad portrait
+    * Mobile portrait
+    * Mobile landscape
+* No horizontal clipping.
+* No panel overflow.
+* No text cut-off.
+* No hidden sections.
+
+3. FLUID SCALING
+
+* Replace fixed widths where possible.
+* Use responsive grid and flex layouts.
+* Use clamp() for fonts.
+* Scale automatically from:
+    * 390px mobile
+    * 768px tablet
+    * 1024px tablet landscape
+    * 1440px desktop
+
+4. TARGET PANEL IMPROVEMENT
+
+* Keep current layout.
+* Increase visual hierarchy:
+    * Market name
+    * Score
+    * Direction
+* Reason Summary pills should wrap cleanly.
+* Never overflow container.
+
+5. TOP 3 OPPORTUNITIES
+
+* Improve spacing.
+* Make Rank #1 visually dominant.
+* Add stronger active glow.
+* Direction indicator always visible.
+
+6. PIPELINE VISUAL FLOW
+
+* Preserve current pipeline.
+* Improve spacing between stages.
+* Maintain center alignment.
+* Ensure labels remain readable on tablets.
+
+7. KPI CARDS
+
+* Equal height.
+* Equal spacing.
+* Responsive wrapping.
+* Never overlap on smaller screens.
+
+8. FEED PANELS
+
+* AI Thinking Feed
+* AI Live Feed
+* Capital Protection
+
+Requirements:
+
+* Auto-height.
+* Better text spacing.
+* No clipping.
+* Smooth scrolling.
+
+9. MICRO-ANIMATIONS
+
+* Very subtle only.
+* Pulse active stages.
+* Smooth number transitions.
+* Fade updates.
+* No flashy effects.
+
+10. FINAL VALIDATION
+    Perform visual QA for:
+
+* Desktop 1440px
+* Desktop 1920px
+* iPad Portrait
+* iPad Landscape
+* iPhone Portrait
+* iPhone Landscape
+
+Success Criteria:
+
+* Zero overflow.
+* Zero clipped text.
+* Zero broken layout.
+* Same LimwanpoAI visual identity.
+* Looks like a finished institutional trading terminal.
+* Maintain cyber-terminal aesthetic.
+* Polish only, no redesign.

@@ -1,0 +1,375 @@
+LIMWANPO AI — RESUME PHASE 10 EXIT ENGINE / BUY ACTIVATION FINALIZATION
+
+Konteks: Pengerjaan Phase 10 berhenti karena quota tepat saat audit report mau ditulis.
+
+Yang sudah ditemukan:
+
+1. Decision distribution awal:
+   * decision_logs: 1607 WAIT
+   * BUY_NO: 1
+   * BUY_YES: 0
+   * risk_gated=True pada hampir semua WAIT
+   * opportunity_score banyak stuck di 34.0
+   * signal_confidence banyak NULL
+
+2. Root cause utama:
+   * Ada 2 stale OPEN positions untuk market expired:
+     * SOL/15m
+     * XRP/15m
+   * Keduanya expired pada 2026-07-11 02:45 UTC.
+   * Keduanya sudah punya DIRECT_POLYMARKET_RESOLUTION.
+   * winning_side=YES
+   * final_yes_price=1.0
+   * final_no_price=0.0
+   * Posisi tersebut adalah LONG_NO, jadi harusnya kalah.
+
+3. Dampak:
+   * OPEN positions = 7
+   * position fraction = 7/10 = 0.70
+   * risk_score = 30.0
+   * RISK_MIN_SCORE = 40.0
+   * risk_gated=True
+   * Semua decision dipaksa WAIT.
+
+4. Bug Exit Engine:
+   * Exit Engine memakai stale opportunity row.
+   * opportunity.minutes_to_expiry masih positif, misalnya sekitar 1140 menit, padahal market sudah expired.
+   * Karena itu EXPIRY_EXIT trigger tidak aktif.
+   * Posisi expired tetap OPEN.
+
+5. Fix yang sudah sempat diterapkan:
+   * Exit Engine sekarang cek market_universe.end_time terlebih dahulu.
+   * Jika market sudah expired, force close dengan EXPIRY_EXIT.
+   * Setelah fix:
+     * SOL/15m CLOSED
+     * XRP/15m CLOSED
+     * OPEN positions turun dari 7 ke 5
+     * risk_score naik dari 30.0 ke 50.0
+     * risk_gated=False
+     * BUY_NO naik menjadi 6
+     * BUY_YES naik menjadi 4
+
+6. Masalah yang masih harus diverifikasi/fix:
+   * Posisi LONG_NO expired ditutup dengan exit_price=0.49 dan realized_pnl=-0.2.
+   * Padahal direct resolution menunjukkan YES menang:
+     * final_yes_price=1.0
+     * final_no_price=0.0
+   * Untuk LONG_NO, exit price seharusnya final_no_price=0.0, bukan stale CLOB/opportunity price 0.49.
+   * Ini berarti position closure berhasil membuka risk gate, tetapi realized_pnl expired position masih kemungkinan salah.
+
+TUGAS: Resume dari kondisi codebase saat ini. Jangan mulai dari nol. Jangan redo Phase 9D. Jangan ubah UI. Jangan redesign. Jangan tambah provider baru. Jangan tambah dummy/fake outcome. Jangan paksa BUY palsu. Selesaikan Phase 10 secara benar.
+
+==================================================
+STEP 1 — READ CURRENT STATE
+===========================
+
+Baca file:
+
+* AI_DECISION_INTEGRITY_AUDIT.md
+* backend/app/services/exit_engine.py
+* backend/app/services/execution_engine.py
+* backend/app/services/decision_engine.py
+* backend/app/services/risk_engine.py
+* backend/app/services/outcome_learning_service.py
+* backend/app/repositories/outcome_learning_repository.py
+* backend/app/models/outcome_learning.py
+* backend/app/models/position.py
+* backend/app/models/trade_decision.py
+* backend/app/models/market_universe.py
+* backend/app/config/settings.py
+* MEMORY.md jika ada
+
+Lalu jalankan:
+
+* git status
+* git diff
+* python -m compileall -q backend/app
+
+Jangan percaya klaim log sebelumnya tanpa cek code sekarang.
+
+==================================================
+STEP 2 — VERIFY EXIT ENGINE FIX
+===============================
+
+Review exit_engine.py.
+
+Pastikan:
+
+1. Expired market detection memakai market_universe.end_time < now.
+2. Expiry detection tidak bergantung pada opportunity.minutes_to_expiry.
+3. Expiry detection berjalan walaupun stale opportunity row masih ada.
+4. Expired market force close memakai outcome_learnings dengan outcome_source = DIRECT_POLYMARKET_RESOLUTION jika tersedia.
+5. Jika direct resolution belum tersedia, jangan fabricate exit price.
+
+Untuk posisi:
+
+* LONG_YES harus memakai final_yes_price.
+* LONG_NO harus memakai final_no_price.
+
+Jika kode masih memakai stale opp price untuk expired market:
+
+* perbaiki.
+* Jangan pakai stale CLOB price untuk market yang sudah resolved.
+
+==================================================
+STEP 3 — VERIFY EXECUTION ENGINE CLOSE PRICE
+============================================
+
+Audit execution_engine.py.
+
+Masalah yang harus dicek: Exit Engine mungkin membuat CLOSE_POSITION decision dengan intended exit price dari resolution, tapi Execution Engine saat mengeksekusi close masih menghitung ulang price dari stale CLOB/opportunity.
+
+Pastikan close execution untuk EXPIRY_EXIT:
+
+* memakai forced_exit_price / resolution_exit_price dari TradeDecision jika tersedia
+* tidak overwrite dengan stale bid/ask
+* LONG_YES exit price = final_yes_price
+* LONG_NO exit price = final_no_price
+* realized_pnl dihitung dari final resolution price
+* actual_pnl / realized_pnl tidak memakai stale 0.49 jika final_no_price=0.0
+
+Jika TradeDecision belum punya field untuk forced_exit_price:
+
+* tambahkan field minimal atau gunakan existing price field yang tepat.
+* Pastikan backward compatible.
+* Jangan ubah UI.
+
+==================================================
+STEP 4 — REPAIR STALE CLOSED POSITIONS IF NEEDED
+================================================
+
+Cek posisi yang sudah ditutup oleh fix sebelumnya:
+
+* SOL/15m LONG_NO expired
+* XRP/15m LONG_NO expired
+
+Tampilkan:
+
+* position_id
+* side
+* entry_price
+* exit_price
+* quantity
+* realized_pnl
+* condition_id
+* outcome_source
+* winning_side
+* final_yes_price
+* final_no_price
+* closed_at
+* exit_reason
+
+Jika exit_price masih 0.49 padahal final_no_price=0.0:
+
+* koreksi position row secara aman.
+* realized_pnl harus dihitung ulang berdasarkan final resolution price.
+* dokumentasikan before/after.
+* Jangan fabricate.
+* Gunakan direct resolution row sebagai evidence.
+
+Formula:
+
+* LONG_YES value at resolution = final_yes_price
+* LONG_NO value at resolution = final_no_price
+* realized_pnl = (exit_price - entry_price) * quantity
+
+  atau sesuai formula position service existing, gunakan formula project saat ini.
+
+==================================================
+STEP 5 — DECISION ACTIVATION RECHECK
+====================================
+
+Setelah stale positions benar-benar closed dengan price benar:
+
+Query decision distribution terbaru:
+
+* total decision_logs
+* WAIT count
+* BUY_YES count
+* BUY_NO count
+* latest 50 decisions
+* risk_gated true/false distribution
+* avg risk_score
+* avg confidence
+* avg opportunity_score
+
+Tampilkan before/after:
+
+* sebelum fix:
+  * risk_gated=True all recent
+  * risk_score=30.0
+  * BUY_YES=0
+  * BUY_NO=1
+* setelah fix:
+  * risk_gated=False recent
+  * risk_score=50.0
+  * BUY_YES count
+  * BUY_NO count
+
+Pastikan BUY_YES/BUY_NO bukan hardcoded:
+
+* berasal dari decision_engine formula
+* risk_score >= threshold
+* conflict/risk gates valid
+* no fake confidence
+
+==================================================
+STEP 6 — WAIT ROOT CAUSE RECHECK
+================================
+
+Untuk WAIT yang masih tersisa:
+
+Klasifikasikan root cause:
+
+* REAL_LOW_CONFIDENCE
+* REAL_MARKET_CONFLICT
+* REAL_RISK_GATE
+* VALID_PORTFOLIO_LIMIT
+* MISSING_DATA
+* THRESHOLD_TOO_STRICT
+* BUG
+* STALE_DATA
+* UNKNOWN
+
+Tidak boleh ada UNKNOWN.
+
+Jangan memaksa semua WAIT menjadi BUY. WAIT valid tetap boleh.
+
+==================================================
+STEP 7 — BLOCKED / RISK RECHECK
+===============================
+
+Query risk_events dan trade_decisions terbaru.
+
+Tampilkan:
+
+* top block reasons
+* max open positions
+* current open positions
+* daily trades
+* daily pnl
+* duplicate position checks
+* expired positions still open count
+
+Pastikan:
+
+* expired_positions_open = 0 untuk market yang sudah resolved
+* stale positions tidak lagi menghitung exposure
+* risk gate tidak salah block karena expired position
+
+==================================================
+STEP 8 — TEST / VALIDATION
+==========================
+
+Jalankan:
+
+* python -m compileall -q backend/app
+* pytest untuk exit_engine jika ada
+* pytest untuk execution_engine jika ada
+* pytest untuk outcome_learning_service jika ada
+* workflow restart
+* cek logs satu full cycle
+
+Jika ada pre-existing pytest async fixture issue:
+
+* dokumentasikan sebagai PRE_EXISTING.
+* Jangan klaim semua tests clean kalau ada error.
+* Bedakan NEW_FAILURE vs PRE_EXISTING_FAILURE.
+
+Search backend:
+
+* hardcoded BUY
+* forced BUY
+* fake confidence
+* synthetic signal
+* assumed edge
+* fake outcome
+* default winner
+* stale opportunity
+* stale position
+* expired position
+* 0.49
+* final_no_price
+* forced_exit_price
+* EXPIRY_EXIT
+
+Klasifikasikan:
+
+* REAL_DATA
+* DIRECT_POLYMARKET_RESOLUTION
+* SAFE
+* CONFIGURATION
+* TEST_ONLY
+* INVALID
+* FIXED
+
+==================================================
+STEP 9 — UPDATE AUDIT REPORT
+============================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md dengan section:
+
+PHASE 10 — BUY_YES / BUY_NO DECISION ACTIVATION + EXPIRED POSITION LIFECYCLE
+
+Isi wajib:
+
+1. Decision distribution before/after
+2. Root cause: stale expired positions
+3. Exit Engine bug
+4. Execution price bug jika ditemukan
+5. Files changed
+6. Expired positions before/after
+7. PnL correction before/after jika dilakukan
+8. Risk gate before/after
+9. BUY_YES / BUY_NO activation evidence
+10. WAIT remaining root causes
+11. Tests / validation
+12. Remaining risks
+13. Final Decision Activation status
+
+Decision Activation status hanya boleh:
+
+* DECISION ACTIVATION: PASS
+* DECISION ACTIVATION: PASS WITH REMEDIATION
+* DECISION ACTIVATION: BLOCKED BY VALID RISK
+* DECISION ACTIVATION: FAIL
+
+Gunakan PASS hanya jika:
+
+* expired positions closed
+* expired position PnL uses direct resolution final price
+* risk gate no longer blocked by stale positions
+* BUY_YES/BUY_NO appear from real formula
+* no hardcoded BUY
+* no fake confidence
+* no unresolved stale position
+* no new invalid fallback
+
+Jika BUY muncul tapi PnL expired position masih memakai stale CLOB price:
+
+* status maksimal PASS WITH REMEDIATION, bukan PASS.
+
+==================================================
+STEP 10 — FINAL RESPONSE FORMAT
+===============================
+
+Jawab dengan format:
+
+1. Files read
+2. Git diff summary
+3. Exit Engine verification
+4. Execution Engine close-price verification
+5. Expired positions before/after
+6. PnL correction result
+7. Decision distribution before/after
+8. Risk gate before/after
+9. BUY_YES / BUY_NO activation evidence
+10. WAIT remaining root causes
+11. Tests run
+12. Search classification
+13. Audit report update
+14. Remaining risks
+15. Decision Activation status
+16. Exact next recommended step
+
+Jangan jawab umum. Jangan klaim PASS kalau stale position PnL masih salah. Jangan paksa BUY. Jangan fabricate outcome.

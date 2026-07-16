@@ -1,0 +1,446 @@
+# LIMWANPO AI
+
+# PHASE NEXT
+
+# MARKET BEHAVIOUR ENGINE
+
+# (Decision Intelligence Upgrade)
+
+## IMPORTANT
+
+Sebelum mengubah kode apapun, pahami terlebih dahulu.
+
+Project ini SUDAH memiliki:
+
+* Polymarket Market Engine
+* Market Context Engine
+* Orderbook Engine
+* Funding Engine
+* Momentum Engine
+* Trend Engine
+* Volatility Engine
+* Decision Engine
+
+JANGAN membuat engine baru lagi.
+
+JANGAN menambah indikator baru.
+
+JANGAN mengubah Dashboard.
+
+JANGAN mengubah UI.
+
+JANGAN mengubah API Frontend.
+
+Yang akan dilakukan sekarang adalah meningkatkan kualitas cara AI BERPIKIR.
+
+==========================================================
+OBJECTIVE
+=========
+
+Saat ini Market Engine masih melakukan pendekatan seperti scoring.
+
+Contoh:
+
+Liquidity
+
+↓
+
+Spread
+
+↓
+
+Volume
+
+↓
+
+Market Score
+
+↓
+
+GOOD
+
+Pendekatan ini terlalu sederhana.
+
+AI harus mulai membaca PERILAKU MARKET.
+
+==========================================================
+PHASE 1
+MARKET BEHAVIOUR
+================
+
+Market Engine harus berubah.
+
+Bukan hanya membaca snapshot.
+
+Tetapi membaca perubahan market.
+
+Contoh:
+
+Spread
+
+0.90
+
+↓
+
+0.60
+
+↓
+
+0.30
+
+↓
+
+AI menyimpulkan:
+
+Market becoming more efficient.
+
+---
+
+Liquidity
+
+10K
+
+↓
+
+18K
+
+↓
+
+27K
+
+↓
+
+AI menyimpulkan:
+
+Liquidity increasing.
+
+---
+
+Volume
+
+500
+
+↓
+
+1100
+
+↓
+
+2300
+
+↓
+
+AI menyimpulkan:
+
+Participation increasing.
+
+---
+
+YES Bid
+
+naik
+
+YES Ask
+
+tetap
+
+↓
+
+AI:
+
+Buyers becoming aggressive.
+
+---
+
+NO Bid
+
+hilang
+
+↓
+
+AI:
+
+Sellers weakening.
+
+==========================================================
+PHASE 2
+MARKET INTERPRETATION
+=====================
+
+Market Engine tidak lagi menghasilkan:
+
+Market Score
+
+tetapi menghasilkan:
+
+Market Behaviour
+
+Contoh:
+
+Increasing Liquidity
+
+Decreasing Liquidity
+
+Healthy Spread
+
+Wide Spread
+
+Buy Pressure
+
+Sell Pressure
+
+Balanced Market
+
+Aggressive Buyers
+
+Aggressive Sellers
+
+Passive Market
+
+Low Participation
+
+High Participation
+
+Market Stability
+
+==========================================================
+PHASE 3
+MARKET QUALITY
+==============
+
+Setelah Behaviour terbentuk,
+
+baru AI menentukan:
+
+GOOD
+
+AVERAGE
+
+BAD
+
+Excellent
+
+Avoid
+
+Illiquid
+
+High Risk
+
+Healthy
+
+==========================================================
+PHASE 4
+DECISION ENGINE
+===============
+
+Decision Engine tidak boleh lagi sekadar menjumlah score.
+
+Saat ini proses masih terlalu linear.
+
+Saya ingin Decision Engine melakukan reasoning.
+
+Contoh:
+
+Step 1
+
+Market Behaviour
+
+↓
+
+Liquidity Increasing
+
+Step 2
+
+Spread Healthy
+
+↓
+
+GOOD
+
+Step 3
+
+Buy Pressure detected
+
+↓
+
+Bullish
+
+Step 4
+
+Orderbook confirms
+
+↓
+
+Bullish
+
+Step 5
+
+Funding Neutral
+
+↓
+
+No Conflict
+
+Step 6
+
+Momentum Bullish
+
+↓
+
+Support
+
+Step 7
+
+Trend Bullish
+
+↓
+
+Support
+
+Step 8
+
+Market Context
+
+Aligned
+
+↓
+
+Confidence Increased
+
+Step 9
+
+Risk
+
+Safe
+
+↓
+
+BUY YES
+
+==========================================================
+REASONING
+=========
+
+Decision Engine harus menghasilkan reasoning.
+
+Contoh:
+
+BUY YES
+
+Confidence
+
+93%
+
+Reason
+
+Liquidity continuously increasing.
+
+Spread remains tight.
+
+YES buyers becoming aggressive.
+
+Orderbook confirms buying pressure.
+
+Trend agrees.
+
+Momentum agrees.
+
+No funding conflict.
+
+Market context aligned.
+
+Risk acceptable.
+
+==========================================================
+SUPPORTING ENGINES
+==================
+
+Engine lain tidak berubah.
+
+Momentum
+
+Trend
+
+Funding
+
+Orderbook
+
+Volatility
+
+tetap sebagai supporting engines.
+
+Primary engine tetap:
+
+Polymarket Market Engine.
+
+==========================================================
+NO NEW ENGINES
+==============
+
+Jangan membuat engine baru.
+
+Upgrade engine yang sudah ada.
+
+==========================================================
+NO DASHBOARD CHANGES
+====================
+
+Tidak boleh mengubah:
+
+Dashboard
+
+Chart
+
+Portfolio
+
+Execution Pipeline
+
+System Health
+
+Footer
+
+AI Activity
+
+Paper Trading
+
+Frontend
+
+==========================================================
+SUCCESS CRITERIA
+================
+
+AI tidak lagi sekadar menghasilkan angka.
+
+AI mulai memahami:
+
+Apa yang sedang dilakukan market.
+
+Mengapa market berubah.
+
+Apa arti perubahan tersebut.
+
+Mengapa akhirnya AI memilih:
+
+BUY YES
+
+BUY NO
+
+WAIT
+
+Reasoning harus dapat dibaca manusia dan mengikuti urutan logika, bukan sekadar hasil penjumlahan score.
+
+==========================================================
+FINAL GOAL
+==========
+
+LimwanpoAI harus mulai berpikir seperti seorang trader profesional.
+
+Bukan sekadar indikator teknikal yang dijumlahkan.
+
+AI harus:
+
+1. Mengamati perilaku market.
+2. Memahami perubahan market.
+3. Membuat interpretasi.
+4. Meminta konfirmasi dari engine lain.
+5. Baru mengambil keputusan.

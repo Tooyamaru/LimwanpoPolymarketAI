@@ -1,0 +1,197 @@
+Sprint 9.1 — Fix Active Market Lifecycle Bug
+
+Context
+
+A post-validation audit discovered a critical lifecycle defect.
+
+Current production state:
+
+Expected:
+
+* 4 assets × 3 timeframes
+* exactly 12 active markets
+
+Actual:
+
+* 15 active markets
+
+Duplicates exist:
+
+ETH 5m → 2 active
+SOL 5m → 2 active
+XRP 5m → 2 active
+
+Root Cause
+
+market_universe_service.py currently marks every open market returned by Polymarket as:
+
+status = "active"
+
+However Polymarket can keep multiple consecutive windows open simultaneously.
+
+Example:
+
+ETH 5m
+03:00 active
+03:05 active
+
+Both pass the active filter.
+
+This violates the system invariant:
+
+EXACTLY ONE ACTIVE MARKET PER (asset, timeframe)
+
+Required Fix
+
+Modify universe synchronization logic.
+
+For each:
+
+(asset, timeframe)
+
+group all non-expired open markets.
+
+Then:
+
+1. Sort by end_time ascending.
+2. Select nearest-expiry market.
+3. Mark ONLY that market:
+
+status = "active"
+
+4. Mark all remaining future markets:
+
+status = "upcoming"
+
+Required Invariant
+
+After sync:
+
+BTC 5m  -> 1 active
+BTC 15m -> 1 active
+BTC 1H  -> 1 active
+
+ETH 5m  -> 1 active
+ETH 15m -> 1 active
+ETH 1H  -> 1 active
+
+SOL 5m  -> 1 active
+SOL 15m -> 1 active
+SOL 1H  -> 1 active
+
+XRP 5m  -> 1 active
+XRP 15m -> 1 active
+XRP 1H  -> 1 active
+
+Total active count must always equal:
+
+12
+
+Implementation Requirements
+
+1. Update:
+   app/services/market_universe_service.py
+
+2. Preserve existing functionality:
+
+   * token IDs
+   * condition IDs
+   * event IDs
+   * expiry handling
+   * upsert behavior
+
+3. Do not change API contracts.
+
+4. Do not change database schema unless absolutely required.
+
+Testing Requirements
+
+Add tests proving:
+
+A.
+
+Given:
+
+ETH 5m
+03:00
+03:05
+03:10
+
+Result:
+
+03:00 -> active
+03:05 -> upcoming
+03:10 -> upcoming
+
+B.
+
+Given:
+
+BTC 15m
+single market
+
+Result:
+
+active
+
+C.
+
+Given:
+
+expired market
+
+Result:
+
+not active
+
+D.
+
+Verify:
+
+maximum one active record per:
+
+(asset, timeframe)
+
+Integration Validation
+
+After implementation run:
+
+SELECT asset,timeframe,COUNT(*)
+FROM market_universe
+WHERE status='active'
+GROUP BY asset,timeframe;
+
+Expected:
+
+12 rows
+all counts = 1
+
+Run:
+
+SELECT COUNT(*)
+FROM market_universe
+WHERE status='active';
+
+Expected:
+
+12
+
+Deliverables
+
+1. Code changes
+2. New tests
+3. Test results
+4. Live validation results
+5. Root-cause summary
+6. Sprint9_1_Lifecycle_Fix_Report.md
+
+Success Criteria
+
+Sprint 9.1 is complete only if:
+
+* all tests pass
+* active count = 12
+* no duplicate active markets exist
+* exactly one active market per (asset,timeframe)
+* price refresh consumes exactly 12 active markets
+* Sprint 10 can safely begin

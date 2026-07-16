@@ -1,0 +1,456 @@
+LIMWANPO AI — PHASE NEXT
+DECISION ENGINE INTELLIGENCE (NO UI CHANGES)
+
+IMPORTANT
+
+JANGAN mengubah:
+
+Dashboard
+Market Universe UI
+Chart
+Portfolio
+AI Activity
+Execution Pipeline
+Footer
+API Response Structure
+Database lama
+Trading Engine Existing
+
+Frontend FREEZE.
+
+Semua pekerjaan dilakukan di backend.
+
+OBJECTIVE
+
+Saat ini pipeline sudah selesai:
+
+Market Universe
+↓
+
+Signal
+
+↓
+
+Momentum
+
+↓
+
+Trend
+
+↓
+
+Volatility
+
+↓
+
+Opportunity
+
+↓
+
+Risk
+
+↓
+
+Decision
+
+Tetapi Decision Engine masih berupa weighted-rule sederhana.
+
+Sekarang ubah Decision Engine menjadi jauh lebih cerdas.
+
+BUKAN Machine Learning.
+
+Tetap deterministic.
+
+Tetap explainable.
+
+Tetap bisa diaudit.
+
+PHASE 1
+
+BANGUN DECISION CONSENSUS ENGINE
+
+Saat ini setiap engine menghasilkan score sendiri.
+
+Contoh:
+
+Signal
+
+Momentum
+
+Trend
+
+Volatility
+
+Opportunity
+
+Risk
+
+Sekarang jangan langsung voting.
+
+Buat Consensus Layer.
+
+Misalnya:
+
+Signal
+
+32
+
+Momentum
+
+81
+
+Trend
+
+74
+
+Volatility
+
+66
+
+Opportunity
+
+89
+
+Risk
+
+PASS
+
+Consensus Engine menghitung:
+
+Agreement
+
+Conflict
+
+Confidence
+
+Weight
+
+baru menghasilkan:
+
+BUY YES
+
+BUY NO
+
+WAIT
+
+PHASE 2
+
+MARKET QUALITY FILTER
+
+Tambahkan engine baru.
+
+Market Quality Engine.
+
+Input:
+
+Spread
+
+Liquidity
+
+Volume
+
+Close Time
+
+Bid
+
+Ask
+
+Output:
+
+Market Quality
+
+0-100
+
+Semakin bagus spread
+
+Semakin tinggi volume
+
+Semakin tinggi liquidity
+
+Semakin dekat close time yang ideal
+
+Semakin tinggi score.
+
+Jika score rendah
+
+Decision Engine otomatis WAIT.
+
+PHASE 3
+
+ENTRY QUALITY ENGINE
+
+Bukan hanya menentukan BUY YES atau BUY NO.
+
+Tetapi juga:
+
+Apakah entry sekarang bagus?
+
+Contoh:
+
+YES terlalu mahal.
+
+NO terlalu mahal.
+
+Spread terlalu lebar.
+
+Likuiditas jelek.
+
+Confidence turun.
+
+Output:
+
+Entry Quality
+
+0-100
+
+PHASE 4
+
+CONFIDENCE ENGINE
+
+Jangan gunakan rata-rata.
+
+Gunakan kombinasi:
+
+Agreement antar engine
+
+Market Quality
+
+Entry Quality
+
+Trend Strength
+
+Momentum Strength
+
+Volatility
+
+Risk
+
+Output:
+
+Confidence
+
+0-100
+
+Contoh:
+
+BUY YES
+
+Confidence
+
+91
+
+Reason:
+
+Trend Strong
+
+Momentum Strong
+
+Spread Tight
+
+Liquidity High
+
+Opportunity Excellent
+
+Risk PASS
+
+PHASE 5
+
+EXPLAINABILITY
+
+Setiap keputusan harus bisa dijelaskan.
+
+Contoh:
+
+BUY YES
+
+karena
+
+Trend
+
+UP
+
+Momentum
+
+Strong
+
+Spread
+
+Excellent
+
+Liquidity
+
+High
+
+Risk
+
+PASS
+
+Entry
+
+Good
+
+Confidence
+
+91
+
+Semua alasan harus tersimpan.
+
+PHASE 6
+
+DECISION HISTORY
+
+Tambahkan histori.
+
+Setiap keputusan disimpan.
+
+Timestamp
+
+Asset
+
+Timeframe
+
+Decision
+
+Confidence
+
+Consensus
+
+Reason
+
+Tidak overwrite.
+
+Append only.
+
+PHASE 7
+
+SELF VALIDATION
+
+Sebelum Decision keluar.
+
+Lakukan validasi.
+
+Misalnya:
+
+Trend BUY
+
+Momentum SELL
+
+↓
+
+Conflict
+
+↓
+
+WAIT
+
+Atau
+
+Spread terlalu besar
+
+↓
+
+WAIT
+
+Atau
+
+Liquidity rendah
+
+↓
+
+WAIT
+
+Harus ada alasan.
+
+PHASE 8
+
+ENGINE HEALTH
+
+Tambahkan statistik.
+
+Berapa kali:
+
+BUY YES
+
+BUY NO
+
+WAIT
+
+Conflict
+
+Consensus
+
+Average Confidence
+
+Per Engine
+
+PHASE 9
+
+NO MACHINE LEARNING
+
+Jangan gunakan:
+
+Tensorflow
+
+PyTorch
+
+LLM
+
+OpenAI
+
+Prediction Model
+
+Semua tetap:
+
+Rule Based
+
+Explainable
+
+Deterministic
+
+Auditable
+
+PHASE 10
+
+NO UI
+
+Dashboard tidak berubah.
+
+Market Universe tidak berubah.
+
+Chart tidak berubah.
+
+API lama tidak rusak.
+
+Semua perubahan hanya backend.
+
+SELF REVIEW
+
+Sebelum selesai lakukan review sendiri.
+
+Checklist:
+
+✓ Market Universe tetap read-only.
+
+✓ Dashboard tidak berubah.
+
+✓ Consensus Layer selesai.
+
+✓ Market Quality Engine selesai.
+
+✓ Entry Quality Engine selesai.
+
+✓ Confidence Engine selesai.
+
+✓ Explainability selesai.
+
+✓ Decision History selesai.
+
+✓ Engine Health selesai.
+
+✓ Semua engine tetap deterministic.
+
+✓ Tidak ada regression.
+
+✓ Tidak ada perubahan UI.
+
+Jika ada satu poin belum terpenuhi, lanjutkan sampai seluruh checklist selesai.

@@ -1,0 +1,326 @@
+# LIMWANPO AI — FINAL AUDIT PHASE
+
+## Polymarket Market Reference Validation (Continue Previous Work)
+
+### Context
+
+Project sudah memiliki **Market Reference Service**.
+
+Saat ini backend melakukan:
+
+* mengambil `opening_price` dari Binance candle berdasarkan `market.start_time`
+* menyimpan:
+
+  * opening_price
+  * opening_price_source
+  * opening_price_timestamp
+  * reference_status
+* frontend hanya membaca `market.opening_price`.
+
+Tetapi sebelum fitur ini dianggap final, saya ingin memastikan **100% bahwa reference price yang digunakan benar-benar sama dengan reference price milik Polymarket.**
+
+JANGAN IMPLEMENTASI FITUR BARU.
+
+JANGAN MERUBAH KODE.
+
+INI ADALAH AUDIT FINAL.
+
+---
+
+# Yang sudah ditemukan
+
+Audit sebelumnya menemukan:
+
+## 1.
+
+Gamma API TIDAK memiliki field:
+
+* referencePrice
+* openingPrice
+* strikePrice
+* initialPrice
+* benchmarkPrice
+
+## 2.
+
+CLOB API juga tidak memiliki field tersebut.
+
+## 3.
+
+Market memiliki field
+
+resolutionSource
+
+yang ternyata berbeda.
+
+Contoh:
+
+### 1H
+
+resolutionSource
+
+https://www.binance.com/en/trade/BTC_USDT
+
+dan description berbunyi kira-kira:
+
+Resolve menggunakan Open dan Close candle Binance 1H.
+
+Ini berarti:
+
+Untuk market 1H
+
+Binance Open Price memang oracle resmi.
+
+---
+
+### 5M dan 15M
+
+resolutionSource
+
+https://data.chain.link/streams/btc-usd
+
+Artinya
+
+5M dan 15M memakai Chainlink Data Streams.
+
+Sekarang kita harus memastikan bagaimana Chainlink menentukan harga tersebut.
+
+---
+
+# TUGAS BARU
+
+Saya ingin audit menyeluruh.
+
+JANGAN coding dulu.
+
+---
+
+## PHASE A
+
+Pelajari resolution rule semua market:
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+untuk
+
+5M
+
+15M
+
+1H
+
+Jawab:
+
+Apakah semuanya memakai rule yang sama?
+
+atau berbeda?
+
+---
+
+## PHASE B
+
+Pelajari Chainlink Data Streams.
+
+Cari tahu:
+
+Apakah Chainlink memberikan:
+
+historical timestamp lookup?
+
+historical stream price?
+
+public API?
+
+graphQL?
+
+RPC?
+
+atau tidak.
+
+Kalau ada
+
+tunjukkan endpoint resminya.
+
+---
+
+## PHASE C
+
+Bandingkan
+
+Chainlink
+
+vs
+
+Binance
+
+untuk market 5M.
+
+Ambil beberapa contoh market.
+
+Bandingkan:
+
+Polymarket start_time
+
+Binance Open Price
+
+Chainlink price
+
+selisihnya berapa.
+
+Saya ingin tahu:
+
+apakah hanya berbeda
+
+0.01%
+
+0.05%
+
+atau jauh.
+
+---
+
+## PHASE D
+
+Cari apakah Polymarket sebenarnya menyimpan
+
+reference price
+
+di tempat lain.
+
+Audit:
+
+Gamma
+
+CLOB
+
+Oracle
+
+Resolution API
+
+Subgraph
+
+Market metadata
+
+Event metadata
+
+Semua endpoint.
+
+Kalau ada
+
+berikan nama field tepatnya.
+
+---
+
+## PHASE E
+
+Cari dokumentasi resmi Polymarket mengenai:
+
+Up or Down Crypto Markets.
+
+Saya ingin tahu:
+
+saat market dibuka,
+
+harga referensi berasal dari mana.
+
+Jangan gunakan blog.
+
+Gunakan dokumentasi resmi atau source code resmi.
+
+---
+
+# Deliverables
+
+Saya ingin laporan akhir berisi:
+
+## Kesimpulan 1
+
+Apakah Binance Open Price yang sekarang dipakai backend
+
+BENAR
+
+atau
+
+SALAH.
+
+---
+
+## Kesimpulan 2
+
+Apakah Chainlink menyediakan historical lookup.
+
+YA / TIDAK.
+
+---
+
+## Kesimpulan 3
+
+Apakah kita bisa mengambil
+
+reference price
+
+langsung dari Polymarket.
+
+YA / TIDAK.
+
+Jika YA
+
+dari endpoint mana.
+
+---
+
+## Kesimpulan 4
+
+Kalau tidak ada endpoint resmi,
+
+apa solusi terbaik.
+
+---
+
+## Kesimpulan 5
+
+Rekomendasi final arsitektur.
+
+Pilih salah satu:
+
+OPTION A
+
+Tetap Binance Open Price.
+
+OPTION B
+
+Gunakan Chainlink.
+
+OPTION C
+
+Gunakan data langsung dari Polymarket.
+
+OPTION D
+
+Hybrid.
+
+---
+
+# Sangat Penting
+
+Jangan mengubah kode.
+
+Jangan membuat service baru.
+
+Jangan refactor.
+
+Jangan implementasi.
+
+Fokus hanya audit teknis.
+
+Kalau setelah audit ternyata arsitektur sekarang sudah benar, katakan benar.
+
+Kalau ternyata salah, jelaskan kenapa.
+
+Saya ingin keputusan berdasarkan bukti, bukan asumsi.

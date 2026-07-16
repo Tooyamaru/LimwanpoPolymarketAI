@@ -1,0 +1,190 @@
+Anda adalah Principal Software Architect dan Senior Code Auditor.
+
+JANGAN membuat fitur baru.
+JANGAN mengubah code.
+JANGAN melakukan refactor.
+
+Mode saat ini adalah AUDIT ONLY.
+
+Tugas Anda adalah membaca seluruh project terlebih dahulu dan membuat laporan audit lengkap berdasarkan source code aktual.
+
+==================================================
+PHASE 1 — PROJECT DISCOVERY
+==================================================
+
+Scan seluruh repository.
+
+Baca:
+
+- models
+- repositories
+- services
+- api
+- workers
+- background loops
+- config
+- database
+- migrations
+- docs
+- roadmap
+- readme
+
+Buat inventory lengkap.
+
+Tampilkan:
+
+1. Folder structure
+2. Database tables
+3. Models
+4. Repositories
+5. Services
+6. API routers
+7. Background workers
+8. Scheduler loops
+9. Config settings
+10. Documentation files
+
+==================================================
+PHASE 2 — ARCHITECTURE AUDIT
+==================================================
+
+Audit seluruh project.
+
+Cari:
+
+- dead code
+- duplicate code
+- duplicate models
+- duplicate repositories
+- duplicate services
+- duplicate endpoints
+- unused files
+- orphan files
+- circular imports
+- inconsistent naming
+- inconsistent patterns
+- inconsistent architecture
+- missing error handling
+- missing logging
+- missing validation
+- missing indexes
+- missing constraints
+- race condition risk
+- transaction issues
+
+Untuk setiap temuan:
+
+Severity:
+- CRITICAL
+- HIGH
+- MEDIUM
+- LOW
+
+Sertakan file terkait.
+
+==================================================
+PHASE 3 — LAYER AUDIT
+==================================================
+
+Verifikasi status layer berdasarkan source code.
+
+Layer 1 Market Universe
+Layer 2 Scanner
+Layer 3 Price Snapshots
+Layer 4 Signal Engine
+Layer 5 Opportunity Engine
+Layer 6 Strategy Engine
+Layer 7 Execution Engine
+Layer 8 Position Tracking
+Layer 9 Risk Engine
+Layer 10 Monitoring Dashboard
+
+Untuk setiap layer:
+
+Status:
+- COMPLETE
+- PARTIAL
+- BROKEN
+- MISSING
+
+Berikan alasan teknis.
+
+Jangan menggunakan roadmap lama.
+
+Gunakan source code sebagai sumber kebenaran.
+
+==================================================
+PHASE 4 — DATABASE AUDIT
+==================================================
+
+Audit:
+
+- tables
+- indexes
+- constraints
+- foreign keys
+- relationships
+
+Cari:
+
+- missing indexes
+- missing foreign keys
+- orphan records risk
+- duplicated columns
+- schema inconsistency
+
+Tampilkan rekomendasi.
+
+==================================================
+PHASE 5 — API AUDIT
+==================================================
+
+Daftar seluruh endpoint.
+
+Kelompokkan:
+
+ACTIVE
+BROKEN
+UNUSED
+MISSING DOCUMENTATION
+
+==================================================
+PHASE 6 — DOCUMENTATION AUDIT
+==================================================
+
+Bandingkan:
+
+README.md
+PROJECT_STATUS.md
+ROADMAP_NEXT_PHASE.md
+NEXT_BUILD_TASKS.md
+
+VS
+
+source code aktual.
+
+Cari semua mismatch.
+
+==================================================
+FINAL OUTPUT
+==================================================
+
+Berikan:
+
+1. Executive Summary
+2. Layer Status Matrix
+3. Architecture Problems
+4. Database Problems
+5. API Problems
+6. Documentation Problems
+7. Cleanup Recommendations
+8. Refactor Recommendations
+9. Priority Fix List
+
+JANGAN memperbaiki apa pun.
+
+JANGAN membuat file baru.
+
+JANGAN mengubah file apa pun.
+
+Output hanya laporan audit lengkap.

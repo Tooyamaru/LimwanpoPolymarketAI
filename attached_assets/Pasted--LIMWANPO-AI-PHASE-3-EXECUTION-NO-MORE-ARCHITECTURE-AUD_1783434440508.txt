@@ -1,0 +1,203 @@
+# LIMWANPO AI — PHASE 3 EXECUTION
+# NO MORE ARCHITECTURE AUDITS
+
+Architecture audit is considered sufficiently complete.
+
+Do NOT perform another dependency audit.
+Do NOT generate another verification report.
+Do NOT rewrite previous documentation.
+
+Your task is to EXECUTE the migration.
+
+===========================================================
+OBJECTIVE
+===========================================================
+
+Transform LIMWANPO AI from a Trading AI architecture into a Prediction Intelligence Platform while preserving the existing learning loop.
+
+The learning system MUST remain intact.
+
+Outcome Learning
+↓
+
+Confidence Calibration
+↓
+
+Dynamic Weight
+
+↓
+
+Engine Performance
+
+↓
+
+Signal Engine
+
+must continue working exactly as before.
+
+===========================================================
+ARCHITECTURAL DECISION
+===========================================================
+
+Use Option C.
+
+DO NOT remove Layers 6–16.
+
+Instead convert the execution pipeline into a Prediction Lifecycle.
+
+Current
+
+Signal
+↓
+
+Decision
+↓
+
+Execution
+↓
+
+Position
+↓
+
+Portfolio
+↓
+
+Outcome Learning
+
+Target
+
+Signal
+↓
+
+Decision
+↓
+
+Prediction Tracking
+↓
+
+Prediction Record
+↓
+
+Resolution
+↓
+
+Outcome Learning
+
+===========================================================
+RULES
+===========================================================
+
+Never delete learning components.
+
+Never remove calibration.
+
+Never remove dynamic weight.
+
+Never remove engine performance.
+
+Never change business logic unless required by identity migration.
+
+Only rename concepts.
+
+===========================================================
+RENAME MAP
+===========================================================
+
+Trade
+→ Prediction
+
+Order
+→ Prediction Order
+
+Position
+→ Prediction Record
+
+Portfolio
+→ Prediction Portfolio
+
+Execution
+→ Prediction Tracking
+
+Entry
+→ Prediction Open
+
+Exit
+→ Prediction Resolution
+
+Broker
+→ Data Source
+
+Exchange
+→ Market Source
+
+PnL
+→ Resolution Result
+
+Realized PnL
+→ Prediction Outcome
+
+Unrealized PnL
+→ Live Prediction State
+
+===========================================================
+DATABASE
+===========================================================
+
+Rename tables where appropriate.
+
+Do NOT lose historical data.
+
+Provide SQL migration scripts.
+
+No destructive migrations.
+
+===========================================================
+API
+===========================================================
+
+Rename endpoints consistently.
+
+Maintain backward compatibility if possible.
+
+Deprecate old routes instead of breaking them.
+
+===========================================================
+FRONTEND
+===========================================================
+
+Replace all trading terminology.
+
+Do not change dashboard layout.
+
+Only update naming, labels, icons, and descriptions.
+
+===========================================================
+LEARNING SYSTEM
+===========================================================
+
+Outcome Learning must continue receiving resolved predictions.
+
+Confidence Calibration must continue reading Outcome Learning.
+
+Dynamic Weight must continue reading Calibration.
+
+Engine Performance must continue reading Outcome Learning.
+
+===========================================================
+DELIVERABLES
+===========================================================
+
+Execute the migration in small safe commits.
+
+After each phase provide:
+
+• files changed
+• reasoning
+• migration impact
+• rollback plan
+
+Never perform large refactors in one step.
+
+Stop after every completed phase and wait for approval before continuing.
+
+BEGIN PHASE 3.

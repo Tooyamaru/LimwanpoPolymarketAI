@@ -1,0 +1,330 @@
+# LIMWANPO AI — PHASE 5 : SOURCE STABILIZATION (EXECUTE MODE)
+
+## MODE
+
+EXECUTION MODE
+
+DO NOT REDESIGN.
+
+DO NOT CHANGE UI.
+
+DO NOT CHANGE LAYOUT.
+
+DO NOT ADD FEATURES.
+
+Your only task is to stabilize every dashboard data source.
+
+---
+
+# OBJECTIVE
+
+Convert LIMWANPO AI into a platform where every displayed value has exactly one trusted source.
+
+No fabricated values.
+
+No placeholders.
+
+No duplicated calculations.
+
+No random values.
+
+No fallback values pretending to be real.
+
+---
+
+# BEFORE TOUCHING CODE
+
+Read these files in this order:
+
+1. CONSTITUTION.md
+
+2. PROJECT_RULES.md
+
+3. DATA_RULES.md
+
+4. UI_RULES.md
+
+5. PHASE_GATE.md
+
+6. AI_GUARDIAN.md
+
+7. SOURCE_AUDIT.md
+
+Abort immediately if any file is missing.
+
+---
+
+# IMMUTABLE RULE
+
+The dashboard is NOT a trading platform.
+
+Never treat it as one.
+
+Never rename it.
+
+Never redesign it.
+
+Never introduce trading terminology.
+
+This project is permanently:
+
+LIMWANPO AI
+
+Polymarket Probability Intelligence Platform.
+
+---
+
+# SOURCE LOCK
+
+After this task every displayed value must have exactly ONE approved source.
+
+---
+
+## MARKET UNIVERSE
+
+Must come ONLY from Polymarket.
+
+Including:
+
+* Market Title
+* Outcome
+* Yes Probability
+* No Probability
+* Countdown
+* Resolution Time
+* Market Status
+* Volume
+* Liquidity
+* Market Metadata
+* Market ID
+* Event ID
+
+Allowed Sources:
+
+Polymarket Gamma API
+
+Polymarket CLOB API
+
+Nothing else.
+
+---
+
+## TARGET (PRICE TO BEAT)
+
+Do NOT fabricate.
+
+Do NOT estimate.
+
+Do NOT derive from arbitrary values.
+
+Target must come only from the project's approved Target Engine as defined in the Constitution.
+
+Never replace it with Bid.
+
+Never replace it with Ask.
+
+Never replace it with Mid Price.
+
+---
+
+## GAP
+
+Gap must always be calculated as:
+
+Current Price
+
+minus
+
+Target
+
+Nothing else.
+
+---
+
+## CONFIDENCE
+
+Confidence must come ONLY from the Signal Engine.
+
+Never hardcode.
+
+Never randomize.
+
+Never duplicate the same value across every market.
+
+Audit why identical confidence values occur.
+
+Fix the root cause.
+
+---
+
+## COUNTDOWN
+
+Must always use Polymarket resolution timestamp.
+
+Never local timers.
+
+Never fake countdowns.
+
+---
+
+## STATUS
+
+Must always be derived from Polymarket.
+
+Allowed:
+
+Monitoring
+
+Tracking
+
+Upcoming
+
+Resolved
+
+Do not invent additional statuses.
+
+---
+
+## DASHBOARD HEADER
+
+Remove every remaining hardcoded operational value.
+
+If an API exists, use it.
+
+If no API exists, clearly mark the field as INTERNAL ENGINE.
+
+Do not fabricate numbers.
+
+---
+
+## AI ACTIVITY
+
+No fake activity.
+
+No random activity.
+
+No generated logs pretending to be live.
+
+Every activity line must correspond to a real engine event.
+
+---
+
+## FOOTER
+
+Audit every ticker.
+
+If any footer item is hardcoded:
+
+remove it.
+
+Footer must use real engine output or real market information.
+
+---
+
+## CHART
+
+Exception approved by Constitution.
+
+Chart may continue using:
+
+Binance
+
+Chainlink
+
+ONLY for contextual visualization.
+
+Chart data must never replace Polymarket probability data.
+
+---
+
+## FORBIDDEN
+
+Never use:
+
+Bid
+
+Ask
+
+Spread
+
+Orderbook
+
+Trade
+
+Entry
+
+Exit
+
+Broker
+
+Exchange
+
+Position
+
+Portfolio
+
+Capital
+
+Leverage
+
+Margin
+
+Take Profit
+
+Stop Loss
+
+Unless those words exist internally and are NOT rendered.
+
+---
+
+# VALIDATION
+
+For every dashboard field report:
+
+Field
+
+Current Source
+
+Final Source
+
+API
+
+Endpoint
+
+Transformation
+
+PASS / FAIL
+
+---
+
+# DO NOT CONTINUE
+
+Do NOT start Phase 6.
+
+Do NOT improve prediction quality.
+
+Do NOT redesign UI.
+
+Stop immediately after Source Stabilization is complete.
+
+---
+
+# FINAL REPORT
+
+Only output:
+
+1. Fields stabilized
+
+2. APIs connected
+
+3. Hardcoded values removed
+
+4. Random values removed
+
+5. Remaining risks
+
+6. Guardian validation result
+
+7. SOURCE_AUDIT updated
+
+Stop.

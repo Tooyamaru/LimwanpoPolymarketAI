@@ -1,0 +1,188 @@
+# Sprint 9.2 — Lifecycle Soak Test & Concurrency Audit
+
+Goal:
+
+Memastikan perbaikan Sprint 9.1 benar-benar stabil dalam kondisi live dan tidak hanya benar pada satu snapshot waktu.
+
+---
+
+## Objective 1 — Lifecycle Stability
+
+Jalankan sistem minimal 30–60 menit.
+
+Setiap 5 menit catat:
+
+* active market count
+* duplicate active count
+* active market list
+* active_markets_with_data
+
+Query:
+
+```sql
+SELECT COUNT(*)
+FROM market_universe
+WHERE status='active';
+```
+
+Expected:
+
+Selalu = 12.
+
+Jika pernah >12 atau <12:
+
+FAIL.
+
+---
+
+## Objective 2 — Slot Integrity
+
+Query:
+
+```sql
+SELECT asset,
+       timeframe,
+       COUNT(*)
+FROM market_universe
+WHERE status='active'
+GROUP BY asset,timeframe;
+```
+
+Expected:
+
+Semua count = 1.
+
+Tidak boleh ada:
+
+* ETH/5m = 2
+* SOL/5m = 2
+* XRP/5m = 2
+
+atau kombinasi lainnya.
+
+---
+
+## Objective 3 — Market Rotation Validation
+
+Monitor satu slot:
+
+BTC 5m
+
+Pastikan ketika market aktif berganti:
+
+A -> expired
+B -> active
+
+maka:
+
+* A tidak lagi active
+* B menjadi active
+* tidak pernah ada dua active bersamaan
+
+Catat seluruh transisi.
+
+---
+
+## Objective 4 — Self-Healing Validation
+
+Masukkan secara manual satu duplicate active market.
+
+Contoh:
+
+ubah satu upcoming menjadi active.
+
+Kemudian:
+
+POST /api/v1/universe/sync
+
+Verifikasi:
+
+* duplicate hilang
+* hanya satu active tersisa
+
+Expected:
+
+self-healing bekerja otomatis.
+
+---
+
+## Objective 5 — Scheduler Concurrency Audit
+
+Audit scheduler:
+
+* universe sync
+* price refresh
+
+Cari kemungkinan overlap:
+
+```text
+price refresh membaca active market
+saat sync sedang melakukan demotion
+```
+
+Verifikasi:
+
+* tidak ada exception
+* tidak ada partial state
+* tidak ada active count aneh
+
+---
+
+## Objective 6 — Snapshot Integrity
+
+Query:
+
+```sql
+SELECT condition_id,
+       COUNT(*)
+FROM market_price_snapshots
+GROUP BY condition_id;
+```
+
+Verifikasi:
+
+* snapshot hanya bertambah untuk active market
+* market yang sudah tidak active berhenti bertambah
+
+---
+
+## Objective 7 — Volume & Liquidity Audit
+
+Audit CLOB response.
+
+Verifikasi apakah:
+
+volume
+liquidity
+
+tersedia dari endpoint tetapi tidak disimpan.
+
+Jika tersedia:
+
+identifikasi lokasi bug.
+
+Jika memang null dari source:
+
+dokumentasikan.
+
+---
+
+## Deliverable
+
+SPRINT9_2_SOAK_TEST_REPORT.md
+
+Berisi:
+
+1. Lifecycle stability results
+2. Market rotation results
+3. Scheduler audit
+4. Snapshot audit
+5. Volume/liquidity audit
+6. Remaining risks
+7. Production readiness verdict
+
+Gunakan PASS / FAIL untuk setiap checkpoint.
+
+Jika seluruh checkpoint PASS selama periode observasi:
+
+Sprint 10 officially unblocked.

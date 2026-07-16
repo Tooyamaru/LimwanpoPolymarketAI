@@ -1,0 +1,263 @@
+Saya ingin kamu melakukan FINAL LAYOUT AUDIT dan memperbaiki dashboard secara menyeluruh.
+
+PENTING
+Jangan hanya mengatakan sudah selesai. Lakukan audit terhadap hasil visual yang sedang tampil. Screenshot yang saya kirim adalah kondisi TERBARU dan masih terdapat beberapa masalah.
+
+⸻
+
+1. Dashboard BELUM memenuhi tinggi layar
+
+Ini masalah utama.
+
+Dashboard masih terlihat berhenti terlalu cepat sehingga bagian bawah masih menyisakan ruang hitam.
+
+Target:
+
+* Dashboard harus mengisi 100% viewport.
+* Tidak boleh ada area hitam kosong.
+* Footer harus benar-benar berada di paling bawah viewport.
+* Semua section harus saling menempel tanpa gap.
+
+Gunakan layout yang benar.
+
+Contoh struktur:
+
+* Header
+* Top Dashboard
+* Market Universe
+* AI Decision Engine
+* AI Thinking Feed
+* AI Live Feed
+* Footer
+
+Semuanya harus berada dalam satu flex column.
+
+Jangan menggunakan kombinasi Grid + Height yang menghasilkan ruang kosong.
+
+Gunakan:
+
+* 100dvh
+* min-height:0
+* flex:1
+* overflow yang benar.
+
+⸻
+
+2. Market Universe masih belum mengisi area yang tersedia
+
+Market Universe masih terlihat “menggantung”.
+
+Yang saya inginkan:
+
+Kolom BTC
+Kolom ETH
+Kolom SOL
+Kolom XRP
+
+harus memanjang hingga tepat menyentuh AI Decision Engine.
+
+Tidak boleh berhenti lebih cepat.
+
+Background panel juga harus ikut memanjang.
+
+Border panel juga harus ikut memanjang.
+
+⸻
+
+3. Semua section harus saling menempel
+
+Masih terlihat ada jarak visual antara:
+
+Market Universe
+
+↓
+
+AI Decision Engine
+
+↓
+
+AI Thinking Feed
+
+↓
+
+Footer
+
+Harus menjadi satu kesatuan.
+
+Tidak boleh ada gap.
+
+⸻
+
+4. Tinggi Chart masih kurang dominan
+
+Chart masih terlihat terlalu pendek.
+
+Naikkan sekitar 10–15%.
+
+Yang bertambah hanya area chart.
+
+Header jangan ikut membesar.
+
+Portfolio jangan ikut membesar.
+
+⸻
+
+5. Market Card terlalu tinggi
+
+Market card masih terlalu tinggi.
+
+Kurangi sekitar 10%.
+
+Yang diperkecil:
+
+padding
+
+margin
+
+spacing internal
+
+bukan ukuran font utama.
+
+⸻
+
+6. AI Decision Engine masih terlalu besar
+
+Pipeline masih mengambil tinggi cukup banyak.
+
+Kurangi sekitar 15%.
+
+Icon tetap besar.
+
+Tetapi padding vertikal diperkecil.
+
+⸻
+
+7. Feed masih bisa dibuat lebih tinggi
+
+Thinking Feed dan Live Feed sekarang sudah bagus.
+
+Tetapi saya ingin bisa melihat sekitar:
+
+5–6 log
+
+tanpa scroll.
+
+⸻
+
+8. Footer masih terlalu tipis
+
+Footer sekarang sudah ada.
+
+Tetapi masih terlalu kecil.
+
+Naikkan sedikit tinggi footer sekitar:
+
+24–28 px
+
+agar ticker lebih nyaman dibaca.
+
+⸻
+
+9. Responsive benar-benar fluid
+
+Dashboard harus terlihat sempurna pada:
+
+iPad
+
+Laptop
+
+Desktop
+
+Ultrawide
+
+Tidak boleh menggunakan angka height tetap yang menyebabkan area kosong.
+
+Gunakan:
+
+flex
+
+clamp()
+
+minmax()
+
+dvh
+
+⸻
+
+10. Audit seluruh CSS
+
+Cari dan hapus:
+
+height yang saling bertabrakan
+
+calc() yang tidak perlu
+
+overflow hidden yang salah
+
+grid-template-row yang menyebabkan ruang kosong
+
+min-height yang salah
+
+position yang membuat footer tidak ikut layout
+
+⸻
+
+11. Jangan mengubah backend
+
+Yang boleh diubah hanya:
+
+CSS
+
+Layout
+
+Flex
+
+Grid
+
+Spacing
+
+Responsive
+
+Visual hierarchy
+
+Jangan mengubah:
+
+API
+
+Trading Engine
+
+Signal Engine
+
+WebSocket
+
+Backend
+
+Logic
+
+⸻
+
+12. Sebelum selesai lakukan VALIDASI
+
+Jangan mengatakan selesai sebelum memastikan seluruh poin berikut benar.
+
+✓ Dashboard memenuhi tinggi viewport
+
+✓ Tidak ada area hitam kosong
+
+✓ Footer benar-benar di bawah
+
+✓ Semua section menempel
+
+✓ Market Universe memenuhi tinggi yang tersedia
+
+✓ Chart lebih dominan
+
+✓ Market card lebih proporsional
+
+✓ Pipeline lebih ringkas
+
+✓ Feed menampilkan 5–6 log
+
+✓ Responsive pada semua ukuran layar
+
+Jika salah satu poin belum benar, lanjutkan memperbaikinya sampai seluruh checklist benar-benar terpenuhi.

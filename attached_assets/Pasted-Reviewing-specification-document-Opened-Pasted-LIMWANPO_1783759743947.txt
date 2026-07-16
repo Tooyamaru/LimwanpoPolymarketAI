@@ -1,0 +1,227 @@
+Reviewing specification document
+
+Opened Pasted-LIMWANPO-AI-RESUME-PHASE-12C-TEST-CLEANUP-ENTRY-GATE-TR_1783757921407.txt
+Analyzing codebase state
+
+Analyzing codebase state
+The user has provided a Phase 12C spec. Let me read the current state of the codebase to understand what's happening. I need to:
+
+Run git status, git diff, and python -m compileall
+Read the key files mentioned in the spec
+Run the market universe tests
+Do the entry gate transparency audit
+Let me start by running the diagnostic commands and reading the key files in parallel.
+
+Let me start by verifying the current state of the codebase as the spec requires.
+
+
+Show less
+
+Checked git status
+
+Found files
+Reading key files
+
+Reading key files
+No git diff — the codebase is at the state from origin/main with no uncommitted changes. That means the previous session's edit to test_market_universe_service.py was either committed or was not actually saved. Let me read the key files to understand the current state.
+
+Let me read all key files in parallel.
+
+No uncommitted diff — the previous session's edits were either committed or lost. Let me read all the key files in parallel.
+
+
+Show less
+
+Opened test_market_universe_service.py
+
+Opened market_universe_service.py
+
+Opened strategy_engine.py
+
+Found files
+Testing and reading files
+
+Testing and reading files
+Let me now run the market universe tests to see what's currently passing/failing, and also read the settings.py and AI_DECISION_INTEGRITY_AUDIT.md files in parallel.
+
+Now let me run the tests and read remaining key files in parallel.
+
+
+Show less
+
+Installed Python packages
+
+Opened settings.py
+
+Found files
+Analyzing test failures
+
+Analyzing test failures
+Now I have a clear picture of the failures. Let me analyze:
+
+4 failing tests:
+
+test_sync_marks_remaining_events_upcoming — Root cause: The test mocks upsert_universe_market via side_effect=capture_upsert, but the service calls row = await upsert_universe_market(...) and then accesses row.opening_price. Since capture_upsert returns None (no explicit return), row is None, causing 'NoneType' object has no attribute 'opening_price' → the series fails → nothing is upserted → captured is empty for the filtered series.
+test_sprint91_three_consecutive_5m_windows_only_first_active — Same issue: capture_upsert returns None, so accessing row.opening_price crashes and prevents subsequent markets from being captured. But wait, the first test (test_sync_marks_first_event_active) passes despite this same mock setup, so something's different about how the series handles the error or which markets get processed. Reviewing the service code to understand the flow — it iterates through flattened market events, calls upsert_universe_market which returns row, then checks row.opening_price to decide if reference resolution is needed. The issue is that upsert_universe_market returns None instead of a row object, causing the attribute access to fail even though the upsert operation itself succeeded and the capture was recorded. The first test passes because the near condition gets captured with "active" status before the crash. The second test fails because only the first condition is captured—the mid and far conditions never execute, leaving the assertion with an empty list. The third test similarly fails since only the first condition in each window gets captured before the error occurs. The issue is that capture_upsert isn't returning a mock object with the required opening_price attribute, causing the service code to crash when it tries to access that property. I need to fix the test fixture by making capture_upsert return a mock row with opening_price set, and this same fix applies across all 9 test occurrences. Looking at the remaining test cases, I see tests 2, 4, and 7 are failing because the mock capture function doesn't return a MagicMock—it just appends to a list. The fix is to make all nine capture_upsert definitions return a MagicMock instead so the crash doesn't happen prematurely.
+Now I'm examining the strategy engine configuration to identify what needs to be moved to settings. There are several hardcoded constants like SCORE_OPEN, SCORE_WATCH, SPREAD_THRESHOLD, and MIN_SIGNAL_CONFIDENCE that should be externalized to settings.py for better configurability.
+
+Writing settings configuration... Now I'm mapping out the fixes needed: I'll update the mock functions in the test file to return proper row objects, migrate the strategy thresholds from hardcoded values into the settings module, refactor strategy_engine.py to reference those settings instead, and review the integrity audit documentation. Let me run the full test suite first to see where things stand currently.
+
+Root cause found. The capture_upsert fixture returns None, but the service does row.opening_price after the call — crashing the series before cid-mid, cid-far, etc. are captured. 4 tests fail (9 occurrences of the same fixture drift pattern). Let me read the audit file and then fix everything in parallel.
+
+
+Show less
+
+Reading AI_DECISION_INTEGRITY_AUDIT.md
+
+Ran tests
+Fixing fixture drift
+
+Fixing fixture drift
+The 544 errors in the broader test suite are pre-existing (they require a database connection which isn't available in the test environment). The 42 passed + 4 failed (market universe) are what matters here.
+
+Now let me proceed with the fixes:
+
+Step 2 — Fix 4 failing tests (9 occurrences of capture_upsert fixture drift)
+
+The fix: all capture_upsert functions need to return a mock row with opening_price = None.
+
+Let me count exactly which tests have capture_upsert and which are currently failing:
+
+Tests with capture_upsert: 1. Checking through the test file to identify which ones are passing incidentally versus failing — test_sync_marks_first_event_active passes, test_sync_marks_remaining_events_upcoming fails, test_sprint91_three_consecutive_5m_windows_only_first_active fails, test_sprint91_two_markets_same_event_only_soonest_active fails, test_sprint91_single_market_is_active passes, and continuing through the rest of the test list.
+
+All nine tests need to be corrected for proper behavior. The fix involves modifying the capture function to properly store the kwargs being passed to the upsert method. Finishing the mock function with the return statement, then I can use replace_all=True to handle all 9 occurrences at once. After that, I need to extract the hardcoded constants from strategy_engine.py and move them to settings.py, then update the references accordingly. I should also check what's at the end of the audit markdown file.
+
+The 544 errors are all pre-existing database-connection failures (require a live DB). The 42 passed + 4 failed (universe) are what matter here. Now I'll fix everything in parallel.
+
+
+Show less
+
+Counted lines
+
+Searched for "capture_upsert"
+Fixing fixture drift
+
+Fixing fixture drift
+Now I have all the information I need. Let me proceed with the fixes:
+
+STEP 2 — Fix 4 failing tests (9 occurrences of capture_upsert fixture drift)
+
+All 9 capture_upsert functions need to return a mock row with opening_price = None.
+
+The pattern to replace (all 9 occurrences are identical):
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+
+→
+
+    async def capture_upsert(_session, **kwargs):
+        captured.append(kwargs)
+        row = MagicMock()
+        row.opening_price = None
+        return row
+
+I'll use replace_all=True.
+
+STEP 5 & 6 — Entry Gate Transparency
+
+In strategy_engine.py, I'm reviewing the module-level constants that control entry thresholds and signal confidence gates, including the score thresholds for opening positions and watching opportunities, along with spread limits and minimum signal confidence requirements.
+
+Now I'm considering moving these constants to settings.py as named configuration values, then updating strategy_engine.py to reference them from the settings module. The challenge is that _make_decision currently uses these as direct module-level names, so I'll need to update all references throughout the function to use the settings namespace instead. I should also check if there are existing tests that might be affected by this refactoring.
+
+Actually, the cleanest approach is to keep module-level aliases that point to the settings values — this way the rest of the code doesn't need to change, and the behavior stays identical while the configuration becomes centralized and transparent. Writing config settings...
+
+All clear. Now I'll fix everything in one batch:
+
+All 9 capture_upsert fixture drift occurrences in the test file
+Move strategy_engine.py hardcoded thresholds to settings.py with honest comments
+Update AI_DECISION_INTEGRITY_AUDIT.md
+
+Show less
+
+Edited test_market_universe_service.py
+
+Edited settings.py
+Implementing settings integration
+
+Implementing settings integration
+Now I need to update strategy_engine.py to use settings instead of hardcoded constants.
+
+Now update strategy_engine.py to reference settings instead of hardcoded module-level constants:
+
+
+Show less
+
+Edited strategy_engine.py
+Testing and compiling
+
+Testing and compiling
+Now let me run the tests to verify the fixes work, and also run compileall to check no syntax errors.
+
+Now run the tests and compile check in parallel to verify all fixes:
+
+
+Show less
+
+Ran compileall
+
+Ran tests
+Searching and testing
+
+Searching and testing
+23/23 passed. Now let me do the red flag search (Step 8) and then write the audit report update (Step 9), and run the broader tests to confirm no new failures.
+
+Let me do the red flag search and run the broader test suite in parallel, while also reading the follow-up tasks skill.
+
+23/23 passed. Now running the red flag search and broader suite in parallel, plus reading the follow-up tasks skill.
+
+
+Show less
+
+Searched for "hardcoded BUY|force BUY…"
+
+Ran tests
+Loaded skill follow-up-tasks
+Adding documentation and follow-up
+
+Adding documentation and follow-up
+The broader test suite shows 42 passed, 544 errors (pre-existing DB connection errors, unchanged from before). No new failures introduced.
+
+Now I need to:
+
+Update AI_DECISION_INTEGRITY_AUDIT.md with Phase 12C section
+Do the red flag search classification
+Propose follow-up tasks
+Mark task complete
+Let me also fix the docstring in strategy_engine.py that still references old threshold values (lines 11-12 reference 25 and 40, which are the old values).
+
+Actually, looking at the red flag search results:
+
+All SCORE_OPEN, MIN_SIGNAL_CONFIDENCE, AMM-init references in source files are now:
+In settings.py: TRANSPARENCY_COMMENT / SAFE_CONFIG
+In services/strategy_engine.py: SAFE_CONFIG (references settings)
+In tests/: TEST_ONLY
+No xfail, pytest.skip, hardcoded BUY, force BUY, fake confidence, synthetic signal, dummy signal, risk bypass, ignore risk, skip risk found outside test file
+pre-tuned: not found
+fallback confidence, default confidence: not found
+The docstring in strategy_engine.py still has the old threshold values (25 and 40) that need updating.
+
+Now I need to update those docstring references to match the actual current constants, then compile the audit findings and outline what needs to be addressed next.
+
+Broader result: 42 passed, 544 errors — all identical to pre-work state (pre-existing DB-connection errors, zero new failures). Now I'll update the docstring stale values in strategy_engine.py, write the Phase 12C audit section, and wrap up.
+
+
+Show less
+
+Edited strategy_engine.py
+Documenting audit findings
+
+Documenting audit findings
+Now I need to write the Phase 12C audit section in AI_DECISION_INTEGRITY_AUDIT.md and then propose follow-up tasks and mark the task complete.
+
+Let me append the Phase 12C section to the audit file.
+
+Now writing the Phase 12C audit section:
+
+

@@ -1,0 +1,219 @@
+You are continuing an existing project.
+
+Do NOT rewrite existing code.
+
+Respect all current architecture.
+
+Goal:
+
+Sprint 3 = Discovery Layer + Scanner Layer
+
+No trading.
+No dashboard.
+No probability engine.
+No confidence engine.
+
+=================================================
+
+TASK 1
+
+Create market discovery engine.
+
+File:
+
+backend/app/services/market_discovery.py
+
+Requirements:
+
+Discover ALL active Polymarket markets.
+
+Store raw market metadata.
+
+Create diagnostics output.
+
+Return:
+
+asset
+timeframe
+market_id
+title
+reason_matched
+
+=================================================
+
+TASK 2
+
+Create diagnostics API.
+
+GET /api/v1/discovery
+
+Response:
+
+{
+  "total_markets_scanned": 20000,
+  "matched_markets": 34,
+  "btc": 12,
+  "eth": 8,
+  "sol": 7,
+  "xrp": 7
+}
+
+=================================================
+
+TASK 3
+
+Create scanner engine.
+
+File:
+
+backend/app/services/scanner.py
+
+Purpose:
+
+Build active market universe.
+
+Rules:
+
+Assets:
+
+BTC
+ETH
+SOL
+XRP
+
+Timeframes:
+
+5m
+15m
+1H
+
+Output:
+
+ScannerMarket
+
+asset
+timeframe
+market_id
+health_status
+
+=================================================
+
+TASK 4
+
+Create new database table.
+
+scanner_markets
+
+Fields:
+
+id
+asset
+timeframe
+market_id
+health_status
+created_at
+
+=================================================
+
+TASK 5
+
+Create SQLAlchemy model.
+
+scanner_market.py
+
+=================================================
+
+TASK 6
+
+Create repository.
+
+scanner_repository.py
+
+Functions:
+
+save_scanner_market()
+
+get_scanner_markets()
+
+=================================================
+
+TASK 7
+
+Create APIs.
+
+GET /api/v1/scanner
+
+GET /api/v1/scanner/active
+
+GET /api/v1/scanner/stats
+
+=================================================
+
+TASK 8
+
+Discovery Transparency
+
+For every matched market save:
+
+raw title
+matching rule
+detected asset
+detected timeframe
+
+This is mandatory.
+
+We must understand why markets are being matched.
+
+=================================================
+
+TASK 9
+
+Testing
+
+Create tests for:
+
+market discovery
+scanner
+scanner repository
+
+=================================================
+
+TASK 10
+
+README
+
+Add Sprint 3 architecture.
+
+=================================================
+
+TASK 11
+
+Git
+
+Run tests.
+
+Verify application starts.
+
+Verify scanner runs.
+
+Create checkpoint.
+
+Sprint name:
+
+[Sprint 3] Discovery And Scanner Layer
+
+=================================================
+
+IMPORTANT
+
+We are not building confidence yet.
+
+We are not building probability.
+
+We are not building execution.
+
+We are not building dashboard.
+
+Goal:
+
+Build a reliable market universe first.

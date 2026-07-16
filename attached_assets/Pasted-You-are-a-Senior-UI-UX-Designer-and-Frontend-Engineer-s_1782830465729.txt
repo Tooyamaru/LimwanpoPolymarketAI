@@ -1,0 +1,377 @@
+You are a Senior UI/UX Designer and Frontend Engineer specializing in Bloomberg Terminal, TradingView, institutional trading desks, and premium fintech dashboards.
+
+Your task is NOT to redesign the dashboard.
+
+Your task is to refine and polish the existing dashboard while preserving its entire layout, proportions, information architecture, and functionality.
+
+This is a production dashboard, so every modification must be conservative and professional.
+
+IMPORTANT RULES
+
+DO NOT redesign.
+
+DO NOT move panels.
+
+DO NOT change the dashboard layout.
+
+DO NOT add new panels.
+
+DO NOT change panel positions.
+
+DO NOT change information hierarchy.
+
+DO NOT increase visual complexity.
+
+Only improve visual quality, readability, and premium feeling.
+
+Everything must continue looking like the same LimwanpoAI dashboard—just significantly more polished.
+
+⸻
+
+1. HEADER
+
+Restore the ORIGINAL LimwanpoAI logo.
+
+Do NOT use the newer experimental logo.
+
+The original branding is part of the product identity and must remain unchanged.
+
+Remove the subtitle below the logo completely.
+
+The subtitle currently overlaps nearby components on smaller widths and creates unnecessary visual clutter.
+
+The header should contain only:
+
+* Original logo
+* Paper Mode badge
+* Status counters
+
+Nothing else.
+
+Keep spacing perfectly aligned.
+
+⸻
+
+2. LIVE MARKET CHART
+
+This is the most important component.
+
+Improve it without changing its location.
+
+Increase the chart visual area by approximately 30–40% inside its existing panel by reducing unnecessary padding and optimizing internal spacing.
+
+Do NOT enlarge the panel itself.
+
+Keep the current layout.
+
+Enhancements:
+
+• Better candlestick rendering
+
+• Sharper grid
+
+• Cleaner price axis
+
+• Last price line
+
+• Live blinking indicator
+
+• Session High
+
+• Session Low
+
+• Current price label
+
+• Better volume rendering
+
+Everything must remain minimal and institutional.
+
+Avoid decorative elements.
+
+⸻
+
+3. AI FEED
+
+Improve readability.
+
+Convert log entries into Bloomberg-style log rows.
+
+Each row should contain a colored category badge.
+
+Example badges:
+
+INFO
+
+SYSTEM
+
+ENTRY
+
+EXIT
+
+WARNING
+
+RISK
+
+SIGNAL
+
+EXECUTED
+
+BLOCKED
+
+SUCCESS
+
+Each badge should have its own subtle color palette.
+
+Rows must remain compact.
+
+Do NOT increase row height.
+
+Improve typography hierarchy.
+
+Increase scan speed.
+
+⸻
+
+4. PIPELINE
+
+Keep the pipeline exactly where it is.
+
+Keep the same nodes.
+
+Do NOT change layout.
+
+Improve visual quality.
+
+Each node should have its own visual identity.
+
+Suggested colors:
+
+Universe → Cyan
+
+Signal → Blue
+
+Opportunity → Purple
+
+Strategy → Yellow
+
+Risk → Green
+
+Execution → Red
+
+Each node should have:
+
+• soft animated outer ring
+
+• subtle pulse
+
+• active glow only when processing
+
+Connectors should have:
+
+• thicker lines
+
+• cleaner dotted background
+
+• smoother flowing animation
+
+Animation must remain subtle.
+
+Never flashy.
+
+⸻
+
+5. MARKET CHART CARD
+
+Keep the same location.
+
+Improve typography.
+
+Improve spacing.
+
+Improve borders.
+
+Improve glow.
+
+Reduce unnecessary empty padding.
+
+Maintain Bloomberg-style appearance.
+
+⸻
+
+6. SYSTEM HEALTH
+
+Keep the current layout.
+
+Improve:
+
+alignment
+
+spacing
+
+indicator consistency
+
+LED animation
+
+Typography should be cleaner.
+
+Indicators should look more premium.
+
+⸻
+
+7. MARKET CARDS
+
+DO NOT change their size.
+
+DO NOT change their layout.
+
+DO NOT change their position.
+
+Keep:
+
+Countdown
+
+YES/NO prediction
+
+Confidence
+
+Prices
+
+Portfolio
+
+Status
+
+Exactly where they are.
+
+Only improve:
+
+Typography
+
+Contrast
+
+Borders
+
+Glow
+
+Spacing
+
+The cards already have a good hierarchy.
+
+Do not redesign them.
+
+⸻
+
+8. COLORS
+
+Keep the existing LimwanpoAI palette.
+
+Primary Cyan
+
+Magenta
+
+Green
+
+Yellow
+
+Dark Background
+
+Reduce excessive glow.
+
+Glow should only appear on:
+
+Live prices
+
+Active signals
+
+Selected items
+
+High confidence
+
+Pipeline activity
+
+Everything else should use subtle borders.
+
+⸻
+
+9. EMPTY SPACE
+
+Do not leave large unused areas.
+
+If there is remaining empty space, use it for lightweight operational information only, such as:
+
+Latency
+
+WebSocket
+
+Exchange status
+
+CPU
+
+Memory
+
+Ping
+
+Refresh time
+
+These should be minimal and non-intrusive.
+
+Do not create new widgets.
+
+⸻
+
+10. RESPONSIVENESS
+
+Maintain the current responsive behavior.
+
+Do not introduce layout shifts.
+
+Do not hide important components.
+
+Keep all current breakpoints working.
+
+⸻
+
+11. PERFORMANCE
+
+Do not introduce heavy animations.
+
+Prefer CSS animations.
+
+Avoid unnecessary DOM elements.
+
+Maintain high rendering performance.
+
+⸻
+
+12. DESIGN LANGUAGE
+
+Target style:
+
+Bloomberg Terminal
+
+TradingView Professional
+
+Institutional Quant Dashboard
+
+Modern Prop Trading Desk
+
+High-end Fintech UI
+
+Everything should feel expensive, precise, clean, and professional.
+
+⸻
+
+FINAL OBJECTIVE
+
+Do NOT redesign LimwanpoAI.
+
+Keep its identity.
+
+Keep its layout.
+
+Keep its workflow.
+
+Simply elevate the existing dashboard into a production-quality institutional trading interface with improved polish, readability, visual hierarchy, and premium finish.
+
+Every modification must have a clear usability benefit.
+
+If a change does not clearly improve usability or visual quality, do NOT make it.

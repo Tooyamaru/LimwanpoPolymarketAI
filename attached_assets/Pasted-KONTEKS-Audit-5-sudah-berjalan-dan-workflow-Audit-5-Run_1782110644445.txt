@@ -1,0 +1,93 @@
+KONTEKS:
+
+Audit #5 sudah berjalan dan workflow "Audit 5 Runner" sudah aktif.
+
+Status terakhir:
+
+* Part 1 (Replacement Forensics) selesai.
+* Semua replacement markets BTC/ETH/SOL/XRP × (5m,15m,1H) ditemukan.
+* Semua replacement markets saat ditemukan memiliki:
+
+  * bid = 0.50
+  * ask = 0.51
+  * mid = 0.505
+* Workflow sedang menjalankan:
+
+  * Part 2 = Price Discovery Audit
+  * Part 3 = 30-minute Live Behavior Monitor
+  * Part 4 = Binance Linkage
+  * Part 5 = Final Hypothesis
+
+TUGAS:
+
+JANGAN membuat script baru.
+JANGAN memulai audit dari awal.
+JANGAN mengulang pengumpulan data yang sudah selesai.
+
+Lakukan hal berikut:
+
+1. Periksa status workflow Audit 5 Runner yang sedang berjalan.
+
+2. Jika workflow masih aktif:
+
+   * tampilkan progress terkini
+   * tampilkan round saat ini
+   * tampilkan ETA tersisa
+   * jangan restart workflow
+   * tunggu sampai selesai
+
+3. Jika workflow sudah selesai:
+
+   * buka seluruh output:
+
+     * REPLACEMENT_FORENSICS.md
+     * PRICE_DISCOVERY_AUDIT.md
+     * LIVE_BEHAVIOR_AUDIT.md
+     * ACTIVE_LINKAGE_AUDIT.md
+     * UPDATED_FINAL_HYPOTHESIS.md
+
+4. Verifikasi kualitas data:
+
+   * jumlah sampel
+   * missing rounds
+   * API failures
+   * market rollovers
+   * token replacements
+   * timestamp consistency
+
+5. Buat executive summary yang menjawab:
+
+A. Apakah replacement markets benar-benar melakukan price discovery?
+B. Apakah mid-price pernah bergerak?
+C. Apakah perubahan hanya terjadi pada depth?
+D. Apakah trader nyata masuk ke market?
+E. Apakah ada hubungan dengan harga Binance?
+F. Apakah market mengikuti underlying atau tetap fixed?
+G. Apakah kesimpulan Audit #3 dan Audit #4 masih valid setelah rollover market dianalisis?
+
+6. Jika ada hasil yang bertentangan dengan Audit #3 atau Audit #4:
+
+   * tampilkan secara eksplisit
+   * jelaskan alasannya
+   * sertakan bukti numerik
+
+7. Buat tabel final:
+
+| Hipotesis                   | Status            | Bukti |
+| --------------------------- | ----------------- | ----- |
+| Fixed 0.50 AMM              | Accepted/Rejected | ...   |
+| Binance-linked pricing      | Accepted/Rejected | ...   |
+| Real trader price discovery | Accepted/Rejected | ...   |
+| Scheduled depth refresh     | Accepted/Rejected | ...   |
+| Oracle-driven repricing     | Accepted/Rejected | ...   |
+
+8. Berikan kesimpulan akhir dengan tingkat keyakinan (% confidence).
+
+OUTPUT YANG DIINGINKAN:
+
+* Progress workflow saat ini ATAU
+* Ringkasan final lengkap jika workflow sudah selesai.
+
+Jangan membuat audit baru.
+Jangan membuat script baru.
+Gunakan hanya hasil yang sudah dikumpulkan workflow Audit #5.

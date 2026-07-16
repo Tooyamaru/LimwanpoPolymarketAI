@@ -1,0 +1,355 @@
+LIMWANPO AI — RESUME PHASE 12H.5 FINAL DASHBOARD VERIFICATION
+
+Konteks:
+
+Pekerjaan berhenti karena monthly quota tepat setelah edit index.html.
+
+Yang sudah ditemukan:
+
+- System Health HTML/JS sudah tidak aktif
+- Prediction Pipeline HTML/JS sudah tidak aktif
+- hanya tersisa dead CSS dan stale comment
+- renderCard sudah diaudit
+- header badge sedang diperbaiki agar tidak salah label
+- hb-sigs / hb-pos / capital status sedang ditelusuri
+- index.html sudah diedit sebelum quota habis
+
+TUGAS:
+
+Resume dari current codebase.
+Jangan mulai dari nol.
+Jangan rewrite dashboard.
+Jangan mengubah backend trading.
+Jangan menambah fitur baru.
+Jangan membuat dummy trade.
+Jangan mengembalikan System Health atau Prediction Pipeline ke UI.
+
+==================================================
+STEP 1 — VERIFY CURRENT FILE STATE
+==================================================
+
+Jalankan:
+
+- git status
+- git diff --stat
+- git diff backend/app/static/index.html
+- python -m compileall -q backend/app
+
+Periksa apakah edit terakhir tersimpan penuh atau terpotong.
+
+==================================================
+STEP 2 — VERIFY HEADER LABELS
+==================================================
+
+Header harus memakai data nyata.
+
+Target badge:
+
+- ENGINES
+- MARKETS
+- OPEN LOTS
+- EXECUTED TRADES
+- CAPITAL OK / CAPITAL BLOCKED
+
+Pastikan:
+
+OPEN LOTS:
+- berasal dari sum active_lot_count
+- bukan jumlah signals
+- bukan jumlah positions lama
+- hanya OPEN + PARTIAL lots
+
+EXECUTED TRADES:
+- berasal dari executed entry + executed exit events
+- bukan jumlah predictions
+- bukan jumlah WAIT
+- bukan jumlah trade_decisions total
+
+CAPITAL:
+- berasal dari real portfolio/risk state
+- jangan hardcode OK
+
+Hapus race condition antara loadMarkets(), loadPortfolio(), loadLiveTrades().
+
+Setiap badge hanya boleh di-update oleh satu source function.
+
+==================================================
+STEP 3 — REMOVE DEAD UI CODE
+==================================================
+
+Hapus dead CSS dan stale comments terkait:
+
+- #r3
+- #hlth-panel
+- #hlth-list
+- #pipe-panel
+- #pipe-inner
+- .pnode
+- pipeline animation
+- System Health
+- Prediction Pipeline
+
+Pastikan tidak ada:
+
+- document.getElementById() ke element yang sudah dihapus
+- querySelector() ke panel lama
+- setInterval() untuk pipeline lama
+- health UI polling lama
+
+Backend health tetap jangan disentuh.
+
+==================================================
+STEP 4 — VERIFY MARKET CARD FINAL DISPLAY
+==================================================
+
+Setiap card harus menampilkan:
+
+HEADER:
+BTC 5M · 04:32
+
+ROW:
+UP / DOWN
+
+ROW:
+TARGET / PNL / LOTS
+
+ROW:
+IN / OUT
+
+ROW:
+GAP / SPREAD / CONF atau DATA MODE
+
+Rules:
+
+LOTS:
+- OPEN + PARTIAL only
+- current condition_id only
+
+IN:
+- count entry executed
+- total entry notional
+
+OUT:
+- count exit executed
+- total exit notional
+
+PNL:
+- realized + unrealized
+- current condition_id only
+
+No position:
+- PNL —
+- LOTS 0
+- IN 0x · $0.00
+- OUT 0x · $0.00
+
+==================================================
+STEP 5 — VERIFY AI LIVE TRADES
+==================================================
+
+Panel title:
+
+AI LIVE TRADES
+
+Feed hanya boleh menampilkan:
+
+- ENTRY
+- SCALE_IN
+- PARTIAL_EXIT
+- FINAL_EXIT
+- EXPIRY_EXIT
+- EXECUTION_REJECTED optional
+
+Tidak boleh:
+
+- WAIT
+- signal
+- opportunity
+- prediction
+- heartbeat
+- fake animation
+
+Jika kosong:
+
+NO LIVE TRADES YET
+
+==================================================
+STEP 6 — VERIFY ROLLOVER ISOLATION
+==================================================
+
+Cross-check:
+
+current active condition_id
+vs
+old position condition_id
+
+Pastikan current card summary hanya membaca current condition_id.
+
+Old positions:
+- tidak muncul di current card
+- tetap muncul di history
+- tetap masuk resolution/exit path
+
+==================================================
+STEP 7 — VERIFY API SOURCES
+==================================================
+
+Call:
+
+- active universe API
+- card-summary API
+- live-trades API
+- portfolio summary API
+- positions history API
+
+Cross-check:
+
+Dashboard value
+=
+API value
+=
+DB value
+
+Untuk:
+
+- LOTS
+- IN count
+- IN amount
+- OUT count
+- OUT amount
+- PNL
+- header counters
+
+==================================================
+STEP 8 — JAVASCRIPT SYNTAX CHECK
+==================================================
+
+Run Node syntax validation untuk inline script index.html.
+
+Pastikan:
+
+- no broken template literal
+- no escaped backtick issue
+- no undefined DOM references
+- no duplicate function names
+- no console errors
+
+==================================================
+STEP 9 — TESTS
+==================================================
+
+Run:
+
+- python -m compileall -q backend/app
+- relevant card-summary tests
+- live-trades tests
+- position tests
+- rollover tests
+- frontend tests jika ada
+- full pytest suite
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+
+==================================================
+STEP 10 — RESTART + SCREENSHOT
+==================================================
+
+Restart workflow.
+
+Tunggu satu full cycle.
+
+Ambil screenshot.
+
+Visual proof wajib:
+
+- System Health tidak ada
+- Prediction Pipeline tidak ada
+- AI LIVE TRADES ada
+- countdown ada
+- PNL ada
+- LOTS ada
+- IN ada
+- OUT ada
+- header labels benar
+- no overflow
+- no blank panel
+- no JS error
+
+==================================================
+STEP 11 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- SIGNALS label bound to lots count
+- PREDICTIONS label bound to trade count
+- hardcoded CAPITAL OK
+- WAIT in live trades
+- dead pipeline DOM
+- dead health DOM
+- potential profit
+- old condition_id in current card
+- fake trade
+- hardcoded lots
+
+Klasifikasikan:
+
+- FIXED
+- REAL_DATA
+- UI_FORMATTING
+- SAFE_BACKEND_ONLY
+- INVALID
+
+No unresolved INVALID.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Git diff summary
+2. Header fixes
+3. Dead UI code removed
+4. Card display validation
+5. LOTS validation
+6. IN/OUT validation
+7. PNL validation
+8. Rollover validation
+9. AI LIVE TRADES validation
+10. API/DB/dashboard consistency
+11. JS syntax result
+12. Tests result
+13. Screenshot result
+14. Remaining issues
+15. Files changed
+16. Final status
+
+Final status:
+
+DASHBOARD FINALIZATION:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+Gunakan PASS hanya jika:
+
+- header labels benar
+- dead UI code hilang
+- LOTS/IN/OUT/PNL benar
+- AI LIVE TRADES hanya real trades
+- rollover isolated
+- no JS errors
+- screenshot benar
+- tests pass
+
+Jangan defer.
+Jangan membuat follow-up task.
+Jangan menambah fitur baru.
+Selesaikan current dashboard finalization.

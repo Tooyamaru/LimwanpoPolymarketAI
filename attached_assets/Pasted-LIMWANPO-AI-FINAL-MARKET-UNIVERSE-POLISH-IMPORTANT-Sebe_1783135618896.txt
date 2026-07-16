@@ -1,0 +1,236 @@
+LIMWANPO AI — FINAL MARKET UNIVERSE POLISH
+
+IMPORTANT
+
+Sebelum mengubah apapun pahami:
+
+INI BUKAN AI TRADING DASHBOARD.
+
+INI ADALAH AI POLYMARKET DASHBOARD.
+
+Jangan menggunakan konsep terminal trading crypto.
+
+Jangan mengubah:
+
+- Backend
+- Database
+- API
+- Trading Engine
+- AI Logic
+- Chart
+- Footer
+
+Frontend ONLY.
+
+====================================================
+
+YANG MASIH HARUS DIPERBAIKI
+
+====================================================
+
+1. MARKET HEADER (BTC / ETH / SOL / XRP)
+
+Header asset masih terlalu tinggi.
+
+Yang diperkecil HANYA bagian ini.
+
+Contoh sekarang:
+
+BTC
+
+Open Position : 3
+
+Capital Used : $0
+
+Bagian ini terlalu banyak ruang kosong.
+
+Lakukan:
+
+- kurangi padding atas
+- kurangi padding bawah
+- kurangi margin bawah
+
+JANGAN mengubah:
+
+- ukuran font
+- warna
+- isi informasi
+
+Header hanya menjadi identitas asset.
+
+Targetnya sekitar 20–30% lebih pendek.
+
+====================================================
+
+2. TIMEFRAME CARD
+
+JANGAN diperkecil.
+
+JANGAN dipadatkan.
+
+Justru harus lebih jelas.
+
+Card 5M
+
+Card 15M
+
+Card 1H
+
+adalah pusat informasi AI.
+
+Semua informasi tetap dipertahankan.
+
+====================================================
+
+3. PERJELAS TIAP BLOK 5M / 15M / 1H
+
+Setiap timeframe harus terlihat sebagai card yang berbeda.
+
+Perbaiki:
+
+- border lebih jelas
+- separator lebih jelas
+- padding lebih rapi
+- label lebih mudah dibaca
+- cyan glow tipis
+- jarak antar card konsisten
+
+Saya ingin langsung bisa membedakan:
+
+5M
+
+15M
+
+1H
+
+tanpa perlu melihat lama.
+
+====================================================
+
+4. JANGAN HAPUS INFORMASI
+
+Tetap tampilkan:
+
+YES
+
+NO
+
+SPR
+
+Price To Beat
+
+Current Price
+
+Difference
+
+NO POSITION
+
+Stake
+
+Contracts
+
+PnL
+
+Age
+
+AI Score
+
+Status
+
+Tidak boleh dipadatkan.
+
+Tidak boleh dihilangkan.
+
+====================================================
+
+5. PRICE TO BEAT
+
+Ini WAJIB.
+
+Price To Beat berasal dari market Polymarket.
+
+Current Price berasal dari reference price yang digunakan market.
+
+Difference dihitung dari:
+
+Current Price - Price To Beat
+
+Jangan pernah lagi menampilkan probabilitas pada bagian Current Price.
+
+====================================================
+
+6. MARKET UNIVERSE
+
+Ingat.
+
+Market Universe adalah bagian paling penting dashboard.
+
+Yang harus menjadi fokus visual adalah:
+
+5M
+
+15M
+
+1H
+
+Bukan header BTC.
+
+Hierarchy yang diinginkan:
+
+Asset Header (lebih kecil)
+
+↓
+
+5M Card (jelas)
+
+↓
+
+15M Card (jelas)
+
+↓
+
+1H Card (jelas)
+
+====================================================
+
+7. JANGAN MERUBAH YANG SUDAH BENAR
+
+Jangan mengubah lagi:
+
+AI Score
+
+Status Badge
+
+Portfolio
+
+AI Activity
+
+Execution Pipeline
+
+System Health
+
+Chart
+
+Footer
+
+====================================================
+
+8. SELF REVIEW
+
+Sebelum selesai lakukan review sendiri.
+
+Pastikan:
+
+✓ Header asset lebih pendek.
+
+✓ Card 5M/15M/1H lebih jelas.
+
+✓ Tidak ada informasi yang hilang.
+
+✓ Tidak ada overlap.
+
+✓ Market Universe tetap menjadi fokus utama dashboard.
+
+✓ Dashboard tetap terasa seperti terminal profesional khusus POLYMARKET, bukan trading crypto.
+
+Jika masih ada yang belum sesuai, lanjutkan memperbaiki sampai seluruh poin di atas terpenuhi.

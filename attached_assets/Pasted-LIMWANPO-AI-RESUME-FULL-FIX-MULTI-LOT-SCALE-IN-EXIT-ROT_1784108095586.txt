@@ -1,0 +1,475 @@
+LIMWANPO AI — RESUME FULL FIX:
+MULTI-LOT + SCALE-IN + EXIT ROTATION + CAPITAL/PNL + LEGACY CLEANUP
+
+Konteks:
+
+Monthly quota habis di tengah implementasi.
+
+Yang sudah mulai diedit pada current codebase:
+
+- settings.py:
+  - scale-in settings
+  - exit retry / max hold settings
+- trade_decision.py:
+  - retry/tracking fields
+- database.py:
+  - migration columns
+- risk_engine.py:
+  - scale-in/headroom logic
+- execution_engine.py:
+  - close decision handling
+  - missing exit price retry/timeout logic
+  - helper _skip_close_missing_price mulai ditambahkan
+- exit_engine.py:
+  - max absolute hold safety mulai ditambahkan
+
+TUGAS:
+
+Lanjutkan dari current codebase.
+Jangan mulai ulang audit.
+Jangan hapus perubahan yang sudah ada.
+Jangan redesign UI.
+Jangan menaikkan exposure cap.
+Jangan membuat fake exit atau fake scale-in.
+Selesaikan seluruh implementasi dan validasi.
+
+==================================================
+STEP 1 — VERIFY CURRENT DIFF
+==================================================
+
+Jalankan:
+
+- git status
+- git diff --stat
+- git diff
+- python -m compileall -q backend/app
+
+Tampilkan seluruh file berubah.
+
+Periksa khusus:
+
+- settings.py
+- trade_decision.py
+- database.py
+- risk_engine.py
+- execution_engine.py
+- exit_engine.py
+
+Cari:
+
+- incomplete helper
+- undefined variable
+- duplicate method
+- broken indentation
+- missing import
+- migration syntax error
+
+==================================================
+STEP 2 — COMPLETE TRADE DECISION RETRY FIELDS
+==================================================
+
+Pastikan TradeDecision memiliki field lengkap:
+
+- execution_retry_count
+- last_execution_attempt_at
+- execution_error
+- execution_timeout_at
+- retryable
+
+Migration harus:
+
+- idempotent
+- backward compatible
+- nullable defaults aman
+- tidak merusak data lama
+
+Verify live PostgreSQL columns via information_schema.
+
+==================================================
+STEP 3 — COMPLETE EXIT PRICE MISSING RETRY
+==================================================
+
+Di execution_engine.py:
+
+Jika CLOSE_POSITION tidak punya executable price:
+
+Jangan:
+- return True
+- membiarkan status RISK_APPROVED selamanya
+
+Implement final behavior:
+
+1. increment execution_retry_count
+2. set last_execution_attempt_at
+3. store execution_error = PRICE_UNAVAILABLE
+4. if retry_count < limit:
+   - keep/revert status retryable
+5. if timeout reached:
+   - mark FAILED_RETRYABLE
+   atau PENDING untuk fresh reissue
+6. Exit Engine harus bisa mencoba ulang
+
+Pastikan helper `_skip_close_missing_price` lengkap dan dipanggil benar.
+
+==================================================
+STEP 4 — FIX PARTIAL POSITION GUARD
+==================================================
+
+Pastikan execution close path menggunakan:
+
+if pos.status == "CLOSED":
+    skip
+
+Bukan:
+
+if pos.status != "OPEN":
+    skip
+
+Untuk PARTIAL:
+
+- remaining_quantity > 0
+- boleh ditutup lagi
+- close_quantity <= remaining_quantity
+- status tetap PARTIAL jika sisa > 0
+- status CLOSED jika sisa = 0
+
+==================================================
+STEP 5 — COMPLETE MAX HOLD SAFETY
+==================================================
+
+Di exit_engine.py:
+
+Tambahkan trigger:
+
+MAX_ABSOLUTE_HOLD_HOURS
+
+Untuk OPEN/PARTIAL position yang melewati batas:
+
+Priority:
+
+1. direct resolution
+2. forced_exit_price
+3. latest trusted price
+4. no random/default price
+
+Reason:
+
+MAX_HOLD_EXIT
+
+Pastikan trigger tidak tergantung active universe status.
+
+==================================================
+STEP 6 — COMPLETE SCALE-IN IMPROVEMENT LOGIC
+==================================================
+
+Di risk_engine.py:
+
+Pastikan scale-in memakai fresh data condition_id sama:
+
+- previous opportunity score
+- current opportunity score
+- previous confidence
+- current confidence
+- previous entry price
+- proposed executable price
+- order-flow/spread improvement
+
+Valid reasons:
+
+- SCALE_IN_SCORE_IMPROVED
+- SCALE_IN_CONFIDENCE_IMPROVED
+- SCALE_IN_PRICE_IMPROVED
+- SCALE_IN_ORDER_FLOW_IMPROVED
+- SCALE_IN_NO_IMPROVEMENT
+
+Persist delta values ke risk event / decision reason.
+
+Jangan menurunkan threshold tanpa bukti.
+
+==================================================
+STEP 7 — COMPLETE EXPOSURE HEADROOM SHRINK
+==================================================
+
+Jika proposed_size > remaining headroom:
+
+- if headroom >= $1:
+  final_size = headroom
+  reason = SIZE_REDUCED_PORTFOLIO_HEADROOM
+
+- if headroom < $1:
+  block
+  reason = BELOW_MINIMUM_AFTER_SHRINK
+
+Pastikan tidak ada clamp naik ke minimum lama $5/$10.
+
+==================================================
+STEP 8 — VERIFY ENTRY SEQUENCE
+==================================================
+
+Pastikan create_position_from_fill:
+
+- same condition_id allowed
+- new order creates new row
+- entry_sequence = existing executed entry count + 1
+
+Test:
+
+- first = 1
+- second = 2
+- third = 3
+
+True duplicate tetap diblokir via:
+
+- same order_id
+- same decision_id
+- same fill replay
+
+==================================================
+STEP 9 — CARD SUMMARY / HEADER RECONCILIATION
+==================================================
+
+Verify:
+
+Card LOTS:
+- current condition_id only
+
+Header OPEN LOTS:
+- all OPEN/PARTIAL lots
+
+Header ACTIVE POSITIONS:
+- distinct condition_id OPEN/PARTIAL
+
+Expose:
+
+- total_open_lots
+- current_active_lots
+- legacy_open_lots
+- active_positions
+
+Pastikan 13 header lots vs 12 current cards dapat dijelaskan.
+
+==================================================
+STEP 10 — COMPLETE CLOSE ORDER ACCOUNTING
+==================================================
+
+Every CLOSE_POSITION execution must:
+
+- create SELL_YES / SELL_NO order
+- persist order_id
+- store filled_price
+- store close_quantity
+- update remaining_quantity
+- update realized_pnl
+- update close_decision_id
+- update close_order_id
+- update closed_at if final
+
+For forced expiry:
+- persist order-equivalent exit event
+- show EXPIRY OUT in live trades
+
+No EXECUTED close decision with unchanged OPEN/PARTIAL state.
+
+==================================================
+STEP 11 — DATA CLEANUP
+==================================================
+
+Before cleanup, create report of bad rows:
+
+- stale RISK_APPROVED close decisions
+- EXECUTED close decision but position OPEN/PARTIAL
+- PARTIAL with remaining_quantity=0
+- CLOSED with remaining_quantity>0
+- duplicate order_id → multiple positions
+- expired OPEN/PARTIAL legacy position
+
+Cleanup must be idempotent.
+
+Rules:
+
+- use existing order/decision evidence
+- no fabricated exit price
+- reset stale retryable decisions
+- reconcile status only when evidence supports it
+- backfill missing close metadata if real evidence exists
+
+==================================================
+STEP 12 — TESTS
+==================================================
+
+Add/update tests:
+
+1. missing exit price increments retry
+2. stale exit decision becomes retryable
+3. stale decision no longer blocks forever
+4. PARTIAL can be closed again
+5. PARTIAL final close becomes CLOSED
+6. max hold creates exit
+7. max hold does not use random price
+8. exposure headroom shrink works
+9. shrink below $1 blocks
+10. scale-in score improvement allows
+11. scale-in price improvement allows
+12. no improvement blocks
+13. entry sequences 1,2,3
+14. card LOTS aggregates correctly
+15. legacy excluded from current card
+16. header includes legacy open lots
+17. close order updates position
+18. realized PnL correct
+19. available capital increases after close
+20. executed close cannot leave position open
+21. duplicate execution still blocked
+22. valid multi-entry allowed
+23. AI LIVE TRADES shows SCALE-IN
+24. PARTIAL OUT
+25. FINAL OUT
+26. EXPIRY OUT
+27. WAIT excluded
+
+Run:
+
+- python -m compileall -q backend/app
+- risk tests
+- execution tests
+- exit tests
+- position tests
+- card summary tests
+- portfolio tests
+- rollover tests
+- live trades tests
+- alert tests
+- full suite
+
+Report exact counts.
+
+==================================================
+STEP 13 — LIVE VALIDATION
+==================================================
+
+Restart workflow.
+
+Capture:
+
+- open lots
+- active positions
+- legacy lots
+- open exposure
+- available capital
+- realized PnL
+- unrealized PnL
+
+Observe at least one full engine cycle.
+
+Show:
+
+- exit engine evaluated
+- exit decisions created
+- retries
+- errors
+- scale-in attempts
+- scale-in allowed/blocked reasons
+
+If natural events occur:
+
+- second lot
+- partial exit
+- final exit
+- expiry exit
+
+Trace end-to-end.
+
+Do not fabricate if none occur.
+
+==================================================
+STEP 14 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- if pos.status != "OPEN"
+- return True on missing exit price
+- stale RISK_APPROVED
+- DUPLICATE_POSITION
+- fixed $10
+- max(10
+- first position only
+- MAX(1) lots
+- EXECUTED close but OPEN position
+- fake exit
+- default forced price
+- stale legacy position
+
+Classify:
+
+- FIXED
+- VALID_IDEMPOTENCY
+- REAL_EXIT_LOGIC
+- SAFE_HISTORY
+- INVALID
+- BLOCKER
+
+No unresolved INVALID/BLOCKER.
+
+==================================================
+STEP 15 — FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Files read
+2. Git diff summary
+3. Retry fields/migration
+4. Exit retry fix
+5. PARTIAL close fix
+6. Max hold fix
+7. Scale-in improvement fix
+8. Exposure shrink fix
+9. Entry sequence result
+10. Card/header reconciliation
+11. Close accounting
+12. Cleanup result
+13. Tests
+14. Live validation
+15. Files changed
+16. Remaining risks
+17. Final statuses
+18. Exact next step
+
+Final statuses:
+
+MULTI-LOT:
+- PASS
+- PASS WITH NOTES
+- PENDING NATURAL PROOF
+- FAIL
+
+SCALE-IN:
+- PASS
+- PASS WITH NOTES
+- BLOCKED BY VALID CONDITIONS
+- FAIL
+
+EXIT ENGINE:
+- PASS
+- PASS WITH NOTES
+- PENDING NATURAL PROOF
+- FAIL
+
+CAPITAL ROTATION:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+PORTFOLIO ACCOUNTING:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+Use PASS only with test/runtime evidence.
+
+Jangan jawab setup complete.
+Jangan defer.
+Jangan buat follow-up task.
+Selesaikan current implementation.

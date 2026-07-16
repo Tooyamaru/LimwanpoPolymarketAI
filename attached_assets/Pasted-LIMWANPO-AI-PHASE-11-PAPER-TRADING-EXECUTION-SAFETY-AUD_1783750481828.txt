@@ -1,0 +1,582 @@
+LIMWANPO AI — PHASE 11 PAPER TRADING / EXECUTION SAFETY AUDIT
+
+Konteks project:
+LIMWANPO AI adalah AI decision system untuk Polymarket binary prediction markets.
+
+Status sebelumnya:
+
+* Phase 9D: AI DECISION INTEGRITY = PASS
+* Direct Polymarket resolution sudah terbukti live:
+
+  * outcome_source = DIRECT_POLYMARKET_RESOLUTION
+  * direct_resolution > 0
+  * Gamma closed=true + outcomePrices final
+* Phase 10: DECISION ACTIVATION = PASS WITH REMEDIATION
+
+  * BUY_YES / BUY_NO sudah mulai muncul
+  * stale expired position issue sudah ditemukan
+  * forced_exit_price sudah ditambahkan untuk EXPIRY_EXIT
+* Phase 10B: PENDING LIVE EXPIRY VALIDATION
+
+  * bukan blocker untuk Phase 11
+  * tetap jangan dihapus dari audit report
+
+Tujuan Phase 11:
+Audit dan amankan paper trading / execution layer sebelum nantinya masuk wallet / real order automation.
+
+Fokus:
+
+* Apakah BUY_YES / BUY_NO berubah menjadi posisi dengan benar?
+* Apakah sizing benar?
+* Apakah execution hanya jalan setelah risk approval?
+* Apakah tidak ada duplicate entry?
+* Apakah tidak ada stale market execution?
+* Apakah paper position lifecycle benar?
+* Apakah PnL dan portfolio state konsisten?
+* Apakah semua masih simulation/paper, bukan real wallet order?
+
+ATURAN WAJIB:
+
+* JANGAN ubah UI.
+* JANGAN redesign.
+* JANGAN tambah provider baru.
+* JANGAN tambah real wallet execution.
+* JANGAN kirim real order ke Polymarket.
+* JANGAN tambah private key / wallet / signer.
+* JANGAN hardcode BUY.
+* JANGAN force trade.
+* JANGAN fake fill.
+* JANGAN fake PnL.
+* JANGAN pakai dummy market.
+* JANGAN menurunkan risk threshold hanya supaya order muncul.
+* Semua perubahan harus berbasis audit, data real, dan safety.
+
+==================================================
+STEP 1 — READ CURRENT STATE
+===========================
+
+Baca file:
+
+* AI_DECISION_INTEGRITY_AUDIT.md
+* backend/app/services/decision_engine.py
+* backend/app/services/risk_engine.py
+* backend/app/services/execution_engine.py
+* backend/app/services/exit_engine.py
+* backend/app/services/position_service.py
+* backend/app/services/portfolio_allocation_service.py
+* backend/app/services/opportunity_engine.py
+* backend/app/services/outcome_learning_service.py
+* backend/app/models/trade_decision.py
+* backend/app/models/position.py
+* backend/app/models/market_universe.py
+* backend/app/models/opportunity.py
+* backend/app/models/outcome_learning.py
+* backend/app/repositories/position_repository.py
+* backend/app/repositories/trade_decision_repository.py jika ada
+* backend/app/repositories/opportunity_repository.py
+* backend/app/config/settings.py
+* MEMORY.md jika ada
+
+Lalu jalankan:
+
+* git status
+* git diff
+* python -m compileall -q backend/app
+
+Pastikan tidak ada real wallet / real order path aktif.
+
+==================================================
+STEP 2 — EXECUTION FLOW MAP
+===========================
+
+Buat peta alur lengkap:
+
+DecisionLog / Decision Engine
+→ TradeDecision
+→ Risk approval / risk event
+→ Execution Engine
+→ Position row
+→ Exit Engine
+→ Close position
+→ Outcome Learning / PnL
+
+Untuk setiap step, dokumentasikan:
+
+* file
+* function
+* input
+* output
+* DB table yang dibaca
+* DB table yang ditulis
+* safety gate
+* failure mode
+
+Tandai apakah step bersifat:
+
+* PAPER_ONLY
+* REAL_ORDER_DISABLED
+* UNKNOWN
+* UNSAFE
+
+Tidak boleh ada UNKNOWN setelah audit.
+
+==================================================
+STEP 3 — TRADE DECISION AUDIT
+=============================
+
+Query trade_decisions.
+
+Tampilkan:
+
+* total trade_decisions
+* count per decision:
+
+  * OPEN_LONG_YES
+  * OPEN_LONG_NO
+  * CLOSE_POSITION
+  * WATCH
+  * BLOCKED
+  * SKIP
+* count per status:
+
+  * PENDING
+  * APPROVED
+  * EXECUTED
+  * REJECTED
+  * FAILED
+* latest 30 trade_decisions with:
+
+  * id
+  * condition_id
+  * asset
+  * timeframe
+  * decision
+  * status
+  * opportunity_score
+  * confidence
+  * risk_score
+  * risk_approved
+  * quantity
+  * price
+  * forced_exit_price
+  * created_at
+  * executed_at
+  * reason / skip_reason
+
+Klasifikasikan:
+
+* VALID_PAPER_ENTRY
+* VALID_WATCH
+* VALID_BLOCK
+* VALID_CLOSE
+* STALE_MARKET
+* DUPLICATE_ENTRY
+* INVALID_NO_RISK_APPROVAL
+* INVALID_FAKE_FILL
+* INVALID_UNKNOWN
+
+==================================================
+STEP 4 — RISK APPROVAL BEFORE EXECUTION
+=======================================
+
+Pastikan Execution Engine hanya mengeksekusi trade_decisions yang:
+
+* status APPROVED / PENDING sesuai desain project
+* risk_approved = true jika field ada
+* risk_score >= threshold
+* decision valid
+* market active
+* not expired
+* not duplicate open position
+* not over max open positions
+* not over exposure limit
+* not over daily trade limit
+
+Audit latest executed positions.
+
+Untuk setiap position yang OPEN:
+
+* cari trade_decision asalnya
+* cari risk event asalnya jika ada
+* pastikan risk approval terjadi sebelum executed_at
+* pastikan tidak ada position tanpa valid trade_decision
+
+Jika ada position tanpa risk approval:
+
+* classify INVALID_EXECUTION_WITHOUT_RISK_APPROVAL
+* fix before continuing
+
+==================================================
+STEP 5 — PAPER FILL PRICE AUDIT
+===============================
+
+Audit bagaimana Execution Engine menentukan entry price.
+
+Untuk OPEN_LONG_YES:
+
+* harus pakai YES ask / executable price / defined paper fill rule
+* bukan random
+* bukan midpoint fake jika ask tersedia
+* bukan default 0.5 kecuali documented and safe fallback
+
+Untuk OPEN_LONG_NO:
+
+* harus pakai NO ask atau derivasi valid dari YES bid/ask sesuai project formula
+* dokumentasikan formula:
+
+  * no_bid = 1 - yes_ask
+  * no_ask = 1 - yes_bid
+    jika itu yang digunakan
+
+Query latest positions:
+
+* side
+* entry_price
+* trade_decision price
+* yes_bid
+* yes_ask
+* no_bid
+* no_ask
+* spread
+* entry_time
+* condition_id
+
+Klasifikasi entry_price:
+
+* VALID_CLOB_ASK
+* VALID_DERIVED_NO_ASK
+* VALID_DOCUMENTED_PAPER_FILL
+* INVALID_DEFAULT_0_5
+* INVALID_STALE_PRICE
+* INVALID_RANDOM
+* UNKNOWN
+
+Tidak boleh ada UNKNOWN.
+
+==================================================
+STEP 6 — POSITION SIZING AUDIT
+==============================
+
+Audit sizing formula.
+
+Cari semua setting:
+
+* base position size
+* max position size
+* min position size
+* confidence multiplier
+* opportunity multiplier
+* risk multiplier
+* portfolio exposure cap
+* per asset cap
+* per market cap
+
+Untuk setiap OPEN position:
+
+* quantity
+* entry_price
+* notional exposure
+* capital / balance
+* position size %
+* confidence
+* opportunity_score
+* risk_score
+* formula result expected
+* actual quantity
+
+Klasifikasi:
+
+* VALID_SIZE
+* VALID_CAPPED
+* VALID_MINIMUM
+* INVALID_OVERSIZE
+* INVALID_ZERO_SIZE
+* INVALID_DEFAULT_SIZE
+* UNKNOWN
+
+Tidak boleh ada UNKNOWN.
+
+==================================================
+STEP 7 — DUPLICATE / STALE MARKET PROTECTION
+============================================
+
+Audit:
+
+* duplicate condition_id open positions
+* duplicate asset/timeframe in same market window
+* positions opened after market end_time
+* trade_decisions created after market end_time
+* trade_decisions executed after market end_time
+* trade_decisions for inactive/expired market
+* positions for missing market_universe row
+* positions with null condition_id
+* positions with invalid token ids
+
+Run DB queries and show counts.
+
+If any invalid:
+
+* fix duplicate/stale protection.
+* stale execution must be blocked.
+
+==================================================
+STEP 8 — PAPER PORTFOLIO CONSISTENCY
+====================================
+
+Audit portfolio state:
+
+* total capital
+* available balance
+* allocated capital
+* open exposure
+* realized_pnl
+* unrealized_pnl
+* daily_pnl
+* open positions count
+* closed positions count
+* max open positions
+* max daily trades
+* max daily loss
+
+Check consistency:
+
+* sum(open notional) equals exposure
+* closed PnL equals realized PnL
+* no negative quantity
+* no negative impossible balance
+* no exposure from expired closed positions
+* no closed position still counted as open
+
+Classify:
+
+* CONSISTENT
+* INCONSISTENT_BALANCE
+* INCONSISTENT_EXPOSURE
+* INCONSISTENT_PNL
+* STALE_EXPOSURE
+* UNKNOWN
+
+==================================================
+STEP 9 — EXECUTION SAFETY GATES
+===============================
+
+Verify hard safety gates:
+
+* PAPER_TRADING_ENABLED or equivalent
+* REAL_TRADING_ENABLED false
+* WALLET_EXECUTION_ENABLED false
+* PRIVATE_KEY not required
+* CLOB order placement disabled
+* no create_order / post_order called in live execution path
+* no signer initialized for automated order placement
+* all execution writes only to local DB/paper position table
+
+Search backend:
+
+* create_order
+* post_order
+* place_order
+* clob_client
+* private_key
+* signer
+* wallet
+* real_order
+* paper
+* simulation
+* execute_trade
+* submit_order
+
+Classify every hit:
+
+* PAPER_ONLY
+* CONFIG_DISABLED
+* SAFE_CLIENT_READ
+* REAL_ORDER_PATH_DISABLED
+* UNSAFE_LIVE_ORDER
+* TEST_ONLY
+
+If UNSAFE_LIVE_ORDER found:
+
+* stop and fix.
+* do not continue.
+
+==================================================
+STEP 10 — EXECUTION ENGINE ERROR HANDLING
+=========================================
+
+Audit failure handling:
+
+* invalid price
+* missing token id
+* missing orderbook
+* stale orderbook
+* no liquidity
+* duplicate position
+* DB error
+* risk rejection
+* execution exception
+
+Ensure failure results in:
+
+* status FAILED or REJECTED
+* error reason persisted
+* no partial position created
+* no phantom exposure
+* retry behavior safe
+* idempotency guard prevents duplicate position on retry
+
+If missing:
+
+* fix.
+
+==================================================
+STEP 11 — TEST / VALIDATION
+===========================
+
+Run:
+
+* python -m compileall -q backend/app
+* pytest for execution engine
+* pytest for risk engine
+* pytest for position service
+* pytest for portfolio allocation
+* pytest for exit engine
+* workflow restart
+* one full engine cycle logs
+
+If tests have pre-existing failures:
+
+* classify PRE_EXISTING_FAILURE.
+* classify NEW_FAILURE separately.
+* do not claim clean full test if full suite fails.
+
+Add or update tests if bug found.
+
+==================================================
+STEP 12 — RED FLAG SEARCH
+=========================
+
+Search backend for:
+
+* fake fill
+* random fill
+* forced fill
+* default price
+* hardcoded price
+* hardcoded quantity
+* fake pnl
+* dummy trade
+* mock trade
+* bypass risk
+* ignore risk
+* force execute
+* duplicate position
+* stale market
+* expired market
+* private_key
+* create_order
+* post_order
+* real trading
+* paper trading
+
+Classify:
+
+* SAFE
+* TEST_ONLY
+* PAPER_ONLY
+* CONFIGURATION
+* INVALID
+* FIXED
+
+No INVALID allowed at final.
+
+==================================================
+STEP 13 — UPDATE AUDIT REPORT
+=============================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md with section:
+
+PHASE 11 — PAPER TRADING / EXECUTION SAFETY AUDIT
+
+Include:
+
+1. Execution flow map
+2. Trade decision distribution
+3. Risk approval before execution
+4. Paper fill price audit
+5. Position sizing audit
+6. Duplicate/stale market protection
+7. Portfolio consistency
+8. Real-order safety gate
+9. Error handling
+10. Bugs found
+11. Files changed
+12. Tests run
+13. Red flag search
+14. Remaining risks
+15. Final Execution Safety status
+
+Status must be one of:
+
+* EXECUTION SAFETY: PASS
+* EXECUTION SAFETY: PASS WITH REMEDIATION
+* EXECUTION SAFETY: BLOCKED BY VALID RISK
+* EXECUTION SAFETY: FAIL
+
+Use PASS only if:
+
+* no real order path active
+* all executions are paper-only
+* risk approval precedes execution
+* no stale/expired market execution
+* no duplicate positions
+* sizing valid
+* portfolio consistency valid
+* no invalid red flags
+* tests clean or only documented pre-existing failures
+
+Use PASS WITH REMEDIATION if:
+
+* bugs were found and fixed
+* current state is safe after fixes
+* remaining risk is documented
+
+Use FAIL if:
+
+* real order path active unexpectedly
+* position can open without risk approval
+* stale expired market can execute
+* duplicate positions persist
+* fake fill / fake PnL found
+* portfolio state inconsistent and unfixed
+
+==================================================
+STEP 14 — FINAL RESPONSE FORMAT
+===============================
+
+Answer with:
+
+1. Files read
+2. Execution flow map summary
+3. Trade decision distribution
+4. Risk approval audit
+5. Fill price audit
+6. Position sizing audit
+7. Duplicate/stale protection
+8. Portfolio consistency
+9. Real-order safety gate
+10. Error handling
+11. Bugs found / fixed
+12. Files changed
+13. Tests run
+14. Red flag search result
+15. Audit report update
+16. Remaining risks
+17. Execution Safety status
+18. Exact next recommended step
+
+Jangan jawab umum.
+Jangan klaim PASS jika ada real order path aktif.
+Jangan klaim PASS jika position bisa dibuat tanpa risk approval.
+Jangan paksa trade.
+Jangan fabricate result.

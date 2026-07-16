@@ -1,0 +1,717 @@
+LIMWANPO AI — AI LIVE TRADES UP/DOWN + CHART RESTORE + MARKET ALERTS
+
+Konteks:
+
+Dashboard final saat ini sudah memiliki:
+
+- 12 active markets
+- OPEN LOTS header
+- EXECUTED TRADES header
+- CAPITAL status
+- LOTS / IN / OUT / PNL per card
+- countdown
+- AI LIVE TRADES panel
+- System Health UI sudah dihapus
+- Prediction Pipeline UI sudah dihapus
+- backend health/pipeline tetap hidup
+- 697/697 tests pass
+
+Perubahan yang diminta sekarang:
+
+1. Jangan ubah tampilan LOTS / IN / OUT / PNL card lagi.
+2. AI LIVE TRADES tetap memakai format ringkas yang sekarang.
+3. Ganti istilah YES/NO menjadi UP/DOWN di tampilan feed.
+4. Pastikan OUT juga benar-benar tampil di AI LIVE TRADES.
+5. Perbaiki chart yang tidak tampil.
+6. Ganti NEWS menjadi MARKET ALERTS.
+7. MARKET ALERTS harus berasal dari kondisi backend nyata, bukan teks random.
+
+ATURAN WAJIB:
+
+- JANGAN redesign dashboard.
+- JANGAN mengubah layout card.
+- JANGAN mengubah backend trading formula.
+- JANGAN membuat fake OUT event.
+- JANGAN membuat fake candle.
+- JANGAN membuat fake alert.
+- JANGAN menampilkan WAIT di AI LIVE TRADES.
+- JANGAN menghapus backend monitoring.
+- JANGAN mengembalikan System Health atau Prediction Pipeline ke UI.
+- Gunakan data nyata dari DB/API/runtime.
+
+==================================================
+PART A — VERIFY CURRENT STATE
+==================================================
+
+Baca:
+
+Frontend:
+- backend/app/static/index.html
+- AI LIVE TRADES render function
+- chart initialization
+- chart fetch/polling
+- NEWS ticker/footer logic
+- header counters
+
+Backend:
+- live_trades.py
+- orders model/repository/API
+- positions model/repository/API
+- execution_engine.py
+- exit_engine.py
+- btc_candles.py
+- binance_market_data.py
+- market_reference_service.py
+- alerts API/service
+- monitoring/health services
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+- workflow logs
+- relevant live APIs
+
+==================================================
+PART B — AI LIVE TRADES UP/DOWN LABELS
+==================================================
+
+AI LIVE TRADES tetap memakai format ringkas.
+
+Current semantic mapping:
+
+LONG_YES / YES
+→ UP
+
+LONG_NO / NO
+→ DOWN
+
+Display examples:
+
+05:59:18  IN   BTC 15M  DOWN  $10.00 @ 0.500
+
+05:58:48  IN   XRP 1H   UP    $10.00 @ 0.520
+
+Jangan tampilkan:
+
+YES
+NO
+LONG_YES
+LONG_NO
+
+di UI feed.
+
+Backend boleh tetap memakai enum internal lama.
+Hanya mapping display yang berubah.
+
+Pastikan mapping:
+
+OPEN_LONG_YES → UP
+OPEN_LONG_NO → DOWN
+SELL_YES / CLOSE YES → UP
+SELL_NO / CLOSE NO → DOWN
+Position.side LONG_YES → UP
+Position.side LONG_NO → DOWN
+
+==================================================
+PART C — VERIFY OUT EVENTS IN AI LIVE TRADES
+==================================================
+
+Audit GET /api/v1/live-trades.
+
+Feed harus memasukkan real executed exit events:
+
+- PARTIAL_EXIT
+- FINAL_EXIT
+- EXPIRY_EXIT
+
+Contoh display:
+
+06:04:12  OUT  BTC 15M  DOWN  $6.40 @ 0.540  PNL +$0.80
+
+06:05:27  OUT  XRP 1H   UP    $10.80 @ 0.540  PNL +$0.80
+
+06:03:41  PARTIAL OUT  BTC 5M  DOWN  $5.20  PNL +$0.20
+
+06:10:00  EXPIRY OUT  ETH 5M  UP  $20.00  PNL +$10.00
+
+Audit source:
+
+- exit order status FILLED
+- close_decision_id
+- close_order_id
+- close_quantity
+- exit_price
+- realized_pnl
+- close_reason
+- remaining_quantity
+- position status
+
+Pastikan endpoint tidak hanya membaca entry orders.
+
+Classify event:
+
+ENTRY:
+- first executed entry
+
+SCALE_IN:
+- additional executed entry same condition_id
+
+PARTIAL_EXIT:
+- close_quantity < previous remaining_quantity
+
+FINAL_EXIT:
+- remaining_quantity becomes 0
+
+EXPIRY_EXIT:
+- close_reason EXPIRY / RESOLUTION
+
+Forbidden in feed:
+
+- WAIT
+- BLOCKED
+- PENDING
+- REJECTED
+- generic decision
+- signal
+- opportunity
+- heartbeat
+
+Optional:
+EXECUTION_REJECTED boleh ada hanya jika benar-benar dibutuhkan,
+tetapi default feed fokus ke executed IN/OUT.
+
+==================================================
+PART D — LIVE TRADES API VALIDATION
+==================================================
+
+Call:
+
+GET /api/v1/live-trades?limit=50
+
+Tampilkan exact response.
+
+Untuk setiap event verify:
+
+- event_id
+- event_type
+- timestamp
+- asset
+- timeframe
+- condition_id
+- display_direction UP/DOWN
+- quantity
+- price
+- notional_usdc
+- realized_pnl
+- remaining_quantity
+- lot_id
+- order_id
+- decision_id
+- reason
+- status
+
+Jika belum ada OUT:
+
+- jangan fabricate
+- query positions dan exit orders
+- tampilkan exact reason:
+  - no closed positions
+  - no FILLED exit orders
+  - exit engine not triggered
+  - resolution pending
+  - rollover pending
+  - close order failed
+  - endpoint query excludes exits
+
+Jika bug query ditemukan:
+- fix minimal
+- jangan membuat fake event
+
+==================================================
+PART E — FRONTEND LIVE TRADES FORMAT
+==================================================
+
+Pertahankan layout feed yang lama dan ringkas.
+
+Format:
+
+TIME | IN/OUT | ASSET | TF | UP/DOWN | AMOUNT | @ PRICE | PNL optional
+
+ENTRY:
+
+05:59:18  IN  BTC 15M  DOWN  $10.00 @ 0.500
+
+SCALE-IN:
+
+06:00:02  IN+ BTC 15M  DOWN  $8.00 @ 0.470
+
+PARTIAL EXIT:
+
+06:03:41  OUT½ BTC 5M DOWN $5.20 @ 0.520 PNL +$0.20
+
+FINAL EXIT:
+
+06:04:12  OUT BTC 15M DOWN $10.80 @ 0.540 PNL +$0.80
+
+EXPIRY EXIT:
+
+06:10:00  EXP OUT ETH 5M UP $20.00 PNL +$10.00
+
+Jika feed kosong:
+
+NO LIVE TRADES YET
+
+Jangan membuat multiline besar.
+Jangan redesign panel.
+
+==================================================
+PART F — CHART DIAGNOSIS
+==================================================
+
+Chart BTC saat ini kadang tidak tampil.
+
+Audit lengkap:
+
+Backend:
+- btc_candles.py
+- Binance/reference candle endpoint
+- SSL verified client
+- symbol mapping
+- timeframe mapping
+- response schema
+- timestamp units
+- candle sorting
+- empty-response behavior
+
+Frontend:
+- chart fetch URL
+- chart initialization
+- canvas/container size
+- data transformation
+- timestamp parsing
+- candlestick series creation
+- refresh interval
+- active timeframe button
+- rerender after restart
+- fetch error handling
+- Promise timing
+
+Call chart endpoint directly.
+
+Expected:
+
+- HTTP 200
+- candle count > 0
+- each candle has:
+  - time
+  - open
+  - high
+  - low
+  - close
+  - volume
+
+Check:
+
+- timestamps seconds vs milliseconds
+- sorted ascending
+- no duplicate timestamps
+- no null OHLC
+- correct BTC symbol
+- correct 5M/15M/1H mapping
+
+==================================================
+PART G — CHART ROOT CAUSE FIX
+==================================================
+
+Fix only proven root cause.
+
+Possible:
+
+- wrong endpoint path
+- SSL client issue
+- candle API empty
+- wrong JSON field names
+- ms/sec timestamp bug
+- chart initialized before container dimensions
+- series overwritten with empty array
+- refresh race
+- invalid active timeframe
+- JS exception
+- stale cache
+
+Do not:
+
+- inject fake candles
+- hardcode price movement
+- use random data
+
+If backend candle data exists but chart blank:
+- fix frontend render lifecycle
+
+If backend candle data missing:
+- fix candle fetch pipeline
+
+==================================================
+PART H — CHART LIVE VALIDATION
+==================================================
+
+After fix:
+
+- restart workflow
+- wait one full refresh
+- screenshot dashboard
+
+Verify:
+
+- candlestick chart visible
+- latest BTC price visible
+- 5M button works
+- 15M button works
+- 1H button works
+- timeframe changes fetch correct candles
+- no console errors
+- no blank chart after reload
+- no fake data
+
+==================================================
+PART I — REPLACE NEWS WITH MARKET ALERTS
+==================================================
+
+Replace UI label:
+
+NEWS
+→ MARKET ALERTS
+
+Do not use generic news.
+
+Market Alerts must be generated from real runtime/system conditions.
+
+Possible alerts:
+
+- ORDER_FLOW_DETECTED
+- SPREAD_WIDENING
+- SPREAD_TIGHTENING
+- MARKET_ROLLOVER
+- PRICE_DATA_STALE
+- PRICE_DATA_MISSING
+- SCALE_IN_BLOCKED
+- ENTRY_BLOCKED_RISK
+- EXPOSURE_LIMIT_NEAR
+- EXPIRY_EXIT_COMPLETED
+- RESOLUTION_PENDING
+- GAMMA_DEGRADED
+- CLOB_DEGRADED
+- CAPITAL_BLOCKED
+- MULTI_ENTRY_CREATED
+- PARTIAL_EXIT_COMPLETED
+- FINAL_EXIT_COMPLETED
+
+==================================================
+PART J — MARKET ALERTS SOURCE
+==================================================
+
+Prefer existing real sources:
+
+- /api/v1/alerts/summary
+- risk_events
+- market lifecycle state
+- price freshness
+- live-trades events
+- execution/exit events
+- capital management
+- Gamma/CLOB health
+
+Do not create random rotating messages.
+
+If existing alerts endpoint is sufficient:
+- reuse it
+
+If not:
+- create read-only aggregation endpoint such as:
+  GET /api/v1/market-alerts
+
+Return:
+
+- alert_id
+- timestamp
+- severity
+- alert_type
+- asset optional
+- timeframe optional
+- condition_id optional
+- message
+- source
+- metadata
+
+No mutation.
+No execution trigger.
+
+==================================================
+PART K — MARKET ALERTS DISPLAY
+==================================================
+
+Keep the existing ticker/footer area compact.
+
+Display examples:
+
+12:41 BTC 5M · ORDER FLOW DETECTED
+
+12:42 ETH 15M · SPREAD 1.0% → 2.0%
+
+12:43 SOL 5M · MARKET ROLLOVER
+
+12:44 XRP 1H · PRICE DATA STALE
+
+12:45 BTC 15M · SCALE-IN BLOCKED: COOLDOWN
+
+12:46 ETH 5M · EXPIRY EXIT COMPLETED
+
+12:47 CAPITAL · 80% EXPOSURE USED
+
+Severity styling:
+
+INFO:
+- neutral/cyan
+
+WARNING:
+- amber
+
+CRITICAL:
+- red
+
+SUCCESS:
+- green
+
+If no alerts:
+
+NO ACTIVE MARKET ALERTS
+
+Do not display fake news.
+
+==================================================
+PART L — ALERT DEDUPLICATION
+==================================================
+
+Prevent ticker spam.
+
+Deduplicate by:
+
+- alert_type
+- condition_id
+- time window
+
+Example:
+
+PRICE_DATA_STALE for same condition_id:
+- show once
+- update timestamp if state persists
+- do not append every cycle
+
+Resolved alerts should disappear or be marked resolved according to existing alert design.
+
+==================================================
+PART M — PRESERVE CURRENT DASHBOARD
+==================================================
+
+Do not change:
+
+- market card design
+- LOTS
+- IN
+- OUT
+- PNL
+- countdown
+- OPEN LOTS header
+- EXECUTED TRADES header
+- CAPITAL status
+- AI LIVE TRADES panel size
+- chart panel layout
+
+Only:
+
+- map YES/NO to UP/DOWN
+- ensure OUT feed works
+- fix chart
+- replace NEWS with MARKET ALERTS
+
+==================================================
+PART N — TESTS
+==================================================
+
+Add/update tests:
+
+AI LIVE TRADES:
+
+1. LONG_YES displays UP
+2. LONG_NO displays DOWN
+3. ENTRY included
+4. SCALE_IN included
+5. PARTIAL_EXIT included
+6. FINAL_EXIT included
+7. EXPIRY_EXIT included
+8. WAIT excluded
+9. PENDING excluded
+10. rejected orders excluded unless explicitly enabled
+
+CHART:
+
+11. candle endpoint returns valid OHLC
+12. timestamp conversion correct
+13. candles sorted ascending
+14. timeframe mapping correct
+15. empty backend response shows unavailable state
+16. no fake candles
+17. frontend chart initializes after data load
+
+MARKET ALERTS:
+
+18. NEWS label removed
+19. Market Alerts uses real endpoint
+20. no random messages
+21. stale-price alert generated from real stale state
+22. rollover alert generated from real lifecycle change
+23. risk block alert generated from risk event
+24. alerts deduplicated
+25. empty state shows NO ACTIVE MARKET ALERTS
+
+Run:
+
+- python -m compileall -q backend/app
+- live trades tests
+- exit tests
+- execution tests
+- candle/chart tests
+- alert tests
+- frontend tests if available
+- full pytest suite
+- workflow restart
+
+==================================================
+PART O — LIVE VALIDATION
+==================================================
+
+After restart:
+
+Verify API:
+
+- /api/v1/live-trades
+- candle endpoint
+- alerts endpoint
+
+Verify screenshot:
+
+- AI LIVE TRADES shows UP/DOWN, not YES/NO
+- IN events visible
+- OUT events visible if real exits exist
+- chart visible
+- 5M/15M/1H chart controls work
+- NEWS removed
+- MARKET ALERTS visible
+- no System Health UI
+- no Prediction Pipeline UI
+- no overflow
+- no console errors
+
+If no real OUT event exists:
+
+- screenshot may show only IN
+- report:
+  OUT EVENT NOT YET OBSERVED
+- do not fabricate
+
+==================================================
+PART P — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- YES in live trade UI
+- NO in live trade UI
+- WAIT in live trades
+- fake OUT
+- fake candle
+- random candle
+- random alert
+- hardcoded alert
+- NEWS
+- stale chart endpoint
+- verify=False
+- dummy trade
+- synthetic trade
+
+Classify:
+
+- REAL_DATA
+- UI_MAPPING
+- SAFE_EMPTY_STATE
+- TEST_ONLY
+- INVALID_FAKE
+- FIXED
+
+No unresolved INVALID.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Files read
+2. AI LIVE TRADES direction mapping
+3. OUT event audit
+4. Live trades API result
+5. Frontend live trades result
+6. Chart root cause
+7. Chart fix
+8. Chart live validation
+9. NEWS replacement
+10. Market Alerts data source
+11. Market Alerts frontend result
+12. Alert deduplication
+13. Tests run
+14. Screenshot result
+15. Files changed
+16. Remaining risks
+17. Final statuses
+18. Exact next step
+
+Final statuses:
+
+AI LIVE TRADES DIRECTION:
+- PASS
+- FAIL
+
+AI LIVE TRADES OUT:
+- PASS
+- NOT YET OBSERVED
+- PARTIAL
+- FAIL
+
+CHART RESTORATION:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+MARKET ALERTS:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+DASHBOARD UPDATE:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+Gunakan PASS hanya jika berbasis data/runtime nyata.
+
+Jangan defer.
+Jangan membuat follow-up task.
+Jangan membuat fake OUT.
+Jangan membuat fake candle.
+Jangan membuat fake alerts.
+Kerjakan dari current codebase.

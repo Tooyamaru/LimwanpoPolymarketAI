@@ -1,0 +1,417 @@
+# LIMWANPO POLYMARKET AI — FINAL UI REFACTOR (POLYMARKET ONLY)
+
+## OBJECTIVE
+
+Refactor the dashboard into a professional institutional trading terminal specifically for **Polymarket**.
+
+This project is **NOT** a crypto exchange terminal.
+It is an AI probability engine that analyzes only four prediction markets.
+
+Remove everything that does not contribute directly to probability analysis.
+
+---
+
+# MARKETS
+
+Only these four markets exist.
+
+* BTC
+* ETH
+* SOL
+* XRP
+
+Delete every assumption that there are 12 markets.
+
+Everything in the UI and backend must assume only these four assets.
+
+---
+
+# GENERAL DESIGN
+
+The interface must feel like:
+
+Bloomberg Terminal
++
+Kalshi Pro
++
+Polymarket Institutional Dashboard
+
+Not like a developer debug page.
+
+Every component must have a purpose.
+
+No empty boxes.
+
+No placeholders.
+
+No duplicated information.
+
+---
+
+# REMOVE COMPLETELY
+
+Delete permanently:
+
+• Root Cause Analysis panel (green debug screen)
+• CSS inspector
+• DOM inspector
+• height debugger
+• viewport debugger
+• flow debugger
+• layout debugger
+• developer console
+• experimental diagnostic panel
+• internal testing overlays
+
+These are development tools.
+
+They must never appear inside production.
+
+---
+
+# LEFT SIDEBAR
+
+Reduce to only four assets.
+
+BTC
+ETH
+SOL
+XRP
+
+Each row shows only:
+
+Asset
+
+Probability Score
+
+Current Odds
+
+Signal Strength
+
+Status
+
+Nothing else.
+
+---
+
+# CENTER PANEL
+
+Keep AI Current Target.
+
+Improve spacing.
+
+Large asset name
+
+Current timeframe
+
+Confidence
+
+Odds
+
+Spread
+
+Distance to Entry
+
+AI readiness
+
+Everything aligned professionally.
+
+---
+
+# ADD NEW CARD
+
+To the RIGHT of AI Current Target.
+
+Create a compact TradingView-style market card.
+
+Only BTC.
+
+Because BTC drives the entire crypto sentiment.
+
+The card contains:
+
+• Live BTC candlestick chart
+
+• Current BTC price
+
+• 24H change
+
+• Volume
+
+• High
+
+• Low
+
+No trading controls.
+
+No indicators.
+
+No watchlist.
+
+No toolbar.
+
+No buy/sell buttons.
+
+Pure market context.
+
+Size approximately the same height as AI Current Target.
+
+---
+
+# AI DECISION ENGINE
+
+Keep.
+
+Improve spacing.
+
+Use more breathing room.
+
+Cards should animate only when values change.
+
+No continuous blinking.
+
+---
+
+# FEEDS
+
+Current problem:
+
+AI Thinking Feed
+
+AI Live Feed
+
+grow vertically forever.
+
+This is incorrect.
+
+Fix permanently.
+
+Requirements:
+
+Fixed panel height.
+
+Internal scrolling only.
+
+Newest message automatically stays visible.
+
+No layout movement.
+
+No page resizing.
+
+No pushing other panels.
+
+No expanding containers.
+
+Use virtualization if needed.
+
+Maximum rendering performance.
+
+The dashboard height must never change regardless of message volume.
+
+---
+
+# REMOVE DUPLICATE INFORMATION
+
+Current UI repeats:
+
+Odds
+
+Spread
+
+Target
+
+Markets
+
+Signal count
+
+Probability
+
+multiple times.
+
+Each metric should appear only once.
+
+---
+
+# REMOVE EMPTY CARDS
+
+Delete any widget that shows:
+
+—
+
+0
+
+placeholder
+
+empty state
+
+unused metric
+
+If there is no useful information, remove the component.
+
+---
+
+# MARKET COUNT
+
+Replace
+
+12 Active
+
+12 Markets
+
+Universe
+
+etc.
+
+with
+
+4 Markets
+
+or
+
+4 Assets Monitored
+
+---
+
+# STATUS BAR
+
+Simplify.
+
+Show only:
+
+Engine Status
+
+AI Status
+
+Signal Engine
+
+Connection
+
+Paper Mode
+
+Current Time
+
+Nothing else.
+
+---
+
+# COLORS
+
+Reduce neon glow by about 20%.
+
+Improve readability.
+
+Use subtle cyan highlights.
+
+Green only for positive states.
+
+Red only for warnings.
+
+No excessive glowing borders.
+
+---
+
+# TYPOGRAPHY
+
+Increase readability.
+
+Reduce excessive letter spacing.
+
+Keep terminal aesthetic.
+
+Avoid tiny fonts.
+
+---
+
+# PERFORMANCE
+
+Dashboard must never re-render the entire page.
+
+Only update components whose data changes.
+
+Use memoization.
+
+Avoid unnecessary DOM updates.
+
+---
+
+# RESPONSIVENESS
+
+No component should resize because of logs.
+
+No component should move because feeds grow.
+
+Entire layout remains fixed.
+
+---
+
+# REMOVE EVERYTHING THAT DOES NOT HELP TRADING
+
+Every widget must answer one question:
+
+"Does this increase probability analysis quality?"
+
+If NO:
+
+Delete it.
+
+---
+
+# FINAL LAYOUT
+
+LEFT
+
+4 Assets
+
+↓
+
+CENTER TOP
+
+AI Current Target
+
+*
+
+BTC Live Chart Card
+
+↓
+
+CENTER
+
+AI Decision Engine
+
+↓
+
+BOTTOM
+
+AI Thinking Feed
+
+AI Live Feed
+
+Capital Summary
+
+↓
+
+FOOTER
+
+System Status
+
+Paper Mode
+
+Connection
+
+Time
+
+Nothing else.
+
+---
+
+# FINAL GOAL
+
+The finished interface should immediately communicate:
+
+"This is a professional AI-powered Polymarket probability terminal."
+
+Not:
+
+"This is a developer project with debugging tools."
+
+Every pixel must contribute directly to trading decisions.

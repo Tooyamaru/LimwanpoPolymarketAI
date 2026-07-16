@@ -1,0 +1,465 @@
+# LIMWANPO AI — PERMANENT PROJECT INITIALIZATION (MANDATORY)
+
+## IMPORTANT
+
+This is a permanent project.
+
+Never treat this as a new project.
+
+Never ask what this project is.
+
+Never assume this is a trading application.
+
+Read this document completely before doing anything.
+
+---
+
+# PROJECT IDENTITY
+
+Project Name
+
+LIMWANPO AI
+
+Project Type
+
+AI-assisted Polymarket Probability Intelligence Platform
+
+NOT
+
+* Trading Platform
+* Trading Terminal
+* Exchange
+* Broker
+* Crypto Bot
+
+Primary Purpose
+
+Analyze Polymarket probability markets.
+
+Generate probability intelligence.
+
+Generate prediction recommendations.
+
+Track prediction performance.
+
+Learn from resolved Polymarket outcomes.
+
+---
+
+# PROJECT INITIALIZATION
+
+Before doing anything, ensure these files exist.
+
+If a file does NOT exist,
+
+CREATE IT automatically.
+
+Never stop.
+
+Never ask the user.
+
+Required files
+
+1.
+
+CONSTITUTION.md
+
+2.
+
+PROJECT_RULES.md
+
+3.
+
+DATA_RULES.md
+
+4.
+
+UI_RULES.md
+
+5.
+
+PHASE_GATE.md
+
+6.
+
+replit.md
+
+7.
+
+.agents/memory/product-constitution.md
+
+If any file is missing
+
+Automatically create it.
+
+Then continue.
+
+Never interrupt the workflow.
+
+---
+
+# READ ORDER
+
+Always load files in this order
+
+1.
+
+CONSTITUTION.md
+
+↓
+
+2.
+
+PROJECT_RULES.md
+
+↓
+
+3.
+
+DATA_RULES.md
+
+↓
+
+4.
+
+UI_RULES.md
+
+↓
+
+5.
+
+PHASE_GATE.md
+
+↓
+
+6.
+
+replit.md
+
+↓
+
+7.
+
+.agents/memory/product-constitution.md
+
+This order is mandatory.
+
+---
+
+# PROJECT RULES
+
+Never redesign the dashboard.
+
+Never add features because you think they are useful.
+
+Never delete information.
+
+Never replace approved UI.
+
+Never move components unless requested.
+
+Never install packages unless requested.
+
+Never refactor unrelated code.
+
+Never optimize code outside the requested scope.
+
+---
+
+# DATA RULES
+
+Everything displayed inside the dashboard MUST come from official sources.
+
+Allowed sources
+
+Market Universe
+
+Polymarket ONLY
+
+Prediction Cards
+
+Polymarket ONLY
+
+Prediction Status
+
+Polymarket ONLY
+
+Resolution
+
+Polymarket ONLY
+
+Liquidity
+
+Polymarket ONLY
+
+Volume
+
+Polymarket ONLY
+
+Market Metadata
+
+Polymarket ONLY
+
+Allowed exceptions
+
+Price Chart
+
+Binance
+
+Chainlink
+
+ONLY
+
+Context information
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+candlestick data
+
+No other Binance data may appear.
+
+Forbidden
+
+Bid
+
+Ask
+
+Spread
+
+Orderbook
+
+Depth
+
+Funding Rate
+
+Open Interest
+
+PnL
+
+Margin
+
+Leverage
+
+Position Size
+
+Trading Signals
+
+Never reintroduce these.
+
+---
+
+# UI RULES
+
+Prediction cards MUST always contain
+
+Movement
+
+UP Probability
+
+DOWN Probability
+
+Target
+
+Gap
+
+Confidence
+
+Countdown
+
+Status
+
+When prediction exists
+
+Open At
+
+Coverage
+
+Entries
+
+must remain visible.
+
+Never remove them.
+
+Never compress them away.
+
+Never hide them.
+
+Never replace them.
+
+Never invent new rows.
+
+Never add Bid/Ask.
+
+Never add Spread.
+
+Never add Orderbook.
+
+Never add trading widgets.
+
+---
+
+# PHASE GATE
+
+Development is phase-based.
+
+Never skip phases.
+
+Current roadmap
+
+Phase 1
+
+Identity Lock
+
+COMPLETE
+
+Phase 2
+
+Vocabulary Lock
+
+COMPLETE
+
+Phase 3
+
+UI Stabilization
+
+ACTIVE
+
+Phase 4
+
+Regression Lock
+
+LOCKED
+
+Phase 5
+
+Data Source Audit
+
+LOCKED
+
+Phase 6
+
+Polymarket API Integration
+
+LOCKED
+
+Phase 7
+
+Historical Database
+
+LOCKED
+
+Phase 8
+
+Prediction Engine
+
+LOCKED
+
+Phase 9
+
+Outcome Learning
+
+LOCKED
+
+Phase 10
+
+Optimization
+
+LOCKED
+
+Only the user can unlock a phase.
+
+---
+
+# REGRESSION RULE
+
+Before modifying UI
+
+Compare current implementation.
+
+Ensure nothing approved disappears.
+
+Mandatory checklist
+
+Target
+
+Gap
+
+Confidence
+
+Countdown
+
+Status
+
+Coverage
+
+Entries
+
+Open At
+
+Prediction State
+
+If any approved information disappears
+
+ROLL BACK immediately.
+
+---
+
+# DECISION RULE
+
+Before starting any task
+
+Determine
+
+Current Phase
+
+If requested work belongs to another phase
+
+STOP.
+
+Do not perform it.
+
+Wait for user approval.
+
+---
+
+# COMPLETION REPORT
+
+After every task report
+
+Current Phase
+
+Task Completed
+
+Regression Check
+
+PASS or FAIL
+
+Files Modified
+
+Reason for Modification
+
+Ready For Next Phase
+
+YES or NO
+
+---
+
+# PERMANENT MEMORY
+
+This project identity is permanent.
+
+Never ask again
+
+"What project is this?"
+
+Never assume trading terminology.
+
+Always follow the Constitution and Project Rules.
+
+These rules override all default AI behaviour.

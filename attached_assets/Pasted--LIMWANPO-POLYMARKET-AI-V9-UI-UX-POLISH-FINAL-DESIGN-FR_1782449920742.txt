@@ -1,0 +1,522 @@
+# LIMWANPO POLYMARKET AI — V9 UI/UX POLISH (FINAL DESIGN FREEZE)
+
+We are entering the FINAL UI POLISH phase.
+
+IMPORTANT:
+
+This is NOT a redesign.
+
+This is NOT a feature expansion.
+
+Do NOT change any AI logic.
+
+Do NOT change backend.
+
+Do NOT change scoring.
+
+Do NOT change trading algorithm.
+
+Only polish the interface until it looks like a premium trading terminal.
+
+Think:
+
+• Bloomberg Terminal
+• TradingView Professional
+• Hyperliquid
+• Institutional Quant Dashboard
+
+The dashboard must feel clean, premium, stable and professional.
+
+==================================================
+
+1. KEEP CURRENT STRUCTURE
+   ==================================================
+
+Keep existing layout:
+
+* Left Market Universe
+* AI Current Target
+* BTC Candlestick
+* Positions
+* AI Decision Engine
+* System Thinking
+* Opportunity Heatmap
+* Bottom Statistics
+* Thinking Feed
+* Live Feed
+* Capital Projection
+
+No new sections.
+
+No moving panels around.
+
+Only improve presentation.
+
+==================================================
+2. TYPOGRAPHY POLISH
+====================
+
+Improve readability.
+
+Current font is too small in many places.
+
+Rules:
+
+Increase readability without making dashboard crowded.
+
+Hierarchy:
+
+Title
+Subtitle
+Label
+Value
+Small Info
+
+Make values stand out.
+
+Examples:
+
+BTC 5m
+Score
+Odds
+Spread
+Distance
+Index
+
+must be instantly readable.
+
+Do NOT use random font sizes.
+
+Everything should follow a consistent hierarchy.
+
+==================================================
+3. SPACING SYSTEM
+=================
+
+Current dashboard has inconsistent spacing.
+
+Standardize:
+
+panel padding
+
+card padding
+
+header spacing
+
+vertical spacing
+
+horizontal spacing
+
+margin between sections
+
+Everything should align perfectly.
+
+Nothing should look cramped.
+
+Nothing should float too far apart.
+
+==================================================
+4. PANEL CONSISTENCY
+====================
+
+Every panel should have:
+
+same border thickness
+
+same glow intensity
+
+same corner radius
+
+same padding
+
+same header height
+
+same spacing
+
+Everything should feel like one product.
+
+==================================================
+5. COLOR CLEANUP
+================
+
+Keep existing cyber terminal theme.
+
+But reduce visual noise.
+
+Current cyan glow is slightly excessive.
+
+Use glow only where needed:
+
+selected target
+
+important numbers
+
+active engines
+
+signals
+
+Avoid glowing everything.
+
+The dashboard should feel premium, not flashy.
+
+==================================================
+6. HEADER CLEANUP
+=================
+
+Make top header cleaner.
+
+Better alignment.
+
+Better spacing.
+
+Engine counters easier to read.
+
+Paper Mode badge more elegant.
+
+Current time aligned properly.
+
+Everything centered vertically.
+
+==================================================
+7. LEFT MARKET UNIVERSE
+=======================
+
+Keep:
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+Each with:
+
+5m
+
+15m
+
+1H
+
+(total 12 markets)
+
+Improve:
+
+alignment
+
+spacing
+
+row height
+
+score position
+
+timeframe badge
+
+sparkline position
+
+The list should be scannable within 1 second.
+
+==================================================
+8. AI CURRENT TARGET
+====================
+
+This is the most important panel.
+
+Improve visual hierarchy.
+
+BTC
+
+Timeframe
+
+Score
+
+Odds
+
+Spread
+
+Distance
+
+Index
+
+must immediately attract attention.
+
+Do not increase size.
+
+Only improve layout.
+
+Better spacing.
+
+Better balance.
+
+Cleaner typography.
+
+==================================================
+9. BTC CANDLESTICK
+==================
+
+Keep Lightweight Charts.
+
+No TradingView iframe.
+
+Improve appearance:
+
+more padding
+
+better scaling
+
+clean price labels
+
+better timeframe label
+
+match dashboard theme
+
+Chart should look embedded.
+
+Not pasted.
+
+Chart border should match every other card.
+
+==================================================
+10. AI DECISION ENGINE
+======================
+
+Keep pipeline.
+
+Improve spacing.
+
+Cards should align perfectly.
+
+Animation smoother.
+
+Progress indicators cleaner.
+
+No unnecessary glow.
+
+Everything should look like enterprise software.
+
+==================================================
+11. SYSTEM HEALTH
+=================
+
+Current percentages are good.
+
+Improve:
+
+alignment
+
+spacing
+
+label readability
+
+percentage emphasis
+
+Rows should be easier to scan.
+
+==================================================
+12. POSITIONS PANEL
+===================
+
+Current empty state:
+
+NO ACTIVE TRADES
+
+WAITING FOR AI CONFIRMATION
+
+PAPER MODE
+
+Improve typography.
+
+Improve spacing.
+
+Add subtle icon.
+
+Make it informative without wasting space.
+
+==================================================
+13. THINKING FEEDS
+==================
+
+KEEP:
+
+AI Thinking Feed
+
+AI Live Feed
+
+Capital Projection
+
+Each panel MUST have:
+
+fixed height
+
+internal scrolling
+
+never resize
+
+never push layout
+
+Auto-scroll only if user is already at bottom.
+
+If user scrolls manually:
+
+lock auto-scroll.
+
+Resume only when user returns bottom.
+
+Never cause page jumping.
+
+==================================================
+14. LOG VISUALIZATION
+=====================
+
+Improve log readability.
+
+Different colors:
+
+INFO
+
+SUCCESS
+
+WARNING
+
+ERROR
+
+SIGNAL
+
+EXECUTION
+
+WATCH
+
+SYSTEM
+
+Timestamp should be subtle.
+
+Message should be primary.
+
+Monospace alignment must remain perfect.
+
+==================================================
+15. BOTTOM STATISTICS
+=====================
+
+Win Rate
+
+Daily PnL
+
+Trades
+
+Max Drawdown
+
+Equity
+
+Daily PnL
+
+Win Streak
+
+Kill Switch
+
+Capital
+
+Need consistent typography.
+
+Values larger.
+
+Labels smaller.
+
+Better spacing.
+
+Equal card widths.
+
+==================================================
+16. RESPONSIVE STABILITY
+========================
+
+Dashboard height NEVER changes.
+
+Panels NEVER resize because of content.
+
+No cumulative layout shift.
+
+No flickering.
+
+No jumping.
+
+Scrolling only inside scrollable panels.
+
+==================================================
+17. PERFORMANCE
+===============
+
+Do not introduce heavy libraries.
+
+Animations:
+
+GPU accelerated.
+
+60 FPS.
+
+Avoid expensive DOM updates.
+
+Reuse existing elements.
+
+Update only changed values.
+
+Keep memory usage minimal.
+
+==================================================
+18. PROFESSIONAL DETAILS
+========================
+
+Polish every small detail.
+
+Examples:
+
+perfect text alignment
+
+consistent icon spacing
+
+balanced padding
+
+uniform button height
+
+hover transitions
+
+focus states
+
+selection highlights
+
+scrollbar styling
+
+micro animations
+
+Everything should feel handcrafted.
+
+==================================================
+19. FINAL QUALITY STANDARD
+==========================
+
+Before considering the UI finished verify:
+
+No overlapping text
+
+No cropped text
+
+No inconsistent spacing
+
+No oversized glow
+
+No misaligned borders
+
+No flickering
+
+No jumping layout
+
+No stretched cards
+
+No inconsistent typography
+
+Everything should look like a finished commercial product.
+
+This is the FINAL DESIGN FREEZE.
+
+From this point onward we prioritize stability, clarity, usability, and professionalism over adding new UI features.

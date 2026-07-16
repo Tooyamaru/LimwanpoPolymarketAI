@@ -1,0 +1,422 @@
+# LIMWANPO AI — FINAL DASHBOARD POLISH (FINAL LOCK v3)
+
+IMPORTANT
+
+Sebelum mengubah satu baris kode pun, pahami dulu konteks project ini.
+
+========================================================
+INI BUKAN AI TRADING DASHBOARD
+========================================================
+
+INI ADALAH
+
+AI POLYMARKET DASHBOARD
+
+Semua keputusan UI harus mengikuti konsep Polymarket.
+
+Bukan Binance Terminal.
+Bukan TradingView.
+Bukan MetaTrader.
+
+========================================================
+
+JANGAN MENGUBAH
+
+- Backend
+- Database
+- API
+- Engine
+- AI Logic
+- Paper Trading
+- Footer
+- Live Probability Chart
+- Semua endpoint
+- Business Logic
+
+Frontend ONLY.
+
+========================================================
+PRIORITAS
+========================================================
+
+Yang boleh disentuh HANYA
+
+MARKET UNIVERSE
+
+Tujuan:
+
+Market Universe harus menjadi bagian terbaik dari dashboard.
+
+Saat dashboard dibuka:
+
+- seluruh market langsung terlihat
+- tidak ada card terpotong
+- tidak ada clipping
+- tidak ada scrollbar
+- tidak ada overflow
+
+========================================================
+1. REDESIGN HEADER MARKET
+========================================================
+
+Header Asset masih terlalu besar.
+
+Gunakan layout berikut.
+
+--------------------------------------------------------
+
+LEFT
+
+₿ BTC
+
+atau
+
+◆ ETH
+
+Logo dan nama market HARUS SATU BARIS.
+
+Logo diperbesar ±15%.
+
+Nama market lebih besar.
+
+Nama market lebih tebal.
+
+Logo dan nama menjadi fokus utama.
+
+--------------------------------------------------------
+
+RIGHT
+
+Open Position : X
+
+Capital Used : $XX.XX
+
+Gunakan alignment kanan.
+
+Jangan taruh di tengah.
+
+Jangan ada informasi lain.
+
+========================================================
+
+HAPUS DARI HEADER
+
+AI Score
+
+Status
+
+Waiting
+
+Trading
+
+Monitoring
+
+34%
+
+Engine Score
+
+Confidence
+
+Persentase
+
+Semuanya sudah ada di timeframe card.
+
+========================================================
+
+Jika belum ada posisi
+
+Open Position : 0
+
+Capital Used : $0.00
+
+atau
+
+No Active Position
+
+Capital Used : $0.00
+
+========================================================
+2. HEADER HEIGHT
+========================================================
+
+Kurangi tinggi header sekitar 35%.
+
+JANGAN mengecilkan:
+
+logo
+
+nama market
+
+Yang dikurangi hanya:
+
+padding
+
+margin
+
+ruang kosong
+
+========================================================
+3. PERBAIKI ROOT CAUSE CARD 1H TERPOTONG
+========================================================
+
+INI ADALAH PRIORITAS.
+
+Masalah bukan di ukuran font.
+
+Masalah ada pada pembagian tinggi layout.
+
+JANGAN mengecilkan isi card.
+
+JANGAN menghapus informasi.
+
+Perbaiki layout.
+
+Gunakan Flex/Grid agar ruang dibagi rata.
+
+Contoh implementasi:
+
+Asset Header
+
+48px
+
+5M
+
+1fr
+
+15M
+
+1fr
+
+1H
+
+1fr
+
+atau
+
+grid-template-rows:
+
+48px
+
+repeat(3,minmax(0,1fr))
+
+atau Flex setara.
+
+========================================================
+
+Setiap timeframe
+
+5M
+
+15M
+
+1H
+
+HARUS mendapatkan tinggi yang sama.
+
+Tidak boleh ada yang lebih kecil.
+
+Tidak boleh ada yang terpotong.
+
+========================================================
+
+Kurangi gap antar timeframe sedikit.
+
+Misalnya:
+
+6px
+
+↓
+
+2~3px
+
+Tetapi
+
+JANGAN mengubah isi card.
+
+========================================================
+4. TIMEFRAME CARD
+========================================================
+
+JANGAN diperkecil.
+
+JANGAN dipadatkan.
+
+Isi tetap:
+
+YES
+
+NO
+
+SPR
+
+Price To Beat
+
+Current Price
+
+Difference
+
+Position
+
+Stake
+
+Contracts
+
+PnL
+
+Age
+
+AI Score
+
+Status
+
+Semua harus tetap ada.
+
+========================================================
+5. VISUAL TIMEFRAME CARD
+========================================================
+
+Pertegas:
+
+border
+
+cyan glow
+
+separator
+
+padding
+
+spacing
+
+radius
+
+Setiap card harus benar-benar terlihat sebagai card terpisah.
+
+========================================================
+6. PRICE TO BEAT
+========================================================
+
+Hierarchy visual:
+
+Price To Beat
+
+↓
+
+Current Price
+
+↓
+
+Difference
+
+Current Price paling dominan.
+
+Difference merah/hijau.
+
+JANGAN menggunakan probabilitas sebagai Current Price.
+
+Gunakan reference price market Polymarket.
+
+========================================================
+7. MARKET UNIVERSE
+========================================================
+
+Semua market harus tampil FULL.
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+Masing-masing memiliki
+
+5M
+
+15M
+
+1H
+
+lengkap.
+
+Tidak boleh ada:
+
+clipping
+
+overflow
+
+scroll
+
+status hilang
+
+AI Score hilang
+
+bagian bawah hilang
+
+========================================================
+8. JANGAN UBAH
+========================================================
+
+Portfolio
+
+Chart
+
+AI Activity
+
+System Health
+
+Execution Pipeline
+
+Footer
+
+Backend
+
+API
+
+Semua Engine
+
+========================================================
+9. SELF REVIEW
+========================================================
+
+Sebelum selesai lakukan review sendiri.
+
+Checklist:
+
+✓ Logo + Nama Market satu baris.
+
+✓ Logo lebih besar.
+
+✓ Nama market lebih besar.
+
+✓ Header lebih pendek.
+
+✓ Open Position rata kanan.
+
+✓ Capital Used rata kanan.
+
+✓ Header terlihat premium.
+
+✓ Tidak ada ruang kosong berlebihan.
+
+✓ Semua card 5M tampil penuh.
+
+✓ Semua card 15M tampil penuh.
+
+✓ Semua card 1H tampil penuh.
+
+✓ Tidak ada clipping.
+
+✓ Tidak ada overflow.
+
+✓ Tidak ada scroll.
+
+✓ Tinggi ketiga timeframe identik.
+
+✓ Dashboard tetap terlihat seperti terminal profesional khusus POLYMARKET.
+
+========================================================
+
+JANGAN berhenti hanya karena kode berhasil dijalankan.
+
+Berhenti hanya ketika seluruh checklist visual di atas benar-benar terpenuhi.

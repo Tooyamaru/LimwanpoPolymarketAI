@@ -1,0 +1,223 @@
+You are continuing work on an existing production dashboard called LIMWANPO POLYMARKET AI.
+
+IMPORTANT CONTEXT
+
+This dashboard is FINISHED from a UI perspective.
+
+The goal is NO LONGER redesigning or adding visual effects.
+
+The dashboard has already gone through more than 40 refinement passes.
+
+Current design philosophy:
+
+- Bloomberg Terminal
+- TradingView Professional
+- Institutional Hedge Fund Terminal
+- Quiet confidence
+- Information first
+- Interface second
+
+The dashboard is intentionally minimal.
+
+DO NOT redesign it.
+
+DO NOT modernize it.
+
+DO NOT introduce neumorphism, glassmorphism, gradients everywhere, rounded UI, oversized spacing, colorful cards, or flashy effects.
+
+===================================================
+
+VERY IMPORTANT RULE
+
+Only change something if it is OBJECTIVELY WRONG.
+
+If something is merely a matter of taste,
+
+DO NOT TOUCH IT.
+
+If you're unsure,
+
+LEAVE IT.
+
+The UI is considered frozen.
+
+===================================================
+
+Things that MUST NEVER change:
+
+• Layout
+• Grid system
+• Component positions
+• HTML structure
+• IDs
+• JavaScript logic
+• Backend
+• API
+• WebSocket
+• Data flow
+
+Only microscopic CSS polish is allowed.
+
+===================================================
+
+Visual philosophy
+
+Data must dominate.
+
+Interface must disappear.
+
+Hierarchy:
+
+1.
+Hero price
+
+2.
+Candlestick chart
+
+3.
+Portfolio values
+
+4.
+Market data
+
+5.
+Health indicators
+
+6.
+Feeds
+
+7.
+Labels
+
+8.
+Decorations
+
+Labels should NEVER compete with values.
+
+===================================================
+
+Current dashboard already has:
+
+✓ typography hierarchy
+✓ spacing rhythm
+✓ institutional colors
+✓ quiet shadows
+✓ minimal borders
+✓ static interface
+✓ subtle glow
+✓ calm health panel
+✓ calm feeds
+✓ simplified pipeline
+✓ premium finish
+
+===================================================
+
+Before making ANY modification:
+
+1.
+Read the ENTIRE HTML/CSS.
+
+2.
+Understand ALL accumulated CSS overrides.
+
+3.
+Look for REAL bugs only.
+
+Examples of REAL bugs:
+
+• misalignment
+• overlapping
+• clipped text
+• inconsistent padding
+• broken spacing
+• conflicting CSS
+• incorrect hierarchy
+• visible rendering errors
+
+NOT acceptable reasons:
+
+"I think this looks better"
+
+"I prefer..."
+
+"It feels..."
+
+Those are NOT bugs.
+
+===================================================
+
+Workflow
+
+1.
+Audit.
+
+2.
+List objective issues.
+
+3.
+If zero issues are found,
+
+STOP.
+
+Say:
+
+"The UI has reached a stable institutional quality level.
+No further CSS changes are justified."
+
+Do NOT invent improvements.
+
+===================================================
+
+One more important rule:
+
+Never accumulate more CSS.
+
+If a problem is caused by conflicting old CSS,
+
+replace the old rule,
+
+do NOT append another override.
+
+Avoid CSS bloat.
+
+===================================================
+
+Priority from now on is NO LONGER UI.
+
+After confirming UI is stable,
+
+move development toward the next project phases:
+
+1.
+Backend stability
+
+2.
+Signal Engine validation
+
+3.
+Strategy Engine
+
+4.
+Portfolio Engine
+
+5.
+Risk Engine
+
+6.
+Paper Trading
+
+7.
+Performance Analytics
+
+8.
+Trade Logging
+
+9.
+Statistical validation
+
+10.
+Edge improvement
+
+UI work is finished unless an actual rendering bug exists.
+
+Begin by auditing the current dashboard.

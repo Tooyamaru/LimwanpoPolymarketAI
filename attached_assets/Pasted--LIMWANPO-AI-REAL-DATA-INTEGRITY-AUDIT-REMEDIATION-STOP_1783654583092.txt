@@ -1,0 +1,503 @@
+# LIMWANPO AI — REAL DATA INTEGRITY AUDIT + REMEDIATION
+
+STOP.
+
+JANGAN mengubah UI.
+JANGAN redesign dashboard.
+JANGAN mengubah layout.
+JANGAN menambah fitur baru.
+JANGAN membuat dummy.
+JANGAN membuat mock data.
+JANGAN membuat random value.
+JANGAN membuat fallback palsu.
+JANGAN hardcode angka agar tampilan terlihat terisi.
+JANGAN mengubah arsitektur tanpa kebutuhan nyata.
+
+MODE:
+AUDITOR + EXECUTOR.
+
+Audit seluruh aliran data, temukan data fake / placeholder / hardcoded / stale / salah mapping, lalu langsung perbaiki tanpa menunggu approval lagi.
+
+Target akhir:
+
+SEMUA DATA YANG DIPAKAI PROGRAM DAN DITAMPILKAN DI DASHBOARD HARUS:
+
+1. Berasal dari Polymarket API resmi,
+2. Atau dihitung secara deterministik dari data Polymarket resmi,
+3. Atau berasal dari hasil engine internal yang inputnya seluruhnya data real,
+4. Memiliki sumber, formula, dan jalur data yang dapat dibuktikan.
+
+==================================================
+BAGIAN A — READ FIRST
+==================================================
+
+Sebelum mengubah kode, baca:
+
+- CONSTITUTION.md
+- PROJECT_RULES.md
+- DATA_RULES.md
+- AI_GUARDIAN.md
+- SOURCE_AUDIT.md
+- PHASE_GATE.md
+- replit.md
+- backend/app/static/index.html
+- seluruh backend/app/api/v1/
+- seluruh backend/app/services/
+- seluruh backend/app/repositories/
+- seluruh backend/app/models/
+- seluruh backend/app/workers/
+- backend/app/config/settings.py
+
+Jangan menebak dari nama file.
+Baca implementasi sebenarnya.
+
+==================================================
+BAGIAN B — INVENTORY SEMUA DATA
+==================================================
+
+Buat daftar lengkap semua nilai yang:
+
+1. Ditampilkan di dashboard,
+2. Dipakai oleh AI Engine,
+3. Dipakai oleh Decision Engine,
+4. Dipakai oleh Opportunity Engine,
+5. Dipakai oleh Signal Engine,
+6. Dipakai untuk menghitung Profit,
+7. Dipakai untuk menentukan status market/prediction.
+
+Minimal audit field berikut:
+
+MARKET UNIVERSE:
+- asset
+- timeframe
+- question/title
+- condition_id
+- event_id
+- yes_token_id
+- no_token_id
+- start_time
+- end_time
+- countdown
+- market status
+- UP probability
+- DOWN probability
+- best bid
+- best ask
+- spread
+- opening_price / TARGET
+- current reference price
+- GAP
+- confidence
+- opportunity score
+- direction
+- decision
+- profit
+- displayed status
+
+PORTFOLIO / PREDICTION:
+- budget
+- available budget
+- coverage
+- active predictions
+- cumulative outcome
+- prediction accuracy
+- total cost
+- position size
+- open price
+- payout
+- realized result
+
+SYSTEM:
+- engine health
+- pipeline counts
+- feed events
+- signals count
+- opportunities count
+- predictions count
+
+==================================================
+BAGIAN C — SOURCE TABLE WAJIB
+==================================================
+
+Untuk SETIAP field, buat tabel dengan kolom:
+
+- Field
+- UI location
+- Frontend variable
+- Frontend function
+- API endpoint
+- Backend router
+- Service
+- Repository
+- DB table/column
+- External source
+- Raw API field
+- Transformation/formula
+- Cache
+- Refresh interval
+- Null behavior
+- Is hardcoded?
+- Is random?
+- Is placeholder?
+- Is fallback?
+- Is stale-prone?
+- Final classification
+
+Final classification hanya boleh:
+
+- REAL_POLYMARKET
+- DERIVED_FROM_POLYMARKET
+- INTERNAL_ENGINE_FROM_REAL_DATA
+- CONFIGURATION
+- INVALID_FAKE
+- INVALID_HARDCODED
+- INVALID_RANDOM
+- INVALID_PLACEHOLDER
+- INVALID_STALE_MAPPING
+- UNKNOWN
+
+Tidak boleh ada UNKNOWN saat tugas selesai.
+
+==================================================
+BAGIAN D — POLYMARKET SOURCE VALIDATION
+==================================================
+
+Gunakan dokumentasi dan endpoint resmi Polymarket yang SUDAH dipakai project.
+
+Validasi langsung:
+
+GAMMA:
+- market question
+- condition_id
+- token IDs
+- active/closed status
+- start/end time
+- metadata
+
+CLOB:
+- UP/YES token price
+- DOWN/NO token price
+- best bid
+- best ask
+- spread
+- orderbook
+- market/token validity
+
+Untuk semua 12 market aktif:
+
+- BTC 5m
+- BTC 15m
+- BTC 1H
+- ETH 5m
+- ETH 15m
+- ETH 1H
+- SOL 5m
+- SOL 15m
+- SOL 1H
+- XRP 5m
+- XRP 15m
+- XRP 1H
+
+Bandingkan:
+
+Gamma condition_id
+=
+Database condition_id
+=
+Price snapshot condition_id
+=
+Frontend card condition_id
+
+Gamma token IDs
+=
+Database token IDs
+=
+CLOB token IDs yang dipakai
+
+Jika tidak sama, itu BUG.
+Cari root cause dan perbaiki.
+
+==================================================
+BAGIAN E — MARKET ROLLOVER
+==================================================
+
+Market timeframe akan berganti saat periodenya selesai.
+
+Audit dan pastikan alur berikut benar:
+
+Market lama selesai
+→ universe sync mendeteksi market baru
+→ market lama tidak lagi active
+→ market baru menjadi active
+→ token IDs diperbarui
+→ price snapshot baru mulai tersimpan
+→ signal/opportunity/decision memakai condition_id baru
+→ frontend card berubah otomatis
+→ browser tidak perlu refresh manual
+
+Wajib uji rollover atau simulasi aman berbasis data aktual.
+
+Pastikan tidak ada race condition yang menyebabkan:
+
+- card tetap memakai market lama
+- snapshot memakai condition_id lama
+- signal/opportunity memakai market lama
+- UI menampilkan “—” terlalu lama
+- duplicate active market
+- stale cache
+
+==================================================
+BAGIAN F — HAPUS DATA PALSU
+==================================================
+
+Cari seluruh codebase untuk:
+
+- random
+- Math.random
+- random.uniform
+- hardcoded probability
+- hardcoded confidence
+- hardcoded market values
+- fake event
+- placeholder feed
+- dummy price
+- default probability
+- static profit
+- static target
+- static status
+- sample data
+- mock data
+- test data yang bocor ke production
+- fallback angka
+- fabricated message
+
+Setiap temuan:
+
+1. Jelaskan lokasi,
+2. Jelaskan dampaknya,
+3. Hapus atau ganti dengan source real,
+4. Audit ulang.
+
+Jangan mengganti fake dengan fake lain.
+
+Jika source real belum tersedia:
+- tampilkan null / “—”
+- dokumentasikan missing source
+- jangan mengarang nilai
+
+==================================================
+BAGIAN G — CONFIDENCE AUDIT
+==================================================
+
+Confidence TIDAK boleh:
+
+- random
+- konstan tanpa alasan
+- hardcoded
+- disalin dari probability
+- fallback ke angka default
+
+Trace confidence:
+
+raw inputs
+→ feature calculations
+→ weights
+→ normalization
+→ final score
+
+Buktikan semua input real.
+
+Jika semua market selalu memiliki confidence sama, cari penyebabnya.
+
+Tentukan apakah:
+
+- memang input identik,
+- formula salah,
+- stale values,
+- mapping salah,
+- cache salah,
+- default fallback.
+
+Perbaiki jika itu bug.
+
+==================================================
+BAGIAN H — PROFIT AUDIT
+==================================================
+
+PROFIT harus dihitung dari data real.
+
+Audit:
+
+- side/direction AI
+- actual UP/DOWN contract price
+- stake / allocation real dari engine atau konfigurasi resmi
+- contract quantity
+- gross payout
+- net profit
+
+Formula:
+
+contracts = stake / entry_price
+gross_payout = contracts * 1.00
+net_profit = gross_payout - stake
+
+BUY_YES / UP memakai harga sisi UP.
+BUY_NO / DOWN memakai harga sisi DOWN.
+
+Dilarang:
+
+- profit hardcoded
+- stake hardcoded di frontend jika backend punya allocation
+- menggunakan price sisi yang salah
+- menggunakan stale price
+- menampilkan profit jika direction belum valid
+
+Jika belum ada direction:
+- tampilkan “—”
+- jangan mengarang sisi.
+
+==================================================
+BAGIAN I — ENGINE INPUT AUDIT
+==================================================
+
+Audit Signal, Opportunity, Strategy, Risk, Decision, Outcome Learning, Dynamic Weight.
+
+Untuk setiap engine:
+
+- input table/API
+- input fields
+- formula
+- output fields
+- persistence
+- consumer berikutnya
+- apakah output benar-benar digunakan
+
+Pastikan tidak ada engine yang:
+
+- membaca dummy
+- memakai default fake
+- memakai data stale
+- memakai condition_id market lama
+- menghasilkan output tanpa input valid
+
+Decision Engine hanya boleh memutuskan dari data real.
+
+==================================================
+BAGIAN J — FEED DAN PIPELINE
+==================================================
+
+AI Activity Feed hanya boleh berisi event real dari:
+
+- DecisionLog
+- RiskEvent
+- Opportunity
+- Signal
+
+Tidak boleh ada fake “thinking” message atau random status.
+
+Prediction Pipeline counts harus berasal dari output engine yang nyata, bukan angka hardcoded atau sekadar label visual.
+
+==================================================
+BAGIAN K — REMEDIATION
+==================================================
+
+Setelah audit:
+
+LANGSUNG perbaiki semua item INVALID.
+
+Tidak perlu approval tambahan.
+
+Batas perubahan:
+
+- boleh backend
+- boleh repository/service/worker/API
+- boleh mapping frontend jika mapping salah
+- tidak boleh redesign UI
+- tidak boleh mengubah layout visual
+- tidak boleh menambah provider eksternal baru tanpa kebutuhan mutlak
+
+Gunakan perubahan minimal dan terarah.
+
+Setelah setiap perbaikan:
+- restart app
+- cek logs
+- cek endpoint
+- cek DB
+- cek UI
+- audit ulang field terkait
+
+==================================================
+BAGIAN L — VALIDASI AKHIR
+==================================================
+
+Wajib membuktikan untuk 12 market aktif:
+
+- condition_id sinkron
+- token IDs sinkron
+- UP real
+- DOWN real
+- spread real
+- target/opening price memiliki source jelas
+- GAP dihitung benar
+- confidence memiliki formula real
+- direction real
+- decision real
+- profit real
+- countdown real
+- status real
+
+Tampilkan contoh JSON end-to-end minimal untuk:
+
+- BTC 5m
+- ETH 15m
+- SOL 1H
+- XRP 5m
+
+Format bukti:
+
+Polymarket raw response
+→ DB row
+→ API response
+→ frontend variable
+→ displayed value
+
+Nilainya harus cocok atau transformasinya harus dijelaskan secara matematis.
+
+==================================================
+OUTPUT WAJIB
+==================================================
+
+Buat atau update:
+
+REAL_DATA_AUDIT.md
+
+Isi:
+
+1. Inventory semua field
+2. Source table lengkap
+3. Bugs ditemukan
+4. Root cause
+5. File diubah
+6. Formula yang digunakan
+7. Fake/hardcoded/random yang dihapus
+8. Validasi 12 market
+9. Remaining risks
+10. PASS/FAIL final
+
+Final result hanya boleh:
+
+REAL DATA INTEGRITY: PASS
+
+jika:
+
+- tidak ada INVALID
+- tidak ada UNKNOWN
+- tidak ada fake
+- tidak ada random
+- tidak ada placeholder palsu
+- tidak ada stale mapping
+- semua field dapat dibuktikan
+
+Jika masih ada satu field belum terbukti:
+jangan klaim PASS.
+Lanjutkan audit dan remediation sampai selesai.

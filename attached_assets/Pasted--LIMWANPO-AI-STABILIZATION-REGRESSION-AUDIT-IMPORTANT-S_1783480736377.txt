@@ -1,0 +1,407 @@
+# LIMWANPO AI — STABILIZATION & REGRESSION AUDIT
+
+## IMPORTANT
+
+STOP.
+
+Do NOT start Phase 3.
+
+Do NOT create new features.
+
+Do NOT redesign the dashboard.
+
+Do NOT optimize the UI yet.
+
+Your only objective is to stabilize the existing project.
+
+This is a REGRESSION AUDIT.
+
+Nothing new should be added.
+
+Nothing useful should disappear.
+
+Everything must comply with the Project Constitution.
+
+---
+
+# OBJECTIVE
+
+The dashboard has gone through many iterations.
+
+Several regressions have appeared repeatedly.
+
+Before continuing development, perform a complete audit and stabilization.
+
+The project must become stable before Phase 3 begins.
+
+---
+
+# STEP 1 — READ FIRST
+
+Before touching any file, read completely:
+
+* CONSTITUTION.md
+* PROJECT_IDENTITY.md (if exists)
+* DATA_POLICY.md (if exists)
+* AI_RULES.md (if exists)
+* replit.md
+
+Do not continue until all rules are understood.
+
+---
+
+# STEP 2 — FULL DASHBOARD AUDIT
+
+Audit every dashboard component.
+
+Never assume something is correct.
+
+Verify every section manually.
+
+---
+
+## MARKET UNIVERSE
+
+Verify every card.
+
+Each card MUST contain:
+
+✔ Timeframe
+
+✔ Direction
+
+✔ YES probability
+
+✔ NO probability
+
+✔ Price To Beat / Target
+
+✔ Gap
+
+✔ Confidence
+
+✔ Countdown
+
+✔ Status
+
+If position exists:
+
+✔ Entry Probability
+
+✔ Exposure
+
+✔ Entries
+
+Nothing else.
+
+---
+
+Forbidden:
+
+Bid
+
+Ask
+
+Order Book
+
+Depth
+
+Stop Loss
+
+Take Profit
+
+Margin
+
+Leverage
+
+Position Size
+
+Trading PnL
+
+Execution Order
+
+If any forbidden item exists,
+
+remove it.
+
+---
+
+# STEP 3 — INFORMATION REGRESSION CHECK
+
+Compare every card against previous intended design.
+
+Nothing important may disappear.
+
+Specifically verify:
+
+Price To Beat
+
+Target
+
+Gap
+
+Confidence
+
+Countdown
+
+Status
+
+Opportunity
+
+Entries
+
+Exposure
+
+Entry Probability
+
+If any information disappeared,
+
+restore it.
+
+Never replace missing information with empty space.
+
+---
+
+# STEP 4 — SOURCE VALIDATION
+
+Verify every displayed value.
+
+Dashboard data MUST come from:
+
+Polymarket
+
+Only.
+
+Allowed external data:
+
+Binance
+
+→ Chart candles only
+
+Chainlink
+
+→ Oracle price only
+
+Nothing else.
+
+No fake values.
+
+No placeholder values.
+
+No generated values.
+
+---
+
+# STEP 5 — VOCABULARY AUDIT
+
+Search entire frontend.
+
+Remove trading terminology.
+
+Forbidden words:
+
+Trade
+
+Position
+
+Margin
+
+Leverage
+
+Stop Loss
+
+Take Profit
+
+Order
+
+Broker
+
+Exchange
+
+Execution Order
+
+Portfolio
+
+Replace with probability terminology where appropriate.
+
+---
+
+# STEP 6 — RESPONSIVE AUDIT
+
+Verify:
+
+Desktop
+
+1920×1080
+
+2560×1440
+
+iPad Landscape
+
+1024×768
+
+1180×820
+
+1366×1024
+
+No overlap.
+
+No clipping.
+
+No hidden rows.
+
+No missing labels.
+
+No overflow.
+
+No information outside cards.
+
+---
+
+# STEP 7 — PIPELINE AUDIT
+
+Execution Pipeline is NOT a trade pipeline.
+
+It is an AI reasoning pipeline.
+
+Verify:
+
+Circles centered
+
+Connectors centered
+
+Labels aligned
+
+No overlapping
+
+No clipping
+
+No spacing inconsistency
+
+---
+
+# STEP 8 — BORDER AUDIT
+
+Verify:
+
+Monitoring cards
+
+↓
+
+Subtle border
+
+Trading/Active prediction cards
+
+↓
+
+Brighter border
+
+No inconsistent glow.
+
+No random border colors.
+
+---
+
+# STEP 9 — PIXEL AUDIT
+
+Inspect every panel.
+
+Check:
+
+alignment
+
+padding
+
+margin
+
+spacing
+
+visual hierarchy
+
+No random spacing.
+
+No inconsistent gaps.
+
+No dead space.
+
+No cramped sections.
+
+---
+
+# STEP 10 — DO NOT CHANGE
+
+Do NOT redesign.
+
+Do NOT change colors.
+
+Do NOT create new layouts.
+
+Do NOT invent features.
+
+Do NOT remove existing information.
+
+Do NOT simplify by deleting data.
+
+---
+
+# STEP 11 — REPORT FIRST
+
+When the audit finishes:
+
+DO NOT modify anything immediately.
+
+Instead produce a report.
+
+The report must contain:
+
+PASS
+
+WARNING
+
+FAIL
+
+for every dashboard section.
+
+Then list every regression found.
+
+Then propose the fix.
+
+Only after approval may code be modified.
+
+---
+
+# FINAL RULE
+
+Phase 3 is LOCKED.
+
+No Phase 3 work may begin until:
+
+Regression Audit
+
+PASS
+
+Information Audit
+
+PASS
+
+Source Audit
+
+PASS
+
+Responsive Audit
+
+PASS
+
+Vocabulary Audit
+
+PASS
+
+Pipeline Audit
+
+PASS
+
+Project Constitution
+
+PASS
+
+Only then may Phase 3 start.

@@ -1,0 +1,353 @@
+ROLE:
+You are acting as a Principal Software Architect, Senior Python Backend Engineer, Database Architect, QA Lead, DevOps Reviewer, and Codebase Auditor.
+
+MISSION:
+Perform a STRICT READ-ONLY AUDIT of the entire repository.
+
+DO NOT MODIFY ANY FILE.
+DO NOT CREATE ANY FILE.
+DO NOT DELETE ANY FILE.
+DO NOT RUN MIGRATIONS.
+DO NOT AUTO-FIX ANYTHING.
+
+Your only goal is to inspect, verify, analyze, cross-check, and produce a complete audit report.
+
+====================================================
+PHASE 1 — REPOSITORY DISCOVERY
+
+Scan the entire repository.
+
+Build an inventory of:
+
+* all folders
+* all python files
+* all documentation files
+* all tests
+* all API routers
+* all services
+* all repositories
+* all models
+* all schemas
+* all workers
+* all config files
+
+Report:
+
+* total file count
+* file count by category
+* largest files
+* potentially duplicated files
+* dead files
+* orphaned files
+
+====================================================
+PHASE 2 — LAYER VERIFICATION
+
+Verify the architecture layer-by-layer.
+
+For every layer determine:
+
+Model
+Repository
+Service
+Router
+Worker
+Database table
+
+Check whether each layer is:
+
+COMPLETE
+PARTIAL
+MISSING
+
+Expected layers:
+
+L1 Market Collector
+
+L2 Scanner / Discovery
+
+L3 Universe Sync
+
+L3b Price Refresh
+
+L4 Signal Engine
+
+L5 Opportunity Engine
+
+L6 Strategy Engine
+
+L7 Execution Engine
+
+L8 Position Tracking
+
+L9 Risk Engine
+
+L10 Portfolio Reporting
+
+L11 Analytics
+
+L12 Monitoring
+
+L13 Production Readiness
+
+Generate a matrix.
+
+====================================================
+PHASE 3 — DATABASE AUDIT
+
+Inspect every SQLAlchemy model.
+
+Verify:
+
+* tablename
+* indexes
+* constraints
+* relationships
+* nullable fields
+* enums
+* comments
+
+Generate:
+
+TABLE INVENTORY
+
+For every table report:
+
+* table name
+* model file
+* columns
+* indexes
+* relationships
+
+Check for:
+
+* duplicate tables
+* unused tables
+* legacy tables
+* tables never queried
+* tables queried but lacking repository methods
+
+====================================================
+PHASE 4 — REPOSITORY PATTERN AUDIT
+
+Search entire codebase for:
+
+select(
+update(
+delete(
+insert(
+session.execute(
+db.execute(
+
+Find all SQL usage outside repositories.
+
+Report:
+
+File
+Line
+Query
+Severity
+
+Categorize:
+
+* allowed
+* questionable
+* architecture violation
+
+Identify every repository-pattern violation.
+
+====================================================
+PHASE 5 — SERVICE AUDIT
+
+For every service:
+
+Analyze:
+
+* responsibilities
+* dependencies
+* repository usage
+* business logic quality
+* code duplication
+* complexity
+
+Report:
+
+* oversized services
+* God objects
+* duplicated logic
+* dead methods
+* stale methods
+* unreachable code
+
+====================================================
+PHASE 6 — WORKER AUDIT
+
+Inspect all workers.
+
+Verify:
+
+* startup sequence
+* dependency ordering
+* interval consistency
+* shutdown handling
+* feature flags
+* ENABLED flags
+* RUN_ON_STARTUP flags
+* gate logic
+* event synchronization
+
+Identify:
+
+* race conditions
+* startup bugs
+* worker inconsistencies
+* dead helpers
+
+====================================================
+PHASE 7 — CONFIG AUDIT
+
+Inspect all settings.
+
+Find:
+
+* orphaned settings
+* unused environment variables
+* duplicated settings
+* inconsistent naming
+* hardcoded values replacing settings
+
+Verify version consistency:
+
+settings.py
+pyproject.toml
+README
+PROJECT_STATUS
+health endpoint
+
+====================================================
+PHASE 8 — DOCUMENTATION AUDIT
+
+Cross-check documentation against actual source.
+
+Verify:
+
+README.md
+PROJECT_STATUS.md
+ROADMAP.md
+NEXT_BUILD_TASKS.md
+replit.md
+
+Find:
+
+* wrong counts
+* wrong endpoint totals
+* wrong table totals
+* stale architecture descriptions
+* stale comments
+* stale docstrings
+
+====================================================
+PHASE 9 — TEST COVERAGE AUDIT
+
+Map:
+
+Layer
+Service
+Repository
+Router
+Tests
+
+Identify:
+
+* untested services
+* untested repositories
+* untested endpoints
+* critical business logic without tests
+
+Produce coverage matrix.
+
+====================================================
+PHASE 10 — DEAD CODE AUDIT
+
+Identify:
+
+* unused files
+* unused functions
+* unused classes
+* unused settings
+* unreachable branches
+* unused imports
+* legacy code
+
+Provide confidence score for each finding.
+
+====================================================
+PHASE 11 — SECURITY AUDIT
+
+Inspect:
+
+* secrets handling
+* environment variables
+* API exposure
+* CORS
+* logging
+* SQL injection risk
+* authentication
+* authorization
+
+Categorize findings:
+
+Critical
+Medium
+Low
+Info
+
+====================================================
+PHASE 12 — PERFORMANCE AUDIT
+
+Inspect:
+
+* N+1 queries
+* repeated queries
+* missing indexes
+* excessive polling
+* large loops
+* repeated DB access
+* memory-heavy operations
+
+====================================================
+PHASE 13 — FINAL SCORECARD
+
+Produce:
+
+Architecture Score /10
+Maintainability Score /10
+Documentation Score /10
+Testing Score /10
+Deployment Score /10
+Security Score /10
+
+Overall Score /10
+
+====================================================
+OUTPUT FORMAT
+
+Return:
+
+1. Executive Summary
+2. Layer Matrix
+3. Endpoint Inventory
+4. Database Inventory
+5. Repository Violations
+6. Worker Findings
+7. Config Findings
+8. Documentation Findings
+9. Dead Code Findings
+10. Security Findings
+11. Testing Gaps
+12. Technical Debt Inventory
+13. Prioritized Fix Plan
+
+DO NOT MODIFY ANY FILE.
+
+READ-ONLY AUDIT ONLY.

@@ -1,0 +1,201 @@
+LIMWANPO AI — PERFORMANCE PROFILER & ARCHITECTURE OPTIMIZATION
+
+Jangan melakukan perubahan UI.
+
+Jangan mengubah tampilan dashboard.
+
+Jangan menambah fitur.
+
+Fokus hanya pada performa aplikasi.
+
+Lakukan audit penuh terhadap seluruh frontend dan backend.
+
+Phase 1 — Full Performance Profiling
+
+Ukur secara nyata (bukan asumsi):
+
+First Paint
+First Contentful Paint
+Largest Contentful Paint
+Time To Interactive
+Memory Usage
+CPU Usage
+JS Heap
+DOM Nodes
+Layout Reflow
+Repaint Frequency
+API latency
+Render time setiap panel
+Phase 2 — Polling Audit
+
+Cari seluruh:
+
+setInterval
+
+setTimeout
+
+requestAnimationFrame
+
+fetch()
+
+Promise
+
+WebSocket
+
+Loop
+
+Timer
+
+Lalu buat tabel:
+
+Component | Interval | API | Cost | Can Optimize
+
+Phase 3 — Render Audit
+
+Cari seluruh:
+
+innerHTML
+
+appendChild
+
+replaceChildren
+
+querySelector
+
+querySelectorAll
+
+classList
+
+style
+
+DOM rebuild
+
+Hitung:
+
+berapa kali per menit setiap panel dirender.
+
+Target:
+
+Semua panel hanya render ketika data berubah.
+
+Phase 4 — Memory Audit
+
+Cari:
+
+memory leak
+
+listener leak
+
+timer leak
+
+object leak
+
+closure leak
+
+detached DOM
+
+unused arrays
+
+unused cache
+
+unused state
+
+Phase 5 — CPU Audit
+
+Hitung CPU terbesar berasal dari:
+
+Market Universe
+
+Pipeline
+
+Chart
+
+Ticker
+
+Feed
+
+Portfolio
+
+System Health
+
+Glow animation
+
+Canvas
+
+CSS animation
+
+Phase 6 — Animation Audit
+
+Audit seluruh:
+
+box-shadow
+
+text-shadow
+
+filter
+
+blur
+
+backdrop-filter
+
+transition
+
+animation
+
+keyframes
+
+gradient
+
+Canvas
+
+Glow
+
+Kurangi GPU cost tanpa mengubah visual.
+
+Phase 7 — API Optimization
+
+Pastikan:
+
+tidak ada duplicate request
+
+tidak ada duplicate polling
+
+tidak ada duplicate render
+
+tidak ada duplicate parsing
+
+Gunakan cache jika memungkinkan.
+
+Phase 8 — Final Architecture Review
+
+Buat laporan:
+
+Critical
+
+High
+
+Medium
+
+Low
+
+Berikan estimasi:
+
+CPU Reduction
+
+Memory Reduction
+
+DOM Reduction
+
+Render Reduction
+
+FPS Improvement
+
+Rules
+Jangan mengubah tampilan dashboard.
+Jangan menghapus fitur.
+Jangan mengurangi akurasi data.
+Jangan mengubah Market Universe.
+Jangan mengubah Prediction Pipeline.
+Jangan mengubah System Health.
+Jangan membuat placeholder.
+Semua optimisasi harus benar-benar diimplementasikan, bukan hanya direkomendasikan.

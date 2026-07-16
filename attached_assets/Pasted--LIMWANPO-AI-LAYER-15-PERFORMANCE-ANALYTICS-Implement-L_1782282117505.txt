@@ -1,0 +1,361 @@
+# LIMWANPO AI — LAYER 15: PERFORMANCE ANALYTICS
+
+Implement Layer 15 exactly as specified below.
+
+IMPORTANT:
+
+* Read existing code before modifying anything.
+* Preserve all behavior from Layers 1–14.
+* Do not modify Strategy Engine logic.
+* Do not modify Exit Engine logic.
+* Do not modify Position Sizing logic.
+* This layer is analytics and reporting only.
+* No changes to trading decisions.
+
+---
+
+# OBJECTIVE
+
+Provide complete trading performance visibility.
+
+We need to know:
+
+* Is the system profitable?
+* Which assets work?
+* Which timeframes work?
+* What is the win rate?
+* What is the profit factor?
+* What is the drawdown?
+
+Without these metrics we cannot evaluate edge.
+
+---
+
+# DATA SOURCE
+
+Use CLOSED positions only.
+
+Table:
+
+```python
+positions
+```
+
+Filter:
+
+```python
+status == "CLOSED"
+```
+
+Use:
+
+```python
+realized_pnl
+```
+
+as the source of truth.
+
+Do NOT use unrealized pnl.
+
+---
+
+# NEW SERVICE
+
+Create:
+
+```python
+backend/app/services/performance_analytics_service.py
+```
+
+Class:
+
+```python
+PerformanceAnalyticsService
+```
+
+---
+
+# REQUIRED METRICS
+
+## 1. Total Trades
+
+```python
+total_trades
+```
+
+Count of CLOSED positions.
+
+---
+
+## 2. Winning Trades
+
+```python
+winning_trades
+```
+
+Count where:
+
+```python
+realized_pnl > 0
+```
+
+---
+
+## 3. Losing Trades
+
+```python
+losing_trades
+```
+
+Count where:
+
+```python
+realized_pnl < 0
+```
+
+---
+
+## 4. Win Rate
+
+Formula:
+
+```python
+winning_trades / total_trades
+```
+
+Output:
+
+```python
+0-100 %
+```
+
+---
+
+## 5. Gross Profit
+
+Formula:
+
+```python
+sum(realized_pnl > 0)
+```
+
+---
+
+## 6. Gross Loss
+
+Formula:
+
+```python
+abs(sum(realized_pnl < 0))
+```
+
+---
+
+## 7. Net Profit
+
+Formula:
+
+```python
+gross_profit - gross_loss
+```
+
+---
+
+## 8. Average Win
+
+Formula:
+
+```python
+mean(realized_pnl > 0)
+```
+
+---
+
+## 9. Average Loss
+
+Formula:
+
+```python
+mean(realized_pnl < 0)
+```
+
+Absolute value.
+
+---
+
+## 10. Profit Factor
+
+Formula:
+
+```python
+gross_profit / gross_loss
+```
+
+Rules:
+
+```python
+if gross_loss == 0:
+    return None
+```
+
+---
+
+## 11. Expectancy
+
+Formula:
+
+```python
+(win_rate * avg_win)
+-
+(loss_rate * avg_loss)
+```
+
+---
+
+## 12. Max Drawdown
+
+Build equity curve from CLOSED positions ordered by:
+
+```python
+closed_at
+```
+
+Calculate:
+
+```python
+peak_equity - trough_equity
+```
+
+Return:
+
+```python
+max_drawdown_usdc
+```
+
+---
+
+# BREAKDOWN BY ASSET
+
+Return:
+
+```python
+BTC
+ETH
+SOL
+...
+```
+
+For each asset:
+
+```python
+trades
+wins
+losses
+win_rate
+net_profit
+```
+
+---
+
+# BREAKDOWN BY TIMEFRAME
+
+Return:
+
+```python
+5m
+15m
+1h
+4h
+...
+```
+
+For each timeframe:
+
+```python
+trades
+wins
+losses
+win_rate
+net_profit
+```
+
+---
+
+# REPOSITORY HELPERS
+
+Add repository methods if necessary.
+
+Examples:
+
+```python
+get_closed_positions()
+get_closed_positions_by_asset()
+get_closed_positions_by_timeframe()
+```
+
+Avoid N+1 queries.
+
+Prefer aggregate SQL.
+
+---
+
+# API ENDPOINT
+
+Add:
+
+```python
+GET /analytics/performance
+```
+
+Response:
+
+```json
+{
+  "total_trades": 125,
+  "winning_trades": 72,
+  "losing_trades": 53,
+  "win_rate": 57.6,
+  "gross_profit": 123.45,
+  "gross_loss": 87.10,
+  "net_profit": 36.35,
+  "average_win": 1.71,
+  "average_loss": 1.64,
+  "profit_factor": 1.42,
+  "expectancy": 0.29,
+  "max_drawdown_usdc": 11.20,
+  "assets": {},
+  "timeframes": {}
+}
+```
+
+---
+
+# LOGGING
+
+Add:
+
+```python
+logger.info(
+    "Performance analytics generated",
+    total_trades=total_trades,
+    net_profit=net_profit,
+    win_rate=win_rate,
+)
+```
+
+---
+
+# DELIVERABLES
+
+After implementation provide:
+
+1. Files modified
+2. Full code diff
+3. Example API response
+4. Verification of formulas
+5. Verification that only CLOSED positions are used
+6. Verification that Layers 1–14 remain unchanged
+7. Verification that no trading behavior changes
+
+```
+```

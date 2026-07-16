@@ -1,0 +1,398 @@
+=========================================================
+LIMWANPO AI
+PHASE 2
+POLYMARKET DATA LAYER
+=========================================================
+
+IMPORTANT
+
+Read these files FIRST before doing ANYTHING.
+
+1. CONSTITUTION.md
+2. replit.md
+3. .agents/memory/product-constitution.md
+
+These three files are NOT suggestions.
+
+They are PROJECT LAW.
+
+Nothing inside them may be violated.
+
+---------------------------------------------------------
+
+YOUR FIRST JOB
+
+DO NOT WRITE CODE.
+
+DO NOT MODIFY UI.
+
+DO NOT OPTIMIZE.
+
+DO NOT REFACTOR.
+
+DO NOT DELETE ANYTHING.
+
+DO NOT CHANGE ANY WORDING.
+
+First perform a COMPLETE PROJECT AUDIT.
+
+After auditing, produce a report.
+
+Only after approval may you modify code.
+
+---------------------------------------------------------
+
+PROJECT IDENTITY
+
+This project is
+
+LIMWANPO AI
+
+It is NOT
+
+• Trading Platform
+• Crypto Exchange
+• Order Management
+• Portfolio Manager
+• Execution Terminal
+• Broker
+• Futures Platform
+
+It is
+
+An AI Prediction Intelligence System
+specialized for
+
+POLYMARKET
+
+---------------------------------------------------------
+
+PERMANENT PROJECT RULES
+
+ALL prediction data MUST originate from Polymarket.
+
+No exception.
+
+Dashboard data MUST NEVER be invented.
+
+Dashboard data MUST NEVER be estimated.
+
+Dashboard data MUST NEVER be randomly generated.
+
+Dashboard data MUST NEVER come from mock values.
+
+Dashboard data MUST NEVER be synthesized.
+
+Dashboard data MUST ALWAYS come from:
+
+Polymarket APIs
+
+unless explicitly allowed by Constitution.
+
+---------------------------------------------------------
+
+OFFICIAL DATA SOURCES
+
+The ONLY allowed primary source is
+
+https://docs.polymarket.com/api-reference/introduction
+
+Use ONLY official Polymarket APIs.
+
+Including
+
+Gamma API
+
+CLOB API
+
+Data API
+
+Market API
+
+Events API
+
+Resolution API
+
+---------------------------------------------------------
+
+ALLOWED EXTERNAL SOURCES
+
+These are CONTEXT ONLY.
+
+NEVER become the primary prediction source.
+
+Allowed:
+
+Binance
+
+Chainlink
+
+CoinGecko
+
+TradingView
+
+ONLY for:
+
+BTC price
+
+ETH price
+
+Chart display
+
+Oracle comparison
+
+Market context
+
+Nothing else.
+
+---------------------------------------------------------
+
+STRICT SOURCE POLICY
+
+Market Universe
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Prediction Cards
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Market Status
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Probability
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Volume
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Liquidity
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Resolution
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Events
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Question
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Market Category
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Closing Time
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+Outcome
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+YES / NO Probability
+
+MUST come from
+
+Polymarket
+
+---------------------------------------------------------
+
+AI RESPONSIBILITY
+
+Your responsibility is NOT to redesign.
+
+Your responsibility is NOT to create a trading system.
+
+Your responsibility is
+
+Build the BEST AI Prediction Platform for Polymarket.
+
+---------------------------------------------------------
+
+NEVER ADD
+
+Never add
+
+Orderbook UI
+
+Bid
+
+Ask
+
+Leverage
+
+Margin
+
+Stop Loss
+
+Take Profit
+
+Broker
+
+Exchange
+
+Portfolio
+
+Trade
+
+Trading
+
+Position Size
+
+Entry Price
+
+Exit Price
+
+Risk Reward
+
+Scalping
+
+Swing Trade
+
+Long
+
+Short
+
+PnL
+
+These concepts are permanently forbidden.
+
+---------------------------------------------------------
+
+WHEN IMPLEMENTING
+
+Every new feature must answer
+
+Question 1
+
+Does this data originate from Polymarket?
+
+If NO
+
+Reject implementation.
+
+Question 2
+
+Does this introduce trading terminology?
+
+If YES
+
+Reject implementation.
+
+Question 3
+
+Does this violate Constitution.md?
+
+If YES
+
+Reject implementation.
+
+---------------------------------------------------------
+
+WORKFLOW
+
+Every task MUST follow
+
+STEP 1
+
+Read Constitution
+
+STEP 2
+
+Audit
+
+STEP 3
+
+Report
+
+STEP 4
+
+Wait for approval
+
+STEP 5
+
+Modify
+
+STEP 6
+
+Regression Audit
+
+STEP 7
+
+Visual Verification
+
+STEP 8
+
+Report Complete
+
+Never skip steps.
+
+---------------------------------------------------------
+
+CURRENT PHASE
+
+Current Phase is
+
+PHASE 2
+
+Objective
+
+Replace every remaining non-Polymarket dependency for prediction data with official Polymarket APIs while preserving existing UI and project identity.
+
+Do NOT begin Phase 3 until Phase 2 is fully completed and verified.

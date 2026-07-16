@@ -1,0 +1,396 @@
+LIMWANPO AI — PHASE 13D ROOT CAUSE INVESTIGATION
+LEGACY OPEN POSITIONS vs EXIT ENGINE
+
+Context
+
+Dari audit terakhir ditemukan fakta berikut:
+
+✓ Dynamic Position Sizing bekerja
+✓ Multi-entry bekerja
+✓ AI LIVE TRADES bekerja
+✓ Exit Engine menghasilkan CLOSE_POSITION decisions
+✓ Execution Engine berhasil membuat minimal satu SELL order nyata (contoh Position 38).
+
+Namun masih ada masalah:
+
+- masih ada ±34 OPEN positions
+- terdapat banyak legacy positions dari hari sebelumnya
+- terdapat CLOSE_POSITION EXECUTED
+- tetapi sebagian posisi lama masih tetap OPEN
+- exposure masih hampir penuh
+- capital belum benar-benar berputar
+
+JANGAN langsung mengubah kode.
+
+Saya ingin ROOT CAUSE terlebih dahulu.
+
+========================================================
+STEP 1
+========================================================
+
+Untuk SELURUH posisi OPEN tampilkan tabel lengkap:
+
+Position ID
+
+Condition ID
+
+Asset
+
+Timeframe
+
+Decision Side
+
+Status
+
+Opened At
+
+Age
+
+Market End Time
+
+Lifecycle State
+
+Current Market Condition ID
+
+Is Current Market?
+
+Signal Count (24h)
+
+Opportunity Exists?
+
+Latest Decision
+
+Latest Exit Decision
+
+Remaining Quantity
+
+Entry Price
+
+Current Price
+
+Realized PnL
+
+Unrealized PnL
+
+Exposure
+
+Exit Eligible?
+
+Reason
+
+========================================================
+STEP 2
+========================================================
+
+Kelompokkan posisi OPEN menjadi:
+
+A.
+Masih valid
+(current market)
+
+B.
+Legacy market
+(condition_id lama)
+
+C.
+Market sudah rollover
+
+D.
+Market expired
+
+E.
+Harusnya sudah closed
+
+Hitung jumlah masing-masing.
+
+========================================================
+STEP 3
+========================================================
+
+Untuk setiap posisi legacy jelaskan:
+
+Mengapa masih OPEN?
+
+Apakah:
+
+condition_id mismatch
+
+rollover gagal
+
+expiry tidak diproses
+
+signal invalidation gagal
+
+position lookup gagal
+
+status update gagal
+
+execution tidak dipanggil
+
+repository salah query
+
+atau penyebab lain
+
+========================================================
+STEP 4
+========================================================
+
+Audit CLOSE_POSITION.
+
+Untuk setiap CLOSE_POSITION EXECUTED tampilkan:
+
+decision_id
+
+position_id
+
+condition_id
+
+decision status
+
+execution status
+
+order id
+
+SELL order created?
+
+SELL order filled?
+
+position updated?
+
+remaining_quantity
+
+status setelah execute
+
+Jika salah satu gagal,
+tunjukkan titik tepatnya.
+
+========================================================
+STEP 5
+========================================================
+
+Audit Position Repository.
+
+Cari apakah query OPEN position masih mengambil:
+
+legacy condition_id
+
+expired market
+
+rolled market
+
+old universe
+
+Tampilkan query SQL sebenarnya.
+
+========================================================
+STEP 6
+========================================================
+
+Audit Market Rollover.
+
+Untuk BTC
+
+ETH
+
+SOL
+
+XRP
+
+5m
+
+15m
+
+1H
+
+Tampilkan:
+
+old condition_id
+
+new condition_id
+
+old position count
+
+new position count
+
+Apakah posisi lama masih ikut dihitung exposure?
+
+========================================================
+STEP 7
+========================================================
+
+Audit Exposure.
+
+Hitung:
+
+Open Exposure
+
+berdasarkan:
+
+remaining_quantity
+
+entry_price
+
+position status
+
+Bandingkan dengan:
+
+Dashboard
+
+Portfolio
+
+Risk Engine
+
+Jika berbeda,
+jelaskan kenapa.
+
+========================================================
+STEP 8
+========================================================
+
+Audit Capital.
+
+Hitung manual:
+
+Initial Capital
+
++
+
+Realized PnL
+
+-
+
+Open Exposure
+
+=
+
+Expected Available
+
+Bandingkan dengan dashboard.
+
+========================================================
+STEP 9
+========================================================
+
+Audit Exit Worker.
+
+Pastikan:
+
+worker heartbeat
+
+cycle count
+
+positions scanned
+
+exit created
+
+exit skipped
+
+exit reasons
+
+Jika skip,
+jelaskan alasan setiap posisi.
+
+========================================================
+STEP 10
+========================================================
+
+RED FLAG SEARCH
+
+Cari:
+
+legacy OPEN
+
+expired OPEN
+
+rollover
+
+condition_id mismatch
+
+position not updated
+
+CLOSE_POSITION EXECUTED without CLOSED
+
+remaining_quantity
+
+status='OPEN'
+
+status='PARTIAL'
+
+status='CLOSED'
+
+SELL order
+
+forced_exit_price
+
+signal_invalidation
+
+========================================================
+STEP 11
+========================================================
+
+JANGAN memperbaiki apa pun.
+
+Berikan hanya:
+
+ROOT CAUSE REPORT
+
+dengan format:
+
+Problem #1
+
+Evidence
+
+Affected Files
+
+Root Cause
+
+Risk
+
+Recommended Fix
+
+Problem #2
+
+...
+
+========================================================
+FINAL
+
+Jawab hanya:
+
+1.
+Apakah memang ada bug?
+
+YA / TIDAK
+
+2.
+Bug berada di mana?
+
+3.
+Berapa file yang harus diubah?
+
+4.
+Apakah perlu migration DB?
+
+5.
+Apakah perlu data cleanup?
+
+6.
+Apakah posisi lama harus dipindahkan ke history?
+
+7.
+Apakah setelah bug ini diperbaiki:
+
+- capital akan kembali berputar?
+- exposure akan turun?
+- available capital akan naik?
+- AI akan bisa membuka posisi baru lagi?
+
+JANGAN melakukan coding.
+
+JANGAN mengubah threshold.
+
+JANGAN menaikkan exposure limit.
+
+JANGAN membuat workaround.
+
+Saya hanya ingin diagnosis teknis yang benar-benar selesai sampai akar masalah ditemukan.

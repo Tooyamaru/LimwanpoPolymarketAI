@@ -1,0 +1,51 @@
+- [Polymarket page size](polymarket-page-size.md) — API returns ~1000 records/page despite limit=100; MAX_PAGES=250 ≈ 250k markets, ~4 min scan
+- [Sprint 4 DB migration](sprint4-db-migration.md) — discovery_runs table gains 5 classification count columns via ADD COLUMN IF NOT EXISTS in init_db()
+- [Test path](test-path.md) — tests live at backend/app/tests/, not backend/tests/
+- [Gamma events endpoint](gamma-events-endpoint.md) — deployed live events from GET /events?series_slug=&order=startDate&ascending=false; GET /series?slug= embeds pre-staged events with empty markets[]
+- [Gamma clobTokenIds](gamma-clob-token-ids.md) — token IDs in clobTokenIds JSON string (index 0=YES, index 1=NO); tokens[] array does not exist in the API response
+- [CLOB book sort order](clob-book-sort-order.md) — bids ASCENDING (0.01→0.49), asks DESCENDING (0.99→0.51); best bid = bids[-1], best ask = asks[-1] (DEF-001 fixed in clob_client.py)
+- [DEF-002 startup race](def002-startup-race.md) — universe_sync and price_refresh both asyncio.create_task in lifespan() with no gate; fixed with asyncio.Event in main.py (Sprint 9.5)
+- [Market maturity status](market-maturity.md) — all 12 active markets at mid=0.50, zero variance, 100% null volume/liquidity as of 2026-06-19; pure AMM init phase, no human trades yet
+- [Market lifetimes](market-lifetimes.md) — 5m/15m markets live ~24h each; 1H markets live ~48h; names refer to prediction window not expiry; 27 upcoming per 5m asset
+- [Signal Engine design](signal-engine-design.md) — Layer 4 complete; thresholds MID_MOVE>0.001 SEED_DEV>=0.01 SPREAD>=0.005; dedup by last signal value; runs every 10s after universe_ready gate
+- [Opportunity Engine design](opportunity-engine-design.md) — Layer 5 complete; score 0-100 from 5 components; UPSERT by condition_id; universe_ready deadlock fix required
+- [Replit env var overrides](replit-env-overrides.md) — APP_VERSION now 0.9.0 in shared env; UNIVERSE_SYNC_RUN_ON_STARTUP=false PRICE_REFRESH_RUN_ON_STARTUP=false via env; universe_ready gate must handle run_on_startup=False case
+- [Folder structure refactor](folder-refactor.md) — repositories/ workers/ schemas/ utils/ created; all *_repository.py moved from services/; background loops in workers/engine_workers.py; schemas/ now 14 files covering all domains
+- [Risk Engine design](risk-engine-design.md) — Layer 9 complete; PENDING→RISK_APPROVED|BLOCKED before Execution; 5 rules: DUPLICATE_POSITION MAX_OPEN_POSITIONS MAX_EXPOSURE DAILY_LOSS DAILY_TRADES
+- [Audit cleanup 2026-06-23](audit-cleanup.md) — Full audit done; inline schemas removed from all 8 routers; TradeDecision lifecycle comment fixed; version bumped to 0.9.0 everywhere; 14 schema files cover all domains
+- [Portfolio Reporting Layer 10](portfolio-layer10.md) — Layer 10 complete; 5 read-only endpoints; repository/service/schemas/router pattern; 35 tests pass; version bumped to 0.10.0
+- [Polymarket business model](polymarket-business-model.md) — LimwanpoAI: prediction market only; CLOSE_POSITION valid decision type; BNB target asset (settings shows XRP); multiple entries per market allowed by exposure rules not position count
+- [Exit Engine design](exit-engine-design.md) — Layer 11 complete; ExitEngine→RiskEngine auto-approve→ExecutionEngine close path; 4 triggers; exit price = bid never mid
+- [Dashboard V9.0](dashboard.md) — V9.0: Bloomberg-style portfolio grid, merged AI Activity feed, dynamic health % scores, compact 3-row market cards; pos.side LONG_YES/LONG_NO normalized to YES/NO
+- [Replit workflow startup](replit-startup.md) — use `python -m uvicorn` not bare `uvicorn`; prefix with `pip install -q -r backend/requirements.txt` so cold-start environments always have deps
+- [HTML edit corruption](html-edit-corruption.md) — editing JS string literals via Edit tool in index.html can split file; use Python script instead for any line with single-quote string changes
+- [Final cleanup audit 2026-06-26](final-cleanup-audit.md) — Full cleanup+architecture audit done; AUDIT_REPORT.md written; project scored 88/100; zero tech debt; 4 unused backend imports removed; 1259 chars dead CSS/JS removed from index.html; ready for AI Engine roadmap
+- [CSS orphaned keyframe fragments](css-keyframe-corruption.md) — orphaned @keyframes body lines (no name prefix) in global CSS scope cause parser to skip subsequent rule blocks entirely; header vanished due to this bug
+- [BTC Chart Module frozen](btc-chart-frozen.md) — FROZEN as of 2026-06-29; production-ready; only modify for reproducible bug/runtime error/security issue/Binance API change/explicit request
+- [AI Signal Engine Phase 1](signal-phase1.md) — confidence_score+regime+mtf_confirmed on signals; _MAX_DEVIATION=0.10 calibrated; strategy gate MIN_SIGNAL_CONFIDENCE=25 (15 for MTF); 30/30 tests pass; GET /signals/ranked live
+- [Dashboard UI freeze rules](dashboard-ui-freeze.md) — UI frozen after 40+ passes; only fix objective rendering bugs; backend is now the priority
+- [Watchdog and Engine Health](watchdog-health.md) — heartbeat registry, watchdog auto-restart, health/detailed engine liveness; vm deployment target required
+- [Phase 4 design decisions](phase4-design.md) — dynamic stop, trailing stop, fees, analytics extensions, health metrics; 376 tests pass
+- [Market Reference Service](market-reference-service.md) — backend-owned opening_price (Price to Beat); Binance candle alignment required; conditional DB update; structlog not stdlib logging
+- [Decision Engine pipeline](decision-engine-pipeline.md) — rule-based Signal→Momentum→Trend→Volatility→Opportunity→Risk→Decision; read-only, own Binance client, weighted voting with risk hard-gate
+- [Market Behaviour Engine](market-behaviour-engine.md) — Phase Next upgrade: behaviour labels from multi-snapshot trends, quality classification (Excellent/Healthy/GOOD/Illiquid/Avoid/High Risk), 10-step reasoning in Decision Engine
+- [Decision Intelligence Upgrade](decision-intelligence.md) — 8 phases: Consensus Engine, Entry Quality, multi-factor Confidence, Self-Validation, Engine Health; new DB cols on decision_logs
+- [Continuation Spec Priorities 1-5](continuation-spec.md) — Outcome Learning, Engine Performance, Dynamic Weights, Portfolio Allocation, Feedback Loop; 73 new tests; 366 total passing
+- [Portfolio Priority Score P8](portfolio-priority-score.md) — Priority 8 complete; priority_score added to AllocationDecision; 8-factor blend; scored list is now 3-tuple (float, Opportunity, Optional[float])
+- [Market card data pipeline](market-card-pipeline.md) — Row 2: PTB|CurrentPrice|Diff; Row 3: +Contracts+AIScore; JS vars in renderCard must respect temporal dead zone
+- [Product Constitution](product-constitution.md) — BID/ASK/SPREAD/Orderbook PERMANENTLY forbidden on cards; only Polymarket probability data allowed; BTC chart is the sole external-data exception
+- [Phase 5 Source Stabilization](phase5-source-stabilization.md) — real feed endpoint pattern (merge engine-written rows); bound dedup Sets to the capped list, not an ever-growing global
+- [Phase 9D direct resolution](phase9d-resolution.md) — outcome_source=DIRECT_POLYMARKET_RESOLUTION is primary; REALIZED_PNL_PROXY is fallback; 6 new DB cols on outcome_learnings; 93 tests pass
+- [Phase 12F order flow validation](phase12f-order-flow.md) — all 12 markets ACTIVE_SEED_ONLY; 5 new price API fields; yes_mid or SEED_PRICE fixed; Step 0 in decision engine; CONF label→SEED
+- [Continuous position sizing](continuous-sizing.md) — Phase 12L; min $1 at score=30, max $50 at score≥50; exponential curve; LOT 1/2/3 by entry_sequence not dollars
+- [Phase 6 complete / Phase 7 active](phase67-transition.md) — governance docs synced 2026-07-09; News Engine permanently deferred; Phase 7 = confidence feedback loop + DB retention
+- [Calibration feedback loop](calibration-feedback.md) — Phase 7 first increment; _apply_calibration_adjustment in DecisionEngine; bucket-level correction ±15pts max; 41/41 tests pass
+- [Dynamic weight watchdog fix](dynamic-weight-watchdog.md) — chunked sleep + initial heartbeat prevents watchdog from killing process when interval (1800s) > restart threshold (600s)
+- [Frontend perf optimizations](frontend-perf-opts.md) — 8-phase audit complete; flowEnergy→translateX, animatePipe delta-only, news ticker uses sigs state, countdown cache, health cache 20s TTL
+- [5m market rollover race](5m-market-rollover.md) — newly rolled 5m market has no CLOB/signal/opp for ~10-30s; CLOB fallback by asset/tf is dangerous (expiring market has 97% spread); only fallback signals/opps by asset/tf; CLOB shows "—" during gap
+- [Pipeline counts engine sources](pipeline-counts.md) — total_signals→signals table; total_opportunities→opportunities table; total_strategy_decisions→trade_decisions OPEN_LONG_*; total_risk_evaluations→risk_events table; replaces queue-depth counts
+- [Feed priority ordering](feed-priority.md) — sort key: (PRIORITY[tag], -timestamp); Decision=0 Risk=1 Signal=2; pure timestamp sort was dominated by Risk blocks firing in same-second batches
+- [Market Card Layout V2](card-layout-v2.md) — Row2=TARGET+PROFIT($), Row3=CONF|GAP|SPREAD 3-col; REWARD removed; STATUS from AI Decision Engine; mc-ptb CSS must not use !important on grid-template-columns
+- [Asset header live prices](asset-header-prices.md) — Binance MiniTicker WS (combined stream, 4 assets); patches .asset-live-px spans only; fetchPrices REST kept at 30s for chart 24h data
+- [Audit report drift](audit-report-drift.md) — multi-phase audit reports must rewrite superseded findings as historical everywhere they're mentioned, not just once, or reviewer fails on internal inconsistency
+- [SSL httpx client fix](ssl-httpx-fix.md) — ALL httpx.AsyncClient() must use create_verified_httpx_client(); bare client kills entire pipeline (CLOB, Binance, BTC chart all fail)

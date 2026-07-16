@@ -1,0 +1,102 @@
+Kamu sedang melanjutkan Audit #5 yang sudah berjalan.
+
+STATUS SAAT INI:
+
+* Part 1 (Replacement Forensics): selesai.
+* Part 2 (Price Discovery 5 menit): selesai.
+* Part 3 (Live Behavior Monitor): sedang berjalan / hampir selesai.
+* Part 4 (Binance Linkage): belum dijalankan.
+* Part 5 (Final Hypothesis): belum dijalankan.
+
+JANGAN mengulang Part 1 atau Part 2.
+
+TUGAS:
+
+1. Ambil seluruh data yang sudah dikumpulkan oleh workflow Audit 5.
+
+2. Selesaikan Part 3 sampai penuh (180 rounds).
+
+3. Setelah Part 3 selesai:
+
+   * hitung jumlah perubahan bid
+   * hitung jumlah perubahan ask
+   * hitung jumlah perubahan mid
+   * hitung jumlah perubahan spread
+   * hitung jumlah perubahan top5_bid_depth
+   * hitung jumlah perubahan top5_ask_depth
+   * identifikasi timestamp setiap perubahan
+
+4. Jalankan Part 4:
+
+   * ambil harga Binance spot BTC, ETH, SOL, XRP
+   * hitung return 10 detik
+   * hitung Pearson correlation
+   * hitung Spearman correlation
+   * hitung lag:
+
+     * 0s
+     * 10s
+     * 20s
+     * 30s
+     * 60s
+     * 120s
+   * laporkan seluruh nilai korelasi
+   * tandai jika ada zero-variance series
+   * jangan memaksa korelasi jika secara matematis tidak valid
+
+5. Jalankan Part 5:
+   Uji hipotesis berikut:
+
+   H1:
+   "Replacement markets hanya di-seed pada 0.505 lalu mengikuti underlying secara otomatis."
+
+   H2:
+   "Replacement markets tetap statis sampai trader melakukan transaksi."
+
+   H3:
+   "Perubahan depth berasal dari scheduler periodik, bukan dari harga underlying."
+
+6. Untuk setiap hipotesis:
+
+   * bukti yang mendukung
+   * bukti yang menolak
+   * verdict:
+
+     * Accepted
+     * Rejected
+     * Cannot be determined
+
+7. Buat 5 file laporan:
+
+   REPLACEMENT_FORENSICS.md
+   PRICE_DISCOVERY_AUDIT.md
+   LIVE_BEHAVIOR_AUDIT.md
+   ACTIVE_LINKAGE_AUDIT.md
+   UPDATED_FINAL_HYPOTHESIS.md
+
+8. Pada UPDATED_FINAL_HYPOTHESIS.md wajib ada:
+
+   * ringkasan seluruh audit sebelumnya
+   * Audit #3
+   * Audit #4
+   * Audit #5
+   * kontradiksi yang ditemukan
+   * apakah kontradiksi sudah terpecahkan
+   * kesimpulan akhir
+
+9. Jangan memberikan interpretasi spekulatif.
+
+10. Semua kesimpulan harus didukung angka, timestamp, sample count, dan data yang benar-benar dikumpulkan.
+
+11. Jika ada hasil yang tidak cukup kuat secara statistik, tulis secara eksplisit:
+    "Insufficient evidence."
+
+OUTPUT YANG SAYA INGINKAN:
+
+* status workflow
+* progress saat ini
+* hasil Part 3
+* hasil Part 4
+* hasil Part 5
+* isi lengkap UPDATED_FINAL_HYPOTHESIS.md
+* verdict akhir dalam satu paragraf singkat

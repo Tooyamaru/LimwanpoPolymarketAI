@@ -1,0 +1,225 @@
+# LIMWANPO AI — PROJECT CLEANUP (EXECUTE IMMEDIATELY)
+
+## MODE
+
+EXECUTION MODE
+
+DO NOT AUDIT.
+
+DO NOT ANALYZE.
+
+DO NOT ASK FOR CONFIRMATION.
+
+Execute immediately.
+
+---
+
+## OBJECTIVE
+
+Convert LIMWANPO AI into a **single production application**.
+
+After this task there must only be ONE application inside this repository.
+
+The production application is:
+
+```
+backend/
+```
+
+Everything else is secondary.
+
+---
+
+## CLEANUP TARGET
+
+Remove every artifact related to the old Mockup Sandbox.
+
+Including but not limited to:
+
+```
+artifacts/mockup-sandbox/
+```
+
+Remove:
+
+* package.json
+* package-lock.json
+* node_modules
+* vite.config.*
+* src/
+* public/
+* dist/
+* build/
+* workflow
+* startup script
+* preview script
+* sandbox configuration
+* unused dependencies
+* unused assets
+* unused css
+* unused javascript
+* unused npm scripts
+
+Anything that belongs ONLY to Mockup Sandbox.
+
+---
+
+## KEEP
+
+DO NOT TOUCH
+
+```
+backend/
+```
+
+DO NOT TOUCH
+
+```
+database
+```
+
+DO NOT TOUCH
+
+```
+engines
+```
+
+DO NOT TOUCH
+
+```
+api
+```
+
+DO NOT TOUCH
+
+```
+Polymarket integrations
+```
+
+DO NOT TOUCH
+
+```
+Binance chart integration
+```
+
+DO NOT TOUCH
+
+```
+Chainlink integration
+```
+
+---
+
+## WORKFLOW
+
+After cleanup there must be ONLY ONE workflow.
+
+Production workflow only.
+
+Startup must launch only:
+
+```
+backend
+```
+
+No sandbox.
+
+No preview server.
+
+No second port.
+
+---
+
+## PORT
+
+Application must run from ONE port only.
+
+Remove every configuration that starts another server.
+
+---
+
+## DEPENDENCIES
+
+Remove every dependency that belongs only to Mockup Sandbox.
+
+Keep only dependencies required by LIMWANPO AI.
+
+---
+
+## REPLIT
+
+Update
+
+replit.md
+
+so the project architecture reflects:
+
+Single Application
+
+Single Workflow
+
+Single Production Source
+
+---
+
+## DOCUMENTATION
+
+Update:
+
+PROJECT_RULES.md
+
+AI_GUARDIAN.md
+
+to state permanently:
+
+"There is only one production application.
+
+Mockup Sandbox has been permanently retired.
+
+Future AI must never recreate or re-enable a second application."
+
+---
+
+## VALIDATION
+
+After cleanup verify:
+
+✔ only one workflow
+
+✔ only one application
+
+✔ only one package
+
+✔ only one startup
+
+✔ only one production source
+
+✔ dashboard still runs
+
+✔ no broken imports
+
+✔ no missing dependencies
+
+✔ no orphan scripts
+
+---
+
+## OUTPUT
+
+Only report:
+
+1. Files removed
+
+2. Dependencies removed
+
+3. Workflows removed
+
+4. Startup verified
+
+5. Dashboard verified
+
+6. Cleanup complete
+
+Do NOT start any new phase.
+
+Stop after cleanup.

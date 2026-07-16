@@ -1,0 +1,132 @@
+Lakukan FINAL UI/UX POLISH PASS pada seluruh dashboard Limwanpo Polymarket AI.
+
+Target utama adalah meningkatkan keterbacaan, kenyamanan penggunaan jangka panjang, dan memberikan kesan premium institutional trading terminal. Fokus hanya pada frontend (CSS, spacing, typography, visual hierarchy). Jangan mengubah backend, logic, API, state management, websocket, trading engine, ataupun alur data.
+
+WAJIB:
+
+1. Typography
+
+* Naikkan seluruh ukuran font kecil sekitar 15–25%.
+* Tidak boleh ada teks penting yang sulit dibaca pada layar iPad maupun laptop.
+* Sederhanakan hierarchy menjadi hanya:
+    * Hero Number
+    * Value
+    * Section Title
+    * Label
+    * Metadata
+* Hindari terlalu banyak variasi ukuran font.
+
+2. Visual Hierarchy
+
+* Chart harus tetap menjadi fokus utama.
+* Lebarkan area chart sekitar 10–15% bila masih memungkinkan tanpa merusak layout.
+* Portfolio dan System Health tetap proporsional namun tidak mendominasi.
+
+3. Header
+
+* Tingkatkan tinggi header sekitar 4–6 px.
+* Logo tetap menjadi fokus visual.
+* Badge status sedikit diperbesar agar lebih mudah dibaca.
+
+4. Section Titles
+    Naikkan brightness sekitar 20% untuk:
+
+* Portfolio
+* Live Market Chart
+* Market Universe
+* AI Decision Engine
+* AI Thinking Feed
+* AI Live Feed
+* System Health
+
+Section title harus tetap elegan tetapi lebih terbaca.
+
+5. Portfolio
+
+* Label diperbesar.
+* Value lebih dominan.
+* Tambahkan sedikit spacing antar card.
+* Pertahankan glow yang elegan tanpa berlebihan.
+
+6. Hero Price Panel
+
+* Hero price tetap menjadi elemen terbesar.
+* Perbesar label:
+    * 24H High
+    * 24H Low
+    * Volume
+    * Session
+        sekitar 20%.
+* Tingkatkan line-height agar lebih nyaman dibaca.
+
+7. System Health
+
+* Perbesar font sekitar 15%.
+* Dot indikator tetap sama.
+* Tambahkan sedikit jarak antara dot dan teks.
+
+8. Market Cards
+
+* Tambahkan vertical spacing antar blok informasi.
+* Tambahkan padding internal.
+* Tingkatkan line-height.
+* Semua angka penting harus mudah dibaca tanpa perlu memperbesar layar.
+* Hindari kesan penuh dan sempit.
+
+9. AI Pipeline
+
+* Pertahankan ukuran sekarang.
+* Perbesar label node sedikit.
+* Rapikan alignment ikon, label, dan garis.
+
+10. Feed
+
+* Feed harus terlihat seperti Bloomberg Terminal, bukan console debug.
+* Badge dibuat sedikit lebih besar.
+* Timestamp sedikit lebih redup.
+* Isi pesan lebih terang.
+* Tingkatkan line-height.
+* Minimal 5–6 baris tetap terlihat.
+
+11. Footer
+
+* Pertahankan ticker.
+* Tingkatkan readability simbol, harga, dan persentase.
+* Jangan ubah perilaku ticker.
+
+12. Glass & Depth
+
+* Tambahkan depth halus menggunakan soft shadow dan glass effect.
+* Hindari glow berlebihan.
+* Dashboard harus terasa premium dan modern.
+
+13. Spacing Audit
+    Lakukan audit menyeluruh terhadap:
+
+* padding
+* margin
+* alignment
+* vertical rhythm
+* whitespace
+
+Pastikan seluruh dashboard memiliki ritme visual yang konsisten dari header hingga footer.
+
+14. Responsive
+    Pastikan hasil tetap sempurna pada:
+
+* iPad landscape
+* Laptop 13–16”
+* Desktop 1080p
+* Ultrawide
+
+Tidak boleh ada overflow, clipping, maupun area kosong.
+
+15. Validation
+    Setelah selesai, lakukan audit internal dan pastikan:
+
+* seluruh panel tetap proporsional,
+* seluruh teks mudah dibaca,
+* visual hierarchy jelas,
+* tidak ada konflik CSS,
+* semua fitur tetap berjalan normal,
+* backend dan trading logic tidak berubah sedikit pun.

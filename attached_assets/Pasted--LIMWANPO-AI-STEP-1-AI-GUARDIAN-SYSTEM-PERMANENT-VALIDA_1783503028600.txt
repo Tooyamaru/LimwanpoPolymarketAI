@@ -1,0 +1,475 @@
+# LIMWANPO AI — STEP 1 : AI GUARDIAN SYSTEM (PERMANENT VALIDATION LAYER)
+
+## MODE
+
+READ FIRST.
+
+DO NOT MODIFY CODE UNTIL THE ENTIRE AUDIT IS FINISHED.
+
+This task is NOT about adding features.
+
+This task is about building the permanent protection system for LIMWANPO AI.
+
+This validation system becomes mandatory before ANY future code modification.
+
+---
+
+# OBJECTIVE
+
+Build an AI Guardian System that prevents regressions permanently.
+
+After this task, no AI (Replit AI, Claude, ChatGPT, Gemini, etc.) may modify the project without passing every validation gate.
+
+---
+
+# PHASE
+
+Current Phase
+
+Phase 3
+
+UI Stabilization
+
+Do NOT enter API Integration.
+
+Do NOT implement new features.
+
+Do NOT redesign anything.
+
+---
+
+# READ ORDER
+
+Before doing anything, load:
+
+1. CONSTITUTION.md
+
+2. PROJECT_RULES.md
+
+3. DATA_RULES.md
+
+4. UI_RULES.md
+
+5. PHASE_GATE.md
+
+6. replit.md
+
+7. .agents/memory/product-constitution.md
+
+Confirm every file has been loaded.
+
+---
+
+# CREATE
+
+Create one new permanent document.
+
+AI_GUARDIAN.md
+
+This document becomes mandatory.
+
+Every future coding session MUST read it before touching code.
+
+---
+
+# AI GUARDIAN CONTENT
+
+The Guardian must contain these validation gates.
+
+---
+
+GATE 1
+
+IDENTITY VALIDATION
+
+---
+
+Verify
+
+Project Name
+
+LIMWANPO AI
+
+Project Type
+
+Polymarket Probability Intelligence Platform
+
+Verify this project is NOT
+
+Trading Platform
+
+Broker
+
+Exchange
+
+Order Management System
+
+Crypto Terminal
+
+If identity changes
+
+STOP.
+
+---
+
+GATE 2
+
+SOURCE VALIDATION
+
+---
+
+Before displaying ANY data
+
+Verify its source.
+
+Allowed
+
+Polymarket
+
+Binance Chart
+
+Chainlink
+
+Forbidden
+
+Placeholder
+
+Random
+
+Hardcoded
+
+Estimated
+
+Mock
+
+Generated
+
+Unknown
+
+If forbidden
+
+FAIL.
+
+STOP.
+
+---
+
+Create a permanent source table.
+
+Dashboard Component
+
+↓
+
+Approved Source
+
+↓
+
+Validation Status
+
+---
+
+Every component must have exactly one approved source.
+
+---
+
+GATE 3
+
+MARKET CARD REGRESSION
+
+---
+
+Verify every Market Universe card contains
+
+Movement
+
+UP Probability
+
+DOWN Probability
+
+Target (Price to Beat)
+
+Gap
+
+Confidence
+
+Countdown
+
+Status
+
+When active
+
+Open At
+
+Coverage
+
+Entries
+
+If any element disappears
+
+FAIL
+
+Rollback immediately.
+
+---
+
+GATE 4
+
+FORBIDDEN VOCABULARY
+
+---
+
+Scan UI.
+
+Reject
+
+Trade
+
+Trading
+
+Trader
+
+Broker
+
+Exchange
+
+Order
+
+Bid
+
+Ask
+
+Spread
+
+Orderbook
+
+Margin
+
+Leverage
+
+PnL
+
+Stop Loss
+
+Take Profit
+
+Portfolio
+
+Exposure
+
+Capital
+
+If detected
+
+FAIL.
+
+---
+
+GATE 5
+
+UI VALIDATION
+
+---
+
+Verify
+
+No overlap
+
+No clipping
+
+No hidden information
+
+No duplicated information
+
+No unnecessary whitespace
+
+No inconsistent spacing
+
+No inconsistent typography
+
+PASS / FAIL
+
+---
+
+GATE 6
+
+PHASE VALIDATION
+
+---
+
+Read PHASE_GATE.md
+
+Verify requested work belongs to current phase.
+
+If not
+
+STOP.
+
+Wait for approval.
+
+---
+
+GATE 7
+
+DATA LOSS CHECK
+
+---
+
+Before saving
+
+Compare
+
+Old UI
+
+↓
+
+New UI
+
+If information decreases
+
+FAIL.
+
+Rollback.
+
+---
+
+GATE 8
+
+NEW INFORMATION CHECK
+
+---
+
+AI may NOT invent
+
+New metrics
+
+New indicators
+
+New badges
+
+New widgets
+
+New terminology
+
+Unless user explicitly requests.
+
+---
+
+GATE 9
+
+API VALIDATION
+
+---
+
+Do NOT integrate
+
+ANY new API
+
+Until Source Audit is complete.
+
+Current status
+
+LOCKED
+
+---
+
+GATE 10
+
+PRE-CODE CHECKLIST
+
+---
+
+Before touching code
+
+Output
+
+Identity Check
+
+PASS / FAIL
+
+Source Check
+
+PASS / FAIL
+
+Regression Check
+
+PASS / FAIL
+
+Vocabulary Check
+
+PASS / FAIL
+
+UI Check
+
+PASS / FAIL
+
+Phase Check
+
+PASS / FAIL
+
+Data Loss Check
+
+PASS / FAIL
+
+If one FAIL
+
+STOP.
+
+---
+
+GATE 11
+
+POST-CODE CHECKLIST
+
+---
+
+After coding
+
+Run
+
+Regression Audit
+
+Source Audit
+
+Vocabulary Audit
+
+Layout Audit
+
+UI Audit
+
+Output PASS / FAIL.
+
+---
+
+# FINAL REPORT
+
+When finished
+
+DO NOT modify dashboard.
+
+Only deliver
+
+1.
+
+AI_GUARDIAN.md created.
+
+2.
+
+Summary of every validation gate.
+
+3.
+
+List of remaining risks.
+
+4.
+
+Recommendation for entering STEP 2 (Source Stabilization).
+
+No feature development.
+
+No redesign.
+
+No API integration.
+
+No code optimization.
+
+Guardian only.

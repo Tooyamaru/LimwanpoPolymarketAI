@@ -1,0 +1,425 @@
+LIMWANPO AI — FINAL POLYMARKET MARKET UNIVERSE REFINEMENT (PHASE FINAL)
+
+IMPORTANT
+
+Sebelum mengubah apapun, pahami dulu filosofi project ini.
+
+INI BUKAN CRYPTO TRADING DASHBOARD.
+
+INI ADALAH AI POLYMARKET DASHBOARD.
+
+AI tidak sedang trading BTC, ETH, SOL, atau XRP.
+
+AI sedang mengambil keputusan pada MARKET POLYMARKET.
+
+Semua perubahan harus mengikuti konsep Polymarket.
+
+Frontend ONLY.
+
+JANGAN mengubah:
+
+- Backend
+- API
+- Database
+- AI Engine
+- Paper Trading Logic
+- Footer
+- Chart
+- Execution Pipeline
+- Portfolio
+- System Health
+- AI Activity
+
+==========================================================
+OBJECTIVE
+==========================================================
+
+Market Universe harus benar-benar terasa seperti dashboard AI Polymarket.
+
+Bukan dashboard futures.
+
+Bukan dashboard Binance.
+
+User harus langsung memahami:
+
+- kondisi market
+- keputusan AI
+- alasan AI
+
+dalam waktu kurang dari 3 detik.
+
+Semua informasi yang tidak membantu keputusan visual harus dihilangkan.
+
+==========================================================
+1. MARKET HEADER
+==========================================================
+
+Pertahankan layout header sekarang.
+
+Tetapi tambahkan LIVE CURRENT PRICE di sebelah nama market.
+
+Contoh:
+
+₿ BTC      $63,128
+
+Ξ ETH      $1,775
+
+◎ SOL      $82.33
+
+✕ XRP      $1.14
+
+Gunakan harga LIVE dari market tersebut.
+
+Bukan Price To Beat.
+
+Bukan probability.
+
+Current Price hanya tampil SATU KALI di Header.
+
+Karena semua timeframe menggunakan market yang sama.
+
+==========================================================
+2. PRICE TO BEAT
+==========================================================
+
+Price To Beat TETAP berada di setiap timeframe.
+
+Karena:
+
+5M
+
+15M
+
+1H
+
+memiliki target harga yang berbeda.
+
+Jangan dipindahkan.
+
+Jangan dihapus.
+
+==========================================================
+3. HAPUS DUPLIKASI CURRENT PRICE
+==========================================================
+
+Karena Current Price sudah berada di Header,
+
+hapus Current Price dari seluruh timeframe card.
+
+Sekarang setiap card hanya memiliki:
+
+Price To Beat
+
+Difference
+
+==========================================================
+4. AI POSITION
+==========================================================
+
+JANGAN lagi menggunakan istilah:
+
+LONG
+
+SHORT
+
+LONG YES
+
+LONG NO
+
+BUY YES
+
+BUY NO
+
+Contracts
+
+Semua istilah tersebut terlalu mirip crypto futures.
+
+Project ini adalah Polymarket.
+
+==========================================================
+
+Gunakan istilah yang lebih natural.
+
+Contoh:
+
+Prediction
+
+UP
+
+atau
+
+Prediction
+
+DOWN
+
+Karena nama market memang:
+
+BTC Up or Down 5m
+
+ETH Up or Down 15m
+
+dan seterusnya.
+
+Prediction jauh lebih mudah dipahami dibanding LONG YES.
+
+==========================================================
+5. ENTRY
+==========================================================
+
+Tambahkan informasi:
+
+Entry
+
+49.8%
+
+Artinya:
+
+AI masuk saat probability berada di 49.8%.
+
+Ini jauh lebih berguna daripada Contracts.
+
+==========================================================
+6. SIZE
+==========================================================
+
+Gunakan:
+
+Size
+
+$20
+
+Jangan tampilkan Contracts.
+
+Karena Contracts hanyalah hasil turunan.
+
+Keputusan AI tidak dibuat berdasarkan Contracts.
+
+==========================================================
+7. STATUS
+==========================================================
+
+Status tetap dipertahankan.
+
+Contoh:
+
+WAITING
+
+MONITORING
+
+TRADING
+
+Tetap gunakan badge warna seperti sekarang.
+
+==========================================================
+8. AI SCORE
+==========================================================
+
+Tetap dipertahankan.
+
+Tidak berubah.
+
+==========================================================
+9. AGE
+==========================================================
+
+Ganti label:
+
+Age
+
+menjadi
+
+Held
+
+Contoh:
+
+Held
+
+1m 20s
+
+Lebih natural.
+
+==========================================================
+10. BID / ASK
+==========================================================
+
+Evaluasi kembali seluruh informasi berikut:
+
+YES BID
+
+YES ASK
+
+NO BID
+
+NO ASK
+
+Spread
+
+Jika memang tidak digunakan oleh user untuk mengambil keputusan,
+
+lebih baik dihapus.
+
+Atau dipindahkan ke tooltip/detail panel.
+
+Dashboard utama harus tetap bersih.
+
+==========================================================
+11. STRUKTUR BARU TIAP TIMEFRAME CARD
+==========================================================
+
+Target struktur sederhana seperti berikut.
+
+5M
+
+YES 50.5%
+
+NO 49.5%
+
+--------------------------------
+
+Price To Beat
+
+63,120
+
+Difference
+
++18
+
+--------------------------------
+
+Prediction
+
+UP
+
+Entry
+
+49.8%
+
+Size
+
+$20
+
+Held
+
+1m 20s
+
+AI Score
+
+34
+
+Status
+
+TRADING
+
+==========================================================
+12. FILOSOFI VISUAL
+==========================================================
+
+Market Information
+
+↓
+
+Target Price
+
+↓
+
+AI Decision
+
+↓
+
+AI Confidence
+
+↓
+
+Status
+
+Urutan visual harus mengikuti alur berpikir manusia.
+
+==========================================================
+13. DATA POLYMARKET
+==========================================================
+
+Pastikan semua data benar-benar berasal dari market Polymarket.
+
+Contoh:
+
+BTC Up or Down 5m
+
+ETH Up or Down 5m
+
+SOL Up or Down 5m
+
+XRP Up or Down 5m
+
+BTC Up or Down 15m
+
+ETH Up or Down 15m
+
+...
+
+BTC Up or Down 1 Hour
+
+...
+
+Jangan menggunakan data sintetis apabila data asli tersedia.
+
+==========================================================
+14. VALIDASI
+==========================================================
+
+Periksa apakah dashboard saat ini sudah menggunakan:
+
+- probability YES market Polymarket
+
+- probability NO market Polymarket
+
+- Price To Beat yang benar untuk tiap timeframe
+
+- Current Price live market
+
+Jika masih ada data dummy,
+
+atau mapping yang salah,
+
+laporkan sebelum mengubah.
+
+==========================================================
+15. SELF REVIEW
+==========================================================
+
+Sebelum selesai lakukan review sendiri.
+
+Checklist:
+
+✓ Header market memiliki LIVE Current Price.
+
+✓ Current Price hanya tampil sekali.
+
+✓ Price To Beat tetap per timeframe.
+
+✓ Tidak ada LONG / SHORT.
+
+✓ Tidak ada LONG YES / LONG NO.
+
+✓ Prediction menggunakan UP / DOWN.
+
+✓ Entry Probability tampil.
+
+✓ Size tampil.
+
+✓ Contracts dihapus.
+
+✓ Held menggantikan Age.
+
+✓ AI Score tetap.
+
+✓ Status tetap.
+
+✓ Dashboard terasa seperti AI POLYMARKET.
+
+Jika masih ada bagian yang terasa seperti dashboard crypto futures,
+
+lanjutkan perbaikan sampai benar-benar terasa sebagai dashboard AI khusus Polymarket.
+
+Jangan berhenti hanya karena kode berhasil dikompilasi.
+
+Berhenti hanya jika seluruh checklist visual di atas benar-benar terpenuhi.

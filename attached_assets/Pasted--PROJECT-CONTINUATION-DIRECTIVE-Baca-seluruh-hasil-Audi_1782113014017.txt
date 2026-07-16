@@ -1,0 +1,120 @@
+# PROJECT CONTINUATION DIRECTIVE
+
+Baca seluruh hasil Audit #1 sampai Audit #5 sebagai FASE RISET YANG SUDAH SELESAI.
+
+Jangan membuat audit baru.
+Jangan membuat laporan baru.
+Jangan memperpanjang observasi.
+Jangan melakukan validasi tambahan.
+Jangan mengumpulkan data hanya untuk membuktikan ulang hipotesis.
+
+Anggap hasil audit sebagai fakta kerja (working assumptions).
+
+## Status Proyek Saat Ini
+
+Fase yang sudah selesai:
+
+* Market structure audit
+* Orderbook audit
+* Repricing audit
+* Binance linkage audit
+* Replacement market audit
+* Liquidity scheduler audit
+* Price discovery audit
+
+Kesimpulan akhir:
+
+* Market baru di-seed otomatis
+* Initial liquidity disediakan sistem
+* Harga tidak mengikuti Binance secara real-time
+* Depth dapat berubah secara batch
+* Price discovery sangat jarang
+* Market bukan oracle-driven AMM
+* Market lebih cocok dimodelkan sebagai seeded prediction market dengan sparse trader activity
+
+Fase Research = SELESAI.
+
+---
+
+## Tentukan Posisi Proyek Saat Ini
+
+Lakukan analisis terhadap seluruh source code dan struktur project.
+
+Jawab:
+
+1. Sistem sudah dibangun sampai tahap apa?
+2. Modul apa saja yang sudah ada?
+3. Modul apa yang belum ada?
+4. Dependency antar modul?
+5. Apa blocker terbesar saat ini?
+6. Apa langkah berikutnya yang paling logis?
+
+Buat laporan:
+
+PROJECT_STATUS.md
+
+---
+
+## Setelah Status Diketahui
+
+Buat roadmap pembangunan aktual.
+
+Urutkan berdasarkan prioritas:
+
+### Layer 1
+
+Market Registry
+
+### Layer 2
+
+Market Scanner
+
+### Layer 3
+
+Data Storage
+
+### Layer 4
+
+Signal Engine
+
+### Layer 5
+
+Strategy Engine
+
+### Layer 6
+
+Execution Engine
+
+### Layer 7
+
+Position Tracking
+
+### Layer 8
+
+Risk Engine
+
+### Layer 9
+
+Monitoring Dashboard
+
+---
+
+## Tugas Utama
+
+Saya tidak ingin audit.
+
+Saya ingin mengetahui:
+
+"Proyek LimwanpoAI saat ini sudah berada di tahap mana, apa yang sudah selesai, apa yang belum selesai, dan modul apa yang harus dibangun berikutnya."
+
+Lakukan codebase inspection penuh.
+
+Output:
+
+1. PROJECT_STATUS.md
+2. ROADMAP_NEXT_PHASE.md
+3. NEXT_BUILD_TASKS.md
+
+Jika menemukan pekerjaan yang belum selesai, langsung lanjutkan implementasi modul prioritas tertinggi.
+
+Fokus pada BUILDING, bukan RESEARCH.

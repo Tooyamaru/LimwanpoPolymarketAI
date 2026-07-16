@@ -1,0 +1,178 @@
+AUDIT VERIFICATION MODE (READ-ONLY)
+
+Jangan mengubah code.
+
+Jangan membuat file.
+
+Jangan melakukan refactor.
+
+Jangan update dokumentasi.
+
+Jangan menjalankan migration.
+
+Tujuan tugas ini hanya memverifikasi apakah laporan audit sebelumnya benar atau tidak berdasarkan source code aktual.
+
+PHASE 1 — LAYER VERIFICATION
+
+Periksa source code aktual.
+
+Verifikasi status:
+
+* Layer 1 Market Universe
+* Layer 2 Scanner
+* Layer 3 Price Snapshots
+* Layer 4 Signal Engine
+* Layer 5 Opportunity Engine
+* Layer 6 Strategy Engine
+* Layer 7 Execution Engine
+* Layer 8 Position Tracking
+* Layer 9 Risk Engine
+* Layer 10 Dashboard
+
+Untuk setiap layer tampilkan:
+
+* COMPLETE
+* PARTIAL
+* MISSING
+* BROKEN
+
+Sertakan bukti file yang ditemukan.
+
+Contoh:
+
+Layer 8: COMPLETE
+
+Files:
+
+* backend/app/models/position.py
+* backend/app/services/position_service.py
+* backend/app/services/position_repository.py
+* backend/app/api/v1/positions.py
+
+PHASE 2 — FILE COUNT VERIFICATION
+
+Hitung:
+
+* Total file Python
+* Total Models
+* Total Repositories
+* Total Services
+* Total Routers
+* Total Schemas
+
+Tampilkan angka aktual.
+
+Jangan estimasi.
+
+PHASE 3 — ENDPOINT VERIFICATION
+
+Scan seluruh router.
+
+Tampilkan:
+
+Router	Endpoint Count
+
+Lalu tampilkan:
+
+TOTAL ENDPOINTS
+
+Verifikasi apakah klaim audit sebelumnya mengenai jumlah endpoint benar.
+
+PHASE 4 — SCHEMA VERIFICATION
+
+Periksa folder schemas.
+
+Tampilkan:
+
+* seluruh file schema
+* jumlah schema file
+* jumlah schema class
+
+Verifikasi klaim:
+
+“14 schema files”
+
+dan
+
+“34 schema classes”
+
+Jika tidak sesuai, laporkan.
+
+PHASE 5 — DATABASE VERIFICATION
+
+Periksa model SQLAlchemy aktual.
+
+Tampilkan seluruh tabel:
+
+* market_universe
+* price_snapshots
+* signals
+* opportunities
+* trade_decisions
+* orders
+* positions
+
+dan tabel lain yang ditemukan.
+
+Hitung total tabel.
+
+PHASE 6 — BACKGROUND WORKER VERIFICATION
+
+Temukan seluruh loop/background task.
+
+Tampilkan:
+
+* nama worker
+* interval
+* startup enabled
+* file lokasi
+
+Contoh:
+
+Universe Sync → 300s
+Scanner → 60s
+Signal Engine → 10s
+Opportunity Engine → 30s
+
+dst.
+
+PHASE 7 — AUDIT CONSISTENCY CHECK
+
+Bandingkan hasil source code aktual dengan klaim audit sebelumnya.
+
+Verifikasi klaim berikut:
+
+1. Layers 1–9 complete
+2. 90+ Python files
+3. 48 endpoints
+4. 14 schema files
+5. 34 schema classes
+6. No architecture issues remaining
+
+Untuk setiap klaim beri status:
+
+* TRUE
+* PARTIALLY TRUE
+* FALSE
+
+dan sertakan bukti.
+
+OUTPUT WAJIB
+
+Berikan laporan akhir:
+
+VERIFIED FACTS
+
+(hanya fakta yang terbukti dari source code)
+
+AUDIT INCONSISTENCIES
+
+(semua klaim audit yang tidak sesuai source code)
+
+ACTUAL PROJECT STATUS
+
+Layer Matrix lengkap.
+
+Jangan mengubah file apa pun.
+
+Mode hanya READ-ONLY AUDIT.

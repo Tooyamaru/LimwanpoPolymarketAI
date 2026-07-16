@@ -1,0 +1,118 @@
+Lakukan audit mendalam terhadap panel "BTC // CANDLES".
+
+JANGAN mengubah desain, warna, layout, ataupun menambahkan fitur baru.
+
+Fokus hanya mencari akar penyebab mengapa chart masih berupa panel hitam kosong.
+
+Yang harus diaudit adalah:
+
+1. HTML
+- Tampilkan struktur lengkap panel BTC // CANDLES.
+- Pastikan elemen yang digunakan createChart() benar-benar sama dengan elemen HTML.
+- Pastikan tidak ada ID yang salah atau container yang tidak digunakan.
+
+2. CSS
+Audit lengkap:
+
+#btc-chart-card
+#btc-chart-body
+#btc-chart
+canvas
+.tv-lightweight-charts
+
+Cari apakah ada:
+
+- display:none
+- visibility:hidden
+- opacity:0
+- overflow:hidden
+- z-index
+- position:absolute
+- transform
+- flex/grid yang membuat tinggi menjadi 0
+- parent yang menutupi canvas
+
+JANGAN mengubah CSS sebelum menemukan penyebab pasti.
+
+3. JavaScript
+
+Audit fungsi berikut secara lengkap:
+
+- initBtcChart()
+- fetchBtcCandles()
+- updateChart()
+- ResizeObserver
+- requestAnimationFrame
+- createChart()
+- addCandlestickSeries()
+- setData()
+- fitContent()
+
+Verifikasi:
+
+Apakah createChart benar-benar menggunakan elemen HTML yang benar?
+
+Apakah series dibuat pada chart yang sama?
+
+Apakah setData() dipanggil ke series yang aktif?
+
+Apakah chart pernah di-destroy lalu object lama masih dipakai?
+
+Apakah chart dibuat lebih dari sekali?
+
+4. Runtime Verification
+
+Tambahkan debug sementara yang mencetak:
+
+console.log("container:", container);
+console.log("width:", container.clientWidth);
+console.log("height:", container.clientHeight);
+
+console.log(
+container.querySelector("canvas")
+);
+
+console.log(chart);
+
+console.log(series);
+
+console.log(candles.length);
+
+console.log(series.data?.length);
+
+Verifikasi apakah:
+
+- canvas benar-benar dibuat
+- canvas memiliki width > 0
+- canvas memiliki height > 0
+- 80 candle benar-benar masuk ke series
+- chart masih hidup setelah render
+
+5. Browser Inspection
+
+Audit DOM setelah halaman selesai loading.
+
+Pastikan:
+
+btc-chart-card
+└── btc-chart-body
+    └── btc-chart
+         └── canvas
+
+Jika canvas tidak berada di dalam container tersebut, jelaskan penyebabnya.
+
+6. Output
+
+Jangan langsung memperbaiki.
+
+Berikan laporan dengan format:
+
+A. Root Cause
+B. Bukti kode yang menyebabkan masalah
+C. Bukti runtime (DOM + console)
+D. Solusi paling kecil yang benar
+E. Patch yang akan diterapkan
+
+Jangan melakukan perubahan lain di luar panel BTC // CANDLES.
+
+Target akhirnya adalah menemukan akar penyebab sebenarnya, bukan melakukan trial-and-error terhadap CSS.

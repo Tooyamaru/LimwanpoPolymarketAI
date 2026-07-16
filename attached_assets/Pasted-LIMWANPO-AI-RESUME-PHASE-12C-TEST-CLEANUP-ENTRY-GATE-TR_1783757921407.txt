@@ -1,0 +1,308 @@
+LIMWANPO AI — RESUME PHASE 12C TEST CLEANUP + ENTRY GATE TRANSPARENCY
+
+Konteks:
+Phase 12C berhenti karena daily quota tepat setelah:
+
+* test_market_universe_service.py dibaca
+* market_universe_service.py dibaca
+* root cause ditemukan sebagai fixture/mock drift
+* capture_upsert helper tidak mengembalikan value sesuai contract service
+* ditemukan 9 occurrence pattern yang sama
+* test_market_universe_service.py sudah diedit
+* tests dan compileall sempat dijalankan, tetapi hasil akhirnya belum terlihat karena quota habis
+
+TUGAS:
+Resume dari kondisi codebase sekarang.
+Jangan mulai dari nol.
+Jangan redo semua phase.
+Jangan ubah UI.
+Jangan ubah trading behavior sembarangan.
+Jangan turunkan threshold.
+Jangan paksa BUY.
+Jangan skip test tanpa root cause.
+Jangan hardcode test supaya asal pass.
+
+==================================================
+STEP 1 — VERIFY CURRENT DIFF
+============================
+
+Jalankan:
+
+* git status
+* git diff
+* python -m compileall -q backend/app
+
+Baca:
+
+* test_market_universe_service.py
+* market_universe_service.py
+* strategy_engine.py
+* settings.py
+* AI_DECISION_INTEGRITY_AUDIT.md
+
+Pastikan perubahan terakhir di test_market_universe_service.py benar-benar ada.
+
+==================================================
+STEP 2 — RUN MARKET UNIVERSE TESTS
+==================================
+
+Jalankan:
+
+python -m pytest path/to/test_market_universe_service.py -vv
+
+Catat hasil:
+
+* total tests
+* passed
+* failed
+* error
+* nama test yang masih gagal jika ada
+* expected vs actual
+* root cause
+
+Jika masih gagal:
+
+* jangan skip.
+* jangan xfail.
+* perbaiki fixture/mock/service sesuai root cause.
+* pastikan tidak mengubah production code kecuali benar-benar ada bug production.
+
+Jika semua pass:
+
+* lanjut Step 3.
+
+==================================================
+STEP 3 — CLASSIFY ORIGINAL FAILURE ROOT CAUSE
+=============================================
+
+Dokumentasikan root cause 4 pre-existing failures:
+
+Kemungkinan root cause dari sesi sebelumnya:
+
+* FIXTURE_DRIFT
+* shared capture_upsert mock helper tidak return value sesuai expectation market_universe_service
+* 9 occurrence pattern sama perlu diperbaiki uniform
+
+Untuk setiap failure tulis:
+
+* test name
+* root cause classification
+* file changed
+* fix applied
+* production behavior changed? yes/no
+
+Target:
+production behavior should remain NO_BEHAVIOR_CHANGE jika hanya fixture drift.
+
+==================================================
+STEP 4 — RUN BROADER TESTS
+==========================
+
+Run relevant tests:
+
+* python -m pytest path/to/test_market_universe_service.py -vv
+* python -m pytest tests related to market universe / universe sync / gamma if available
+* python -m pytest tests related to alert service if quick
+* python -m pytest if feasible
+
+Jika full suite masih ada failure:
+
+* pisahkan:
+
+  * FIXED
+  * NEW_FAILURE
+  * PRE_EXISTING_UNRELATED
+
+Jangan klaim full clean kalau masih ada failure.
+
+==================================================
+STEP 5 — ENTRY GATE TRANSPARENCY AUDIT
+======================================
+
+Audit strategy_engine.py.
+
+Cari:
+
+* SCORE_OPEN
+* MIN_SIGNAL_CONFIDENCE
+* entry_quality threshold
+* signal confidence threshold
+* opportunity score threshold
+* vote score threshold
+* market quality threshold
+* AMM-init comment
+* pre-tuned / tuned-down / lowered comment
+* fallback/default confidence
+* risk bypass
+
+Buat inventory:
+
+* constant/setting name
+* current value
+* source file
+* whether hardcoded or settings-based
+* reason/comment
+* behavior impact
+* safety impact
+
+==================================================
+STEP 6 — ENTRY GATE TRANSPARENCY CLEANUP
+========================================
+
+Jika ada hardcoded threshold di strategy_engine.py:
+
+* pindahkan ke settings.py dengan nama jelas.
+* jangan ubah value.
+* jangan ubah behavior.
+
+Nama yang disarankan jika belum ada:
+
+* STRATEGY_SCORE_OPEN_THRESHOLD
+* STRATEGY_MIN_SIGNAL_CONFIDENCE
+* STRATEGY_AMM_INIT_MODE_ENABLED
+* STRATEGY_ENTRY_GATE_REVIEW_REQUIRED
+
+Tambahkan comment jujur:
+
+* threshold ini dipakai karena Polymarket AMM-init data sering flat
+* ini bukan risk bypass
+* Risk Engine tetap gate utama
+* harus di-review saat CLOB data lebih variatif
+
+Jika threshold sudah di settings.py:
+
+* cukup perjelas comment/docstring.
+* jangan ubah value.
+
+Jika ada default/fallback confidence yang tampak seperti fake signal:
+
+* ubah label menjadi NOT_AVAILABLE / INSUFFICIENT_DATA jika perlu.
+* jangan menyamarkan default sebagai real confidence.
+
+==================================================
+STEP 7 — BEHAVIOR SAFETY CHECK
+==============================
+
+Pastikan setelah cleanup:
+
+* BUY_YES / BUY_NO tetap dari formula
+* no hardcoded BUY
+* no forced BUY
+* no fake confidence
+* no synthetic signal
+* no risk bypass
+* risk gate tetap aktif
+* execution safety tidak disentuh
+
+Query latest decision logs jika perlu:
+
+* BUY_YES count
+* BUY_NO count
+* WAIT count
+* avg confidence
+* avg opportunity_score
+* risk_gated true/false distribution
+* top WAIT reasons
+
+Jangan memaksa jumlah BUY naik.
+
+==================================================
+STEP 8 — RED FLAG SEARCH
+========================
+
+Search backend:
+
+* hardcoded BUY
+* force BUY
+* fake confidence
+* synthetic signal
+* dummy signal
+* default confidence
+* fallback confidence
+* pre-tuned
+* AMM-init
+* SCORE_OPEN
+* MIN_SIGNAL_CONFIDENCE
+* risk bypass
+* ignore risk
+* skip risk
+* xfail
+* pytest.skip
+* hardcoded test pass
+
+Classify:
+
+* SAFE_CONFIG
+* TRANSPARENCY_COMMENT
+* TEST_ONLY
+* INVALID_FAKE
+* FIXED
+* PRE_EXISTING_SAFE
+
+No INVALID_FAKE at final.
+
+==================================================
+STEP 9 — UPDATE AUDIT REPORT
+============================
+
+Update AI_DECISION_INTEGRITY_AUDIT.md dengan section:
+
+PHASE 12C — TEST CLEANUP + ENTRY GATE TRANSPARENCY
+
+Isi:
+
+1. Original 4 test failures
+2. Root cause classification
+3. Fix applied
+4. Market universe test results after fix
+5. Broader suite result
+6. Entry gate threshold inventory
+7. Transparency changes
+8. Behavior changed / not changed
+9. Red flag search
+10. Files changed
+11. Remaining risks
+12. Final status
+
+Final status:
+
+* TEST / ENTRY TRANSPARENCY: PASS
+  jika test_market_universe_service.py pass, no new failure, entry gate transparent, no fake/risk bypass.
+
+* TEST / ENTRY TRANSPARENCY: PASS WITH NOTES
+  jika tests pass tapi entry gate tetap intentionally pre-tuned dengan review item.
+
+* TEST / ENTRY TRANSPARENCY: PARTIAL
+  jika hanya salah satu selesai.
+
+* TEST / ENTRY TRANSPARENCY: FAIL
+  jika tests masih gagal atau ditemukan hardcoded BUY/fake confidence/risk bypass.
+
+==================================================
+STEP 10 — FINAL RESPONSE FORMAT
+===============================
+
+Jawab dengan format:
+
+1. Files read
+2. Git diff summary
+3. Original 4 test failures
+4. Root cause classification
+5. Fixes applied
+6. Market universe test results
+7. Broader test results
+8. Entry gate threshold inventory
+9. Transparency changes
+10. Behavior changed or not
+11. Red flag search
+12. Files changed
+13. Audit report update
+14. Remaining risks
+15. Final TEST / ENTRY TRANSPARENCY status
+16. Exact next recommended step
+
+Jangan jawab umum.
+Jangan skip test tanpa alasan.
+Jangan turunkan threshold.
+Jangan paksa BUY.
+Jangan fabricate result.

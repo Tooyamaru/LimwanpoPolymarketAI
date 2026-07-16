@@ -1,0 +1,276 @@
+The dashboard layout is now considered LOCKED.
+
+Do NOT change the overall layout, panel positions, panel heights, grid structure, responsive behavior, spacing architecture, or viewport proportions anymore.
+
+The objective is NO LONGER layout optimization.
+
+The objective is now a complete Institutional UI / UX polish.
+
+Target quality:
+
+Bloomberg Terminal
+Trading Technologies (TT)
+Bookmap
+Citadel internal dashboard
+Jane Street
+Two Sigma
+High-end hedge fund trading workstation
+
+The dashboard should feel expensive, premium, effortless to read, and comfortable to use for 10+ hours continuously.
+
+Focus ONLY on visual refinement.
+
+==========================
+TYPOGRAPHY
+==========================
+
+Improve the entire typography hierarchy.
+
+Increase readability without making the UI larger.
+
+Create a very clear visual hierarchy:
+
+Level 1
+Hero values
+Largest
+Highest contrast
+
+Level 2
+Section titles
+Market names
+Portfolio values
+
+Level 3
+Primary labels
+
+Level 4
+Secondary metadata
+
+Level 5
+Very subtle helper text
+
+Every text element must have a clear purpose.
+
+No tiny unreadable gray text.
+
+Increase brightness of secondary labels by approximately 15–20%.
+
+Use stronger font weights where appropriate.
+
+Improve line-height and letter spacing.
+
+Numeric values should use tabular figures everywhere.
+
+==========================
+PORTFOLIO
+==========================
+
+Make Portfolio visually stronger.
+
+The eye should immediately recognize:
+
+Total Value
+
+Capital
+
+PnL
+
+Daily Loss
+
+Improve hierarchy inside each card.
+
+Increase perceived quality using spacing and typography rather than larger panels.
+
+==========================
+MARKET UNIVERSE
+==========================
+
+Keep the layout exactly the same.
+
+Improve visual depth.
+
+Introduce subtle gradients.
+
+Improve border contrast.
+
+Improve glass effect.
+
+Improve active state.
+
+Differentiate idle vs active cards.
+
+Improve prediction/status area.
+
+Everything should look alive without becoming distracting.
+
+==========================
+CHART
+==========================
+
+Do NOT resize the chart.
+
+Improve chart aesthetics.
+
+Refine:
+
+Current price line
+
+Current price badge
+
+Grid opacity
+
+Crosshair appearance
+
+Glow around important values
+
+Improve premium feeling.
+
+Avoid exaggerated neon effects.
+
+==========================
+SYSTEM HEALTH
+==========================
+
+Improve typography.
+
+Improve spacing.
+
+Reduce visual clutter.
+
+Status indicators should feel precise.
+
+Improve dot glow.
+
+Improve OK labels.
+
+==========================
+AI PIPELINE
+==========================
+
+Do NOT change node positions.
+
+Improve animation quality.
+
+Make energy flow smoother.
+
+Improve transition timing.
+
+Improve pulse quality.
+
+Improve connection line rendering.
+
+Everything should feel like AI computation.
+
+Never flashy.
+
+Always elegant.
+
+==========================
+FEEDS
+==========================
+
+Feeds must become much easier to read.
+
+Timestamp:
+
+slightly dim
+
+Badge:
+
+clear
+
+Message:
+
+bright
+
+Improve line spacing.
+
+Improve row spacing.
+
+Improve visual rhythm.
+
+The feed should be readable for hours without fatigue.
+
+==========================
+HEADER
+==========================
+
+Improve badge consistency.
+
+Equal height.
+
+Equal padding.
+
+Better spacing.
+
+Improve typography.
+
+Improve premium appearance.
+
+==========================
+SECTION TITLES
+==========================
+
+Make section titles become stronger anchors.
+
+Slightly brighter.
+
+Slightly bolder.
+
+Improve letter spacing.
+
+Improve separator lines.
+
+==========================
+FOOTER
+==========================
+
+Keep layout identical.
+
+Improve ticker readability.
+
+Improve spacing.
+
+Improve hierarchy between:
+
+Symbol
+
+Price
+
+Percentage
+
+News
+
+==========================
+GLOBAL
+==========================
+
+Improve perceived depth.
+
+Improve shadows.
+
+Improve glass effects.
+
+Improve borders.
+
+Improve consistency.
+
+Improve contrast.
+
+Improve micro-spacing.
+
+Improve alignment.
+
+Improve polish.
+
+Do NOT redesign.
+
+Do NOT move components.
+
+Do NOT resize layout.
+
+Do NOT touch backend.
+
+Do NOT modify trading logic.
+
+The goal is to make the dashboard feel like a finished institutional-grade trading platform ready for production.

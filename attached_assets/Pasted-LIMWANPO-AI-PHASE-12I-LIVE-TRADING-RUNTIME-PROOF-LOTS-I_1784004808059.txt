@@ -1,0 +1,617 @@
+LIMWANPO AI — PHASE 12I
+LIVE TRADING RUNTIME PROOF
+LOTS + IN/OUT + PNL + AI LIVE TRADES + ROLLOVER
+
+Konteks:
+
+Phase 12H sudah menyelesaikan:
+
+- dashboard syntax fixed
+- dashboard berhasil render
+- compile berhasil
+- workflow restart berhasil
+- System Health UI sudah dihapus
+- Prediction Pipeline UI sudah dihapus
+- AI Activities sudah diubah menjadi AI LIVE TRADES
+- LOTS / IN / OUT / PNL / countdown sudah diimplementasikan
+- endpoint dan query sudah diaudit
+- code review pass
+- checkpoint dibuat
+
+Tetapi runtime proof belum lengkap karena database belum mempunyai cukup aktivitas trading nyata.
+
+Tujuan Phase 12I:
+
+Membuktikan secara live bahwa:
+
+- AI benar-benar membuka lebih dari satu lot pada market yang sama
+- LOTS berubah
+- IN count dan amount bertambah
+- OUT count dan amount bertambah
+- PNL berubah dari data posisi nyata
+- AI LIVE TRADES menerima ENTRY dan EXIT nyata
+- rollover condition_id tidak mencampur posisi lama dan market baru
+
+ATURAN WAJIB:
+
+- JANGAN menambah fitur baru.
+- JANGAN redesign UI.
+- JANGAN membuat dummy trade.
+- JANGAN membuat fake order.
+- JANGAN memaksa BUY hanya untuk pembuktian.
+- JANGAN menurunkan threshold strategy/risk.
+- JANGAN hardcode LOTS/IN/OUT/PNL.
+- JANGAN mengubah condition_id posisi lama.
+- JANGAN menghapus history.
+- Gunakan paper trading natural dari sistem yang berjalan.
+- Jika event belum muncul, laporkan jujur dan jangan fabricate.
+
+==================================================
+STEP 1 — VERIFY CURRENT SYSTEM
+==================================================
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+- health endpoint
+- detailed health endpoint
+- workflow logs terbaru
+
+Pastikan:
+
+- PostgreSQL connected
+- Redis connected
+- Gamma OK
+- CLOB OK
+- 12 active markets
+- Price Worker hidup
+- Signal Engine hidup
+- Opportunity Engine hidup
+- Strategy Engine hidup
+- Risk Engine hidup
+- Decision Engine hidup
+- Execution Engine hidup
+- Exit Engine hidup
+
+==================================================
+STEP 2 — CURRENT ACTIVE MARKET SNAPSHOT
+==================================================
+
+Tampilkan 12 active markets:
+
+- asset
+- timeframe
+- condition_id
+- start_time
+- end_time
+- lifecycle_state
+- price_data_mode
+- yes_bid
+- yes_ask
+- yes_mid
+- spread
+- latest signal
+- opportunity score
+- risk score
+- current decision
+
+==================================================
+STEP 3 — CURRENT POSITION STATE
+==================================================
+
+Query semua positions:
+
+- id
+- condition_id
+- asset
+- timeframe
+- side
+- entry_sequence
+- order_id
+- entry_price
+- quantity
+- remaining_quantity
+- status
+- scale_in_reason
+- realized_pnl
+- unrealized_pnl
+- opened_at
+- closed_at
+
+Group by condition_id:
+
+- active_lot_count
+- open_lot_count
+- partial_lot_count
+- closed_lot_count
+- total_entry_count
+- total_exit_count
+- total_entry_notional
+- total_exit_notional
+- realized_pnl
+- unrealized_pnl
+- total_pnl
+
+==================================================
+STEP 4 — WATCH FOR NATURAL FIRST ENTRY
+==================================================
+
+Monitor live engine cycles.
+
+When AI produces a valid entry:
+
+Capture:
+
+- timestamp
+- asset
+- timeframe
+- condition_id
+- decision_id
+- order_id
+- position_id
+- side
+- entry_price
+- quantity
+- notional
+- risk approval
+- scale_in_reason
+- LOTS before
+- LOTS after
+- IN count before
+- IN count after
+- IN amount before
+- IN amount after
+
+Verify:
+
+- AI LIVE TRADES shows ENTRY
+- card LOTS becomes 1
+- IN becomes 1x / actual amount
+- PNL uses real open position
+- event is EXECUTED, not pending
+
+==================================================
+STEP 5 — WATCH FOR NATURAL SECOND ENTRY
+==================================================
+
+For the same condition_id, wait for a valid additional entry.
+
+Verify:
+
+- new decision_id
+- new order_id
+- new position_id
+- entry_sequence increases
+- same condition_id
+- same-side allowed
+- cooldown satisfied
+- exposure cap satisfied
+- no duplicate execution
+- LOTS increases from 1 to 2
+- IN count increases from 1 to 2
+- IN amount increases correctly
+- weighted average entry recalculated correctly
+- AI LIVE TRADES shows SCALE_IN
+
+If blocked, capture exact reason:
+
+- COOLDOWN
+- MAX_ENTRIES_PER_MARKET
+- MAX_OPEN_LOTS_PER_MARKET
+- MAX_EXPOSURE_PER_MARKET
+- OPPOSITE_SIDE_CONFLICT
+- RISK_SCORE
+- NO_ORDER_FLOW
+- LOW_CONFIDENCE
+- DUPLICATE_EXECUTION
+
+Do not alter thresholds.
+
+==================================================
+STEP 6 — MULTI-ENTRY PROOF
+==================================================
+
+PASS requirement:
+
+At least one condition_id has:
+
+COUNT(position rows) >= 2
+
+with:
+
+- different position IDs
+- different order IDs
+- different decision IDs or equivalent provenance
+- valid entry_sequence
+- same active condition_id
+- no duplicate retry
+
+Display:
+
+condition_id
+lot #1
+lot #2
+lot #3 if present
+
+Include:
+
+- entry price
+- quantity
+- remaining quantity
+- side
+- scale-in reason
+- timestamp
+- PnL per lot
+
+==================================================
+STEP 7 — LIVE PNL PROOF
+==================================================
+
+For a condition_id with an open position:
+
+Calculate manually:
+
+LONG_YES:
+unrealized_pnl =
+(current_yes_bid - entry_price) × remaining_quantity
+
+LONG_NO:
+no_bid = 1 - yes_ask
+unrealized_pnl =
+(no_bid - entry_price) × remaining_quantity
+
+Then:
+
+total_pnl =
+realized_pnl + unrealized_pnl
+
+Compare:
+
+- manual calculation
+- database value
+- card summary API
+- displayed dashboard PNL
+
+All must match within rounding tolerance.
+
+If price missing:
+
+- PNL should show N/A
+- not fake $0.00
+
+==================================================
+STEP 8 — LIVE EXIT PROOF
+==================================================
+
+Wait for one natural exit event:
+
+- PARTIAL_EXIT
+- FINAL_EXIT
+- EXPIRY_EXIT
+
+Capture:
+
+- exit decision_id
+- exit order_id
+- lot_id
+- close_quantity
+- exit_price
+- exit_notional
+- realized_pnl
+- remaining_quantity
+- status before/after
+- close_reason
+- timestamp
+
+Verify:
+
+- OUT count increases
+- OUT amount increases
+- realized PnL increases
+- LOTS updates correctly
+- AI LIVE TRADES displays the exit
+- WAIT does not appear in feed
+
+==================================================
+STEP 9 — PARTIAL EXIT PROOF
+==================================================
+
+If a partial exit occurs:
+
+Verify:
+
+- close_quantity < previous remaining_quantity
+- remaining_quantity decreases
+- status becomes PARTIAL or remains OPEN according to model
+- active lot count remains correct
+- OUT count increments once
+- no duplicate exit event
+- realized PnL is based only on closed quantity
+
+If no natural partial exit appears:
+
+- do not fabricate
+- status:
+  PARTIAL EXIT LIVE PROOF NOT YET OBSERVED
+
+==================================================
+STEP 10 — ROLLOVER PROOF
+==================================================
+
+Wait for a market rollover.
+
+Capture:
+
+OLD:
+- asset
+- timeframe
+- old condition_id
+- end_time
+- positions
+- LOTS
+- resolution state
+
+NEW:
+- same asset
+- same timeframe
+- new condition_id
+- start_time
+- current card summary
+
+Verify:
+
+- new card uses new condition_id only
+- new card LOTS starts from current-condition positions only
+- old positions do not appear on new card
+- old positions remain in history
+- old unresolved positions remain in resolution/exit path
+- portfolio total still accounts for relevant old positions
+- AI LIVE TRADES keeps historical events with old condition_id
+
+==================================================
+STEP 11 — AI LIVE TRADES PROOF
+==================================================
+
+Call:
+
+GET /api/v1/live-trades
+
+Verify each event:
+
+- event_id
+- event_type
+- timestamp
+- asset
+- timeframe
+- condition_id
+- side
+- quantity
+- price
+- notional_usdc
+- realized_pnl
+- remaining_quantity
+- lot_id
+- order_id
+- decision_id
+- reason
+- status
+
+Allowed:
+
+- ENTRY
+- SCALE_IN
+- PARTIAL_EXIT
+- FINAL_EXIT
+- EXPIRY_EXIT
+- EXECUTION_REJECTED optional
+
+Forbidden:
+
+- WAIT
+- generic signal
+- opportunity event
+- heartbeat
+- fake event
+- random feed item
+
+==================================================
+STEP 12 — DASHBOARD VISUAL PROOF
+==================================================
+
+Take screenshots for:
+
+A. No position:
+- LOTS 0
+- IN 0x / $0.00
+- OUT 0x / $0.00
+- PNL —
+
+B. One open position:
+- LOTS 1
+- IN 1x / actual amount
+- PNL live
+
+C. Multiple open positions:
+- LOTS >= 2
+- IN >= 2x
+- weighted entry reflected
+
+D. After exit:
+- OUT > 0
+- realized PnL visible
+- live trade event visible
+
+Also verify:
+
+- countdown visible
+- AI LIVE TRADES visible
+- System Health UI absent
+- Prediction Pipeline UI absent
+- no overflow
+- no broken card layout
+
+==================================================
+STEP 13 — HEADER COUNTERS
+==================================================
+
+Verify header counters are real:
+
+- MARKETS
+- OPEN LOTS
+- EXECUTED TRADES
+- CAPITAL OK
+
+Cross-check with DB/API.
+
+No race condition.
+No stale count.
+No hardcoded values.
+
+==================================================
+STEP 14 — RUNTIME DURATION
+==================================================
+
+Run monitoring long enough to observe natural activity.
+
+Minimum:
+
+- 30 minutes for entry/scale-in observation
+- through at least one 5M rollover
+- continue until one exit if practical
+
+If event does not occur:
+
+Do not fabricate.
+
+Report exact:
+
+- cycles observed
+- decisions evaluated
+- blocked count
+- block reasons
+- entries created
+- exits created
+- rollovers observed
+
+==================================================
+STEP 15 — TESTS
+==================================================
+
+Run:
+
+- python -m compileall -q backend/app
+- risk tests
+- execution tests
+- exit tests
+- position tests
+- card summary tests
+- live trades tests
+- rollover tests
+- full suite
+
+Report exact totals.
+
+==================================================
+STEP 16 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- fake trade
+- dummy position
+- hardcoded lots
+- potential profit
+- stake default pnl
+- WAIT in live trades
+- asset-only position lookup
+- timeframe-only lookup
+- old condition_id in current card
+- duplicate order
+- overwrite position
+- unlimited entries
+- shared summary cache
+
+Classify:
+
+- REAL_RUNTIME_DATA
+- SAFE_HISTORY
+- VALID_IDEMPOTENCY
+- SAFE_RISK_LIMIT
+- TEST_ONLY
+- INVALID
+- FIXED
+
+No unresolved INVALID.
+
+==================================================
+STEP 17 — FINAL REPORT
+==================================================
+
+Answer:
+
+1. Runtime duration
+2. Engine cycles observed
+3. Active markets
+4. Entry events observed
+5. Multi-entry proof
+6. LOTS proof
+7. IN proof
+8. PnL proof
+9. Exit events observed
+10. OUT proof
+11. Partial exit proof
+12. Rollover proof
+13. AI LIVE TRADES proof
+14. Header counter proof
+15. Screenshot proof
+16. Tests
+17. Red flag result
+18. Remaining unobserved events
+19. Final statuses
+20. Exact next step
+
+Final statuses:
+
+MULTI-ENTRY LIVE PROOF:
+- PASS
+- NOT YET OBSERVED
+- FAIL
+
+LIVE PNL PROOF:
+- PASS
+- PARTIAL
+- NOT YET OBSERVED
+- FAIL
+
+LIVE EXIT PROOF:
+- PASS
+- NOT YET OBSERVED
+- FAIL
+
+ROLLOVER ISOLATION LIVE PROOF:
+- PASS
+- NOT YET OBSERVED
+- FAIL
+
+AI LIVE TRADES:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+DASHBOARD TRADING RUNTIME:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+Use PASS only if backed by live DB/API/dashboard evidence.
+
+Jangan jawab setup complete.
+Jangan defer.
+Jangan membuat dummy data.
+Jangan menurunkan threshold.
+Jangan memaksa trade.
+Jangan mengubah feature implementation kecuali runtime proof menemukan bug nyata.

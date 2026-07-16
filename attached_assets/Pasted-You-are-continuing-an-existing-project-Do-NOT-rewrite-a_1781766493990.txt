@@ -1,0 +1,171 @@
+You are continuing an existing project.
+
+Do NOT rewrite architecture.
+
+Goal:
+
+Sprint 5 = Market Source Validation
+
+We must find the exact market family:
+
+BTC Up or Down
+ETH Up or Down
+SOL Up or Down
+XRP Up or Down
+
+Timeframes:
+
+5m
+15m
+1H
+
+No trading.
+No confidence.
+No probability.
+No dashboard.
+
+=================================================
+
+TASK 1
+
+Create source validation module.
+
+File:
+
+backend/app/services/source_validator.py
+
+Purpose:
+
+Trace every market source.
+
+For every discovered market save:
+
+source_endpoint
+source_event_id
+source_market_id
+title
+slug
+condition_id
+
+=================================================
+
+TASK 2
+
+Create diagnostics API.
+
+GET /api/v1/source-validation
+
+Response:
+
+{
+  "source":"clob",
+  "markets":1234
+}
+
+=================================================
+
+TASK 3
+
+Create raw search endpoint.
+
+GET /api/v1/source-validation/search?q=btc
+
+Return:
+
+title
+slug
+market_id
+event_id
+
+=================================================
+
+TASK 4
+
+Create exact matcher.
+
+Search patterns:
+
+up
+down
+
+up/down
+
+higher
+lower
+
+above
+below
+
+5 minutes
+
+15 minutes
+
+1 hour
+
+=================================================
+
+TASK 5
+
+Create audit report.
+
+GET /api/v1/source-validation/audit
+
+Return:
+
+all candidate markets.
+
+No filtering.
+
+=================================================
+
+TASK 6
+
+Store raw discoveries.
+
+Database table:
+
+source_validation_results
+
+=================================================
+
+TASK 7
+
+Tests.
+
+Target:
+
+100+ tests total.
+
+=================================================
+
+TASK 8
+
+README
+
+Add Sprint 5 architecture.
+
+=================================================
+
+IMPORTANT
+
+We are not trying to trade.
+
+We are not trying to score.
+
+We are trying to answer:
+
+"Can we reliably discover the exact market family that the user wants?"
+
+Output:
+
+Show example BTC markets.
+
+Show example ETH markets.
+
+Show example SOL markets.
+
+Show example XRP markets.
+
+Show source endpoints.
+
+Show audit report samples.

@@ -1,0 +1,184 @@
+LIMWANPO AI — PHASE : EXIT & PORTFOLIO ACCOUNTING VALIDATION
+
+STOP.
+
+Jangan menambahkan fitur baru.
+Jangan mengubah UI.
+Jangan mengubah layout dashboard.
+Jangan mengubah AI Decision.
+Jangan mengubah Risk Engine.
+
+Fokus hanya pada EXIT dan Portfolio Accounting sampai benar 100%.
+
+===========================================================
+TARGET
+===========================================================
+
+Saya ingin memastikan seluruh accounting sama seperti trading sungguhan.
+
+Setiap ENTRY dan EXIT wajib langsung mempengaruhi:
+
+1. Budget
+2. Coverage
+3. Available
+4. Resolution Result
+5. Cumulative Outcome
+6. Card PNL
+7. AI Live Trades
+
+===========================================================
+VALIDASI EXIT
+===========================================================
+
+Pastikan setiap SELL yang EXECUTED benar-benar:
+
+- mengurangi remaining_quantity
+- mengurangi open exposure
+- mengurangi open lots
+- mengubah status menjadi PARTIAL atau CLOSED
+- membuat realized pnl
+- menyimpan exit_price
+- menyimpan exit_time
+- menyimpan close_reason
+
+Tidak boleh hanya membuat order SELL.
+
+Position harus benar-benar berubah.
+
+===========================================================
+VALIDASI PORTFOLIO
+===========================================================
+
+Periksa seluruh formula.
+
+Coverage harus selalu = total OPEN exposure.
+
+Coverage turun ketika EXIT.
+
+Coverage naik ketika ENTRY.
+
+===========================================================
+
+Available harus dihitung:
+
+Available =
+Initial Capital
++ Total Realized PnL
+- Current Open Exposure
+
+BUKAN
+
+Available =
+Initial Capital
+- Open Exposure
+
+Pastikan rumus lama sudah tidak ada lagi.
+
+===========================================================
+
+Resolution Result
+
+Harus berasal dari
+
+SUM(realized pnl seluruh CLOSED position)
+
+===========================================================
+
+Cumulative Outcome
+
+Harus berasal dari
+
+Realized PnL
++
+Unrealized PnL
+
+===========================================================
+VALIDASI CARD
+===========================================================
+
+Setiap card harus mengambil data dari position yang benar-benar OPEN.
+
+PNL harus berasal dari:
+
+unrealized pnl seluruh OPEN lot.
+
+Jika semua lot CLOSED
+
+PNL card kembali 0.
+
+===========================================================
+VALIDASI EXIT
+===========================================================
+
+Setelah EXIT terjadi:
+
+LOTS berkurang.
+
+Coverage berkurang.
+
+Available berubah.
+
+Resolution Result berubah.
+
+Cumulative Outcome berubah.
+
+AI LIVE TRADES harus menampilkan:
+
+ENTRY
+
+PARTIAL EXIT
+
+FINAL EXIT
+
+beserta nominal dan realized pnl.
+
+===========================================================
+RUNTIME PROOF
+===========================================================
+
+Jangan mengatakan selesai sebelum menunjukkan bukti.
+
+Lakukan runtime validation.
+
+Tampilkan:
+
+1. Semua OPEN position
+
+2. Semua CLOSED position
+
+3. Portfolio Summary
+
+4. Coverage
+
+5. Available
+
+6. Realized PnL
+
+7. Unrealized PnL
+
+8. Open Exposure
+
+9. Card Summary
+
+10. Screenshot dashboard setelah beberapa ENTRY dan EXIT terjadi.
+
+===========================================================
+PENTING
+===========================================================
+
+Jika masih ada bug,
+
+perbaiki sampai accounting konsisten.
+
+Jangan berpindah ke fitur lain.
+
+Jangan membuat follow-up task.
+
+Selesaikan hanya EXIT dan PORTFOLIO ACCOUNTING.
+
+Berikan bukti runtime bahwa seluruh angka sudah sinkron antara:
+
+Database
+Backend
+API
+Dashboard

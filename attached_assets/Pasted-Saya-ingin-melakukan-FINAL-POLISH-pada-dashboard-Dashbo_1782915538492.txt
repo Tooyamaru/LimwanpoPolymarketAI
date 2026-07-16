@@ -1,0 +1,227 @@
+Saya ingin melakukan FINAL POLISH pada dashboard.
+
+Dashboard sudah sangat bagus secara layout.
+
+Sekarang fokusnya bukan lagi menambah fitur, tetapi meningkatkan kualitas visual, keterbacaan, kenyamanan penggunaan jangka panjang, dan kesan premium.
+
+JANGAN mengubah backend, API, WebSocket, Trading Engine, ataupun logika aplikasi.
+
+Hanya lakukan polishing pada UI, UX, Typography, Visual Hierarchy, dan Responsive Design.
+
+⸻
+
+1. Typography Audit (WAJIB)
+
+Lakukan audit seluruh ukuran font di dashboard.
+
+Jangan ada lagi font yang terlalu kecil sehingga sulit dibaca.
+
+Gunakan hirarki typography yang konsisten.
+
+Rekomendasi:
+
+* Header Panel : 14–15px
+* Asset Name : 16–18px
+* Nilai utama : 20–30px
+* Isi utama : 12–13px
+* Metadata : minimum 10–11px
+
+Hindari penggunaan font di bawah 9px kecuali benar-benar diperlukan.
+
+Dashboard harus nyaman dibaca selama berjam-jam.
+
+⸻
+
+2. Tingkatkan Readability
+
+Perbaiki kontras seluruh teks.
+
+Gunakan hirarki:
+
+Primary Text
+
+Secondary Text
+
+Metadata
+
+Background
+
+Pastikan informasi penting langsung menarik perhatian mata.
+
+⸻
+
+3. Portfolio
+
+Naikkan kualitas visual Portfolio.
+
+* Angka utama lebih dominan.
+* Label lebih jelas.
+* Daily Loss, Win Rate, PnL lebih mudah dibaca.
+* Rapikan alignment.
+
+⸻
+
+4. Market Universe
+
+Perbaiki visual seluruh Market Card.
+
+* Asset Name lebih dominan.
+* Countdown lebih kecil.
+* Prediction lebih jelas.
+* Confidence lebih mudah dibaca.
+* Status lebih mudah dikenali.
+
+Tambahkan sedikit variasi visual sesuai status AI:
+
+Idle
+
+Scanning
+
+Building Signal
+
+Opportunity
+
+Executing
+
+Tetapi tetap elegan dan tidak berlebihan.
+
+⸻
+
+5. Feed
+
+Perbesar sedikit:
+
+Badge
+
+Timestamp
+
+Isi Log
+
+Spacing antar log
+
+Target:
+
+5–8 log terlihat nyaman tanpa scroll.
+
+⸻
+
+6. AI Decision Engine
+
+Pertahankan desain sekarang.
+
+Tetapi:
+
+* Perbesar label setiap node.
+* Rapikan alignment.
+* Tingkatkan readability.
+* Jangan mengubah animasi.
+
+⸻
+
+7. Footer
+
+Perbesar sedikit tinggi footer.
+
+Perbesar ukuran ticker.
+
+Pastikan ticker tetap nyaman dibaca pada monitor besar maupun iPad.
+
+⸻
+
+8. Konsistensi Spacing
+
+Audit seluruh:
+
+padding
+
+margin
+
+gap
+
+line-height
+
+letter-spacing
+
+Gunakan spacing yang konsisten di seluruh dashboard.
+
+⸻
+
+9. Konsistensi Warna
+
+Gunakan hirarki warna yang konsisten.
+
+Cyan
+
+Magenta
+
+Green
+
+Yellow
+
+Red
+
+Harus memiliki tingkat glow dan brightness yang seragam.
+
+⸻
+
+10. Glow Audit
+
+Glow sekarang sudah bagus.
+
+Namun audit kembali agar:
+
+Tidak terlalu redup.
+
+Tidak terlalu terang.
+
+Tetap premium.
+
+Tidak melelahkan mata.
+
+⸻
+
+11. Visual Hierarchy
+
+Pastikan mata pengguna secara alami melihat urutan berikut:
+
+1. Chart
+2. Harga utama
+3. Portfolio
+4. System Health
+5. Market Universe
+6. AI Pipeline
+7. Feed
+8. Footer
+
+Tidak boleh ada elemen kecil yang justru lebih mencolok daripada informasi penting.
+
+⸻
+
+12. Responsive Polish
+
+Pastikan seluruh typography, spacing, dan hierarchy tetap nyaman pada:
+
+* iPad
+* Laptop
+* Desktop
+* Ultrawide
+
+Gunakan clamp() bila diperlukan.
+
+⸻
+
+13. Final UI Audit
+
+Sebelum selesai lakukan audit menyeluruh terhadap seluruh dashboard.
+
+Cari elemen yang:
+
+* terlalu kecil
+* terlalu redup
+* terlalu rapat
+* terlalu kosong
+* tidak sejajar
+* tidak konsisten
+* tidak nyaman dibaca
+
+Perbaiki seluruhnya hingga dashboard benar-benar terasa seperti produk AI Trading kelas institusional yang siap digunakan setiap hari selama berjam-jam.

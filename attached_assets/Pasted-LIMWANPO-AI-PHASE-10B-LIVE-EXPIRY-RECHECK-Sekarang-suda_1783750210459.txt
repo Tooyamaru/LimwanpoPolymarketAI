@@ -1,0 +1,139 @@
+LIMWANPO AI — PHASE 10B LIVE EXPIRY RECHECK
+
+Sekarang sudah lewat 2026-07-12 01:15 UTC / 08:15 WIB.
+
+Jangan setup ulang.
+Jangan defer.
+Jangan buat follow-up task.
+Jangan ubah UI.
+Jangan tambah dummy/fake data.
+Jangan fabricate expired position.
+Jangan klaim PASS kalau belum ada expired position yang benar-benar closed memakai forced_exit_price.
+
+Tugas:
+Re-run Phase 10B live validation untuk posisi yang sekarang seharusnya sudah melewati market end_time.
+
+Cek:
+
+1. Current time:
+
+* system UTC time
+* PostgreSQL NOW()
+
+2. Open / expired positions:
+   Query positions dengan join market_universe:
+
+* position_id
+* asset
+* timeframe
+* side
+* condition_id
+* entry_price
+* quantity
+* opened_at
+* market end_time
+* minutes_to_expiry
+* market status
+* position status
+
+Tampilkan:
+
+* total OPEN positions
+* expired OPEN positions
+* soonest expiry jika belum ada expired
+
+3. Jika expired OPEN position > 0:
+   Join dengan outcome_learnings:
+
+* outcome_source
+* winning_side
+* final_yes_price
+* final_no_price
+* resolution_note
+* evaluated_at
+
+Jika belum ada DIRECT_POLYMARKET_RESOLUTION:
+
+* jalankan Outcome Learning cycle.
+* cek ulang.
+* jangan fabricate price.
+
+4. Jalankan / tunggu Exit Engine cycle.
+
+Cari TradeDecision:
+
+* decision = CLOSE_POSITION
+* condition_id sama
+* exit_reason / reason = EXPIRY_EXIT
+* forced_exit_price is not null
+
+Validasi:
+
+* LONG_YES forced_exit_price = final_yes_price
+* LONG_NO forced_exit_price = final_no_price
+
+5. Jalankan / tunggu Execution Engine cycle.
+
+Query position setelah close:
+
+* position_id
+* status
+* side
+* entry_price
+* exit_price
+* quantity
+* realized_pnl
+* close_reason
+* closed_at
+
+Validasi:
+
+* LONG_YES exit_price = final_yes_price
+* LONG_NO exit_price = final_no_price
+* realized_pnl sesuai formula project
+* tidak memakai stale CLOB/opportunity price
+
+6. Decision activation:
+
+* expired_positions_open count
+* current open positions
+* risk_gated true/false distribution
+* BUY_YES count
+* BUY_NO count
+* WAIT count
+
+7. Tests:
+
+* python -m compileall -q backend/app
+* python -m pytest path/to/test_exit_engine.py path/to/test_execution_engine.py
+
+8. Update AI_DECISION_INTEGRITY_AUDIT.md section:
+   PHASE 10B — FORCED EXIT PRICE LIVE VALIDATION
+
+Final status:
+
+* PHASE 10B: PASS
+  jika expired position live closed dengan forced_exit_price = final resolution price.
+
+* PHASE 10B: PENDING LIVE EXPIRY VALIDATION
+  jika belum ada expired OPEN position.
+
+* PHASE 10B: PENDING DIRECT RESOLUTION
+  jika expired position ada tapi OutcomeLearning direct resolution belum tersedia.
+
+* PHASE 10B: FAIL
+  jika close masih memakai stale CLOB/opportunity price.
+
+Jawab dengan format:
+
+1. Current time
+2. Expired open position count
+3. Direct resolution evidence
+4. TradeDecision forced_exit_price evidence
+5. Execution close-price evidence
+6. Position PnL validation
+7. Decision activation state
+8. Tests run
+9. Audit report update
+10. Final Phase 10B status
+11. Exact next step

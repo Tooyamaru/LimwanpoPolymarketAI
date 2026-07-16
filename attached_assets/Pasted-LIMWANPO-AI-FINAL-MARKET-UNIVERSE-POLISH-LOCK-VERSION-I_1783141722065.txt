@@ -1,0 +1,330 @@
+LIMWANPO AI — FINAL MARKET UNIVERSE POLISH (LOCK VERSION)
+
+IMPORTANT
+
+Sebelum mengubah apa pun, pahami:
+
+INI ADALAH AI POLYMARKET DASHBOARD.
+
+Bukan crypto trading dashboard.
+
+Semua UI harus mengikuti konsep Polymarket.
+
+====================================================
+DO NOT TOUCH
+====================================================
+
+JANGAN mengubah:
+
+- Backend
+- Database
+- API
+- AI Engine
+- Paper Trading
+- Footer
+- Chart
+- System Health
+- Execution Pipeline
+- AI Activity
+
+Frontend ONLY.
+
+====================================================
+FINAL OBJECTIVE
+====================================================
+
+Market Universe harus benar-benar selesai.
+
+Tidak boleh ada clipping.
+
+Tidak boleh ada card terpotong.
+
+Tidak boleh ada scroll internal.
+
+Semua timeframe harus terlihat FULL.
+
+====================================================
+1. MARKET HEADER
+====================================================
+
+Pertahankan layout sekarang.
+
+LEFT
+
+(ikon besar + nama market)
+
+Contoh
+
+₿ BTC
+
+Ξ ETH
+
+◎ SOL
+
+✕ XRP
+
+Logo dibuat paling dominan.
+
+Nama market sejajar dengan logo.
+
+====================================================
+
+RIGHT
+
+Open Position : X
+
+Capital Used : $XX.XX
+
+Right aligned.
+
+Tidak perlu:
+
+AI Score
+
+Status
+
+Confidence
+
+Waiting
+
+Monitoring
+
+Trading
+
+Semuanya sudah ada di timeframe card.
+
+====================================================
+
+Header harus terasa ringan.
+
+Kurangi padding.
+
+Kurangi margin.
+
+Tetapi JANGAN mengecilkan:
+
+logo
+
+nama market
+
+font
+
+====================================================
+2. JANGAN KECILKAN TIMEFRAME CARD
+====================================================
+
+5M
+
+15M
+
+1H
+
+TETAP BESAR.
+
+JANGAN dipadatkan.
+
+JANGAN dihilangkan informasi.
+
+Tetap tampilkan:
+
+YES
+
+NO
+
+SPR
+
+Price To Beat
+
+Current Price
+
+Difference
+
+Position
+
+Stake
+
+Contracts
+
+PnL
+
+Age
+
+AI Score
+
+Status
+
+====================================================
+3. FIX ROOT CAUSE CLIPPING
+====================================================
+
+JANGAN mengecilkan isi card.
+
+Cari akar masalah clipping.
+
+Perbaiki layout container.
+
+Gunakan flex layout yang benar.
+
+Distribusi tinggi:
+
+Header Market
+
+↓
+
+5M
+
+↓
+
+15M
+
+↓
+
+1H
+
+Semua harus berbagi tinggi secara proporsional.
+
+1H HARUS SELALU FULL.
+
+Tidak boleh lagi:
+
+row terakhir hilang
+
+status hilang
+
+AI Score hilang
+
+PnL hilang
+
+====================================================
+4. MARKET HEADER HARUS MEMBERIKAN RUANG
+====================================================
+
+Jika membutuhkan ruang tambahan,
+
+yang diperkecil HANYA:
+
+header asset.
+
+Bukan card timeframe.
+
+Target:
+
+header hanya sekitar 20–25% tinggi area asset.
+
+80% sisanya diberikan ke:
+
+5M
+
+15M
+
+1H
+
+====================================================
+5. CURRENT PRICE
+====================================================
+
+Tetap gunakan harga reference yang dipakai market Polymarket.
+
+Bukan probabilitas.
+
+Current Price harus menjadi informasi paling dominan.
+
+Hierarchy:
+
+Current Price
+
+↓
+
+Difference
+
+↓
+
+Price To Beat
+
+====================================================
+6. CARD VISUAL
+====================================================
+
+Pertegas:
+
+cyan border
+
+cyan glow
+
+spacing
+
+separator
+
+badge 5M / 15M / 1H
+
+Namun jangan membuat dashboard menjadi terlalu terang.
+
+Tetap bergaya terminal profesional.
+
+====================================================
+7. RESPONSIVE
+====================================================
+
+Pada ukuran dashboard sekarang,
+
+BTC
+
+ETH
+
+SOL
+
+XRP
+
+harus langsung terlihat.
+
+Masing-masing memiliki:
+
+5M
+
+15M
+
+1H
+
+lengkap.
+
+Tidak ada clipping.
+
+Tidak ada overflow.
+
+Tidak ada scroll.
+
+====================================================
+8. SELF REVIEW
+====================================================
+
+Sebelum selesai lakukan review sendiri.
+
+Checklist wajib:
+
+✓ Logo + nama market sejajar.
+
+✓ Logo lebih dominan.
+
+✓ Header asset pendek.
+
+✓ Open Position & Capital Used rapi di kanan.
+
+✓ Tidak ada ruang kosong yang terbuang.
+
+✓ 5M terlihat penuh.
+
+✓ 15M terlihat penuh.
+
+✓ 1H terlihat penuh.
+
+✓ Tidak ada clipping.
+
+✓ Tidak ada scroll.
+
+✓ Semua informasi tetap lengkap.
+
+Jika SATU SAJA checklist belum terpenuhi,
+
+LANJUTKAN memperbaiki.
+
+Berhenti hanya jika Market Universe benar-benar selesai secara visual.

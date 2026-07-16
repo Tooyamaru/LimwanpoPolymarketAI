@@ -1,0 +1,174 @@
+Audit ulang dari nol.
+
+Jangan menganggap chart sudah berhasil hanya karena:
+
+* chart object dibuat
+* series dibuat
+* Binance mengembalikan 80 candle
+* console tidak error
+
+Itu belum membuktikan chart tampil.
+
+Screenshot terbaru menunjukkan panel BTC // CANDLES masih kosong total.
+
+Artinya proses render ke layar gagal.
+
+Lakukan audit hingga level DOM render.
+
+Periksa secara berurutan:
+
+1. DOM
+
+Pastikan benar-benar ada
+
+* canvas
+* lightweight-chart container
+* pane
+* time scale
+* price scale
+
+di dalam #btc-chart-body.
+
+Laporkan struktur DOM setelah chart dibuat.
+
+⸻
+
+2. Bounding Box
+
+Cetak:
+
+* getBoundingClientRect()
+* clientWidth
+* clientHeight
+* offsetWidth
+* offsetHeight
+
+untuk:
+
+* btc-chart-card
+* btc-chart-body
+* canvas
+* pane
+* wrapper
+
+Jika salah satu bernilai 0 maka itulah root cause.
+
+⸻
+
+3. Computed Style
+
+Audit:
+
+* display
+* visibility
+* opacity
+* transform
+* filter
+* clip-path
+* overflow
+* z-index
+* position
+
+untuk seluruh parent hingga <body>.
+
+⸻
+
+4. Canvas Runtime
+
+Periksa:
+
+* jumlah canvas
+* ukuran canvas internal
+* ukuran CSS canvas
+* devicePixelRatio
+* apakah canvas benar-benar memiliki drawing.
+
+Jika perlu gunakan:
+
+canvas.toDataURL()
+
+atau baca pixel pertama menggunakan:
+
+getImageData()
+
+untuk memastikan canvas tidak kosong.
+
+⸻
+
+5. Series
+
+Setelah:
+
+series.setData(...)
+
+laporkan:
+
+* jumlah candle
+* first candle
+* last candle
+
+Pastikan benar-benar masuk ke series.
+
+⸻
+
+6. Render Pipeline
+
+Pastikan urutan:
+
+createChart
+
+↓
+
+addSeries
+
+↓
+
+setData
+
+↓
+
+fitContent
+
+↓
+
+resize
+
+↓
+
+repaint
+
+Jika salah satu tidak terjadi, tunjukkan.
+
+⸻
+
+7. Overlay Audit
+
+Gunakan DevTools untuk memastikan tidak ada elemen lain yang berada di atas canvas.
+
+Laporkan seluruh elemen yang overlap dengan chart beserta z-index masing-masing.
+
+⸻
+
+8. Bukti
+
+Jangan mengatakan chart berhasil.
+
+Buktikan dengan:
+
+* screenshot DevTools
+* screenshot DOM
+* screenshot canvas
+* screenshot hasil render
+
+Jika candlestick tidak terlihat pada screenshot maka jangan menyimpulkan berhasil.
+
+⸻
+
+Terakhir berikan:
+
+* root cause sebenarnya
+* bukti
+* patch minimal
+* alasan teknis
+
+Jangan mengubah desain dashboard dan jangan menambah fitur baru.

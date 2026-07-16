@@ -1,0 +1,310 @@
+LIMWANPO AI — FINAL EXIT + PORTFOLIO ACCOUNTING LIVE PROOF
+
+Lanjutkan dari current codebase.
+
+JANGAN ulang audit.
+JANGAN mengubah formula accounting.
+JANGAN mengubah UI.
+JANGAN mengubah entry, sizing, strategy, atau risk entry.
+JANGAN menambah fitur.
+
+Current fixes sudah ada:
+
+- Position allocation menggunakan remaining_quantity × entry_price
+- Available menggunakan Initial Capital + Realized PnL - Open Exposure
+- PARTIAL realized/unrealized PnL sudah ikut agregasi
+- Portfolio dan Position repositories sudah menghitung OPEN + PARTIAL
+- Targeted tests 80/80 pass
+- Full suite sebelumnya timeout
+
+Target tunggal:
+
+Buktikan satu EXIT nyata menghasilkan perubahan position, exposure, available capital, realized/unrealized PnL, card, header, dan Live Trades secara sinkron.
+
+==================================================
+STEP 1 — VERIFY CURRENT CODE ONLY
+==================================================
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+Pastikan current fixes masih ada.
+
+Jangan edit code kecuali runtime membuktikan bug.
+
+==================================================
+STEP 2 — RUN FULL TEST SUITE COMPLETELY
+==================================================
+
+Full suite sebelumnya timeout.
+
+Jalankan ulang dengan waktu cukup atau pecah berdasarkan folder:
+
+- portfolio tests
+- position repository/service tests
+- exit engine tests
+- execution close tests
+- card summary tests
+- live trades tests
+- risk tests
+- remaining full suite
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+
+Tidak boleh hanya melaporkan 80 targeted tests.
+
+==================================================
+STEP 3 — SELECT ONE REAL OPEN POSITION
+==================================================
+
+Pilih satu posisi yang kemungkinan exit paling dekat.
+
+Capture BEFORE:
+
+- position_id
+- condition_id
+- asset
+- timeframe
+- side
+- status
+- quantity
+- remaining_quantity
+- entry_price
+- current executable exit price
+- open exposure contribution
+- realized_pnl
+- unrealized_pnl
+- portfolio open exposure
+- available capital
+- portfolio realized PnL
+- portfolio unrealized PnL
+- open lots
+- active positions
+- card IN/OUT/PNL
+
+Simpan timestamp snapshot.
+
+==================================================
+STEP 4 — WAIT FOR REAL EXIT
+==================================================
+
+Tunggu salah satu real trigger:
+
+- SIGNAL_INVALIDATION
+- MAX_HOLD_EXIT
+- STOP_LOSS
+- PROFIT_TARGET
+- EXPIRY_EXIT
+
+Jangan membuat fake price.
+Jangan memasukkan row manual.
+Jangan memaksa status CLOSED langsung di database.
+
+==================================================
+STEP 5 — TRACE EXIT END-TO-END
+==================================================
+
+Tampilkan:
+
+Exit Engine trigger
+→ CLOSE_POSITION TradeDecision
+→ Risk approval
+→ SELL order / forced-resolution execution
+→ FILLED execution
+→ Position update
+→ Portfolio aggregation
+→ Card summary
+→ AI LIVE TRADES OUT
+
+Fields:
+
+- close decision ID
+- close order ID
+- target position ID
+- exit reason
+- exit price
+- close quantity
+- remaining quantity
+- realized PnL
+- closed_at
+- final position status
+
+==================================================
+STEP 6 — CAPTURE AFTER
+==================================================
+
+Immediately after execution capture:
+
+- position status
+- remaining_quantity
+- realized_pnl
+- unrealized_pnl
+- open exposure
+- available capital
+- portfolio realized PnL
+- portfolio unrealized PnL
+- cumulative outcome
+- open lots
+- active positions
+- executed trades
+- card OUT count/amount
+- card PnL
+- live trade OUT event
+
+==================================================
+STEP 7 — CALCULATE EXACT DELTAS
+==================================================
+
+Show:
+
+exposure_delta =
+after exposure - before exposure
+
+available_delta =
+after available - before available
+
+realized_delta =
+after realized - before realized
+
+unrealized_delta =
+after unrealized - before unrealized
+
+Validate:
+
+For full exit:
+- exposure contribution becomes 0
+- remaining_quantity becomes 0
+- status becomes CLOSED
+- unrealized becomes 0
+- realized changes
+- Available increases by released cost basis plus/minus realized result
+- card active lot disappears
+
+For partial exit:
+- exposure decreases proportionally
+- remaining_quantity remains > 0
+- status becomes PARTIAL
+- realized increases
+- unrealized applies only to remaining quantity
+
+Tolerance:
+<= $0.01
+
+==================================================
+STEP 8 — VERIFY PORTFOLIO FORMULAS
+==================================================
+
+Recalculate directly from DB:
+
+open_exposure =
+SUM(remaining_quantity × entry_price)
+WHERE status IN ('OPEN', 'PARTIAL')
+
+total_realized =
+SUM(realized_pnl)
+across all positions including PARTIAL realized components
+
+total_unrealized =
+SUM(unrealized_pnl)
+WHERE status IN ('OPEN', 'PARTIAL')
+
+available =
+initial_capital + total_realized - open_exposure
+
+cumulative_outcome =
+total_realized + total_unrealized
+
+Compare:
+
+- raw DB
+- backend API
+- frontend dashboard
+
+Difference must be <= $0.01.
+
+==================================================
+STEP 9 — ACTIVE CARDS VS TOTAL PORTFOLIO
+==================================================
+
+Document explicitly:
+
+- Current 12 cards include only active condition_ids
+- Portfolio Coverage includes every OPEN/PARTIAL position, including rolled condition_ids
+
+Do not label this as mismatch if mathematically correct.
+
+But verify:
+
+- closed positions excluded
+- old OPEN position still included in Coverage
+- old condition position does not leak into current card
+
+==================================================
+STEP 10 — FINAL RESPONSE
+==================================================
+
+Jawab:
+
+1. Files verified
+2. Full test suite result
+3. Position selected
+4. Before snapshot
+5. Exit trigger
+6. Close decision
+7. Close execution
+8. Position after state
+9. Exposure before/after
+10. Available before/after
+11. Realized before/after
+12. Unrealized before/after
+13. Card result
+14. Header result
+15. Live Trades OUT result
+16. Formula reconciliation
+17. Remaining accounting risks
+18. Final statuses
+
+Statuses:
+
+EXIT POSITION SYNC:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+PORTFOLIO ACCOUNTING:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+CAPITAL RETURN:
+- PASS
+- PENDING LIVE EXIT PROOF
+- FAIL
+
+PNL INTEGRITY:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+Use full PASS only if:
+
+- full tests pass
+- one real exit captured
+- exposure decreases correctly
+- Available reconciles exactly
+- realized/unrealized reconcile
+- card/header/live feed synchronize
+- no manual or fake exit used
+
+Jangan jawab setup complete.
+Jangan membuat follow-up task.
+Jangan berhenti hanya pada test.
+Buktikan runtime before/after.

@@ -1,0 +1,288 @@
+LIMWANPO AI — FINAL DASHBOARD POLISH (UI FINAL)
+
+IMPORTANT
+
+Sebelum mengubah apapun, pahami bahwa project ini BUKAN AI Trading Bot.
+
+Ini adalah AI Polymarket Trading System.
+
+Dashboard harus mengikuti konsep Polymarket, bukan terminal trading crypto.
+
+JANGAN mengubah:
+
+- Backend
+- Database
+- API
+- Trading Engine
+- AI Logic
+- Strategy
+- Execution Logic
+- Chart Module
+- Footer
+
+Frontend/UI ONLY.
+
+=====================================================
+
+TARGET
+
+Selesaikan dashboard menjadi Dashboard Final v1.0.
+
+=====================================================
+
+1. PRICE TO BEAT (WAJIB)
+
+Saat ini Price To Beat masih salah.
+
+Jangan lagi menampilkan:
+
+Price To Beat : —
+Current Price : 0.505
+Difference : —
+
+Yang benar untuk setiap timeframe (5M / 15M / 1H):
+
+Price To Beat
+61,800
+
+Current Price
+61,742
+
+Difference
+-58
+
+atau menggunakan format dollar.
+
+Rules:
+
+- Parse strike price dari market question Polymarket.
+- Current Price menggunakan harga live Binance.
+- Difference = Current Price - Price To Beat.
+- Hijau jika di atas target.
+- Merah jika di bawah target.
+- Jika strike belum tersedia baru fallback.
+
+Ini adalah identitas utama dashboard Polymarket.
+
+=====================================================
+
+2. MARKET HEADER
+
+Hilangkan tulisan:
+
+3 MARKETS
+
+Ganti menjadi:
+
+Open Position : X
+
+Capital Used : $XX
+
+Contoh:
+
+Open Position : 2
+Capital Used : $54
+
+=====================================================
+
+3. TIMEFRAME CARD
+
+Padatkan isi card.
+
+Susunan menjadi:
+
+YES / NO / SPR
+
+Price To Beat
+
+Current Price
+
+Difference
+
+Prediction
+(BUY YES / BUY NO / NO POSITION)
+
+Stake
+
+Contracts
+
+PnL
+
+Age
+
+AI Score
+
+Confidence
+
+Status
+
+Kurangi ruang kosong.
+
+=====================================================
+
+4. POSITION
+
+Jangan tampilkan:
+
+NONE
+
+Selalu gunakan:
+
+NO POSITION
+
+=====================================================
+
+5. AI SCORE
+
+Jangan kecil.
+
+Tampilkan:
+
+AI SCORE
+
+92 /100
+
+Font lebih besar.
+Bold.
+Glow cyan.
+
+=====================================================
+
+6. STATUS
+
+Gunakan badge.
+
+WAITING = biru
+
+MONITORING = kuning
+
+TRADING = hijau
+
+=====================================================
+
+7. PORTFOLIO
+
+Semua nominal menggunakan format:
+
+$400.00
+
+$25.40
+
+-$3.20
+
+Dua digit desimal.
+
+=====================================================
+
+8. SYSTEM HEALTH
+
+Tetap layout sekarang.
+
+Namun:
+
+- tambah sedikit jarak antar row
+- nama engine lebih terang
+- value 100% rata kanan
+
+Format:
+
+Signal Engine ........100%
+Opportunity Engine ...100%
+Strategy Engine ......100%
+Risk Engine ..........100%
+Execution Engine .....100%
+Exit Engine ..........100%
+Universe Sync ........100%
+Price Refresh ........100%
+Analytics Engine .....100%
+Position Tracking ....100%
+
+Jangan gunakan tulisan:
+
+OK
+GOOD
+PERFECT
+
+=====================================================
+
+9. EXECUTION PIPELINE
+
+Pipeline tidak diubah.
+
+Hanya polish.
+
+- icon sedikit lebih kecil
+- label sedikit lebih besar
+- connector sedikit lebih terang
+- node aktif lebih glow
+
+=====================================================
+
+10. CARD VISUAL
+
+Semua asset card dan timeframe card:
+
+- border cyan lebih jelas
+- radius 4-5px
+- shadow cyan tipis
+- spacing lebih rapi
+
+=====================================================
+
+11. FONT
+
+Jangan memperbesar font.
+
+Yang diperbaiki:
+
+- contrast
+- opacity
+- glow
+
+Supaya lebih nyaman dibaca.
+
+=====================================================
+
+12. RESPONSIVE
+
+Harus tetap sempurna pada:
+
+1920x1080
+1600x900
+1366x768
+
+Tanpa vertical scrolling.
+
+Market Universe tetap menjadi area terbesar.
+
+=====================================================
+
+13. TIDAK BOLEH BERUBAH
+
+Footer
+Chart
+Backend
+Database
+API
+Engine
+AI Logic
+
+=====================================================
+
+14. SELF REVIEW
+
+Sebelum selesai lakukan review sendiri.
+
+Pastikan:
+
+- tidak ada overlap
+- tidak ada text bertabrakan
+- semua card simetris
+- semua panel proporsional
+- footer identik
+- backend tidak berubah
+- chart tidak berubah
+
+Jika masih ada yang belum sesuai, perbaiki sampai benar-benar selesai.
+
+Dashboard harus terasa seperti terminal profesional khusus POLYMARKET, bukan dashboard trading crypto biasa.

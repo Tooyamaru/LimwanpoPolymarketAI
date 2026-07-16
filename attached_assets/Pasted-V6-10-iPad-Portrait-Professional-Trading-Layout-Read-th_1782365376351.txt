@@ -1,0 +1,162 @@
+V6.10 — iPad Portrait Professional Trading Layout
+
+Read the current dashboard layout first, then inspect the existing portrait media query, heatmap rendering, watchlist rendering, and hero target card before making changes.
+
+IMPORTANT:
+
+* Desktop layout must remain 100% unchanged.
+* Landscape tablet must remain 100% unchanged.
+* Only portrait tablet (768px–1100px width) should be modified.
+
+Current issue:
+The implemented V6.9 does not visually match the specification. The Hero Target Card is still too small, the Watchlist still shows sparklines and odds, the Heatmap Collapse control is not visible, and the screen hierarchy is still dominated by data density instead of decision priority.
+
+Goals:
+
+1. HERO TARGET DOMINANCE
+
+Make the current target panel the visual center of the application.
+
+Requirements:
+
+* Hero card min-height: 340px
+* Market name:
+    clamp(64px, 8vw, 96px)
+* Score:
+    clamp(84px, 12vw, 128px)
+* Direction badge:
+    clamp(32px, 4vw, 44px)
+* Confidence bar:
+    8px height
+* Increase spacing between:
+    market name
+    score
+    confidence
+    status
+
+When user opens the app, the Hero Target must be the first thing the eye sees.
+
+2. WATCHLIST COMPRESSION
+
+Convert left watchlist into scanner mode.
+
+Hide:
+
+* Sparkline
+* Odds
+* Price
+
+Only display:
+
+* Symbol
+* Timeframe
+* Score
+* Direction
+
+Reduce row height by ~25%.
+
+Target:
+More markets visible with less noise.
+
+3. COLLAPSIBLE HEATMAP
+
+Current heatmap occupies excessive vertical space.
+
+Add:
+
+▼ SHOW HEATMAP
+
+When pressed:
+
+* Expand full heatmap
+
+Button changes to:
+
+▲ HIDE HEATMAP
+
+Default behavior:
+
+* Heatmap collapsed
+* Scanner summary visible
+
+Auto-expand only when:
+
+* score >= 70
+    OR
+* direction exists
+
+Desktop behavior unchanged.
+
+4. INFORMATION HIERARCHY
+
+Priority order:
+
+#1 Hero Target
+
+#2 Top 3 Opportunities
+
+#3 Pipeline
+
+#4 Primary KPIs
+
+#5 Watchlist
+
+#6 Heatmap
+
+#7 Feeds
+
+Reduce visual emphasis of everything except Hero Target.
+
+5. KPI PRIORITY
+
+Primary:
+
+* Win Rate
+* Net PnL
+* Trades
+* Max Drawdown
+
+Secondary:
+
+* Equity
+* Daily PnL
+* Win Streak
+* Kill Switch
+
+Primary:
+
+* 100% opacity
+* larger values
+
+Secondary:
+
+* 70% opacity
+* smaller values
+
+6. ABOVE-THE-FOLD AUDIT
+
+After implementation verify:
+
+Without scrolling on iPad portrait:
+
+* Hero Target visible
+* Top 3 visible
+* Pipeline visible
+* Primary KPI section visible
+
+No clipping.
+No overflow.
+No horizontal scrolling.
+
+7. FINAL VALIDATION
+
+Before finishing:
+
+Provide:
+
+* Screenshot audit
+* What changed
+* What remains unchanged
+* Confirmation that desktop layout is untouched
+
+Do not claim completion unless the visual result is clearly visible in the rendered UI.

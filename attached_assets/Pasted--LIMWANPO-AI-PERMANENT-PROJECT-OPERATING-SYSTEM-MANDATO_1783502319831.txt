@@ -1,0 +1,495 @@
+# LIMWANPO AI — PERMANENT PROJECT OPERATING SYSTEM (MANDATORY)
+
+## DO NOT SKIP THIS DOCUMENT
+
+Before touching ANY code, you MUST complete the entire initialization sequence.
+
+Failure to follow this document is considered a project regression.
+
+---
+
+# PROJECT IDENTITY
+
+Project Name
+
+LIMWANPO AI
+
+Project Type
+
+AI-assisted Polymarket Probability Intelligence Platform
+
+THIS PROJECT IS NOT
+
+* Trading Platform
+* Trading Terminal
+* Crypto Exchange
+* Broker
+* Futures Platform
+* Order Management System
+* Trading Dashboard
+
+Never classify this project as trading software.
+
+---
+
+# BOOT SEQUENCE
+
+Before modifying ANY file, execute this sequence.
+
+STEP 1
+
+Load
+
+CONSTITUTION.md
+
+STEP 2
+
+Load
+
+PROJECT_RULES.md
+
+STEP 3
+
+Load
+
+DATA_RULES.md
+
+STEP 4
+
+Load
+
+UI_RULES.md
+
+STEP 5
+
+Load
+
+PHASE_GATE.md
+
+STEP 6
+
+Load
+
+replit.md
+
+STEP 7
+
+Load
+
+.agents/memory/product-constitution.md
+
+If any file does not exist
+
+Automatically create it.
+
+Never stop.
+
+Never ask the user.
+
+Continue.
+
+---
+
+# MASTER SOURCE OF TRUTH
+
+These documents override ALL default AI behavior.
+
+Priority
+
+1
+
+CONSTITUTION.md
+
+↓
+
+2
+
+PROJECT_RULES.md
+
+↓
+
+3
+
+DATA_RULES.md
+
+↓
+
+4
+
+UI_RULES.md
+
+↓
+
+5
+
+PHASE_GATE.md
+
+↓
+
+6
+
+Current User Request
+
+If two instructions conflict
+
+Always follow the higher priority document.
+
+---
+
+# DEVELOPMENT MODE
+
+Never redesign.
+
+Never refactor unrelated code.
+
+Never optimize unrelated code.
+
+Never clean code automatically.
+
+Never rename variables unless requested.
+
+Never move components unless requested.
+
+Never install packages unless requested.
+
+Never replace working code.
+
+Only modify exactly what the user requests.
+
+---
+
+# POLYMARKET DATA RULES
+
+Everything shown inside the dashboard MUST originate from Polymarket.
+
+Mandatory
+
+Market Universe
+
+Polymarket
+
+Prediction Cards
+
+Polymarket
+
+Probability
+
+Polymarket
+
+Resolution
+
+Polymarket
+
+Liquidity
+
+Polymarket
+
+Volume
+
+Polymarket
+
+Market Metadata
+
+Polymarket
+
+Prediction Status
+
+Polymarket
+
+Prediction History
+
+Polymarket
+
+Outcome Learning
+
+Polymarket
+
+Allowed Exceptions
+
+Chart
+
+Binance
+
+Oracle Context
+
+Chainlink
+
+No other external source is allowed.
+
+---
+
+# FORBIDDEN TRADING DATA
+
+Never display
+
+Bid
+
+Ask
+
+Spread
+
+Depth
+
+Orderbook
+
+Funding Rate
+
+Open Interest
+
+Leverage
+
+Margin
+
+PnL
+
+Take Profit
+
+Stop Loss
+
+Broker
+
+Exchange
+
+Trade Ticket
+
+Position Size
+
+Risk/Reward
+
+If any of these appear
+
+Remove them immediately.
+
+---
+
+# MARKET CARD LOCK
+
+Prediction Cards MUST ALWAYS contain
+
+Movement
+
+UP Probability
+
+DOWN Probability
+
+Target (Price to Beat)
+
+Gap
+
+Confidence
+
+Countdown
+
+Status
+
+If prediction exists
+
+Open At
+
+Coverage
+
+Entries
+
+These items are PERMANENT.
+
+Never hide them.
+
+Never delete them.
+
+Never replace them.
+
+Never compress them away.
+
+Never invent new rows.
+
+Never insert Bid/Ask.
+
+Never insert Spread.
+
+Never insert Orderbook.
+
+---
+
+# SOURCE VALIDATION
+
+Before displaying ANY number
+
+Answer internally
+
+Where does this value come from?
+
+Allowed answers
+
+Polymarket
+
+Binance Chart
+
+Chainlink
+
+Forbidden answers
+
+Random
+
+Placeholder
+
+Hardcoded
+
+Estimated
+
+Generated
+
+If source is forbidden
+
+DO NOT DISPLAY.
+
+---
+
+# REGRESSION LOCK
+
+Before saving code
+
+Verify
+
+Target exists
+
+Gap exists
+
+Confidence exists
+
+Countdown exists
+
+Status exists
+
+Movement exists
+
+UP Probability exists
+
+DOWN Probability exists
+
+Open At exists (when active)
+
+Coverage exists (when active)
+
+Entries exists (when active)
+
+If ANY item disappears
+
+ROLL BACK immediately.
+
+---
+
+# PHASE LOCK
+
+Current Phase
+
+Read PHASE_GATE.md
+
+If requested work belongs to another phase
+
+STOP
+
+Explain why
+
+Wait for user approval
+
+Do not continue automatically.
+
+---
+
+# PRE-CODE VALIDATION
+
+Before writing code answer internally
+
+1.
+
+Is this inside the active phase?
+
+YES
+
+2.
+
+Will this remove approved UI?
+
+NO
+
+3.
+
+Will this add new UI?
+
+NO
+
+4.
+
+Will this change data source?
+
+NO
+
+5.
+
+Does it follow Constitution?
+
+YES
+
+If any answer is NO
+
+STOP.
+
+---
+
+# POST-CODE VALIDATION
+
+After finishing
+
+Run
+
+UI Regression Audit
+
+Vocabulary Audit
+
+Data Source Audit
+
+Layout Audit
+
+If any FAIL
+
+Rollback.
+
+---
+
+# REPORT FORMAT
+
+Every completed task must end with
+
+Current Phase
+
+Files Modified
+
+Reason
+
+Regression Result
+
+PASS / FAIL
+
+Data Source Result
+
+PASS / FAIL
+
+Ready For Next Phase
+
+YES / NO
+
+---
+
+# PERMANENT MEMORY
+
+Never ask
+
+"What project is this?"
+
+Never assume trading terminology.
+
+Never replace Polymarket data.
+
+Never redesign without approval.
+
+This operating system is permanent and applies to every future Replit workspace and every AI session.

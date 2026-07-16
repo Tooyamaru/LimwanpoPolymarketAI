@@ -1,0 +1,346 @@
+LIMWANPO AI — PHASE 3 DECISION AUDIT
+
+IMPORTANT
+
+This is NOT a documentation task.
+
+This is NOT a refactoring task.
+
+This is NOT a renaming task.
+
+This is NOT a cleanup task.
+
+This is a DECISION AUDIT.
+
+Your mission is to determine, with evidence from the codebase, which parts of the system are REAL trading logic and which parts are only internal probability simulation infrastructure.
+
+Do NOT modify any source code.
+
+Do NOT rename anything.
+
+Do NOT create migration plans.
+
+Only audit and classify.
+
+==================================================
+GOAL
+==================================================
+
+Determine whether LIMWANPO AI still behaves as a Trading Platform internally or has already evolved into a Probability Analysis Platform.
+
+Every conclusion must be backed by actual code references.
+
+Never speculate.
+
+==================================================
+TASK 1
+END-TO-END EXECUTION TRACE
+==================================================
+
+Trace the entire execution flow starting from:
+
+Market Discovery
+
+↓
+
+Market Price
+
+↓
+
+Signal Generation
+
+↓
+
+Opportunity Scoring
+
+↓
+
+Decision
+
+↓
+
+Risk
+
+↓
+
+Execution
+
+↓
+
+Position
+
+↓
+
+Portfolio
+
+↓
+
+Outcome Learning
+
+↓
+
+Calibration
+
+↓
+
+Engine Performance
+
+For each stage answer:
+
+- What input does it receive?
+- What output does it produce?
+- Does it create real trading objects?
+- Does it only create prediction objects?
+- Is the output required by later engines?
+
+==================================================
+TASK 2
+TRADING BEHAVIOR DETECTION
+==================================================
+
+Search the entire project for code that actually performs:
+
+Opening positions
+
+Closing positions
+
+Order lifecycle
+
+Capital allocation
+
+Exposure management
+
+Profit calculation
+
+Loss calculation
+
+Drawdown
+
+Fee calculation
+
+Trade settlement
+
+Portfolio balancing
+
+Position sizing
+
+Risk blocking
+
+Stop loss
+
+Take profit
+
+Trailing stop
+
+Execution retry
+
+Exchange interaction
+
+Broker interaction
+
+Wallet interaction
+
+If found:
+
+List exact file.
+
+Exact function.
+
+Explain whether it is:
+
+A)
+
+Active production logic
+
+B)
+
+Paper simulation only
+
+C)
+
+Dead code
+
+D)
+
+Never executed
+
+==================================================
+TASK 3
+PROBABILITY BEHAVIOR DETECTION
+==================================================
+
+Search for all logic related to:
+
+Probability
+
+Confidence
+
+Market Resolution
+
+YES/NO prediction
+
+Outcome learning
+
+Calibration
+
+Market Quality
+
+Momentum
+
+Trend
+
+Volatility
+
+Orderbook
+
+News
+
+Funding
+
+Signal scoring
+
+Weight optimization
+
+Performance learning
+
+Determine which engines form the TRUE intelligence core.
+
+==================================================
+TASK 4
+DEPENDENCY IMPACT
+==================================================
+
+For every trading-related service determine:
+
+Can it be removed?
+
+Can it be renamed?
+
+Can it be converted into prediction tracking?
+
+Would removing it break:
+
+Outcome Learning
+
+Calibration
+
+Dynamic Weight
+
+Engine Performance
+
+Dashboard
+
+Health Monitor
+
+Workers
+
+API
+
+Database
+
+Classify:
+
+KEEP
+
+CONVERT
+
+REMOVE
+
+==================================================
+TASK 5
+DATABASE IMPACT
+==================================================
+
+For every table classify:
+
+Pure Trading
+
+Pure Probability
+
+Hybrid
+
+Legacy
+
+For hybrid tables explain exactly why.
+
+==================================================
+TASK 6
+FINAL DECISION MATRIX
+==================================================
+
+Produce one table only.
+
+Columns:
+
+Module
+
+Current Purpose
+
+Real Usage
+
+Required?
+
+Trading?
+
+Probability?
+
+Recommendation
+
+KEEP
+
+CONVERT
+
+REMOVE
+
+==================================================
+TASK 7
+EXECUTIVE VERDICT
+==================================================
+
+Finally answer only these questions:
+
+1.
+
+Can LIMWANPO AI become a Professional Polymarket Probability Analysis Platform WITHOUT deleting Layers 6–11?
+
+YES or NO.
+
+Explain.
+
+2.
+
+Which modules only require semantic renaming?
+
+3.
+
+Which modules require behavioral redesign?
+
+4.
+
+Which modules are unnecessary?
+
+5.
+
+What is the minimum architecture needed to preserve all AI intelligence while completely removing the Trading Bot identity?
+
+==================================================
+OUTPUT
+==================================================
+
+Create only one report:
+
+PHASE3_DECISION_AUDIT.md
+
+No code changes.
+
+No cleanup.
+
+No refactoring.
+
+No migration.
+
+No renaming.
+
+Evidence only.
+
+The report must be the definitive architectural decision document for LIMWANPO AI.

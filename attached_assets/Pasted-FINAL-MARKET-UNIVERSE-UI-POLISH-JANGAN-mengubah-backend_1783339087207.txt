@@ -1,0 +1,209 @@
+FINAL MARKET UNIVERSE UI POLISH
+
+JANGAN mengubah backend, engine, API, websocket, trading logic maupun database.
+
+Hanya perbaiki HTML, CSS dan rendering.
+
+=================================================
+1. HEADER PALING RINGKAS
+=================================================
+
+Header asset harus hanya SATU BARIS.
+
+Contoh:
+
+BTC         2 Predictions • $0 Exposure
+
+atau
+
+BTC     Pred:2   Exp:$0
+
+Tidak boleh lagi dua baris.
+
+Target:
+menghemat tinggi card sekitar 50%.
+
+=================================================
+2. TARGET HARUS MENJADI TITIK FOKUS
+=================================================
+
+Target adalah angka terpenting.
+
+Target harus:
+
+• font lebih besar
+• font lebih terang
+• font lebih tebal
+
+Gap hanya secondary.
+
+Secara visual:
+
+TARGET
+
+62,812
+
+Gap +110
+
+Target minimal 50% lebih besar daripada Gap.
+
+=================================================
+3. GAP
+=================================================
+
+Gap jangan memakai visual sebesar Target.
+
+Gunakan:
+
+font lebih kecil
+
+warna lebih redup
+
+tetapi tetap:
+
+Hijau jika positif
+
+Merah jika negatif
+
+=================================================
+4. HILANGKAN RUANG KOSONG
+=================================================
+
+Rapikan spacing.
+
+Kurangi:
+
+margin
+
+padding
+
+gap antar row
+
+agar card terlihat padat.
+
+=================================================
+5. TIME LEFT
+=================================================
+
+Jangan gunakan label.
+
+Cukup tampilkan:
+
+⏳ 22h 13m
+
+langsung di atas status.
+
+=================================================
+6. STATUS
+=================================================
+
+Status harus selalu menjadi elemen terakhir.
+
+Contoh:
+
+⏳ 22h 13m
+
+● MONITORING
+
+=================================================
+7. POSISI AKTIF
+=================================================
+
+Jika AI memiliki posisi:
+
+UP/DOWN
+
+↓
+
+Target
+
+↓
+
+Gap
+
+↓
+
+Entry | Exposure
+
+↓
+
+Entries | Confidence
+
+↓
+
+⏳ Time Left
+
+↓
+
+Status
+
+=================================================
+8. TIDAK ADA POSISI
+=================================================
+
+Jika belum entry:
+
+UP/DOWN
+
+↓
+
+Target
+
+↓
+
+Gap
+
+↓
+
+Confidence
+
+↓
+
+⏳ Time Left
+
+↓
+
+Status
+
+=================================================
+9. KHUSUS IPAD LANDSCAPE
+=================================================
+
+Optimalkan untuk:
+
+1024×768
+
+1180×820
+
+1366×1024
+
+Target:
+
+SEMUA informasi harus terlihat.
+
+Tidak boleh ada informasi yang terpotong.
+
+Tidak boleh ada scrolling.
+
+=================================================
+10. TUJUAN AKHIR
+=================================================
+
+Dashboard harus terasa seperti:
+
+Bloomberg Terminal
+
+TradingView Pro
+
+Institutional Quant Dashboard
+
+Padat.
+
+Cepat dibaca.
+
+Informasi penting langsung terlihat.
+
+Tidak ada ruang kosong yang sia-sia.
+
+Jangan mengubah logika aplikasi.
+Hanya polishing visual.

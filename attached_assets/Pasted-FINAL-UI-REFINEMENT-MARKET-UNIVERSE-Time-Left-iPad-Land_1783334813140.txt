@@ -1,0 +1,188 @@
+FINAL UI REFINEMENT — MARKET UNIVERSE (Time Left + iPad Landscape)
+
+Objective
+
+Refine the Market Universe UI to feel like a professional institutional Prediction Market Terminal (similar to Polymarket), while keeping all backend logic unchanged.
+
+IMPORTANT:
+- Frontend/UI only.
+- Do NOT modify backend.
+- Do NOT modify API.
+- Do NOT modify database.
+- Do NOT modify engine logic.
+- Do NOT modify trading logic.
+- Do NOT modify repositories or services.
+
+==================================================
+1. REPLACE "EXPIRES" CLOCK WITH LIVE COUNTDOWN
+==================================================
+
+The current UI displays:
+
+Expires
+22:18:45
+
+This is incorrect.
+
+Prediction market traders care about remaining time, NOT the closing clock time.
+
+Replace it with a live countdown.
+
+Examples:
+
+⏳ 2h 18m
+⏳ 45m
+⏳ 8m 31s
+⏳ 42s
+
+Rules:
+
+Remaining > 1 hour
+→ 2h 18m
+
+Remaining < 1 hour
+→ 43m
+
+Remaining < 10 minutes
+→ 8m 31s
+
+Remaining < 1 minute
+→ 42s
+
+When market expires:
+
+RESOLVED
+
+or
+
+Expired
+
+The countdown must update every second.
+
+Never display the wall-clock closing time again.
+
+==================================================
+2. FIX IPAD LANDSCAPE RESPONSIVE LAYOUT
+==================================================
+
+Currently on iPad Landscape the timeframe cards become vertically compressed.
+
+As a result:
+
+TARGET
+and
+GAP
+
+are pushed out of view.
+
+This is unacceptable.
+
+Target and Gap are among the most important trading information and must ALWAYS be visible.
+
+Create a dedicated responsive layout for iPad Landscape.
+
+Requirements:
+
+• Slightly increase timeframe card height (~15–20px)
+• Reduce vertical spacing between rows
+• Slightly reduce font size if needed
+• Keep all four asset columns visible
+• No page scrolling
+• Desktop layout must remain unchanged
+
+==================================================
+3. PRIORITY ORDER INSIDE EACH TIMEFRAME CARD
+==================================================
+
+Always visible:
+
+1.
+UP / DOWN probabilities
+
+2.
+TARGET      GAP
+
+3.
+CONFIDENCE
+
+4.
+⏳ TIME LEFT
+
+5.
+STATUS
+
+--------------------------------------------------
+
+Only when there is an active position:
+
+ENTRY      EXPOSURE
+
+ENTRIES
+
+If there is NO active position:
+
+• Remove Entry row completely
+• Remove Exposure row completely
+• Remove Entries row completely
+• Do NOT leave placeholders
+• Do NOT leave empty rows
+
+==================================================
+4. TARGET & GAP MUST NEVER DISAPPEAR
+==================================================
+
+Target and Gap must ALWAYS stay above the fold.
+
+Never allow another row to push them below the visible area.
+
+==================================================
+5. KEEP CURRENT STATUS SYSTEM
+==================================================
+
+Keep existing statuses:
+
+WAITING
+MONITORING
+TRADING
+EXIT READY
+RESOLVED
+
+==================================================
+6. KEEP EXISTING LOGIC
+==================================================
+
+Do NOT change:
+
+- AI decision logic
+- Prediction engine
+- Trading engine
+- Market data
+- Backend
+- APIs
+- WebSocket
+- Database
+
+Only improve UI rendering.
+
+==================================================
+7. FINAL GOAL
+==================================================
+
+When looking at a timeframe card, the user should immediately know:
+
+1. UP or DOWN probabilities
+2. Target price
+3. Gap to target
+4. AI Confidence
+5. Remaining time before market closes
+6. Current status
+
+If a position exists, additionally show:
+
+• Entry
+• Exposure
+• Entries
+
+The dashboard must look like a clean, professional institutional prediction market terminal.
+
+Target, Gap, and Time Left are mandatory and must always be visible on Desktop and iPad Landscape.

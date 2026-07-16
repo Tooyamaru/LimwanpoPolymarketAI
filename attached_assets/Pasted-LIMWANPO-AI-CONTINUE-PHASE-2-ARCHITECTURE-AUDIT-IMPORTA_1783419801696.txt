@@ -1,0 +1,220 @@
+LIMWANPO AI — CONTINUE PHASE 2 ARCHITECTURE AUDIT
+
+IMPORTANT:
+
+You are NOT allowed to code.
+You are NOT allowed to modify any source file.
+You are NOT allowed to delete anything.
+
+Your task is to CONTINUE from the previous unfinished PHASE2_ARCHITECTURE_MIGRATION.md audit.
+
+The previous audit stopped because quota was reached.
+
+==================================================
+OBJECTIVE
+=========
+
+Finish the architecture audit until it reaches 100% consistency.
+
+This is an AUDIT ONLY task.
+
+==================================================
+STEP 1
+VERIFY THE CURRENT DOCUMENT
+===========================
+
+Open:
+
+PHASE2_ARCHITECTURE_MIGRATION.md
+
+Perform a full consistency review.
+
+Check:
+
+Task 1
+Task 2
+Task 3
+Task 4
+Task 5
+Task 6
+Task 7
+
+Find every contradiction between sections.
+
+Examples:
+
+* endpoint marked FE in Task 1 but not FE in Task 4
+* table marked frontend-consumed in Task 3 but not actually used
+* engine graph references endpoints not used by frontend
+* risk classifications inconsistent
+* migration phases contradict each other
+
+Produce a complete inconsistency list.
+
+==================================================
+STEP 2
+BUILD TRUE FRONTEND DEPENDENCY MAP
+==================================
+
+Read:
+
+backend/app/static/index.html
+
+ONLY trust actual fetch() calls.
+
+Generate:
+
+FRONTEND_DEPENDENCY_MAP.md
+
+Include:
+
+endpoint
+method
+consumer component
+actual usage
+
+Classify:
+
+FE
+UNU
+INT
+
+Nothing else may be classified FE.
+
+==================================================
+STEP 3
+BUILD TRUE BACKEND DEPENDENCY MAP
+=================================
+
+Read all:
+
+services
+workers
+repositories
+models
+api routes
+
+Generate:
+
+BACKEND_DEPENDENCY_MAP.md
+
+Show:
+
+Engine
+→ Service
+→ Repository
+→ Database Table
+
+for every dependency chain.
+
+==================================================
+STEP 4
+IDENTITY CONFLICT ANALYSIS
+==========================
+
+Create:
+
+IDENTITY_CONFLICT_REPORT.md
+
+List:
+
+Every remaining trading term.
+
+Examples:
+
+Trade
+Order
+Position
+Execution
+Portfolio
+Risk
+Capital
+PnL
+Exposure
+Win Rate
+Drawdown
+
+For each item classify:
+
+KEEP
+RENAME
+REMOVE
+
+IMPORTANT:
+
+Assume LIMWANPO AI is:
+
+"Professional Polymarket Probability Analysis Platform"
+
+NOT
+
+"Trading Bot"
+
+==================================================
+STEP 5
+ARCHITECTURAL DECISION ANALYSIS
+===============================
+
+Evaluate two options.
+
+OPTION A
+
+Keep Layers 6–16.
+
+Rename trading concepts into prediction tracking concepts.
+
+OPTION B
+
+Remove Layers 6–16 entirely.
+
+For each option calculate:
+
+Benefits
+Risks
+Data Loss
+Learning Impact
+Outcome Learning Impact
+Confidence Calibration Impact
+Dynamic Weight Impact
+Performance Analytics Impact
+
+Recommend ONE option.
+
+==================================================
+STEP 6
+GENERATE FINAL DECISION DOCUMENT
+================================
+
+Create:
+
+FINAL_ARCHITECTURE_DECISION.md
+
+Include:
+
+1. Current Architecture State
+2. Identity Mismatch Summary
+3. Recommended Direction
+4. Components To Keep
+5. Components To Rename
+6. Components To Remove
+7. Migration Order
+8. Risk Assessment
+9. Expected Impact
+
+==================================================
+STEP 7
+STOP
+====
+
+DO NOT MODIFY CODE.
+
+DO NOT DELETE FILES.
+
+DO NOT EXECUTE REFACTOR.
+
+ONLY PRODUCE AUDIT DOCUMENTS.
+
+End with:
+
+AUDIT COMPLETE
+READY FOR PHASE 3

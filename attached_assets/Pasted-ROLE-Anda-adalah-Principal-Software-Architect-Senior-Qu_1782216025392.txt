@@ -1,0 +1,228 @@
+ROLE:
+Anda adalah Principal Software Architect, Senior Quant Engineer, dan Codebase Auditor.
+
+MODE:
+STRICT READ-ONLY AUDIT.
+DILARANG mengubah file apa pun.
+DILARANG membuat file baru.
+DILARANG menghapus file.
+DILARANG melakukan refactor.
+DILARANG menjalankan migration.
+DILARANG update database.
+
+TUJUAN:
+Lakukan audit menyeluruh terhadap seluruh codebase Polymarket Quant Bot dan verifikasi semua temuan audit sebelumnya.
+
+WAJIB MEMBACA:
+
+* Seluruh backend/app/**
+* README.md
+* PROJECT_STATUS.md
+* ROADMAP_NEXT_PHASE.md
+* NEXT_BUILD_TASKS.md
+* pyproject.toml
+* .replit
+* replit.md (jika ada)
+
+VERIFIKASI KHUSUS:
+
+A. Layer Verification
+Pastikan Layer 1–9 benar-benar ada dan lengkap.
+
+Untuk setiap layer tampilkan:
+
+Layer Number
+Layer Name
+Model
+Repository
+Service
+Router
+Worker
+Database Table
+Status (COMPLETE / PARTIAL / MISSING)
+
+B. Endpoint Verification
+Hitung jumlah endpoint aktual.
+
+Buat tabel:
+
+Router
+GET count
+POST count
+PUT count
+DELETE count
+Total
+
+Bandingkan dengan:
+
+* README.md
+* PROJECT_STATUS.md
+
+Laporkan selisih.
+
+C. Database Verification
+Cari seluruh tablename.
+
+Tampilkan:
+
+Table Name
+Model File
+
+Hitung total tabel.
+
+Bandingkan dengan dokumentasi.
+
+Laporkan mismatch.
+
+D. Repository Pattern Audit
+Cari seluruh:
+
+select(
+update(
+delete(
+insert(
+
+yang muncul di:
+
+api/
+services/
+
+Laporkan semua lokasi yang melanggar repository pattern.
+
+Format:
+
+File
+Line
+Query
+Recommended Repository
+
+E. Worker Audit
+Periksa seluruh background worker.
+
+Tampilkan:
+
+Worker
+Interval
+Enabled Flag
+Startup Flag
+Gate
+Service
+
+Cari:
+
+* worker tanpa ENABLE flag
+* worker tanpa RUN_ON_STARTUP flag
+* worker yang berbeda pattern lifecycle
+* worker yang bypass universe_ready
+
+F. Dead Code Audit
+Cari:
+
+* file tidak pernah diimport
+* function tidak pernah dipanggil
+* class tidak pernah dipakai
+* setting tidak pernah digunakan
+
+Tampilkan bukti.
+
+G. Documentation Audit
+Bandingkan source code vs:
+
+README.md
+PROJECT_STATUS.md
+ROADMAP_NEXT_PHASE.md
+NEXT_BUILD_TASKS.md
+
+Cari:
+
+* endpoint mismatch
+* table mismatch
+* version mismatch
+* layer mismatch
+* roadmap mismatch
+
+H. Configuration Audit
+Verifikasi:
+
+APP_VERSION
+interval settings
+feature flags
+position sizing settings
+risk settings
+
+Cari setting orphan.
+
+I. Technical Debt Audit
+Cari:
+
+* hardcoded values
+* duplicated query
+* duplicated logic
+* stale comments
+* stale docstrings
+* TODO/FIXME
+* long files >300 lines
+
+J. Testing Audit
+Tampilkan:
+
+Service
+Has Test?
+Coverage Status
+
+Cari layer yang belum memiliki test.
+
+OUTPUT WAJIB:
+
+EXECUTIVE SUMMARY
+
+Overall Score (0-10)
+
+Critical Findings
+Medium Findings
+Low Findings
+
+VERIFIED FACTS
+
+INCONSISTENCIES
+
+ARCHITECTURE VIOLATIONS
+
+DEAD CODE
+
+DOCUMENTATION MISMATCHES
+
+CONFIGURATION ISSUES
+
+TEST COVERAGE GAPS
+
+PRIORITIZED FIX PLAN
+
+Kelompokkan:
+
+Phase A (Must Fix)
+Phase B (Should Fix)
+Phase C (Nice To Have)
+
+Untuk setiap item tampilkan:
+
+Priority
+Reason
+Files Affected
+Estimated Effort
+
+BUILD READINESS SCORE
+
+Berikan nilai:
+
+Architecture
+Maintainability
+Documentation
+Testing
+Deployment Readiness
+
+dan nilai total akhir.
+
+JANGAN MEMODIFIKASI FILE APA PUN.
+
+OUTPUT HANYA LAPORAN AUDIT.

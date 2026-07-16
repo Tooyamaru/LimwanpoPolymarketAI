@@ -1,0 +1,300 @@
+UI REFINEMENT PASS
+Limwanpo Polymarket AI
+
+Goal:
+Keep the cyber terminal style while making the dashboard feel like a professional quantitative trading terminal instead of a debug dashboard.
+
+==========================================
+1. RESTORE MARKET UNIVERSE
+==========================================
+
+The left Universe panel MUST monitor exactly:
+
+BTC 5m
+BTC 15m
+BTC 1H
+
+ETH 5m
+ETH 15m
+ETH 1H
+
+SOL 5m
+SOL 15m
+SOL 1H
+
+XRP 5m
+XRP 15m
+XRP 1H
+
+Total:
+12 monitored markets.
+
+Do NOT reduce this to only 4 assets.
+
+Each row should show:
+
+Asset
+Timeframe
+Current score
+Odds
+Small progress indicator
+
+This list must remain compact.
+
+==========================================
+2. REPLACE BTC MINI CHART
+==========================================
+
+The current BTC widget uses a simple line chart.
+
+Replace it with a REAL candlestick chart.
+
+Requirements:
+
+• Lightweight TradingView-style candlestick
+or
+
+• Lightweight Charts by TradingView
+
+Display only:
+
+BTCUSDT
+
+Timeframe:
+
+Automatically follows selected AI Current Target timeframe.
+
+If Current Target = BTC 5m
+→ chart = 5m candles
+
+If Current Target = BTC 15m
+→ chart = 15m candles
+
+If Current Target = BTC 1H
+→ chart = 1H candles
+
+Do NOT show indicators.
+
+No MACD.
+
+No RSI.
+
+No EMA.
+
+No toolbar.
+
+No crosshair menu.
+
+Only:
+
+Candles
+Current price
+Last candle
+
+The chart should feel like a live market reference.
+
+==========================================
+3. AI CURRENT TARGET
+==========================================
+
+Keep current layout.
+
+Improve spacing.
+
+Increase visual hierarchy.
+
+Target asset should dominate.
+
+Current confidence bar should be cleaner.
+
+Odds, Spread and Edge remain.
+
+==========================================
+4. AI DECISION ENGINE
+==========================================
+
+Keep existing cards.
+
+Reduce empty spacing.
+
+Cards should align perfectly.
+
+Only live values update.
+
+No layout shifting.
+
+==========================================
+5. THINKING FEEDS
+==========================================
+
+AI THINKING FEED
+AI LIVE FEED
+
+Must have:
+
+fixed height
+
+internal scroll
+
+never expand vertically
+
+new messages append smoothly
+
+auto scroll to latest
+
+No page jumping.
+
+==========================================
+6. REMOVE DEBUG UI
+==========================================
+
+Remove every development/debug element.
+
+Delete:
+
+Root Analysis
+
+Height Debug
+
+Green Debug Overlay
+
+Debug Console
+
+Overflow Inspector
+
+Viewport Inspector
+
+Temporary Logs
+
+DOM Measurements
+
+Developer Widgets
+
+These should only exist behind a developer flag.
+
+Production UI must never display them.
+
+==========================================
+7. SYSTEM HEALTH
+==========================================
+
+Keep System Health.
+
+Instead of static green OK labels,
+display live percentages.
+
+Example:
+
+Universe 99.8%
+
+Execution 99.2%
+
+Signal Engine 98.7%
+
+Risk Engine 99.5%
+
+Analytics 99.9%
+
+Capital Engine 100%
+
+Heartbeat should animate subtly.
+
+==========================================
+8. POSITIONS PANEL
+==========================================
+
+Keep Positions.
+
+Improve empty state.
+
+Instead of empty circle only:
+
+No Active Trades
+
+Waiting for AI confirmation
+
+Paper Mode
+
+Small subtle animation.
+
+==========================================
+9. HEADER
+==========================================
+
+Keep:
+
+Paper Mode
+
+Engines Live
+
+Universe
+
+Signals
+
+Open
+
+Blocked
+
+Capital
+
+Uptime
+
+UTC
+
+Make spacing cleaner.
+
+==========================================
+10. RESPONSIVE STABILITY
+==========================================
+
+Nothing should resize when logs increase.
+
+No panel should move.
+
+No component should change height.
+
+Only scrolling areas should scroll.
+
+==========================================
+11. PERFORMANCE
+==========================================
+
+Candlestick updates should be lightweight.
+
+No unnecessary re-render.
+
+Keep FPS stable.
+
+No layout thrashing.
+
+==========================================
+12. GENERAL DESIGN
+==========================================
+
+Overall feeling should resemble:
+
+Bloomberg Terminal
+
+TradingView Professional
+
+High-frequency trading workstation
+
+NOT a developer dashboard.
+
+Keep cyber theme.
+
+Keep neon accents.
+
+Keep dark background.
+
+Increase professionalism.
+
+The interface should immediately communicate:
+
+"This AI is continuously monitoring 12 prediction markets, analyzing multiple timeframes, and waiting only for high-confidence opportunities."
+
+No placeholder components.
+
+No unfinished sections.
+
+No debug remnants.

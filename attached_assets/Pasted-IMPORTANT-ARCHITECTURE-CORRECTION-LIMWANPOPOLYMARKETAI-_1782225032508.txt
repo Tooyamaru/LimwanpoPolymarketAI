@@ -1,0 +1,101 @@
+IMPORTANT ARCHITECTURE CORRECTION — LIMWANPOPOLYMARKETAI
+
+Before performing any audit, refactor, bug analysis, roadmap planning, architecture review, or Layer 11 implementation, you MUST understand the business model correctly.
+
+PROJECT IDENTITY
+
+LimwanpoPolymarketAI is NOT a crypto trading bot.
+
+LimwanpoPolymarketAI is a Polymarket Quant Bot.
+
+The system predicts outcomes in Polymarket prediction markets and executes YES/NO contracts based on quantitative signals.
+
+CRITICAL DISTINCTION
+
+Do NOT treat this system as:
+
+* Binance Futures Bot
+* Binance Spot Trading Bot
+* Arbitrage Bot
+* Market Making Bot
+* Traditional Trading System
+
+Instead treat it as:
+
+* Prediction Market Engine
+* Polymarket Quant System
+* Outcome Probability Engine
+* YES/NO Contract Execution System
+
+ASSET INTERPRETATION
+
+BTC, ETH, SOL, and BNB are NOT traded assets.
+
+BTC, ETH, SOL, and BNB are prediction inputs only.
+
+External data sources such as Binance, Chainlink, market feeds, sentiment feeds, and price feeds are used solely to estimate probabilities of Polymarket outcomes.
+
+The actual instruments being traded are:
+
+* YES contracts
+* NO contracts
+
+on Polymarket.
+
+EXAMPLE
+
+Correct interpretation:
+
+Signal Engine
+→ Predict BTC Up probability
+→ Decide YES or NO
+→ Buy YES/NO contract on Polymarket
+
+Incorrect interpretation:
+
+Signal Engine
+→ Buy BTC
+→ Hold BTC
+→ Sell BTC
+
+The system NEVER trades BTC directly.
+
+BUSINESS RULES
+
+1. Multiple entries on the same market are allowed.
+2. Multiple positions on the same condition_id are allowed if exposure rules permit them.
+3. Exposure management is more important than position count.
+4. Duplicate entries must NOT automatically be classified as bugs.
+5. Profit-taking exits before market settlement are valid and preferred.
+6. Positions do NOT need to remain open until event resolution.
+7. Closing a profitable position before expiry is expected behavior.
+8. Audits must distinguish prediction-market behavior from traditional trading behavior.
+9. Findings based on spot/futures assumptions are invalid unless explicitly applicable to prediction markets.
+10. Any architecture recommendation must align with Polymarket market mechanics.
+
+AUDIT RULES
+
+When reviewing code:
+
+* Do not assume one position per market.
+* Do not assume positions remain open until expiry.
+* Do not assume BTC/ETH/SOL/BNB are traded instruments.
+* Do not assume futures exchange behavior.
+* Do not assume spot exchange behavior.
+
+Always evaluate findings against Polymarket prediction-market logic first.
+
+DOCUMENTATION UPDATE REQUIRED
+
+Add this clarification to:
+
+* README.md
+* PROJECT_STATUS.md
+* ROADMAP_NEXT_PHASE.md
+* NEXT_BUILD_TASKS.md
+
+Create a dedicated section titled:
+
+“IMPORTANT: LimwanpoPolymarketAI Is A Polymarket Quant Bot”
+
+Place it near the top of each document so future audits and development work cannot misinterpret the business model.

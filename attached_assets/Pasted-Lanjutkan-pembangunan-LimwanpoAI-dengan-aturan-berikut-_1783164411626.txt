@@ -1,0 +1,249 @@
+Lanjutkan pembangunan LimwanpoAI dengan aturan berikut.
+
+====================================================
+PRINSIP UTAMA
+====================================================
+
+INGAT:
+
+Ini BUKAN AI Trading.
+
+Ini adalah AI untuk POLYMARKET.
+
+Semua logika harus mengikuti karakteristik Polymarket.
+
+Yang diprediksi adalah outcome event.
+
+Bukan scalping.
+
+Bukan forex.
+
+Bukan futures.
+
+Bukan mencari TP/SL.
+
+Bukan membaca candle untuk entry trading.
+
+Semua keputusan harus menjawab:
+
+"Apakah probabilitas YES atau NO pada event ini masih memiliki edge?"
+
+Bukan:
+
+"Apakah harga crypto akan naik?"
+
+====================================================
+KONDISI SAAT INI
+====================================================
+
+Backend Decision Engine Phase 1–8 sudah selesai.
+
+Consensus Engine
+Market Quality
+Entry Quality
+Confidence Engine
+Explainability
+Decision History
+Self Validation
+Engine Health
+
+SEMUA SUDAH SELESAI.
+
+JANGAN mengubah Decision Engine lagi.
+
+JANGAN menambah engine baru.
+
+JANGAN mengubah bobot keputusan.
+
+====================================================
+FOCUS BERIKUTNYA
+====================================================
+
+Fokus hanya pada penyempurnaan kualitas keputusan AI.
+
+Prioritas:
+
+1.
+Outcome Learning
+
+AI mulai belajar dari market yang sudah selesai.
+
+Setiap market selesai harus dievaluasi:
+
+- prediction
+- actual outcome
+- confidence
+- reasoning
+- consensus
+- entry quality
+- market quality
+
+Kemudian simpan sebagai data pembelajaran.
+
+Belum memakai Machine Learning.
+
+Hanya statistik.
+
+----------------------------------------------------
+
+2.
+
+Engine Performance Tracking
+
+Hitung performa masing-masing engine.
+
+Contoh:
+
+Signal Engine
+
+accuracy
+
+win
+
+loss
+
+contribution
+
+Opportunity Engine
+
+accuracy
+
+win
+
+loss
+
+contribution
+
+dst.
+
+====================================================
+
+3.
+
+Dynamic Engine Weight
+
+JANGAN gunakan weight tetap.
+
+Weight harus berasal dari performa historis engine.
+
+Engine yang sering benar memiliki weight lebih tinggi.
+
+Engine yang sering salah weight turun.
+
+Tetap gunakan batas minimum dan maksimum.
+
+====================================================
+
+4.
+
+Portfolio Allocation Intelligence
+
+Jika terdapat beberapa market bagus secara bersamaan,
+
+AI harus menentukan:
+
+market mana prioritas
+
+berapa modal digunakan
+
+market mana ditunda
+
+market mana dilewati
+
+Fokus optimasi penggunaan modal.
+
+====================================================
+
+5.
+
+Paper Trading Feedback Loop
+
+Setelah setiap posisi selesai:
+
+AI harus mengevaluasi:
+
+Apakah keputusan benar.
+
+Apakah confidence terlalu tinggi.
+
+Apakah entry terlalu mahal.
+
+Apakah consensus salah.
+
+Apakah market quality salah.
+
+Semua statistik harus dipakai untuk memperbaiki AI.
+
+====================================================
+ATURAN PENTING
+====================================================
+
+JANGAN mengubah UI.
+
+JANGAN mengubah Dashboard.
+
+JANGAN mengubah Chart.
+
+JANGAN mengubah Footer.
+
+JANGAN mengubah API yang sudah stabil.
+
+JANGAN membuat Machine Learning.
+
+JANGAN membuat Deep Learning.
+
+JANGAN membuat Neural Network.
+
+JANGAN over-engineering.
+
+Gunakan data historis yang sudah dimiliki sistem.
+
+====================================================
+TARGET
+====================================================
+
+Tujuan akhir bukan membuat AI semakin rumit.
+
+Tujuan akhirnya adalah:
+
+AI semakin pintar memilih market.
+
+AI semakin pintar memilih waktu entry.
+
+AI semakin pintar menggunakan modal.
+
+AI belajar dari kesalahan sebelumnya.
+
+AI meningkatkan win rate dari pengalaman nyata.
+
+====================================================
+
+Setelah implementasi selesai:
+
+1.
+Jalankan seluruh test.
+
+2.
+Pastikan tidak ada regression.
+
+3.
+Restart server.
+
+4.
+Verifikasi endpoint.
+
+5.
+Lakukan code review.
+
+6.
+Laporkan:
+
+- file yang berubah
+- endpoint baru
+- database baru
+- statistik baru
+- test sebelum
+- test sesudah
+- hasil code review
+
+Jangan mengubah fitur yang sudah stabil.

@@ -1,0 +1,233 @@
+LIMWANPO AI
+
+PHASE 6
+FINAL MARKET UNIVERSE REFINEMENT
+
+Read FIRST
+
+CONSTITUTION.md
+
+PROJECT_RULES.md
+
+DATA_RULES.md
+
+UI_RULES.md
+
+AI_GUARDIAN.md
+
+SOURCE_AUDIT.md
+
+PHASE_GATE.md
+
+replit.md
+
+.agents/memory/product-constitution.md
+
+────────────────────────
+
+This is NOT a redesign.
+
+This is NOT adding features.
+
+This is NOT changing architecture.
+
+Only complete the unfinished UI work using the existing backend data.
+
+==================================================
+
+TASK 1
+MARKET UNIVERSE FINALIZATION
+
+Current API integration already exists.
+
+DO NOT create any new endpoint.
+
+DO NOT fabricate values.
+
+DO NOT hardcode anything.
+
+Simply expose the existing values that already exist.
+
+Keep:
+
+UP %
+
+DOWN %
+
+Countdown
+
+Resolution
+
+Monitoring
+
+Remove:
+
+Volume
+
+Liquidity
+
+Do NOT add Yes/No.
+
+Keep Up / Down exactly.
+
+==================================================
+
+Each market card MUST contain:
+
+Asset
+
+Timeframe
+
+UP %
+
+DOWN %
+
+Target
+
+Gap
+
+Spread
+
+Reward
+
+Confidence
+
+Countdown
+
+Monitoring Status
+
+Resolution
+
+Nothing more.
+
+Nothing less.
+
+==================================================
+
+Target
+
+Large
+
+Bright
+
+Centered
+
+Gap
+
+Green if positive
+
+Red if negative
+
+Spread
+
+Display live spread from existing market data.
+
+Reward
+
+Display expected reward / payout from existing market data.
+
+Confidence
+
+Must use the REAL confidence for EACH market.
+
+Never duplicate one value.
+
+==================================================
+
+If any field is unavailable
+
+show
+
+—
+
+Never fabricate values.
+
+==================================================
+
+TASK 2
+
+System Health cleanup
+
+Backend engines remain unchanged.
+
+Only simplify the dashboard.
+
+Display ONLY:
+
+Universe Engine
+
+Signal Engine
+
+Opportunity Engine
+
+Strategy Engine
+
+Risk Engine
+
+Prediction Engine
+
+Decision Engine
+
+Learning Engine
+
+Remove every other engine from the dashboard only.
+
+Backend must remain intact.
+
+==================================================
+
+TASK 3
+
+Prediction Pipeline
+
+DO NOT MODIFY.
+
+Only verify.
+
+Verify that every stage is connected to the actual backend engine.
+
+Do not redesign.
+
+Do not move.
+
+Do not resize.
+
+==================================================
+
+TASK 4
+
+Validation
+
+Verify:
+
+No hardcoded values
+
+No placeholder
+
+No duplicated confidence
+
+No duplicated countdown
+
+No duplicated target
+
+Every displayed value must map to the existing backend source.
+
+==================================================
+
+After finishing provide ONLY:
+
+1.
+Market Universe Completed
+
+2.
+System Health Simplified
+
+3.
+Pipeline Verified
+
+4.
+Remaining backend limitations (if any)
+
+Do NOT continue to another phase.
+
+Stop after completion.

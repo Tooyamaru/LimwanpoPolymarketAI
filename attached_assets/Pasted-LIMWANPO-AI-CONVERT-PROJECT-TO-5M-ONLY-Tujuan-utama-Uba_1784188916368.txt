@@ -1,0 +1,408 @@
+LIMWANPO AI — CONVERT PROJECT TO 5M-ONLY
+
+Tujuan utama:
+
+Ubah LIMWANPO AI menjadi sistem yang hanya mendukung 4 market:
+
+- BTC 5M
+- ETH 5M
+- SOL 5M
+- XRP 5M
+
+Hapus dukungan produk aktif untuk timeframe 15M dan 1H.
+
+Ini adalah penyederhanaan proyek, bukan redesign dan bukan penambahan fitur.
+
+JANGAN mengubah formula EXIT dan Portfolio Accounting yang sudah PASS.
+
+==================================================
+1. SAFETY BACKUP
+==================================================
+
+Sebelum mengubah apa pun:
+
+- jalankan git status
+- jalankan git diff
+- commit current stable state jika ada perubahan
+- buat Git tag:
+
+pre-5m-only-stable
+
+Pastikan versi sebelum penghapusan 15M/1H dapat dipulihkan melalui Git.
+
+Jangan menghapus database atau data historis.
+
+==================================================
+2. CHECK LEGACY OPEN POSITIONS
+==================================================
+
+Query database untuk mencari:
+
+- timeframe = 15m dan status OPEN
+- timeframe = 15m dan status PARTIAL
+- timeframe = 1h dan status OPEN
+- timeframe = 1h dan status PARTIAL
+
+Jika tidak ada posisi legacy OPEN/PARTIAL:
+
+- lanjutkan penghapusan penuh runtime 15M/1H.
+
+Jika masih ada posisi legacy OPEN/PARTIAL:
+
+- jangan hapus kemampuan Exit Engine menutup posisi tersebut;
+- hapus semua ENTRY baru 15M/1H;
+- pertahankan compatibility exit-only sementara;
+- setelah seluruh posisi legacy CLOSED, hapus compatibility tersebut.
+
+Jangan mengubah status database secara manual.
+Jangan menghapus posisi historis.
+
+==================================================
+3. CENTRAL 5M-ONLY CONFIGURATION
+==================================================
+
+Gunakan satu source of truth:
+
+ENABLED_ASSETS = ["BTC", "ETH", "SOL", "XRP"]
+ENABLED_TIMEFRAME = "5m"
+
+atau struktur konfigurasi setara yang sudah digunakan project.
+
+Jangan membuat daftar timeframe berbeda-beda pada setiap engine.
+
+Seluruh engine entry harus membaca konfigurasi pusat tersebut.
+
+==================================================
+4. REMOVE 15M AND 1H ACTIVE SUPPORT
+==================================================
+
+Hapus 15M dan 1H dari:
+
+- Gamma market discovery
+- market universe aktif
+- universe synchronization
+- market lifecycle aktif
+- opportunity generation
+- signal generation
+- strategy evaluation
+- entry decision generation
+- risk evaluation untuk entry baru
+- market card summaries aktif
+- dashboard Market Universe
+- active market API
+- active statistics
+- watchdog expectations khusus 12 market
+- seed/setup data aktif
+- documentation konfigurasi aktif
+
+Hasil akhirnya hanya boleh ada:
+
+BTC 5M
+ETH 5M
+SOL 5M
+XRP 5M
+
+Tidak boleh ada entry baru untuk 15M atau 1H.
+
+==================================================
+5. KEEP GENERIC DATABASE COMPATIBILITY
+==================================================
+
+Jangan menghapus:
+
+- kolom timeframe dari database
+- data positions historis
+- data orders historis
+- trade_decisions historis
+- realized PnL historis
+- live trade history
+- outcome learning historis
+- migration lama yang diperlukan database
+- kemampuan API history menampilkan trade lama
+
+Data 15M/1H lama harus tetap dapat dibaca sebagai history.
+
+Jangan drop table.
+Jangan drop column.
+Jangan truncate database.
+
+==================================================
+6. EXIT ENGINE SAFETY
+==================================================
+
+Jangan mengubah formula atau mekanisme EXIT yang sudah PASS.
+
+Pastikan Exit Engine tetap memproses:
+
+- seluruh posisi OPEN
+- seluruh posisi PARTIAL
+- posisi condition_id lama
+- posisi legacy 15M/1H jika masih ada
+
+Exit Engine tidak boleh memakai filter ENABLED_TIMEFRAME untuk mengambil posisi yang sudah terbuka.
+
+Filter 5M-only hanya berlaku untuk:
+
+- discovery baru
+- opportunity baru
+- signal baru
+- entry baru
+- active cards
+
+Bukan untuk exit posisi lama.
+
+==================================================
+7. PORTFOLIO ACCOUNTING SAFETY
+==================================================
+
+Jangan mengubah formula berikut:
+
+Coverage =
+SUM(remaining_quantity × entry_price)
+WHERE status IN ("OPEN", "PARTIAL")
+
+Available =
+Initial Capital + Total Realized PnL - Coverage
+
+Resolution Result =
+Total Realized PnL
+
+Cumulative Outcome =
+Realized PnL + Unrealized PnL
+
+Portfolio tetap mencakup semua posisi OPEN/PARTIAL, termasuk posisi legacy sampai CLOSED.
+
+Historical realized PnL 15M/1H tetap dihitung.
+
+==================================================
+8. DASHBOARD CHANGE
+==================================================
+
+Ubah Market Universe dari 12 cards menjadi tepat 4 cards:
+
+- BTC 5M
+- ETH 5M
+- SOL 5M
+- XRP 5M
+
+Hapus tab, badge, countdown, selector, atau elemen aktif yang khusus 15M dan 1H.
+
+Jangan redesign seluruh dashboard.
+
+Pertahankan:
+
+- chart utama
+- portfolio panel
+- AI Live Trades
+- header metrics
+- market alerts
+- existing visual theme
+
+Atur 4 card agar menggunakan ruang dashboard dengan rapi dan lebih mudah dibaca.
+
+Jangan menambah panel atau fitur baru.
+
+==================================================
+9. API REQUIREMENTS
+==================================================
+
+Pastikan active endpoints hanya mengembalikan 4 market 5M.
+
+Verifikasi:
+
+- active universe = 4
+- active cards = 4
+- assets = BTC, ETH, SOL, XRP
+- timeframe semua = 5m
+- tidak ada active 15m
+- tidak ada active 1h
+
+History endpoints tetap boleh mengembalikan trade historis 15M/1H.
+
+Portfolio endpoints tetap global.
+
+==================================================
+10. REMOVE DEAD CODE
+==================================================
+
+Setelah memastikan tidak dibutuhkan, bersihkan:
+
+- conditional branch yang hanya untuk 15M
+- conditional branch yang hanya untuk 1H
+- constants 15M/1H yang tidak dipakai
+- UI rendering khusus 15M/1H
+- test fixture aktif 15M/1H
+- duplicate timeframe mapping
+- unused imports
+- unreachable code
+- stale comments dan documentation
+
+Jangan menghapus generic timeframe field yang masih diperlukan history/database.
+
+Jangan meninggalkan commented-out code.
+
+==================================================
+11. WATCHDOG AND ENGINE EXPECTATIONS
+==================================================
+
+Perbarui health checks dan watchdog agar mengharapkan:
+
+- 4 active markets
+- bukan 12 active markets
+
+Pastikan engine tidak dianggap stalled hanya karena 15M/1H tidak berjalan.
+
+Audit:
+
+- universe health
+- signal engine health
+- opportunity engine health
+- strategy engine health
+- dynamic weight health
+- dashboard health
+
+Jangan menonaktifkan watchdog secara keseluruhan.
+
+==================================================
+12. TESTS
+==================================================
+
+Tambahkan atau perbarui tests:
+
+1. exactly four active markets discovered
+2. all active markets use timeframe 5m
+3. active assets exactly BTC, ETH, SOL, XRP
+4. no 15M opportunity created
+5. no 1H opportunity created
+6. no 15M signal generated
+7. no 1H signal generated
+8. no 15M entry decision generated
+9. no 1H entry decision generated
+10. active API returns four markets
+11. dashboard summary returns four cards
+12. historical 15M position remains readable
+13. historical 1H position remains readable
+14. legacy OPEN 15M position can still exit
+15. legacy PARTIAL 1H position can still exit
+16. legacy CLOSED positions remain in realized PnL
+17. Coverage formula remains unchanged
+18. Available formula remains unchanged
+19. EXIT lifecycle tests remain passing
+20. Portfolio accounting tests remain passing
+21. no historical data deleted
+22. watchdog expects four markets
+23. no condition_id mixing between rolled 5M markets
+24. new entry timeframe must always equal 5m
+
+Run:
+
+python -m compileall -q backend/app
+
+Kemudian jalankan:
+
+- universe tests
+- market lifecycle tests
+- opportunity tests
+- signal tests
+- strategy tests
+- risk tests
+- execution tests
+- exit lifecycle tests
+- portfolio tests
+- card summary tests
+- live trades tests
+- health/watchdog tests
+- full test suite
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+
+==================================================
+13. RUNTIME VALIDATION
+==================================================
+
+Restart workflow satu kali setelah perubahan selesai.
+
+Buktikan runtime:
+
+- active universe tepat 4 market
+- dashboard tepat 4 cards
+- hanya BTC/ETH/SOL/XRP
+- semua timeframe aktif = 5M
+- hanya opportunity 5M yang dibuat
+- hanya signal 5M yang dibuat
+- hanya entry 5M yang dibuat
+- tidak ada entry baru 15M
+- tidak ada entry baru 1H
+- Exit Engine tetap berjalan
+- Portfolio Accounting tetap benar
+- Coverage dan Available tetap sinkron
+- AI Live Trades tetap menampilkan IN dan OUT
+- tidak ada ENGINE_STALLED karena engine masih menunggu 12 market
+
+Pantau minimal beberapa cycle engine.
+
+==================================================
+14. FINAL REPORT
+==================================================
+
+Jawab dengan format:
+
+1. Backup/tag created
+2. Legacy position check
+3. Files read
+4. Files changed
+5. 15M code removed
+6. 1H code removed
+7. Historical compatibility retained
+8. Exit compatibility result
+9. Portfolio accounting result
+10. Active universe result
+11. Dashboard card result
+12. Watchdog result
+13. Tests result
+14. Runtime proof
+15. Remaining risks
+16. Final status
+
+Final statuses:
+
+5M-ONLY MIGRATION:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+LEGACY DATA SAFETY:
+- PASS
+- FAIL
+
+EXIT COMPATIBILITY:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+PORTFOLIO ACCOUNTING:
+- PASS
+- FAIL
+
+Use PASS only if:
+
+- exactly 4 active 5M markets
+- no new 15M/1H processing
+- historical data remains intact
+- legacy positions can still exit if necessary
+- EXIT and portfolio tests pass
+- dashboard shows exactly 4 cards
+- watchdog no longer expects 12 markets
+- runtime proof is provided
+
+Jangan menambah fitur lain.
+Jangan mengubah strategi trading.
+Jangan mengubah EXIT formula.
+Jangan mengubah Portfolio Accounting formula.
+Jangan menghapus data historis.
+Fokus hanya menjadikan proyek 5M-only yang bersih dan stabil.

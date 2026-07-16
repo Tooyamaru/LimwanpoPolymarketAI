@@ -1,0 +1,180 @@
+Excellent. This direction is much closer to the final LimwanpoAI dashboard. Do NOT redesign anything again. Continue refining the current version exactly as it is. Keep all existing layout, spacing, animations, colors, and visual identity. Only apply the following improvements.
+
+====================================================
+1. RESTORE ORIGINAL LIMWANPOAI BRANDING
+====================================================
+
+The new logo/header is weaker than the previous version.
+
+Please restore the original branding exactly like before:
+
+LIMWANPO // POLYMARKET AI
+
+Keep the original font style, colors and proportions.
+
+Do not redesign the header.
+
+====================================================
+2. LIVE MARKET CHART
+====================================================
+
+The chart layout is already good.
+
+Only improve it.
+
+Add a Bloomberg-style floating information panel in the upper-left corner inside the chart.
+
+Display:
+
+BTC/USD
+
+Current Price (largest text)
+
+24H Change
+
+24H %
+
+24H High
+
+24H Low
+
+24H Volume
+
+LIVE indicator
+
+The current BTC price should immediately catch the user's attention.
+
+Do not reduce the chart size.
+
+====================================================
+3. MARKET UNIVERSE
+====================================================
+
+Keep the current Market Universe layout.
+
+Do NOT move it.
+
+The current vertical arrangement is already correct.
+
+Only strengthen each asset section.
+
+Every asset (BTC, ETH, SOL, XRP) should have a stronger section header.
+
+Display:
+
+Overall Confidence
+
+Active Positions
+
+Capital
+
+PnL
+
+Make the asset section feel like one complete workspace.
+
+====================================================
+4. MARKET CARDS
+====================================================
+
+Do not redesign the cards.
+
+Only improve visual hierarchy.
+
+The eye should immediately see:
+
+1. Countdown
+
+2. Prediction (YES / NO)
+
+3. Confidence
+
+After that:
+
+Target Price
+
+Current Price
+
+Position
+
+Entries
+
+Capital
+
+PnL
+
+Status
+
+YES / NO should become much more visually dominant.
+
+====================================================
+5. CONFIDENCE RING
+====================================================
+
+Add a small futuristic circular confidence indicator in the upper-right corner of every Market Card.
+
+It should glow softly.
+
+Examples:
+
+89%
+
+73%
+
+41%
+
+This allows operators to scan all 12 markets almost instantly.
+
+Keep it elegant.
+
+====================================================
+6. AI DECISION ENGINE
+====================================================
+
+Keep the new animated pipeline.
+
+Do not redesign it.
+
+Only make it feel more alive.
+
+Improve:
+
+• Orbital movement
+• Energy flowing between nodes
+• Glow intensity
+• Pulse animation
+• Smooth transitions
+
+The goal is to make it feel like a real AI engine processing decisions in real time.
+
+====================================================
+7. EVERYTHING ELSE
+====================================================
+
+Portfolio Summary:
+Keep.
+
+System Health:
+Keep.
+
+AI Thinking Feed:
+Keep.
+
+AI Live Feed:
+Keep.
+
+Footer:
+Keep the Live Crypto Ticker + Breaking News Ticker exactly as implemented.
+
+====================================================
+FINAL NOTE
+====================================================
+
+This is NOT another redesign.
+
+The current dashboard is already around 90% complete.
+
+Only polish and refine the existing implementation until it reaches production quality.
+
+Do not change the layout again.
+
+Focus on refinement, hierarchy, readability, and premium visual quality.

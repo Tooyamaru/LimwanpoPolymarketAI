@@ -1,0 +1,426 @@
+LIMWANPOAI — CONTINUE DASHBOARD REFINEMENT (FINAL)
+IMPORTANT
+
+Before writing ANY code:
+
+Read the ENTIRE frontend.
+Read dashboard HTML.
+Read dashboard CSS.
+Read dashboard JS.
+Read /api/v1/health/detailed.
+Read /api/v1/trades.
+Read /api/v1/portfolio.
+Understand existing layout first.
+
+Do NOT rewrite from scratch.
+
+Improve the existing dashboard.
+
+VERY IMPORTANT PROJECT CONTEXT
+
+This project is NOT a trading terminal.
+
+This is an AI-powered Polymarket Trading System.
+
+Everything displayed must represent Polymarket prediction contracts, NOT forex/crypto trading.
+
+Never redesign it like Binance, Bybit, TradingView, MT5, etc.
+
+Every UI decision must respect Polymarket concepts.
+
+Current concepts are:
+
+YES / NO positions
+Probability
+Price to Beat
+Current Price
+Prediction edge
+Expected probability
+Entry probability
+Live probability
+Contracts
+Stake
+Expected payout
+
+NOT
+
+Pips
+Leverage
+Margin
+Order book
+Candles as main information
+Trading pairs
+LAYOUT (MUST FOLLOW EXACTLY)
+
+The final layout must become:
+
+Portfolio
+
+|
+
+Live Probability Chart
+
+|
+
+AI Activity
+
+Market Universe
+(ALL 12 markets visible)
+
+System Health
+
+|
+
+Execution Pipeline
+
+Footer (DO NOT TOUCH)
+
+Footer must remain exactly as it is.
+
+MARKET UNIVERSE IS THE HIGHEST PRIORITY
+
+This section is the heart of LimwanpoAI.
+
+It must become much larger.
+
+Reduce wasted space elsewhere.
+
+Increase Market Universe height.
+
+ALL MARKETS MUST BE VISIBLE
+
+Currently users need scrolling.
+
+That is NOT acceptable.
+
+Show:
+
+BTC 5m
+
+BTC 15m
+
+BTC 1H
+
+ETH 5m
+
+ETH 15m
+
+ETH 1H
+
+SOL 5m
+
+SOL 15m
+
+SOL 1H
+
+XRP 5m
+
+XRP 15m
+
+XRP 1H
+
+WITHOUT vertical scrolling.
+
+Optimize spacing instead.
+
+EACH MARKET CARD MUST SHOW
+
+Each market card MUST clearly display:
+
+Market name
+
+Current position
+
+BUY YES
+
+BUY NO
+
+NO POSITION
+
+Current status
+
+ACTIVE
+
+WATCH
+
+CLOSED
+
+Entry probability
+
+(Current probability when entered)
+
+Current probability
+
+(Current live market probability)
+
+Price to Beat
+
+(This is extremely important)
+
+Current Price
+
+Live %
+
+Expected edge
+
+Prediction direction
+
+Confidence
+
+Stake size (USDC)
+
+Contracts
+
+Entry timestamp
+
+Running PnL
+
+Realized PnL if closed
+
+Position age
+
+Close reason if finished
+
+Small colored status indicator
+
+This is how Polymarket users think.
+
+NOT traditional traders.
+
+PRICE TO BEAT
+
+This MUST exist.
+
+It was missing before.
+
+Use labels exactly like:
+
+Price to Beat
+
+Current Price
+
+Example:
+
+Price to Beat
+0.52
+
+Current Price
+0.48
+
+Difference
+
+-0.04
+
+or
+
++0.03
+
+This immediately tells whether prediction is winning.
+
+PORTFOLIO PANEL
+
+Remove useless statistics.
+
+Do NOT display
+
+"3 Markets"
+
+Instead prioritize
+
+Total Capital
+
+Capital Used
+
+Available Capital
+
+Open Positions
+
+Total Stake
+
+Today's PnL
+
+Win Rate
+
+Total Fees
+
+These are meaningful.
+
+AI ACTIVITY
+
+Keep current behavior.
+
+No split.
+
+No AI Thinking.
+
+Remain as one unified panel.
+
+LIVE CHART
+
+DO NOT redesign.
+
+Keep exactly as current.
+
+No work needed.
+
+SYSTEM HEALTH
+
+Reduce vertical height.
+
+Instead of 9 stacked rows,
+
+show 2 columns.
+
+Example:
+
+Signal 100% Universe 100%
+
+Opportunity 100% Refresh 100%
+
+Strategy 100% Analytics 100%
+
+Risk 100% Watchdog 100%
+
+Execution 100% Exit 100%
+
+Exactly like this.
+
+Compact.
+
+Readable.
+
+Uses much less height.
+
+Market Universe gets larger.
+
+EXECUTION PIPELINE
+
+Keep current functionality.
+
+Improve spacing.
+
+Improve contrast.
+
+Do NOT enlarge.
+
+COLORS
+
+Increase contrast.
+
+Current text blends into background.
+
+Improve readability.
+
+Especially
+
+gray text
+
+small labels
+
+secondary values
+
+Do NOT make it colorful.
+
+Keep premium dark theme.
+
+CARDS
+
+The old dashboard had stronger cards.
+
+Some borders disappeared.
+
+Bring back:
+
+soft border
+
+subtle shadow
+
+rounded corners
+
+clear separation
+
+Cards must look premium.
+
+TYPOGRAPHY
+
+Current size is acceptable.
+
+Only improve:
+
+contrast
+
+weight
+
+spacing
+
+alignment
+
+HEADER
+
+Reduce wasted space.
+
+Do NOT make header larger.
+
+Keep compact.
+
+FOOTER
+
+DO NOT TOUCH.
+
+RESPONSIVENESS
+
+Must work on:
+
+1920x1080
+
+2560x1440
+
+No clipping.
+
+No overlap.
+
+IMPORTANT
+
+Do NOT change backend logic.
+
+Do NOT change trading logic.
+
+Do NOT change APIs.
+
+Frontend refinement only.
+
+AFTER IMPLEMENTATION
+
+Verify:
+
+✓ All 12 markets visible
+
+✓ Price to Beat exists
+
+✓ Current Price exists
+
+✓ Stake displayed
+
+✓ Contracts displayed
+
+✓ Current Position displayed
+
+✓ Entry probability displayed
+
+✓ Current probability displayed
+
+✓ Running PnL displayed
+
+✓ System Health uses compact 2-column layout
+
+✓ Market Universe significantly larger
+
+✓ Footer untouched
+
+✓ No vertical scrolling for Market Universe
+
+✓ Premium UI preserved
+
+Then restart the app and verify visually.
+
+Prompt ini sudah mencakup seluruh revisi dashboard terakhir yang kita sepakati, sehingga Replit baru akan langsung melanjutkan tanpa kehilangan konteks.

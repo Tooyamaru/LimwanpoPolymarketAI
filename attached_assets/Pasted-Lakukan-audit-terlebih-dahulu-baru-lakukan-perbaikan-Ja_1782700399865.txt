@@ -1,0 +1,125 @@
+Lakukan audit terlebih dahulu, baru lakukan perbaikan. Jangan menambahkan fitur baru, jangan mengubah desain visual, warna, layout, ataupun struktur dashboard. Fokus hanya pada root cause mengapa panel BTC // CANDLES masih tampil kosong/hitam.
+
+Temuan Audit
+
+Root Cause #1 — CSS menyembunyikan chart
+
+Periksa seluruh media query.
+
+Ditemukan rule seperti:
+
+@media (max-width:640px){
+    #btc-chart-card{
+        display:none !important;
+    }
+}
+@media (max-width:1100px) and (orientation:portrait){
+    #btc-chart-card{
+        display:none !important;
+    }
+}
+
+Jangan menggunakan display:none untuk chart.
+
+Ganti pendekatan responsive menjadi tetap menampilkan chart dengan ukuran minimum.
+
+⸻
+
+Root Cause #2 — Canvas tidak mengisi container
+
+Audit runtime menunjukkan:
+
+Container:
+
+270 x 200
+
+Canvas:
+
+214 x 172
+
+Artinya canvas tidak memenuhi area chart.
+
+Audit:
+
+* ukuran container
+* ukuran canvas
+* ResizeObserver
+* autoSize
+* clientWidth
+* clientHeight
+* fitContent()
+
+Pastikan canvas selalu mengikuti ukuran container.
+
+⸻
+
+Root Cause #3 — Triple overflow clipping
+
+Ada beberapa layer:
+
+#center-top-row
+overflow:hidden;
+#btc-chart-card
+overflow:hidden;
+#btc-chart-body
+overflow:hidden;
+
+Audit apakah terjadi clipping.
+
+Jika overflow pada #btc-chart-body tidak diperlukan, hapus.
+
+Jangan menghapus overflow pada parent bila memang masih dibutuhkan.
+
+⸻
+
+Root Cause #4 — Padding card
+
+Saat ini padding card ikut mengurangi area chart.
+
+Audit apakah:
+
+padding
+box-sizing
+clientWidth
+
+membuat area render lebih kecil.
+
+Jika iya:
+
+* pindahkan padding ke title
+* jangan biarkan padding mengurangi area canvas.
+
+⸻
+
+Yang harus dilakukan
+
+Perbaiki hanya jika memang terbukti menjadi root cause.
+
+Target akhir:
+
+* chart tidak pernah display:none
+* chart responsive
+* canvas selalu memenuhi container
+* ResizeObserver bekerja
+* autoSize bekerja
+* tidak ada clipping
+* tidak ada area hitam kosong
+* tidak mengubah layout dashboard
+
+⸻
+
+Setelah selesai
+
+Berikan laporan lengkap berisi:
+
+1. Root cause yang benar-benar ditemukan
+2. Bukti (CSS/JS/runtime)
+3. Perubahan yang dilakukan
+4. Alasan setiap perubahan
+5. Before vs After
+6. Konfirmasi bahwa:
+    * desain dashboard tidak berubah
+    * tidak ada fitur baru
+    * hanya bug yang diperbaiki
+
+Jangan menyatakan masalah sudah selesai sebelum membuktikan chart benar-benar tampil dengan candlestick yang terlihat.

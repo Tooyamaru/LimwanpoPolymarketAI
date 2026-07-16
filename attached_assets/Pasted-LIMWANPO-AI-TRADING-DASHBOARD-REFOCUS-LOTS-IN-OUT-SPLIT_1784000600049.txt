@@ -1,0 +1,774 @@
+LIMWANPO AI — TRADING DASHBOARD REFOCUS:
+LOTS + IN/OUT SPLIT + ROLLOVER ISOLATION + LIVE PNL + AI LIVE TRADES
+
+Konteks:
+
+Dashboard sudah kembali hidup dan pipeline data sudah normal:
+
+- 12 markets aktif
+- BTC/ETH/SOL/XRP × 5M/15M/1H
+- chart live
+- TARGET / GAP / SPREAD / CONF tampil
+- PNL / IN / OUT sudah tersedia
+- countdown tampil
+- 697/697 tests pass
+- SSL Gamma/CLOB/Binance sudah diperbaiki
+- multi-entry infrastructure sudah tersedia
+- card summary sudah tersedia
+
+Sekarang dashboard ingin difokuskan menjadi trading terminal.
+
+Target utama:
+
+1. Tambahkan LOTS pada setiap card.
+2. Pisahkan IN dan OUT menjadi count dan amount yang jelas.
+3. Perbaiki isolasi rollover condition_id.
+4. Pastikan PNL card hanya berasal dari posisi nyata pada condition_id aktif.
+5. Hapus System Health dari tampilan dashboard.
+6. Hapus Prediction Pipeline dari tampilan dashboard.
+7. Ubah AI Activities menjadi AI LIVE TRADES.
+8. AI LIVE TRADES hanya berisi aktivitas entry/exit taruhan nyata.
+
+ATURAN WAJIB:
+
+- JANGAN redesign total.
+- JANGAN ubah backend health monitoring.
+- JANGAN hapus heartbeat/health endpoints.
+- JANGAN hapus prediction pipeline backend.
+- Hanya hilangkan kedua panel tersebut dari UI utama.
+- JANGAN membuat fake trade feed.
+- JANGAN tampilkan WAIT setiap cycle di AI LIVE TRADES.
+- JANGAN mencampur posisi market lama dengan market baru.
+- JANGAN menghapus history posisi lama.
+- JANGAN membuat PnL estimasi.
+- Gunakan condition_id sebagai key utama.
+- Tetap paper trading.
+- Jangan sentuh real wallet/order placement.
+
+==================================================
+STEP 1 — VERIFY CURRENT IMPLEMENTATION
+==================================================
+
+Baca:
+
+Frontend:
+- backend/app/static/index.html
+- renderCard()
+- AI Activities panel
+- System Health panel
+- Prediction Pipeline panel
+- card summary polling
+- portfolio summary polling
+- countdown logic
+
+Backend:
+- position model
+- order model
+- trade_decision model
+- card_summary_repository.py
+- card summary schema/API
+- position repository/service
+- execution engine
+- exit engine
+- outcome learning
+- market universe repository/service
+- settings.py
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+Pastikan current implementation benar-benar memiliki:
+
+- PNL
+- IN
+- OUT
+- countdown
+- multi-entry fields
+- remaining_quantity
+- entry_sequence
+- partial exit support
+- card summary endpoint
+
+==================================================
+STEP 2 — DEFINE CURRENT CARD SCOPE
+==================================================
+
+Setiap market card hanya boleh membaca data dari:
+
+current active condition_id
+
+Bukan:
+
+- asset saja
+- timeframe saja
+- previous condition_id
+- old market rollover
+- first matching position
+
+Card summary key wajib:
+
+condition_id
+
+Contoh:
+
+BTC 5M current condition_id = NEW123
+
+Card hanya menghitung:
+
+positions.condition_id = NEW123
+
+Jangan ikut menghitung:
+
+positions.condition_id = OLD456
+
+meskipun asset/timeframe sama.
+
+==================================================
+STEP 3 — ROLLOVER ISOLATION
+==================================================
+
+Ketika market rollover:
+
+old condition_id:
+- tidak lagi tampil sebagai current card
+- tetap ada di history
+- tetap diproses oleh exit/resolution/outcome learning
+- jika masih OPEN setelah expiry:
+  status semantic = EXPIRED / RESOLUTION_PENDING
+- tidak dihitung ke current card LOTS/PNL/IN/OUT
+
+new condition_id:
+- menjadi card aktif
+- summary dimulai dari posisi condition_id baru saja
+- tidak mewarisi posisi lama
+
+Buat pemisahan query:
+
+CURRENT CARD SUMMARY:
+- active condition_id only
+
+OPEN LEGACY POSITIONS:
+- old condition_id masih OPEN/PARTIAL
+
+TRADE HISTORY:
+- all condition_ids
+
+PORTFOLIO TOTAL:
+- all relevant positions
+
+Jangan memindahkan data lama secara palsu.
+Jangan mengganti condition_id position lama.
+
+==================================================
+STEP 4 — LOTS ON EACH CARD
+==================================================
+
+Tambahkan LOTS pada setiap card.
+
+LOTS berarti:
+
+jumlah OPEN + PARTIAL position lots
+untuk current condition_id
+
+Fields:
+
+- open_lot_count
+- partial_lot_count
+- active_lot_count
+
+Formula:
+
+active_lot_count =
+open_lot_count + partial_lot_count
+
+Display:
+
+LOTS 0
+
+atau:
+
+LOTS 3 OPEN
+
+Jika mixed:
+
+LOTS 3
+2 OPEN · 1 PARTIAL
+
+Jangan menghitung CLOSED lots ke LOTS aktif.
+
+==================================================
+STEP 5 — SPLIT IN / OUT DISPLAY
+==================================================
+
+Pisahkan count dan amount secara jelas.
+
+IN:
+- entry_count
+- entry_amount_usdc
+
+OUT:
+- exit_count
+- exit_amount_usdc
+
+Display yang disarankan:
+
+IN
+4x
+$40.00
+
+OUT
+2x
+$19.80
+
+Jika layout terlalu sempit:
+
+IN 4x · $40.00
+OUT 2x · $19.80
+
+Aturan:
+
+IN count:
+- executed OPEN_LONG_YES
+- executed OPEN_LONG_NO
+- scale-in executed
+- re-entry executed
+
+IN amount:
+- sum actual entry_price × quantity
+
+OUT count:
+- executed partial exit
+- executed final exit
+- executed expiry exit
+
+OUT amount:
+- sum actual exit_price × close_quantity
+
+Jangan menghitung:
+
+- WAIT
+- BLOCKED
+- REJECTED
+- FAILED
+- PENDING
+- duplicate retry
+
+==================================================
+STEP 6 — LIVE PNL RULE
+==================================================
+
+PNL card harus nyata.
+
+Formula:
+
+total_pnl =
+realized_pnl + unrealized_pnl
+
+Per current condition_id only.
+
+realized_pnl:
+- sum dari CLOSED/PARTIAL exit events current condition_id
+
+unrealized_pnl:
+- sum open remaining lots current condition_id
+- gunakan executable exit price real
+
+LONG_YES:
+- current YES bid
+
+LONG_NO:
+- current NO bid
+- jika derived:
+  no_bid = 1 - yes_ask
+
+Expired/resolved:
+
+- gunakan forced_exit_price / direct resolution
+- jangan pakai stale CLOB
+
+Jika no position:
+
+PNL —
+
+Jika current price missing:
+
+PNL N/A
+
+Jangan klaim $0.00 jika unrealized tidak bisa dihitung.
+
+==================================================
+STEP 7 — CARD SUMMARY API
+==================================================
+
+Pastikan endpoint card summary return per active condition_id:
+
+- condition_id
+- asset
+- timeframe
+- has_position
+- current_side
+- open_lot_count
+- partial_lot_count
+- closed_lot_count
+- active_lot_count
+- total_entry_count
+- total_entry_notional_usdc
+- total_exit_count
+- total_exit_notional_usdc
+- weighted_average_entry_price
+- remaining_quantity
+- open_exposure_usdc
+- realized_pnl
+- unrealized_pnl
+- total_pnl
+- latest_entry_at
+- latest_exit_at
+
+Untuk current active market tanpa posisi:
+
+- active_lot_count = 0
+- total_entry_count = 0
+- total_entry_notional_usdc = 0
+- total_exit_count = 0
+- total_exit_notional_usdc = 0
+- total_pnl = null
+
+==================================================
+STEP 8 — CREATE AI LIVE TRADES FEED
+==================================================
+
+Ubah panel:
+
+AI ACTIVITIES
+
+menjadi:
+
+AI LIVE TRADES
+
+Feed hanya boleh berisi aktivitas trading nyata.
+
+Event types:
+
+- ENTRY
+- SCALE_IN
+- PARTIAL_EXIT
+- FINAL_EXIT
+- EXPIRY_EXIT
+- EXECUTION_REJECTED optional
+
+Jangan tampilkan:
+
+- WAIT
+- generic decision cycle
+- signal emitted
+- opportunity scored
+- heartbeat
+- engine status
+
+==================================================
+STEP 9 — AI LIVE TRADE EVENT MODEL
+==================================================
+
+Gunakan data existing jika sudah tersedia.
+
+Jika belum, buat read-only aggregation dari:
+
+- orders
+- positions
+- trade_decisions
+
+Setiap event return:
+
+- event_id
+- event_type
+- timestamp
+- asset
+- timeframe
+- condition_id
+- side
+- quantity
+- price
+- notional_usdc
+- realized_pnl jika exit
+- remaining_quantity
+- lot_id
+- order_id
+- decision_id
+- reason
+- status
+
+Contoh:
+
+{
+  "event_type": "ENTRY",
+  "asset": "BTC",
+  "timeframe": "5m",
+  "side": "LONG_NO",
+  "quantity": 20,
+  "price": 0.49,
+  "notional_usdc": 9.80,
+  "timestamp": "..."
+}
+
+==================================================
+STEP 10 — AI LIVE TRADES API
+==================================================
+
+Buat endpoint read-only:
+
+GET /api/v1/live-trades
+
+Optional query:
+
+- limit
+- asset
+- timeframe
+- condition_id
+- event_type
+
+Default:
+
+limit=50
+
+Urutan:
+
+newest first
+
+Endpoint tidak boleh:
+
+- trigger execution
+- create order
+- modify position
+- expose secrets
+
+==================================================
+STEP 11 — AI LIVE TRADES FRONTEND
+==================================================
+
+Panel baru:
+
+AI LIVE TRADES
+
+Contoh row:
+
+12:41:08  BTC 5M  IN  NO  $10.00 @ 0.49
+
+12:41:42  BTC 5M  SCALE-IN  NO  $8.00 @ 0.47
+
+12:43:16  BTC 5M  PARTIAL OUT  $6.40  PNL +$0.72
+
+12:44:51  ETH 15M  IN  YES  $10.00 @ 0.52
+
+12:46:03  BTC 5M  FINAL OUT  $12.20  PNL +$1.15
+
+Color semantics:
+
+- ENTRY / SCALE_IN → cyan/green existing style
+- EXIT positive PnL → green
+- EXIT negative PnL → red
+- rejected → amber/red
+- no fake blinking/random animation
+
+Jika belum ada trade:
+
+NO LIVE TRADES YET
+
+Jangan isi dengan WAIT.
+
+==================================================
+STEP 12 — REMOVE UI PANELS ONLY
+==================================================
+
+Hapus dari tampilan utama:
+
+- System Health
+- Prediction Pipeline
+
+Penting:
+
+JANGAN hapus:
+
+- backend engine health
+- heartbeat tracking
+- /health
+- /health/detailed
+- monitoring
+- alerts
+- prediction pipeline backend logic
+- tests
+
+Hanya hilangkan HTML/CSS/JS panelnya dari dashboard utama.
+
+Pastikan tidak ada JS error karena element ID sudah hilang.
+
+Audit semua:
+
+document.getElementById()
+el()
+querySelector()
+
+yang mengacu ke panel tersebut.
+
+Tambahkan null-safe checks atau hapus polling UI yang tidak lagi dipakai.
+
+==================================================
+STEP 13 — REBALANCE DASHBOARD LAYOUT
+==================================================
+
+Gunakan ruang bekas System Health dan Prediction Pipeline.
+
+Tanpa redesign total.
+
+Layout target:
+
+TOP:
+- portfolio summary
+- chart
+- AI LIVE TRADES
+
+MAIN:
+- 12 market cards
+
+BOTTOM:
+- ticker/footer/news tetap
+
+AI LIVE TRADES boleh diperbesar ke area kanan chart atau area bawah yang sebelumnya dipakai system panels.
+
+Jangan ubah identitas cyber/terminal dashboard.
+
+==================================================
+STEP 14 — HEADER SUMMARY
+==================================================
+
+Pertahankan header counters penting:
+
+- MARKETS
+- OPEN LOTS
+- LIVE TRADES
+- CAPITAL OK
+
+Ganti jika perlu:
+
+- SIGNALS boleh tetap
+- PREDICTIONS boleh tetap
+atau
+- OPEN LOTS
+- EXECUTED TRADES
+
+Tetapi source harus real.
+
+Jangan hardcode.
+
+==================================================
+STEP 15 — OLD POSITION HISTORY
+==================================================
+
+Pastikan old rollover positions tetap bisa dilihat melalui:
+
+GET /api/v1/positions/history
+atau endpoint existing equivalent.
+
+Return:
+
+- old condition_id
+- asset
+- timeframe
+- entry
+- exit
+- PnL
+- resolution status
+- close reason
+- opened_at
+- closed_at
+
+Current card jangan mengambil data ini.
+
+==================================================
+STEP 16 — LIVE VALIDATION
+==================================================
+
+Untuk 12 active cards tampilkan:
+
+- asset
+- timeframe
+- active condition_id
+- LOTS
+- IN count
+- IN amount
+- OUT count
+- OUT amount
+- realized PnL
+- unrealized PnL
+- total PnL
+
+Validasi:
+
+1. Current market tanpa posisi:
+   - LOTS 0
+   - IN 0x / $0.00
+   - OUT 0x / $0.00
+   - PNL —
+
+2. Current market dengan multi-entry:
+   - LOTS > 1
+   - IN count > 1
+   - weighted average benar
+
+3. Old rollover position:
+   - tidak muncul di current card
+   - muncul di history
+   - tetap diproses exit/resolution
+
+4. Partial exit:
+   - LOTS dapat tetap sama atau turun sesuai lot policy
+   - OUT bertambah
+   - realized PnL bertambah
+   - remaining_quantity berkurang
+
+==================================================
+STEP 17 — TESTS
+==================================================
+
+Tambahkan/update tests:
+
+1. active card only reads active condition_id
+2. old rollover position excluded from current card
+3. old position appears in history
+4. LOTS counts OPEN + PARTIAL only
+5. CLOSED not counted in active LOTS
+6. IN count/amount correct
+7. OUT count/amount correct
+8. multiple entries aggregate correctly
+9. partial exit aggregate correct
+10. PnL real formula correct
+11. missing price returns PNL N/A
+12. no position returns PNL null
+13. live trade feed includes entry
+14. live trade feed includes scale-in
+15. live trade feed includes partial exit
+16. live trade feed includes final exit
+17. WAIT does not appear in live trade feed
+18. removed health/pipeline panels cause no JS errors
+19. backend health still works
+20. prediction pipeline backend still works
+
+Run:
+
+- python -m compileall -q backend/app
+- card summary tests
+- position tests
+- execution tests
+- exit tests
+- rollover tests
+- live trade feed tests
+- frontend tests
+- full suite
+- workflow restart
+- screenshot dashboard
+
+==================================================
+STEP 18 — RED FLAG SEARCH
+==================================================
+
+Search:
+
+- old condition_id reused
+- asset-only position lookup
+- timeframe-only position lookup
+- WAIT in live trades
+- fake trade event
+- hardcoded trade
+- default PnL
+- potential profit
+- system-health DOM references
+- prediction-pipeline DOM references
+- current card includes old position
+- condition_id mismatch
+- stale rollover position
+
+Klasifikasikan:
+
+- REAL_POSITION_DATA
+- REAL_TRADE_EVENT
+- SAFE_HISTORY_DATA
+- UI_ONLY_REMOVAL
+- ROLLOVER_BUG
+- INVALID_FAKE
+- FIXED
+
+No unresolved INVALID.
+
+==================================================
+STEP 19 — FINAL RESPONSE FORMAT
+==================================================
+
+Jawab:
+
+1. Files read
+2. Current card-summary behavior
+3. Rollover isolation findings
+4. LOTS implementation
+5. IN implementation
+6. OUT implementation
+7. PnL implementation
+8. AI LIVE TRADES backend
+9. AI LIVE TRADES frontend
+10. System Health UI removal
+11. Prediction Pipeline UI removal
+12. Layout changes
+13. History behavior
+14. Tests run
+15. Live 12-card validation
+16. Screenshot result
+17. Files changed
+18. Remaining risks
+19. Final statuses
+20. Exact next step
+
+Final statuses:
+
+CARD POSITION ACTIVITY:
+- PASS
+- PASS WITH REMEDIATION
+- PARTIAL
+- FAIL
+
+ROLLOVER ISOLATION:
+- PASS
+- PASS WITH REMEDIATION
+- PARTIAL
+- FAIL
+
+AI LIVE TRADES:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+DASHBOARD TRADING REFOCUS:
+- PASS
+- PASS WITH NOTES
+- PARTIAL
+- FAIL
+
+Use PASS only if:
+
+- LOTS correct
+- IN/OUT correct
+- current card excludes old rollover positions
+- PnL real
+- AI LIVE TRADES contains real execution activity only
+- WAIT removed from feed
+- System Health removed from UI only
+- Prediction Pipeline removed from UI only
+- backend monitoring remains intact
+- tests pass
+- no fake data
+
+Jangan jawab setup complete.
+Jangan defer.
+Jangan membuat follow-up task.
+Kerjakan dari current codebase.

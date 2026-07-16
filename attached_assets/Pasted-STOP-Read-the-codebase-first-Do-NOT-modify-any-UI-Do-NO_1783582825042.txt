@@ -1,0 +1,149 @@
+STOP.
+
+Read the codebase first.
+
+Do NOT modify any UI.
+Do NOT modify CSS.
+Do NOT modify HTML.
+Do NOT modify frontend behavior.
+Do NOT add fake heartbeats.
+Do NOT split sleeps into chunks.
+Do NOT change engine intervals.
+Do NOT increase WATCHDOG_RESTART_SECONDS.
+Do NOT enable DYNAMIC_WEIGHT_RUN_ON_STARTUP.
+Do NOT redesign anything.
+
+The previous investigation already found the root cause.
+
+========================
+ROOT CAUSE
+========================
+
+dynamic_weight is NOT a continuous realtime engine.
+
+It is a scheduled batch worker that intentionally runs every:
+
+DYNAMIC_WEIGHT_INTERVAL_SECONDS = 1800
+
+and intentionally has
+
+DYNAMIC_WEIGHT_RUN_ON_STARTUP = False
+
+because there are no outcomes immediately after startup.
+
+However main.py currently builds ONE list:
+
+_enabled_engines
+
+and uses the SAME list for TWO completely different purposes:
+
+1. engine_health.register_engines(...)
+2. run_watchdog_loop(...)
+
+That means dynamic_weight is being monitored by the watchdog even though its natural cycle is 1800 seconds while watchdog expects activity within WATCHDOG_RESTART_SECONDS (600 seconds).
+
+The watchdog therefore kills uvicorn after about 12 minutes.
+
+This is an architectural mistake.
+
+NOT a heartbeat problem.
+
+========================
+CORRECT FIX
+========================
+
+Keep dynamic_weight registered in engine_health so:
+
+/api/v1/health/detailed
+
+still reports it.
+
+BUT
+
+Do NOT include dynamic_weight in the list passed to:
+
+run_watchdog_loop()
+
+The watchdog should monitor ONLY continuous realtime engines.
+
+dynamic_weight must remain visible in health reporting,
+but must not participate in watchdog restart decisions.
+
+========================
+IMPLEMENTATION REQUIREMENTS
+========================
+
+Implement the smallest possible change.
+
+Do NOT touch engine_workers.py.
+
+Remove every workaround previously added, including:
+
+- startup heartbeat
+- chunked sleep
+- idle heartbeat
+- fake heartbeat
+- watchdog keepalive
+
+Restore dynamic_weight loop to its original clean implementation.
+
+Modify ONLY main.py.
+
+Separate:
+
+registered_engines
+
+from
+
+watchdog_engines
+
+Example architecture:
+
+registered_engines
+    -> passed into engine_health.register_engines()
+
+watchdog_engines
+    -> passed into run_watchdog_loop()
+
+dynamic_weight belongs ONLY to registered_engines.
+
+========================
+AFTER IMPLEMENTATION
+========================
+
+Verify:
+
+1.
+dynamic_weight still appears in
+
+/api/v1/health/detailed
+
+2.
+watchdog no longer monitors dynamic_weight
+
+3.
+uvicorn survives more than 20 minutes
+
+4.
+No fake heartbeat exists anywhere.
+
+5.
+No chunked sleep exists anywhere.
+
+6.
+No timing constants changed.
+
+7.
+No UI changes.
+
+========================
+OUTPUT
+========================
+
+After finishing, show ONLY:
+
+- files modified
+- exact diff summary
+- why this is architecturally correct
+
+Do NOT make any unrelated improvements.

@@ -1,0 +1,537 @@
+PROJECT: LIMWANPO POLYMARKET AI
+
+TASK:
+UPGRADE DASHBOARD V5 VISUAL QUALITY.
+
+IMPORTANT:
+
+DO NOT CHANGE BUSINESS LOGIC.
+
+DO NOT CHANGE API ENDPOINTS.
+
+DO NOT CHANGE DATA FLOW.
+
+DO NOT REMOVE EXISTING PANELS.
+
+DO NOT RESTRUCTURE THE LAYOUT.
+
+DO NOT ADD NEW FEATURES.
+
+THIS IS A PURE VISUAL + UX POLISH PASS.
+
+The dashboard already has the correct information.
+
+The problem is only:
+
+* too flat
+* weak visual hierarchy
+* poor focus guidance
+* insufficient contrast
+* not enough feeling of intelligence
+* not enough premium cyberpunk atmosphere
+
+GOAL:
+
+Make the dashboard feel like a professional proprietary AI trading terminal.
+
+Think:
+
+Renaissance Technologies
+
+Jane Street
+
+Citadel
+
+HFT command center
+
+but cyberpunk.
+
+====================================================
+
+SECTION 1
+
+VISUAL HIERARCHY
+
+====================================================
+
+The eye must immediately focus on:
+
+1. AI CURRENT TARGET
+
+2. AI DECISION ENGINE
+
+3. ACTIVE POSITION
+
+Everything else becomes secondary.
+
+Current issue:
+
+All panels have similar visual weight.
+
+Fix:
+
+AI CURRENT TARGET must visually dominate.
+
+Increase panel presence by:
+
+* stronger glow
+* stronger contrast
+* larger typography
+* subtle animated scan line
+* animated border activity
+
+without becoming flashy.
+
+====================================================
+
+SECTION 2
+
+AI CURRENT TARGET PANEL
+
+====================================================
+
+This is the brain of the entire dashboard.
+
+Current panel feels empty.
+
+Transform it into command-center style.
+
+Requirements:
+
+LEFT SIDE
+
+Large circular target scanner.
+
+Animated rings.
+
+Soft rotation.
+
+Radar sweep.
+
+Pulse intensity linked to score.
+
+CENTER
+
+Large market name.
+
+Example:
+
+BTC 15M YES
+
+Font must be much larger.
+
+Below:
+
+SCORE
+
+CONFIDENCE
+
+DISTANCE TO ENTRY
+
+THRESHOLD
+
+Status:
+
+NOT READY
+
+READY
+
+TRADE READY
+
+BLOCKED
+
+All statuses must have unique colors.
+
+RIGHT SIDE
+
+Mini chart.
+
+Current price.
+
+Expected edge.
+
+Market liquidity.
+
+Volume.
+
+Spread.
+
+Everything compact.
+
+====================================================
+
+SECTION 3
+
+AI DECISION ENGINE
+
+====================================================
+
+Keep existing stages:
+
+MARKET
+
+SIGNAL
+
+OPPORTUNITY
+
+STRATEGY
+
+RISK
+
+EXECUTION
+
+But make them feel alive.
+
+Requirements:
+
+Animated particles moving through stages.
+
+Stages glow when active.
+
+Conversion percentages pulse.
+
+Approved stage flashes green.
+
+Blocked stage flashes red.
+
+Execution stage flashes cyan.
+
+Add:
+
+small live counters
+
+small timestamps
+
+small stage latency
+
+under each stage.
+
+====================================================
+
+SECTION 4
+
+SYSTEM THINKING FEED
+
+====================================================
+
+Current feed is too static.
+
+Make it look like a live AI brain.
+
+Examples:
+
+Scanning BTC 15M...
+
+Opportunity score updated...
+
+Risk evaluation passed...
+
+Universe synchronized...
+
+Signal strength increased...
+
+Watching ETH 1H...
+
+Spread widening...
+
+Waiting for confirmation...
+
+Requirements:
+
+auto-scroll
+
+new entries fade in
+
+old entries fade out
+
+terminal aesthetic
+
+====================================================
+
+SECTION 5
+
+MARKET OPPORTUNITY HEATMAP
+
+====================================================
+
+Current heatmap feels dead.
+
+Make it the second most important area.
+
+Requirements:
+
+Every cell must have:
+
+score
+
+direction
+
+strength color
+
+glow intensity
+
+Color rules:
+
+95+ = extreme green
+
+90-94 = bright green
+
+85-89 = cyan
+
+70-84 = yellow
+
+below 70 = dark gray
+
+YES:
+
+green bias
+
+NO:
+
+magenta bias
+
+Top market:
+
+animated border
+
+====================================================
+
+SECTION 6
+
+ACTIVE POSITION PANEL
+
+====================================================
+
+When position exists:
+
+show:
+
+market
+
+entry
+
+current
+
+size
+
+pnl
+
+duration
+
+confidence
+
+mini chart
+
+When no position exists:
+
+DO NOT show empty box.
+
+Show:
+
+WAITING FOR SIGNAL
+
+with animated radar rings.
+
+This should feel intentional.
+
+Not empty.
+
+====================================================
+
+SECTION 7
+
+SYSTEM HEALTH
+
+====================================================
+
+Keep same layout.
+
+Upgrade visuals.
+
+Requirements:
+
+Every engine gets:
+
+status light
+
+cycle time
+
+last execution
+
+heartbeat animation
+
+Sequential pulse effect.
+
+Not all dots blinking together.
+
+====================================================
+
+SECTION 8
+
+KPI CARDS
+
+====================================================
+
+WIN RATE
+
+NET PNL
+
+TRADES
+
+MAX DD
+
+Need:
+
+mini sparklines
+
+7D delta
+
+trend arrow
+
+glow intensity linked to performance
+
+====================================================
+
+SECTION 9
+
+CAPITAL PROTECTION
+
+====================================================
+
+Current bars are boring.
+
+Upgrade:
+
+animated fill
+
+remaining capital display
+
+daily loss remaining
+
+weekly loss remaining
+
+loss streak remaining
+
+drawdown remaining
+
+Kill Switch must look dangerous.
+
+When armed:
+
+green shield.
+
+When triggered:
+
+red flashing warning.
+
+====================================================
+
+SECTION 10
+
+BACKGROUND
+
+====================================================
+
+Add depth.
+
+Multi-layer background.
+
+Subtle moving particles.
+
+Extremely subtle.
+
+No gaming effects.
+
+No distracting animations.
+
+Goal:
+
+feel expensive.
+
+====================================================
+
+SECTION 11
+
+MICRO ANIMATIONS
+
+====================================================
+
+Add:
+
+hover transitions
+
+glow transitions
+
+panel breathing
+
+scanner sweeps
+
+data pulses
+
+heatmap pulses
+
+particle flow
+
+Everything must feel alive.
+
+Nothing should feel static.
+
+====================================================
+
+SECTION 12
+
+TYPOGRAPHY
+
+====================================================
+
+Improve readability.
+
+Current text is too small.
+
+Increase hierarchy.
+
+Main target:
+
+largest.
+
+Pipeline:
+
+medium.
+
+Health:
+
+small.
+
+Footer:
+
+smallest.
+
+====================================================
+
+SECTION 13
+
+FINAL RULES
+
+====================================================
+
+DO NOT REMOVE ANY EXISTING DATA.
+
+DO NOT REMOVE ANY EXISTING PANEL.
+
+DO NOT CHANGE BACKEND.
+
+DO NOT CHANGE API CONTRACTS.
+
+DO NOT CHANGE TRADING LOGIC.
+
+DO NOT CREATE NEW FEATURES.
+
+ONLY POLISH.
+
+ONLY IMPROVE VISUAL QUALITY.
+
+ONLY IMPROVE CYBERPUNK PROFESSIONAL FEELING.
+
+Result should look like:
+
+a proprietary AI trading terminal built by a quantitative fund specializing in Polymarket Up/Down markets.

@@ -1,0 +1,340 @@
+PROMPT — POLYMARKET UI REFINEMENT PHASE 3 (SIMPLIFY MARKET UNIVERSE)
+Objective
+
+Refine the Market Universe so it feels like a professional Prediction Market dashboard, not a crypto trading terminal.
+
+Do NOT touch backend, database, API, engine logic, trading logic, AI logic, or market data retrieval.
+
+Frontend/UI only.
+
+RULES
+Keep existing functionality.
+Do not change backend.
+Do not change API.
+Do not change data sources.
+Only improve presentation.
+Preserve responsive layout.
+No duplicate information.
+1. Simplify Probability Display
+
+Current:
+
+UP
+0.505
+
+DOWN
+0.495
+
+Replace with
+
+UP
+50.5%
+
+DOWN
+49.5%
+
+Probability should always display as percentage.
+
+2. Simplify Prediction Section
+
+When AI has NOT made a decision
+
+Current
+
+Prediction
+--
+
+Replace with
+
+Prediction
+WAITING
+
+When AI has decided
+
+Prediction
+UP
+
+or
+
+Prediction
+DOWN
+
+Never display
+
+LONG
+SHORT
+LONG YES
+LONG NO
+BUY
+SELL
+
+anywhere.
+
+3. Hide Empty Information
+
+If there is no active prediction
+
+Do NOT show
+
+Entry
+--
+
+Size
+--
+
+Instead simply omit those rows.
+
+Only display
+
+Entry
+49.8%
+
+after AI has actually entered.
+
+Same for
+
+Size
+$20
+
+Only show if there is an active position.
+
+4. Confidence
+
+Keep
+
+Confidence
+78%
+
+No change.
+
+5. Expires
+
+Current
+
+22:15:19
+
+Replace with countdown
+
+Examples
+
+04:18
+02:51
+00:43
+
+Meaning
+
+Minutes remaining until market expiration.
+
+NOT clock time.
+
+6. Keep Target
+
+Do NOT remove Target.
+
+Every timeframe has its own Target.
+
+Example
+
+Target
+63120
+7. Gap
+
+Keep
+
+Gap
++18
+
+or
+
+Gap
+-11
+
+This remains per timeframe.
+
+8. Remove Visual Noise
+
+Remove any unnecessary separators.
+
+Increase whitespace.
+
+The card should feel clean.
+
+Information priority should become
+
+UP/DOWN probability
+
+↓
+
+Target
+
+↓
+
+Gap
+
+↓
+
+Prediction
+
+↓
+
+Entry (if exists)
+
+↓
+
+Size (if exists)
+
+↓
+
+Confidence
+
+↓
+
+Expires
+
+↓
+
+Status
+9. Card Height
+
+Since Entry and Size disappear when inactive,
+
+the card should automatically compress vertically.
+
+No empty rows.
+
+No "--".
+
+10. Portfolio Language
+
+Keep the portfolio using Prediction Market terminology.
+
+Do NOT revert to trading terminology.
+
+Use
+
+Capital
+
+Available
+
+Exposure
+
+Active Predictions
+
+Prediction Accuracy
+
+ROI
+
+Today's Return
+
+Total Return
+
+Do not use
+
+Trades
+
+Orders
+
+Contracts
+
+Positions
+
+Fees
+11. Preserve Market Header
+
+Keep
+
+₿ BTC    $62,870
+
+Current Price stays beside asset name.
+
+Do NOT duplicate Current Price inside timeframe cards.
+
+12. Final Card Layout
+
+Desired layout
+
+5M
+
+UP
+50.5%
+
+DOWN
+49.5%
+
+----------------
+
+Target
+63120
+
+Gap
++18
+
+----------------
+
+Prediction
+UP
+
+Entry
+49.8%
+
+Size
+$20
+
+Confidence
+78%
+
+Expires
+04:18
+
+Status
+TRADING
+
+If no prediction exists
+
+Prediction
+WAITING
+
+Confidence
+78%
+
+Expires
+04:18
+
+Status
+MONITORING
+
+No Entry.
+
+No Size.
+
+No placeholders.
+
+DO NOT CHANGE
+AI logic
+Backend
+Database
+APIs
+Engine calculations
+Portfolio calculations
+Market retrieval
+Polymarket integration
+
+Only UI.
+
+SELF REVIEW BEFORE FINISHING
+
+Confirm all of the following:
+
+No LONG/SHORT terminology remains.
+No LONG YES/LONG NO remains.
+Current Price only appears in the asset header.
+Target remains unique for each timeframe.
+Gap remains unique for each timeframe.
+UP/DOWN probabilities display as percentages.
+Entry and Size disappear when inactive.
+Expires shows a countdown, not a clock time.
+Portfolio uses Prediction Market terminology only.
+Cards contain no unnecessary empty rows.
+No backend or API files were modified.
+
+Stop only after every item above passes.
