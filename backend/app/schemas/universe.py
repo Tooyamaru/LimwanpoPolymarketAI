@@ -49,6 +49,21 @@ class UniverseMarketResponse(BaseModel):
     # data_mode: SEED (pre-market book), LIVE (active window), FINAL (post-expiry)
     data_mode: str = "LIVE"
 
+    # ── Timing fields for accurate frontend countdown (spec §17) ────────────────
+    # server_time:          ISO UTC string of when this response was generated.
+    #                       Frontend computes server_offset_ms = server_time - Date.now()
+    #                       then uses (Date.now() + offset) for drift-free countdown.
+    # countdown_seconds:    max(0, floor(end_time - server_time)) in seconds.
+    #                       Frontend re-syncs this every poll cycle.
+    # countdown_source:     "market_end_time" — exact Polymarket condition end_time used.
+    #                       "missing"         — no valid end_time available.
+    # countdown_data_stale: True when end_time is absent or contradictory.
+    #                       Frontend must show "SYNCING" (not a fake timer) in this case.
+    server_time: Optional[str] = None
+    countdown_seconds: Optional[int] = None
+    countdown_source: str = "market_end_time"
+    countdown_data_stale: bool = False
+
     model_config = {"from_attributes": True}
 
 

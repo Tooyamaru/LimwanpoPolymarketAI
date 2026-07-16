@@ -46,11 +46,13 @@ class CardSummaryItem(BaseModel):
     total_lot_count:   int = 0
     active_lot_count:  int = 0   # open_lot_count + partial_lot_count
 
-    # ── Side-split exposure (spec §10) ────────────────────────────────────────
+    # ── Side-split exposure (spec §10 + §17) ─────────────────────────────────
     # up_open_exposure   = SUM(remaining_qty × entry_price) WHERE side=LONG_YES
     # down_open_exposure = SUM(remaining_qty × entry_price) WHERE side=LONG_NO
+    # open_cost_basis    = up + down (spec §17 alias for open_exposure_usdc)
     up_open_exposure:   float = 0.0
     down_open_exposure: float = 0.0
+    open_cost_basis:    float = 0.0   # spec §17 alias for open_exposure_usdc
     open_exposure_usdc: float = 0.0   # legacy combined (up + down)
 
     # active_side: which side(s) have open exposure  NONE|YES|NO|MIXED

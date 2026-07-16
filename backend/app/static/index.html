@@ -432,14 +432,17 @@ const confColor=c=>c>=80?NG:c>=60?"#22ee55":c>=45?NC:c>=30?NY:TD;
 const el=id=>document.getElementById(id);
 const pctColor=p=>p>=80?NG:p>=60?NY:RED;
 
-// MM:SS while under 1h remains; HH:MM once >= 1h remains. Never negative —
-// clamps to 00:00 at/after the target instant (caller decides EXPIRED/etc).
+// MM:SS while under 1h remains; HHhMM once >= 1h remains. Never negative.
+// Uses _svrOffsetMs (server-browser clock delta) to prevent local drift.
+// _svrOffsetMs is updated each loadMarkets() poll from market.server_time.
+let _svrOffsetMs=0;
 function fmtCountdown(targetStr){
   if(!targetStr)return"\u2014";
-  const diff=Math.max(0,Math.floor((new Date(targetStr)-Date.now())/1000));
+  const diff=Math.max(0,Math.floor((new Date(targetStr)-(Date.now()+_svrOffsetMs))/1000));
   const h=Math.floor(diff/3600),m=Math.floor((diff%3600)/60),s=diff%60;
   if(diff<3600)return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
-  return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
+  // >= 1 hour: use "HHhMM" to disambiguate from MM:SS format
+  return String(h).padStart(2,"0")+"h"+String(m).padStart(2,"0");
 }
 function fmtVol(v){return v>1e9?(v/1e9).toFixed(1)+"B":v>1e6?(v/1e6).toFixed(1)+"M":v.toFixed(0)}
 function fmtAssetPrice(sym,p){
@@ -760,6 +763,10 @@ async function loadMarkets(){
       fetch("/api/v1/decision?limit=50")
     ]);
     markets=await ur.json();
+    // Sync server-browser offset using first market's server_time (spec §10 clock drift fix)
+    if(markets.length>0&&markets[0].server_time){
+      _svrOffsetMs=new Date(markets[0].server_time).getTime()-Date.now();
+    }
     const oppArr=await or.json(),sigArr=await sr.json();
     // Decisions: newest-first from backend; keep first (most recent) per condition_id
     const decArr=dr.ok?(await dr.json()):[];
@@ -899,10 +906,11 @@ function renderCard(m){
   const lotsColor=activeLots>0?NC:TD;
 
   // -- IN / OUT (compact Nx·$X.XX format) ----------------------------------
-  const inCount=cs?cs.total_entry_count:0;
-  const inAmt=cs?cs.total_entry_notional_usdc:0;
-  const outCount=cs?cs.total_exit_count:0;
-  const outAmt=cs?cs.total_exit_notional_usdc:0;
+  // Use spec §17 field names (entry_fill_count/entry_notional) with legacy fallbacks
+  const inCount=cs?(cs.entry_fill_count!=null?cs.entry_fill_count:cs.total_entry_count):0;
+  const inAmt=cs?(cs.entry_notional!=null?cs.entry_notional:cs.total_entry_notional_usdc):0;
+  const outCount=cs?(cs.exit_fill_count!=null?cs.exit_fill_count:cs.total_exit_count):0;
+  const outAmt=cs?(cs.exit_proceeds!=null?cs.exit_proceeds:cs.total_exit_notional_usdc):0;
   const inFmt=cs?(inCount+"x\u00b7\$"+inAmt.toFixed(2)):"\u2014";
   const outFmt=cs?(outCount+"x\u00b7\$"+outAmt.toFixed(2)):"\u2014";
 
@@ -951,9 +959,13 @@ function renderCard(m){
   // end_time (MM:SS, or HH:MM once >= 1h remains); EXPIRED/RESOLUTION_PENDING/
   // RESOLVED/INVALID_TIME_STATE are static labels — never ticked, never negative.
   let _cdMode="STATIC",_cdTarget=null,_cdDisplay="\u2014";
-  if(lcs==="PRE_MARKET"&&m.start_time){
+  if(m.countdown_data_stale){
+    // Backend flagged timing data as stale/missing — show SYNCING not a fake timer
+    _cdDisplay="SYNCING";
+  } else if(lcs==="PRE_MARKET"&&m.start_time){
     _cdMode="PRE";_cdTarget=m.start_time;_cdDisplay="OPENS "+fmtCountdown(m.start_time);
   } else if(lcs==="ACTIVE"&&m.end_time){
+    // countdown_seconds (from backend) used to verify sanity; frontend ticks via fmtCountdown
     _cdMode="ACTIVE";_cdTarget=m.end_time;_cdDisplay=fmtCountdown(m.end_time);
   } else if(lcs==="EXPIRED"){
     _cdDisplay="EXPIRED";

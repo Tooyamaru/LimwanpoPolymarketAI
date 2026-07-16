@@ -1,0 +1,1023 @@
+LIMWANPO AI — MARKET CARD LIVE DATA + POSITION AGGREGATION + COUNTDOWN FINAL FIX
+
+Fokus hanya membetulkan seluruh data pada 4 market cards:
+
+- BTC 5M
+- ETH 5M
+- SOL 5M
+- XRP 5M
+
+Masalah yang harus diselesaikan:
+
+1. UP/DOWN belum terbukti terang dan redup berdasarkan posisi nyata.
+2. Harga UP/DOWN terlihat tetap dan belum terbukti mengikuti raw Polymarket CLOB.
+3. IN, OUT, dan LOTS masih rancu.
+4. Current card dan global portfolio belum dijelaskan dengan benar.
+5. Countdown 5M masih salah.
+6. Dashboard masih berisiko menampilkan data condition_id lama atau stale.
+7. Sistem berada dalam SIMULATION, sehingga market price dan paper positions tidak boleh dicampur dengan real-wallet positions.
+
+JANGAN:
+
+- mengubah strategi
+- mengubah ukuran posisi
+- mengubah EXIT formula
+- mengubah Portfolio Accounting
+- menambah timeframe
+- mengembalikan 15M atau 1H
+- redesign seluruh dashboard
+- membuat fake order atau fake price
+- hardcode countdown 5 menit
+- menyatakan PASS hanya berdasarkan unit tests
+
+==================================================
+1. VERIFY CURRENT IMPLEMENTATION
+==================================================
+
+Sebelum mengubah apa pun:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+Baca dan trace:
+
+- market universe service/repository
+- Gamma discovery client
+- market price service
+- CLOB client
+- market price snapshot model/repository
+- card summary repository
+- card summary schema/API
+- position repository/service
+- order repository
+- portfolio API
+- frontend index.html card rendering
+- frontend polling
+- countdown implementation
+- condition rollover implementation
+
+Current implementation sebelumnya diklaim sudah memiliki:
+
+- split UP/DOWN exposure
+- fresh price snapshot fields
+- position-driven highlight
+- STALE badge
+- executable-bid unrealized PnL
+- 832 passing tests
+
+Jangan menulis ulang semuanya.
+
+Verifikasi current code lalu perbaiki hanya bagian yang runtime-nya masih salah.
+
+==================================================
+2. DEFINE ALL CARD DATA SOURCES
+==================================================
+
+Pisahkan sumber data dengan tegas.
+
+MARKET DATA:
+
+- active condition_id
+- question/market ID
+- market start time
+- market end time
+- server time
+- lifecycle status
+- UP best bid
+- UP best ask
+- DOWN best bid
+- DOWN best ask
+- UP mark
+- DOWN mark
+- spread
+- snapshot timestamp
+- freshness status
+- price data mode
+
+POSITION DATA:
+
+- condition_id
+- side
+- OPEN/PARTIAL lots
+- remaining quantity
+- open exposure
+- average entry
+- realized PnL
+- unrealized PnL
+
+ORDER DATA:
+
+- FILLED BUY orders
+- FILLED SELL orders
+- quantity
+- fill price
+- fee
+- timestamp
+
+COUNTDOWN DATA:
+
+- exact active condition_id
+- exact 5M interval start
+- exact 5M interval end
+- authoritative server UTC time
+- remaining seconds
+
+Market prices tidak boleh berasal dari position entry price.
+
+Position highlight tidak boleh berasal dari AI signal.
+
+Countdown tidak boleh berasal dari:
+
+- generic event end date
+- series end date
+- opportunity minutes_to_expiry yang stale
+- hardcoded Date.now() + 5 minutes
+- countdown milik condition_id sebelumnya
+
+==================================================
+3. FIX UP/DOWN LIVE PRICES
+==================================================
+
+UP and DOWN prices must come from the latest trusted Polymarket CLOB snapshot for the exact active condition_id.
+
+Display market marks:
+
+up_mark =
+(up_bid + up_ask) / 2
+
+down_mark =
+(down_bid + down_ask) / 2
+
+If only the UP orderbook is available:
+
+down_bid = 1 - up_ask
+down_ask = 1 - up_bid
+down_mark = (down_bid + down_ask) / 2
+
+For PnL valuation:
+
+LONG_UP / LONG_YES uses executable UP bid.
+
+LONG_DOWN / LONG_NO uses executable DOWN bid.
+
+Do not use:
+
+- fixed 0.505 / 0.495 fallback after fresh data exists
+- entry price as current price
+- stale opportunity row
+- hidden default 0.50
+- midpoint as executable sell price
+
+If Polymarket really returns unchanged seed liquidity:
+
+- keep the real values
+- set price_data_mode = SEED
+- display a visible SEED indicator
+- do not claim that the price is actively moving
+
+If data is stale:
+
+- market_data_stale = true
+- display STALE
+- do not silently call it LIVE
+
+==================================================
+4. PROVE PRICE MOVEMENT OR SEED STATE
+==================================================
+
+Capture at least 10 consecutive polling cycles for one active 5M condition.
+
+For every cycle show:
+
+- timestamp
+- condition_id
+- raw CLOB UP bid
+- raw CLOB UP ask
+- raw CLOB DOWN bid
+- raw CLOB DOWN ask
+- DB snapshot values
+- card summary API values
+- frontend values
+- price_data_mode
+- freshness age
+
+Expected:
+
+If raw CLOB changes:
+- DB snapshot changes
+- API changes
+- dashboard changes
+
+If raw CLOB does not change:
+- dashboard may remain unchanged
+- SEED indicator must explain why
+- no false claim of price movement
+
+==================================================
+5. FIX SIDE HIGHLIGHT
+==================================================
+
+For each current active condition_id calculate:
+
+up_open_exposure =
+SUM(remaining_quantity × entry_price)
+WHERE condition_id = current active condition_id
+AND side IN ('LONG_YES', 'LONG_UP')
+AND status IN ('OPEN', 'PARTIAL')
+
+down_open_exposure =
+SUM(remaining_quantity × entry_price)
+WHERE condition_id = current active condition_id
+AND side IN ('LONG_NO', 'LONG_DOWN')
+AND status IN ('OPEN', 'PARTIAL')
+
+Visual rules:
+
+No UP and no DOWN exposure:
+- UP dim
+- DOWN dim
+
+UP exposure only:
+- UP bright
+- DOWN dim
+
+DOWN exposure only:
+- DOWN bright
+- UP dim
+
+Both sides open:
+- both active
+- larger exposure receives stronger emphasis
+
+When remaining_quantity reaches zero:
+- that side immediately becomes dim
+
+Highlight must use exact active condition_id.
+
+Do not aggregate only by asset + timeframe.
+
+==================================================
+6. DEFINE IN, OUT, AND LOTS
+==================================================
+
+Use these exact definitions.
+
+ENTRY FILLS / IN COUNT:
+
+entry_fill_count =
+COUNT FILLED BUY orders
+for the exact condition_id
+
+ENTRY NOTIONAL / IN AMOUNT:
+
+entry_notional =
+SUM(filled buy quantity × filled buy price)
+
+EXIT FILLS / OUT COUNT:
+
+exit_fill_count =
+COUNT FILLED SELL orders
+for the exact condition_id
+
+EXIT PROCEEDS / OUT AMOUNT:
+
+exit_proceeds =
+SUM(filled sell quantity × filled sell price)
+
+OPEN LOTS:
+
+open_lot_count =
+COUNT position lots
+WHERE remaining_quantity > 0
+AND status IN ('OPEN', 'PARTIAL')
+AND condition_id = exact active condition_id
+
+OPEN SHARES:
+
+open_shares =
+SUM(remaining_quantity)
+
+OPEN COST BASIS:
+
+open_cost_basis =
+SUM(remaining_quantity × entry_price)
+
+AVERAGE ENTRY:
+
+average_entry =
+open_cost_basis / open_shares
+
+Card labels:
+
+LOTS:
+open_lot_count
+
+IN:
+entry_fill_count × and total entry_notional
+
+OUT:
+exit_fill_count × and total exit proceeds
+
+Do not:
+
+- count PENDING orders
+- count REJECTED orders
+- count CANCELLED orders
+- use original quantity after partial exit
+- treat entry count as open lots
+- treat position rows and order fills as the same metric
+
+==================================================
+7. REQUIRED MULTI-ENTRY BEHAVIOR
+==================================================
+
+Example:
+
+Four UP entries:
+
+- Entry 1 = $1
+- Entry 2 = $2
+- Entry 3 = $1
+- Entry 4 = $1
+
+Assume every fill occurs at 0.50.
+
+Expected:
+
+Entry 1:
+$1 / 0.50 = 2 shares
+
+Entry 2:
+$2 / 0.50 = 4 shares
+
+Entry 3:
+$1 / 0.50 = 2 shares
+
+Entry 4:
+$1 / 0.50 = 2 shares
+
+Total:
+
+entry_fill_count = 4
+entry_notional = $5.00
+open_lot_count = 4
+open_shares = 10
+open_cost_basis = $5.00
+average_entry = 0.50
+exit_fill_count = 0
+exit_proceeds = $0.00
+
+Expected card:
+
+LOTS: 4 OPEN
+IN: 4x · $5.00
+OUT: 0x · $0.00
+SHARES: 10
+AVG: 50.0¢
+
+UP bright.
+DOWN dim.
+
+==================================================
+8. PARTIAL EXIT BEHAVIOR
+==================================================
+
+From the four-entry example, sell 3 shares at 0.55.
+
+Expected:
+
+exit_fill_count = 1
+exit_proceeds = $1.65
+remaining shares = 7
+
+If FIFO accounting is used:
+
+- first lot with 2 shares becomes CLOSED
+- second lot loses 1 share and becomes PARTIAL
+- the other two lots remain OPEN
+- open_lot_count becomes 3
+- open_shares becomes 7
+
+Expected card:
+
+LOTS: 3 OPEN
+IN: 4x · $5.00
+OUT: 1x · $1.65
+SHARES: 7
+
+Realized PnL applies only to the 3 closed shares.
+
+Unrealized PnL applies only to the remaining 7 shares.
+
+The UP side remains bright while remaining UP shares exist.
+
+==================================================
+9. FIX THE 5M COUNTDOWN SOURCE
+==================================================
+
+The countdown currently appears incorrect.
+
+A current 5M card must count down to the end of the exact active 5-minute prediction interval.
+
+Do not use:
+
+- broad Polymarket event end time
+- parent series end time
+- market resolution date that is many minutes/hours later
+- stale opportunity.minutes_to_expiry
+- card creation time
+- frontend Date.now() + 5 minutes
+- previous condition end time
+
+Determine the correct source of truth for each active condition.
+
+Priority:
+
+1. Exact market interval end timestamp supplied by Polymarket for the active 5M question.
+2. Explicit start/end time stored by Market Universe for that condition.
+3. Parse the precise 5M interval from Polymarket slug/question metadata only if no trustworthy explicit timestamp exists.
+
+Do not use a generic event-level endDate when it represents a wider parent event.
+
+For each active card, API must provide:
+
+- condition_id
+- market_start_time
+- market_end_time
+- server_time
+- countdown_seconds
+- lifecycle_state
+- countdown_source
+- countdown_data_stale
+
+Expected for an active 5M condition:
+
+0 <= countdown_seconds <= approximately 300
+
+A small tolerance is allowed for network and polling delay.
+
+A countdown of 20–30 minutes on an active 5M condition must be treated as invalid unless Polymarket proves that the condition itself truly has that duration.
+
+==================================================
+10. COUNTDOWN COMPUTATION
+==================================================
+
+Backend source of truth:
+
+countdown_seconds =
+max(
+    0,
+    floor(market_end_time_utc - server_time_utc)
+)
+
+Frontend should not independently invent the expiry.
+
+Frontend uses:
+
+- server_time returned by API
+- market_end_time returned by API
+- local monotonic countdown between polling cycles
+- re-synchronization on every API poll
+
+Recommended frontend model:
+
+server_offset_ms =
+api_server_time_ms - browser_time_at_response_ms
+
+display_now =
+Date.now() + server_offset_ms
+
+remaining =
+market_end_time_ms - display_now
+
+Prevent local computer clock drift from corrupting countdown.
+
+Always use UTC internally.
+
+Only format to MM:SS for display.
+
+==================================================
+11. COUNTDOWN ROLLOVER RULES
+==================================================
+
+When countdown reaches zero:
+
+1. Mark current card as EXPIRED/ROLLING.
+2. Stop displaying the expired condition as LIVE.
+3. Fetch/reconcile active universe.
+4. Replace card condition_id with the next valid active 5M condition.
+5. Replace all card state:
+   - market price
+   - countdown
+   - side exposure
+   - IN
+   - OUT
+   - LOTS
+   - PnL
+6. Start countdown from the next condition's real end time.
+
+Do not:
+
+- allow negative countdown
+- freeze at 00:00 indefinitely
+- reset the old condition to 05:00
+- retain old condition positions in the new card
+- reuse old price snapshots
+- show the new card with the old timer
+- start multiple timer intervals
+
+Old condition positions remain:
+
+- in global portfolio
+- in Coverage
+- in Available calculation
+- monitored by Exit Engine
+- in history and AI Live Trades
+
+But they must not leak into the new current card.
+
+==================================================
+12. COUNTDOWN FRONTEND SAFETY
+==================================================
+
+Audit current JS countdown implementation.
+
+Ensure:
+
+- only one global timer loop or one managed timer per visible card
+- previous intervals are cleared on rerender
+- no duplicate setInterval after every poll
+- countdown DOM is updated every second
+- API data refresh does not restart the timer incorrectly
+- condition_id change resets timer state
+- older fetch responses cannot overwrite newer condition/timer data
+- invalid timestamps show “SYNCING” or “STALE”, not fake time
+
+Track frontend card state by:
+
+asset + condition_id
+
+Not only by asset.
+
+==================================================
+13. COUNTDOWN VALIDATION AGAINST POLYMARKET
+==================================================
+
+For each of the four active cards show:
+
+- asset
+- condition_id
+- Polymarket question/slug
+- raw market start time
+- raw market end time
+- database start/end time
+- API server time
+- calculated remaining seconds
+- displayed countdown
+- difference
+
+Expected difference:
+
+<= 2 seconds after accounting for request latency.
+
+Capture at least:
+
+- one card at approximately 04:xx
+- the same card near 00:xx
+- rollover at 00:00
+- the next condition after rollover
+
+Prove that:
+
+- old condition expires
+- new condition appears
+- countdown resets using the new condition end time
+- no old IN/OUT/LOTS leak
+- no negative time
+- no jump to an unrelated 20–30 minute value
+
+==================================================
+14. CONDITION ID ROLLOVER
+==================================================
+
+Every active card must use its exact current condition_id for:
+
+- UP/DOWN prices
+- countdown
+- side highlight
+- LOTS
+- IN
+- OUT
+- open shares
+- average entry
+- PnL
+- lifecycle status
+
+Old rolled positions:
+
+- remain in global Portfolio Coverage
+- remain in Available calculation
+- remain monitored by Exit Engine
+- remain in history
+- remain in AI Live Trades
+- do not appear in the new active card
+
+Prevent joins based only on:
+
+- asset
+- timeframe
+
+All card queries require exact condition_id.
+
+==================================================
+15. GLOBAL PORTFOLIO VS CURRENT CARD
+==================================================
+
+Clarify two different concepts.
+
+PORTFOLIO OPEN LOTS:
+
+All OPEN/PARTIAL positions across active and rolled conditions.
+
+CURRENT MARKET LOTS:
+
+Only OPEN/PARTIAL positions for the condition currently shown on the card.
+
+If header currently uses global data, label it:
+
+PORTFOLIO OPEN LOTS
+
+If it uses only visible card conditions, label it:
+
+CURRENT MARKET LOTS
+
+Do not display one while implying the other.
+
+The same rule applies to:
+
+- active predictions
+- card lot count
+- portfolio Coverage
+
+==================================================
+16. PAPER VS LIVE MODE
+==================================================
+
+The dashboard currently shows SIMULATION.
+
+Confirm explicitly:
+
+PAPER/SIMULATION mode:
+
+- market prices come from real Polymarket CLOB
+- market timing comes from real Polymarket market metadata
+- positions/orders come from LIMWANPO paper database
+- IN/OUT/LOTS are paper positions
+- wallet positions are not shown
+
+LIVE mode:
+
+- market prices come from Polymarket
+- positions reconcile with configured Polymarket wallet/account
+- local fills must match real wallet fills
+
+Do not claim that SIMULATION positions are actual wallet positions.
+
+Display or log sources clearly:
+
+PRICE SOURCE: POLYMARKET CLOB
+TIME SOURCE: POLYMARKET MARKET METADATA
+POSITION SOURCE: LIMWANPO PAPER DB
+MODE: SIMULATION
+
+==================================================
+17. CARD API CONTRACT
+==================================================
+
+Card API must contain:
+
+IDENTITY:
+
+- condition_id
+- asset
+- timeframe
+- lifecycle_state
+
+TIMING:
+
+- market_start_time
+- market_end_time
+- server_time
+- countdown_seconds
+- countdown_source
+- countdown_data_stale
+
+MARKET PRICE:
+
+- market_updated_at
+- market_data_stale
+- price_data_mode
+- up_bid
+- up_ask
+- up_mark
+- down_bid
+- down_ask
+- down_mark
+- spread
+
+POSITION:
+
+- up_open_exposure
+- down_open_exposure
+- active_side
+- open_lot_count
+- open_shares
+- open_cost_basis
+- average_entry
+
+ORDER AGGREGATION:
+
+- entry_fill_count
+- entry_notional
+- exit_fill_count
+- exit_proceeds
+
+PNL:
+
+- realized_pnl
+- unrealized_pnl
+- total_pnl
+
+Use consistent names in backend and frontend.
+
+Do not silently use legacy fields when the new fields exist.
+
+==================================================
+18. POLLING AND REFRESH
+==================================================
+
+Every dashboard polling cycle must update:
+
+- active condition_id
+- market start/end time
+- countdown
+- UP/DOWN bid/ask/mark
+- spread
+- freshness state
+- price mode
+- side highlight
+- LOTS
+- IN
+- OUT
+- average entry
+- open shares
+- realized PnL
+- unrealized PnL
+
+Do not update only:
+
+- spot price
+- countdown text
+- AI prediction
+
+Prevent:
+
+- append-only state
+- stale card cache
+- overlapping request race
+- old condition response overwriting new condition
+- old countdown overwriting new countdown
+
+==================================================
+19. TESTS
+==================================================
+
+Add/update tests.
+
+MARKET PRICE:
+
+1. fresh UP price displayed
+2. fresh DOWN price displayed
+3. complementary DOWN bid/ask correct
+4. stale price flagged
+5. SEED mode displayed accurately
+6. fixed seed fallback not used after fresh data
+
+SIDE DISPLAY:
+
+7. no position makes both dim
+8. UP position makes UP bright
+9. DOWN position makes DOWN bright
+10. both exposures make both active
+11. closed side becomes dim
+12. exact condition_id isolation
+
+IN/OUT/LOTS:
+
+13. four entries produce IN count 4
+14. four entries produce IN $5
+15. four entries produce four open lots
+16. four entries produce ten shares
+17. weighted average entry = 0.50
+18. partial exit reduces shares
+19. FIFO partial exit reduces open lots correctly
+20. OUT proceeds correct
+21. realized PnL correct
+22. unrealized uses remaining quantity
+23. pending/rejected/cancelled orders excluded
+
+COUNTDOWN:
+
+24. active 5M countdown is between 0 and 300 seconds
+25. uses exact condition end time
+26. does not use parent event end time
+27. uses UTC
+28. server/browser offset calculation correct
+29. never becomes negative
+30. 00:00 triggers rollover
+31. rollover changes condition_id
+32. rollover resets countdown using new end time
+33. old condition data does not leak
+34. duplicate timer intervals prevented
+35. stale timing data displays STALE/SYNCING
+36. API countdown matches displayed countdown within 2 seconds
+37. delayed response cannot overwrite newer condition countdown
+
+ROLLOVER AND ACCOUNTING:
+
+38. old condition excluded from active card
+39. old OPEN position remains in global portfolio
+40. historical OUT remains in Live Trades
+41. Coverage remains global
+42. EXIT and Portfolio Accounting tests remain passing
+43. PAPER and wallet sources are not mixed
+
+Run:
+
+- python -m compileall -q backend/app
+- card summary tests
+- price tests
+- countdown tests
+- market universe tests
+- rollover tests
+- order aggregation tests
+- position lot tests
+- frontend/API tests
+- live trades tests
+- exit tests
+- portfolio tests
+- full suite
+
+Report:
+
+- passed
+- failed
+- errors
+- skipped
+
+==================================================
+20. RUNTIME PROOF
+==================================================
+
+Do not stop at tests.
+
+Prove one complete active 5M lifecycle.
+
+Capture:
+
+A. Initial active condition
+
+- raw Polymarket metadata
+- condition_id
+- market start/end
+- raw CLOB
+- DB snapshot
+- card API
+- displayed countdown
+
+B. Price polling
+
+- minimum 10 cycles
+- raw CLOB vs DB vs API vs frontend
+
+C. Position entry
+
+- real paper BUY fill
+- side
+- exposure
+- IN
+- LOTS
+- shares
+- highlight
+
+D. Exit
+
+- SELL fill
+- OUT
+- LOTS update
+- remaining shares
+- PnL
+- highlight update
+
+E. Countdown rollover
+
+- countdown before zero
+- countdown at zero
+- old condition lifecycle
+- new condition_id
+- new countdown
+- no old card data leakage
+
+F. Portfolio comparison
+
+- current-card lots
+- global portfolio lots
+- Coverage
+- Available
+
+All monetary differences:
+
+<= $0.01
+
+Countdown difference:
+
+<= 2 seconds
+
+==================================================
+21. FINAL REPORT
+==================================================
+
+Report:
+
+1. Root causes
+2. Market price source
+3. Price movement/SEED proof
+4. UP/DOWN highlight proof
+5. IN definition/result
+6. OUT definition/result
+7. LOTS definition/result
+8. Multi-entry result
+9. Partial exit result
+10. Countdown root cause
+11. Countdown source before/after
+12. Countdown runtime accuracy
+13. Rollover result
+14. Current card vs global portfolio
+15. PAPER/LIVE source clarification
+16. API contract
+17. Tests
+18. Runtime proof
+19. Files changed
+20. Remaining risks
+21. Final statuses
+
+Statuses:
+
+MARKET PRICE SYNC:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+POSITION SIDE DISPLAY:
+- PASS
+- FAIL
+
+IN/OUT/LOTS INTEGRITY:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+COUNTDOWN ACCURACY:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+CONDITION ROLLOVER:
+- PASS
+- FAIL
+
+PAPER/LIVE SOURCE CLARITY:
+- PASS
+- FAIL
+
+Use PASS only if:
+
+- raw Polymarket data matches DB
+- DB matches API
+- API matches dashboard
+- highlight follows real open exposure
+- IN/OUT/LOTS reconcile with FILLED orders and remaining lots
+- countdown uses exact 5M condition end time
+- countdown stays within 0–300 seconds
+- rollover works at zero
+- no old condition leakage
+- runtime proof is captured
+- all tests pass
+
+Jangan menyatakan selesai hanya karena tests lulus.
+Jangan menggunakan fake countdown.
+Jangan hardcode 05:00.
+Jangan memakai parent event end time.
+Jangan mengubah EXIT atau Portfolio Accounting.
+Fokus sampai seluruh nilai card dan countdown benar-benar sinkron.

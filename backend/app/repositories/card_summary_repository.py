@@ -305,9 +305,10 @@ async def get_card_summaries(
             "total_lot_count":   len(lots),
             "active_lot_count":  len(open_lots) + len(partial_lots),
 
-            # ── Side exposure (spec §10) ─────────────────────────────────────────
+            # ── Side exposure (spec §10 + §17) ────────────────────────────────────
             "up_open_exposure":   round(up_open_exposure, 6),
             "down_open_exposure": round(down_open_exposure, 6),
+            "open_cost_basis":    round(open_exposure, 6),   # spec §17 alias
             "open_exposure_usdc": round(open_exposure, 6),  # legacy combined
             "active_side":        active_side,
             "current_side":       current_side,  # legacy alias
@@ -381,6 +382,7 @@ async def get_card_summaries(
 
                 "up_open_exposure":   0.0,
                 "down_open_exposure": 0.0,
+                "open_cost_basis":    0.0,   # spec §17 alias
                 "open_exposure_usdc": 0.0,
                 "active_side":        "NONE",
                 "current_side":       "NONE",

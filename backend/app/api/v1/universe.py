@@ -12,6 +12,8 @@ All list responses include computed lifecycle fields:
   is_expired, display_status, data_mode
 """
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,7 +50,30 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
     """
     Build a UniverseMarketResponse from an ORM row and populate all lifecycle
     state fields (computed from start_time/end_time, not stored in DB).
+
+    Also computes timing fields for accurate frontend countdown (spec §17):
+      server_time       — ISO UTC string of when this response was built.
+      countdown_seconds — max(0, floor(end_time - server_time)) in seconds.
+      countdown_source  — "market_end_time" | "missing".
+      countdown_data_stale — True when end_time is absent or invalid.
     """
+    now = datetime.now(timezone.utc)
+    server_time_iso = now.isoformat()
+
+    # ── Countdown fields ───────────────────────────────────────────────────────
+    end_time = m.end_time
+    if end_time is not None:
+        if end_time.tzinfo is None:
+            end_time = end_time.replace(tzinfo=timezone.utc)
+        remaining = (end_time - now).total_seconds()
+        countdown_seconds = max(0, int(remaining))
+        countdown_source = "market_end_time"
+        countdown_data_stale = False
+    else:
+        countdown_seconds = None
+        countdown_source = "missing"
+        countdown_data_stale = True
+
     resp = UniverseMarketResponse.model_validate(m)
     lc = get_market_lifecycle_state(m)
 
@@ -74,13 +99,17 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
         mode    = "SEED"
 
     return resp.model_copy(update={
-        "lifecycle_state":   lc,
-        "execution_allowed": is_active,
-        "is_pre_market":     is_pre,
-        "is_active_market":  is_active,
-        "is_expired":        is_exp,
-        "display_status":    display,
-        "data_mode":         mode,
+        "lifecycle_state":       lc,
+        "execution_allowed":     is_active,
+        "is_pre_market":         is_pre,
+        "is_active_market":      is_active,
+        "is_expired":            is_exp,
+        "display_status":        display,
+        "data_mode":             mode,
+        "server_time":           server_time_iso,
+        "countdown_seconds":     countdown_seconds,
+        "countdown_source":      countdown_source,
+        "countdown_data_stale":  countdown_data_stale,
     })
 
 
