@@ -791,10 +791,15 @@ async def test_card_summary_counts_sell_orders_as_out():
     out_result = MagicMock()
     out_result.all.return_value = [("0xcard", 1, 5.5, None)]
 
+    # Snapshot query (added Sprint 12F+): no snapshots for this condition
+    snap_result = MagicMock()
+    snap_result.scalars.return_value.all.return_value = []
+
     session.execute = AsyncMock(side_effect=[
         pos_result,
         in_result,
         out_result,
+        snap_result,
     ])
 
     markets = [{"condition_id": "0xcard", "asset": "BTC", "timeframe": "5m"}]

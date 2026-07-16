@@ -1,0 +1,484 @@
+LIMWANPO AI — FIX MARKET CARD LIVE DATA AND POSITION AGGREGATION
+
+Fokus hanya membetulkan data pada 4 market cards:
+
+- BTC 5M
+- ETH 5M
+- SOL 5M
+- XRP 5M
+
+Jangan mengubah strategy.
+Jangan mengubah EXIT formula.
+Jangan mengubah Portfolio Accounting.
+Jangan menambah timeframe.
+Jangan redesign seluruh dashboard.
+
+Masalah saat ini:
+
+1. UP/DOWN tidak terang atau redup berdasarkan posisi nyata.
+2. Harga UP/DOWN terlihat tetap pada 50.5¢ / 49.5¢.
+3. IN, OUT, dan LOTS memiliki arti yang rancu.
+4. Banyak nilai card tidak berubah mengikuti Polymarket dan posisi yang sedang terbuka.
+
+==================================================
+1. DEFINE CARD DATA SOURCES
+==================================================
+
+Pisahkan dengan jelas:
+
+MARKET DATA:
+- condition_id aktif
+- UP best bid
+- UP best ask
+- DOWN best bid
+- DOWN best ask
+- midpoint
+- spread
+- last update timestamp
+- data freshness
+
+POSITION DATA:
+- OPEN/PARTIAL lots
+- side
+- entry fills
+- exit fills
+- remaining quantity
+- entry notional
+- exit proceeds
+- average entry
+- realized PnL
+- unrealized PnL
+
+ORDER DATA:
+- FILLED BUY orders
+- FILLED SELL orders
+- fill price
+- fill quantity
+- fee
+- timestamp
+
+Market price tidak boleh berasal dari position entry price.
+Position state tidak boleh berasal dari AI signal.
+
+==================================================
+2. FIX UP AND DOWN LIVE PRICES
+==================================================
+
+UP and DOWN prices must come from the latest fresh Polymarket CLOB orderbook for the exact active condition_id.
+
+Display:
+
+UP mark =
+(best_up_bid + best_up_ask) / 2
+
+DOWN mark =
+(best_down_bid + best_down_ask) / 2
+
+If the project only receives the UP orderbook:
+
+down_bid = 1 - up_ask
+down_ask = 1 - up_bid
+down_mark = (down_bid + down_ask) / 2
+
+For PnL valuation:
+
+LONG_UP uses executable UP bid.
+LONG_DOWN uses executable DOWN bid.
+
+Do not use:
+- fixed 0.505 / 0.495
+- seed price after a fresh orderbook exists
+- stale opportunity row
+- position entry price as current market price
+- default 0.5 silently
+
+Add freshness validation.
+
+If the latest snapshot exceeds the configured freshness limit:
+
+- show STALE
+- keep last trusted value if appropriate
+- do not pretend the price is live
+
+==================================================
+3. FIX SIDE HIGHLIGHT
+==================================================
+
+For each active card, calculate:
+
+up_open_exposure =
+SUM(remaining_quantity × lot_entry_price)
+WHERE condition_id = active condition
+AND side = LONG_UP / LONG_YES
+AND status IN ('OPEN', 'PARTIAL')
+
+down_open_exposure =
+SUM(remaining_quantity × lot_entry_price)
+WHERE condition_id = active condition
+AND side = LONG_DOWN / LONG_NO
+AND status IN ('OPEN', 'PARTIAL')
+
+Visual rules:
+
+- no UP and no DOWN position:
+  both dim
+
+- UP exposure > 0 and DOWN exposure = 0:
+  UP bright
+  DOWN dim
+
+- DOWN exposure > 0 and UP exposure = 0:
+  DOWN bright
+  UP dim
+
+- both exposures > 0:
+  both active
+  larger exposure receives stronger emphasis
+
+When remaining_quantity becomes 0:
+- that side becomes inactive immediately
+
+Highlight must not depend on the latest AI prediction.
+
+==================================================
+4. DEFINE ENTRY AND EXIT METRICS
+==================================================
+
+For each active condition and side:
+
+entry_fill_count =
+COUNT FILLED BUY orders
+
+entry_notional =
+SUM(entry_fill_quantity × entry_fill_price)
+
+exit_fill_count =
+COUNT FILLED SELL orders
+
+exit_proceeds =
+SUM(exit_fill_quantity × exit_fill_price)
+
+open_lot_count =
+COUNT lots WHERE remaining_quantity > 0
+AND status IN ('OPEN', 'PARTIAL')
+
+open_shares =
+SUM(remaining_quantity)
+
+open_cost_basis =
+SUM(remaining_quantity × lot_entry_price)
+
+weighted_average_entry =
+open_cost_basis / open_shares
+
+realized_pnl =
+SUM realized PnL from closed quantities
+
+unrealized_pnl =
+SUM(
+  remaining_quantity ×
+  (executable_side_bid - lot_entry_price)
+)
+
+Card labels:
+
+LOTS = open_lot_count
+IN = entry_fill_count + total entry_notional
+OUT = exit_fill_count + total exit proceeds
+
+Do not use entry_count as open_lot_count.
+Do not use total original quantity after partial exits.
+Do not count rejected, pending, cancelled, or unfilled orders.
+
+==================================================
+5. REQUIRED MULTI-ENTRY EXAMPLE
+==================================================
+
+Create a test with four UP entries:
+
+- $1
+- $2
+- $1
+- $1
+
+Assume all fill at 0.50.
+
+Expected:
+
+entry_fill_count = 4
+entry_notional = $5.00
+total shares = 10
+weighted average entry = 0.50
+open_lot_count = 4
+open_shares = 10
+OUT = 0x / $0.00
+UP active
+DOWN inactive
+
+Expected card:
+
+LOTS: 4 OPEN
+IN: 4x · $5.00
+OUT: 0x · $0.00
+AVG: 50.0¢
+SHARES: 10
+
+==================================================
+6. PARTIAL EXIT EXAMPLE
+==================================================
+
+From the four-entry example, sell 3 shares at 0.55.
+
+Expected:
+
+exit_fill_count = 1
+exit proceeds = $1.65
+remaining shares = 7
+realized PnL calculated only for the 3 closed shares
+unrealized PnL calculated only for the remaining 7 shares
+
+If FIFO lot accounting is used:
+
+- first $1 lot at 0.50 contains 2 shares and becomes fully closed
+- second lot loses 1 of its 4 shares and remains PARTIAL
+- open_lot_count becomes 3
+- position side remains active
+
+Expected:
+
+IN: 4x · $5.00
+OUT: 1x · $1.65
+LOTS: 3 OPEN
+OPEN SHARES: 7
+
+==================================================
+7. CONDITION ID ROLLOVER
+==================================================
+
+Each card must use only the current active condition_id for:
+
+- live UP/DOWN price
+- side highlight
+- current card LOTS
+- current card IN/OUT
+- current card PnL
+
+Old rolled 5M condition positions:
+
+- remain in global Portfolio Coverage
+- remain in global Available calculation
+- remain monitored by Exit Engine
+- appear in history and Live Trades
+- must not leak into the new current card
+
+Prevent asset/timeframe-only joins that ignore condition_id.
+
+All card position/order queries must include exact condition_id.
+
+==================================================
+8. POLLING AND REFRESH
+==================================================
+
+Audit frontend polling.
+
+Every polling cycle must update:
+
+- UP price
+- DOWN price
+- spread
+- side highlight
+- LOTS
+- IN
+- OUT
+- average entry
+- open shares
+- realized PnL
+- unrealized PnL
+
+Do not update only the countdown and spot price.
+
+Prevent stale browser state:
+
+- no append-only card state
+- replace data for the current condition_id
+- clear old condition state after rollover
+- prevent overlapping fetch responses from overwriting newer data
+- include condition_id and snapshot timestamp in responses
+
+==================================================
+9. PAPER VS LIVE MODE
+==================================================
+
+Identify the execution mode.
+
+If PAPER mode:
+
+- market prices and orderbook come from real Polymarket
+- positions/orders come from LIMWANPO paper-trading database
+- do not claim these are wallet positions
+
+If LIVE mode:
+
+- reconcile positions against the configured Polymarket account/wallet
+- local DB must match actual filled orders
+
+Display the correct data source clearly in logs.
+
+Do not mix paper positions with wallet positions.
+
+==================================================
+10. API CONTRACT
+==================================================
+
+Card summary response should contain at least:
+
+- condition_id
+- asset
+- timeframe
+- market_updated_at
+- market_data_stale
+- up_bid
+- up_ask
+- up_mark
+- down_bid
+- down_ask
+- down_mark
+- up_open_exposure
+- down_open_exposure
+- active_side
+- entry_fill_count
+- entry_notional
+- exit_fill_count
+- exit_proceeds
+- open_lot_count
+- open_shares
+- average_entry
+- realized_pnl
+- unrealized_pnl
+- total_pnl
+
+Use consistent names between backend and frontend.
+
+Remove obsolete fallback fields after confirming they are unused.
+
+==================================================
+11. TESTS
+==================================================
+
+Add/update tests:
+
+1. no position makes both sides dim
+2. UP position makes UP bright
+3. DOWN position makes DOWN bright
+4. both sides open makes both active
+5. closed side returns dim
+6. UP price updates from fresh orderbook
+7. DOWN price updates from fresh orderbook
+8. derived DOWN prices use complementary bid/ask correctly
+9. stale price is flagged
+10. fixed seed value is not used after fresh data exists
+11. four entries produce entry_fill_count=4
+12. four entries produce entry_notional=$5
+13. four entries produce four open lots
+14. weighted average entry is correct
+15. partial exit reduces open shares
+16. partial exit reduces open lots using FIFO
+17. exit proceeds are correct
+18. realized PnL is correct
+19. unrealized PnL uses remaining quantity only
+20. rejected orders excluded
+21. pending orders excluded
+22. old condition does not leak into active card
+23. old condition remains in global portfolio
+24. rollover replaces card condition_id
+25. frontend refresh replaces stale card state
+26. executable bid used for PnL
+27. paper/live sources are not mixed
+28. all existing EXIT and Portfolio tests remain passing
+
+Run:
+
+- python -m compileall -q backend/app
+- card summary tests
+- order aggregation tests
+- position lot tests
+- market price tests
+- rollover tests
+- frontend/API tests
+- exit tests
+- portfolio tests
+- full suite
+
+==================================================
+12. RUNTIME PROOF
+==================================================
+
+Use one real active 5M card.
+
+Capture several consecutive polling cycles and prove:
+
+- UP/DOWN prices change when the CLOB changes
+- condition_id matches Polymarket active market
+- side highlight matches DB OPEN/PARTIAL position
+- four entries aggregate correctly
+- partial/final exits update OUT and LOTS
+- old condition positions do not appear in current card
+- global portfolio still includes every open old condition position
+
+Show raw:
+
+- CLOB/orderbook data
+- market snapshot row
+- position rows
+- order rows
+- card summary API JSON
+- dashboard screenshot
+
+All values must reconcile with tolerance <= $0.01.
+
+==================================================
+13. FINAL REPORT
+==================================================
+
+Report:
+
+1. Root causes
+2. Market price source before/after
+3. UP/DOWN price validation
+4. Side highlight validation
+5. IN definition/result
+6. OUT definition/result
+7. LOTS definition/result
+8. Four-entry example result
+9. Partial exit result
+10. Condition rollover result
+11. Paper/live source validation
+12. API fields
+13. Tests
+14. Runtime proof
+15. Files changed
+16. Remaining risks
+17. Final status
+
+Statuses:
+
+MARKET PRICE SYNC:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+POSITION SIDE DISPLAY:
+- PASS
+- FAIL
+
+IN/OUT/LOTS INTEGRITY:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+CONDITION ROLLOVER:
+- PASS
+- FAIL
+
+Do not declare PASS based only on unit tests.
+Prove the values from Polymarket source → database → API → dashboard.

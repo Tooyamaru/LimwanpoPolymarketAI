@@ -923,9 +923,28 @@ function renderCard(m){
   const confStr=confRaw!==null?(Math.min(99,Math.round(confRaw))+"%"):"\u2014";
   const confCol=confRaw!==null?confColor(Math.round(confRaw)):TD;
 
-  // -- UP/DOWN display colors --
-  const upCol=NG,upGlow="none",upOp=1;
-  const downCol=NM,downGlow="none",downOp=1;
+  // -- UP/DOWN display colors — position-driven per spec §3 --
+  // up_open_exposure / down_open_exposure from card-summary drive brightness.
+  // Both dim when no position; active side bright, inactive side dim.
+  const _upExp=cs?cs.up_open_exposure:0;
+  const _dnExp=cs?cs.down_open_exposure:0;
+  let upCol,upOp,upGlow,downCol,downOp,downGlow;
+  if(_upExp<=0&&_dnExp<=0){
+    upCol=TD;upOp=0.4;upGlow="none";
+    downCol=TD;downOp=0.4;downGlow="none";
+  } else if(_upExp>0&&_dnExp<=0){
+    upCol=NG;upOp=1;upGlow="0 0 5px "+NG;
+    downCol=TD;downOp=0.3;downGlow="none";
+  } else if(_dnExp>0&&_upExp<=0){
+    upCol=TD;upOp=0.3;upGlow="none";
+    downCol=RED;downOp=1;downGlow="0 0 5px "+RED;
+  } else {
+    const _upDom=_upExp>=_dnExp;
+    upCol=NG;upOp=_upDom?1:0.65;upGlow=_upDom?"0 0 5px "+NG:"none";
+    downCol=RED;downOp=_upDom?0.65:1;downGlow=_upDom?"none":"0 0 5px "+RED;
+  }
+  // Stale badge: shown when snapshot exceeds freshness threshold
+  const _isStale=(cp&&cp.price_data_mode==="STALE")||(cs&&cs.market_data_stale===true);
 
   // -- Countdown (lifecycle-state driven; lives in Row 1 next to the TF badge) --
   // PRE_MARKET ticks down to start_time ("OPENS MM:SS"); ACTIVE ticks down to
@@ -992,6 +1011,7 @@ function renderCard(m){
     :('<span class="mc-cd">'+_cdDisplay+'</span>');
   h+='</div>';
   h+='<div style="display:flex;gap:10px;align-items:center">';
+  if(_isStale){h+='<span style="font-size:6px;font-weight:700;color:'+RED+';letter-spacing:.5px;opacity:.85;align-self:flex-start;margin-top:2px">STALE</span>';}
   h+='<div style="text-align:right"><span style="display:block;font-size:7px;color:'+upCol+';opacity:'+upOp+';letter-spacing:.3px;line-height:1.4">UP</span>';
   h+='<span style="display:block;font-size:10px;font-weight:700;color:'+upCol+';text-shadow:'+upGlow+';opacity:'+upOp+';font-variant-numeric:tabular-nums;line-height:1.1">'+yesPct+'</span></div>';
   h+='<div style="text-align:right"><span style="display:block;font-size:7px;color:'+downCol+';opacity:'+downOp+';letter-spacing:.3px;line-height:1.4">DOWN</span>';
