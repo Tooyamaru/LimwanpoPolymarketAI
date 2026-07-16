@@ -13,6 +13,7 @@ from app.core.database import Base
 from app.repositories.universe_repository import (
     upsert_universe_market,
     expire_stale_markets,
+    retire_non_catalog_timeframes,
     get_active_universe,
     get_upcoming_universe,
     get_all_universe,
@@ -289,3 +290,113 @@ async def test_get_universe_stats_counts(db_session):
     assert stats["by_status"]["expired"] == 1
     assert stats["by_asset"]["BTC"]["total"] == 2
     assert stats["by_asset"]["ETH"]["total"] == 1
+
+
+# ── retire_non_catalog_timeframes ─────────────────────────────────────────────
+# Tests 1-7 of the 5M-only cleanup spec.
+
+@pytest.mark.anyio
+async def test_retire_non_catalog_retires_active_15m(db_session):
+    """Test 1: active non-catalog 15M market is retired to 'expired'."""
+    await _insert(db_session, condition_id="15m-active", timeframe="15m", status="active")
+    await db_session.commit()
+
+    count = await retire_non_catalog_timeframes(db_session, enabled_timeframe="5m")
+    await db_session.commit()
+
+    assert count == 1
+    rows = await get_all_universe(db_session)
+    assert rows[0].status == "expired"
+
+
+@pytest.mark.anyio
+async def test_retire_non_catalog_retires_active_1h(db_session):
+    """Test 2: active non-catalog 1H market is retired to 'expired'."""
+    await _insert(db_session, condition_id="1h-active", timeframe="1H", status="active")
+    await db_session.commit()
+
+    count = await retire_non_catalog_timeframes(db_session, enabled_timeframe="5m")
+    await db_session.commit()
+
+    assert count == 1
+    rows = await get_all_universe(db_session)
+    assert rows[0].status == "expired"
+
+
+@pytest.mark.anyio
+async def test_retire_non_catalog_leaves_5m_active(db_session):
+    """Test 3: active 5M market is NOT retired — it remains active."""
+    await _insert(db_session, condition_id="5m-active", timeframe="5m", status="active")
+    await db_session.commit()
+
+    count = await retire_non_catalog_timeframes(db_session, enabled_timeframe="5m")
+    await db_session.commit()
+
+    assert count == 0
+    rows = await get_all_universe(db_session)
+    assert rows[0].status == "active"
+
+
+@pytest.mark.anyio
+async def test_retire_non_catalog_leaves_already_expired_rows_unchanged(db_session):
+    """Test 4: historical non-active rows (expired) remain stored and untouched."""
+    await _insert(db_session, condition_id="15m-expired", timeframe="15m", status="expired")
+    await _insert(db_session, condition_id="1h-expired", timeframe="1H", status="expired")
+    await db_session.commit()
+
+    count = await retire_non_catalog_timeframes(db_session, enabled_timeframe="5m")
+    await db_session.commit()
+
+    # Already expired — not touched
+    assert count == 0
+    rows = await get_all_universe(db_session)
+    assert all(r.status == "expired" for r in rows)
+
+
+@pytest.mark.anyio
+async def test_retire_non_catalog_retires_upcoming_non_5m(db_session):
+    """Test 4b: upcoming non-catalog market is also retired (upcoming → expired)."""
+    await _insert(db_session, condition_id="15m-upcoming", timeframe="15m", status="upcoming")
+    await db_session.commit()
+
+    count = await retire_non_catalog_timeframes(db_session, enabled_timeframe="5m")
+    await db_session.commit()
+
+    assert count == 1
+    rows = await get_all_universe(db_session)
+    assert rows[0].status == "expired"
+
+
+@pytest.mark.anyio
+async def test_retire_non_catalog_is_idempotent(db_session):
+    """Test 7: calling cleanup twice on the same data returns 0 on the second call."""
+    await _insert(db_session, condition_id="15m-idem", timeframe="15m", status="active")
+    await db_session.commit()
+
+    first = await retire_non_catalog_timeframes(db_session, enabled_timeframe="5m")
+    await db_session.commit()
+    second = await retire_non_catalog_timeframes(db_session, enabled_timeframe="5m")
+    await db_session.commit()
+
+    assert first == 1
+    assert second == 0  # idempotent — nothing left to retire
+
+
+@pytest.mark.anyio
+async def test_retire_non_catalog_mixed_timeframes(db_session):
+    """Test 6/combined: cleanup retires 15m+1H but preserves all 5m active rows."""
+    await _insert(db_session, condition_id="5m-a",  timeframe="5m",  status="active")
+    await _insert(db_session, condition_id="5m-b",  timeframe="5m",  status="active")
+    await _insert(db_session, condition_id="15m-a", timeframe="15m", status="active")
+    await _insert(db_session, condition_id="1h-a",  timeframe="1H",  status="active")
+    await _insert(db_session, condition_id="15m-x", timeframe="15m", status="expired")  # already expired
+    await db_session.commit()
+
+    count = await retire_non_catalog_timeframes(db_session, enabled_timeframe="5m")
+    await db_session.commit()
+
+    assert count == 2  # 15m-a and 1h-a
+
+    active_rows = await get_active_universe(db_session)
+    assert len(active_rows) == 2
+    assert all(r.timeframe == "5m" for r in active_rows)

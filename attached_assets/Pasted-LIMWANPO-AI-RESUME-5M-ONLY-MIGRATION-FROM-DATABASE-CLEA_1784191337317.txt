@@ -1,0 +1,314 @@
+LIMWANPO AI — RESUME 5M-ONLY MIGRATION FROM DATABASE CLEANUP
+
+Lanjutkan dari current codebase dan current git diff.
+
+JANGAN mengulang migrasi dari awal.
+JANGAN mengembalikan perubahan yang sudah dibuat.
+JANGAN menambah fitur baru.
+JANGAN mengubah EXIT atau Portfolio Accounting.
+
+Current confirmed state:
+
+- Backup tag pre-5m-only-stable sudah dibuat.
+- Tidak ada legacy 15M/1H position berstatus OPEN atau PARTIAL pada pemeriksaan sebelumnya.
+- SERIES_CATALOG sudah dikurangi menjadi BTC/ETH/SOL/XRP 5M.
+- Konfigurasi pusat 5M-only sudah ditambahkan.
+- Frontend dan sebagian tests sudah diperbarui.
+- Runtime masih menunjukkan 12 active markets.
+- Price refresh masih menunjukkan markets_polled: 12.
+- Penyebabnya adalah baris 15M/1H lama masih berstatus active di market_universe.
+- Fungsi repository untuk menonaktifkan non-catalog timeframes sudah mulai dibuat.
+- Kuota berakhir sebelum fungsi tersebut dihubungkan ke sync dan divalidasi.
+
+==================================================
+1. VERIFY CURRENT WORK
+==================================================
+
+Jalankan:
+
+- git status
+- git diff
+- python -m compileall -q backend/app
+
+Cari fungsi cleanup terbaru di:
+
+backend/app/repositories/universe_repository.py
+
+Kemungkinan nama fungsi:
+
+- retire_non_catalog_timeframes
+- retire_non_catalog_active_markets
+- demote_inactive_timeframe_markets
+
+Gunakan nama yang benar dari current code.
+
+Jangan membuat fungsi duplikat.
+
+==================================================
+2. RECHECK LEGACY POSITIONS
+==================================================
+
+Sebelum melakukan cleanup, query kembali:
+
+status IN ('OPEN', 'PARTIAL')
+AND timeframe IN ('15m', '1H', '1h')
+
+Expected:
+
+0 rows.
+
+Jika ternyata ada posisi legacy:
+
+- jangan hapus market row yang diperlukan exit;
+- tetap hentikan entry baru;
+- pertahankan exit compatibility sampai posisi CLOSED.
+
+Jika tetap 0 rows, lanjutkan cleanup penuh.
+
+==================================================
+3. COMPLETE REPOSITORY CLEANUP FUNCTION
+==================================================
+
+Fungsi repository harus:
+
+- mencari market berstatus active
+- timeframe tidak termasuk ENABLED_TIMEFRAMES
+- mengubah status menjadi expired/disabled/inactive sesuai lifecycle project
+- tidak menghapus row
+- tidak menghapus price history
+- tidak menghapus positions/orders/trade history
+- mencatat jumlah market yang dinonaktifkan
+- commit secara transactional
+
+Concept:
+
+UPDATE market_universe
+SET status = 'expired',
+    updated_at = NOW()
+WHERE status = 'active'
+AND timeframe NOT IN ('5m')
+
+Gunakan ORM/repository pattern project, bukan SQL acak jika repository pattern tersedia.
+
+==================================================
+4. WIRE CLEANUP INTO UNIVERSE SYNC
+==================================================
+
+Panggil fungsi cleanup di:
+
+MarketUniverseService.sync()
+
+Urutan yang aman:
+
+1. retire non-catalog active markets
+2. expire naturally stale markets
+3. sync the 4 configured 5M series
+4. enforce one active market per asset/timeframe
+5. return sync result
+
+Cleanup harus berjalan setiap sync agar 15M/1H tidak dapat muncul active lagi dari stale database state.
+
+Gunakan konfigurasi pusat:
+
+ENABLED_ASSETS
+ENABLED_TIMEFRAME / ENABLED_TIMEFRAMES
+
+Jangan hardcode daftar berbeda di repository dan service.
+
+==================================================
+5. ONE-TIME DATABASE CLEANUP
+==================================================
+
+Setelah code selesai:
+
+- jalankan sync sekali melalui application service
+atau
+- jalankan controlled repository script
+
+Tujuannya:
+
+Semua active 15M/1H lama berubah menjadi non-active.
+
+Jangan delete rows.
+Jangan truncate table.
+Jangan mengubah historical realized PnL.
+Jangan mengubah positions atau orders.
+
+Report:
+
+- active 15M before
+- active 1H before
+- rows retired
+- active 15M after
+- active 1H after
+
+Expected after:
+
+0 active 15M
+0 active 1H
+
+==================================================
+6. VERIFY ALL ACTIVE-MARKET CONSUMERS
+==================================================
+
+Pastikan komponen berikut membaca active universe yang sudah dibersihkan:
+
+- market price refresh
+- opportunity engine
+- signal engine
+- strategy engine
+- card summaries
+- dashboard market universe
+- health/watchdog
+
+Setelah cleanup:
+
+price refresh log harus menunjukkan:
+
+markets_polled: 4
+
+Bukan 12.
+
+==================================================
+7. RUNTIME RESTART
+==================================================
+
+Restart workflow satu kali saja.
+
+Pantau beberapa cycle.
+
+Buktikan:
+
+- active universe count = 4
+- assets exactly BTC, ETH, SOL, XRP
+- timeframe semuanya 5m
+- no active 15m
+- no active 1H
+- price refresh markets_polled = 4
+- opportunity hanya 5m
+- signal hanya 5m
+- new trade decisions hanya 5m
+- no new entry 15m/1H
+- Exit Engine tetap berjalan
+- Portfolio Accounting tetap benar
+
+==================================================
+8. DASHBOARD VALIDATION
+==================================================
+
+Ambil screenshot.
+
+Dashboard harus menampilkan tepat:
+
+- BTC 5M
+- ETH 5M
+- SOL 5M
+- XRP 5M
+
+Tidak boleh ada:
+
+- tab 15M
+- tab 1H
+- card 15M
+- card 1H
+- label 12 MARKETS
+
+Expected label:
+
+4 MARKETS
+4 ASSETS
+5M ONLY
+
+Jangan redesign dashboard selain penyesuaian 4 card.
+
+==================================================
+9. TESTS
+==================================================
+
+Tambahkan/update tests untuk cleanup:
+
+1. active non-catalog 15M is retired
+2. active non-catalog 1H is retired
+3. active 5M remains active
+4. historical non-active rows remain stored
+5. no positions/orders deleted
+6. sync calls cleanup before active-market processing
+7. repeated cleanup is idempotent
+8. active universe returns exactly 4
+9. price refresh receives only 4 active markets
+10. legacy history remains readable
+11. exit/accounting tests remain passing
+
+Jalankan:
+
+- python -m compileall -q backend/app
+- test_5m_only_migration.py
+- universe repository tests
+- universe service tests
+- market lifecycle tests
+- price refresh tests
+- opportunity tests
+- signal tests
+- strategy tests
+- exit tests
+- portfolio tests
+- dashboard/API tests
+- full suite
+
+Report exact counts:
+
+- passed
+- failed
+- errors
+- skipped
+
+==================================================
+10. FINAL REPORT
+==================================================
+
+Jawab:
+
+1. Current diff verified
+2. Legacy position recheck
+3. Cleanup function completed
+4. Cleanup wired into sync
+5. Database rows retired
+6. Active universe before/after
+7. Price refresh before/after
+8. Opportunity/signal/entry validation
+9. Dashboard 4-card proof
+10. Exit compatibility
+11. Portfolio accounting
+12. Tests
+13. Files changed
+14. Remaining risks
+15. Final status
+
+Final statuses:
+
+5M-ONLY MIGRATION:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+ACTIVE UNIVERSE:
+- PASS only if exactly 4
+
+DATABASE CLEANUP:
+- PASS only if no active 15M/1H remain
+
+DASHBOARD:
+- PASS only if exactly 4 cards
+
+EXIT COMPATIBILITY:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+PORTFOLIO ACCOUNTING:
+- PASS
+- FAIL
+
+Jangan menyatakan selesai jika runtime masih menunjukkan 12 markets.
+Jangan berhenti hanya setelah code edit.
+Buktikan active universe dan price refresh benar-benar menjadi 4.

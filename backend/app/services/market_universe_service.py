@@ -40,6 +40,7 @@ from app.services.market_reference_service import resolve_market_reference
 from app.repositories.universe_repository import (
     demote_excess_active_markets,
     expire_stale_markets,
+    retire_non_catalog_timeframes,
     upsert_universe_market,
 )
 
@@ -186,12 +187,24 @@ class MarketUniverseService:
 
         total_upserted = 0
         total_expired_by_time = 0
+        total_retired_non_catalog = 0
         errors: list[str] = []
         gamma_series_ok = 0       # series that returned ≥1 event with markets
         gamma_series_empty = 0    # series reachable but returned 0 events
         gamma_series_failed = 0   # series that raised an exception
 
         factory = get_session_factory()
+
+        # ── Step 1: retire any active/upcoming non-catalog timeframe markets ──
+        # Called once per sync so that any 15m/1H rows that survived stale-expiry
+        # (because their end_time is still in the future) are immediately demoted.
+        # Uses settings.ENABLED_TIMEFRAME as the single source of truth.
+        from app.config.settings import settings as _settings
+        async with factory() as session:
+            total_retired_non_catalog = await retire_non_catalog_timeframes(
+                session, _settings.ENABLED_TIMEFRAME
+            )
+            await session.commit()
 
         for entry in SERIES_CATALOG:
             slug = entry["slug"]
@@ -366,6 +379,7 @@ class MarketUniverseService:
             "series_processed": total_series,
             "markets_upserted": total_upserted,
             "markets_expired_by_time": total_expired_by_time,
+            "markets_retired_non_catalog": total_retired_non_catalog,
             "gamma_status": gamma_status,
             "gamma_series_ok": gamma_series_ok,
             "gamma_series_empty": gamma_series_empty,

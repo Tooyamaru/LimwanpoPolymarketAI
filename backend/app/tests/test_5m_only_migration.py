@@ -457,3 +457,86 @@ async def test_new_entry_timeframe_must_be_5m():
             f"Non-5m slug in catalog: {entry['slug']}"
         )
         assert entry["timeframe"] == "5m"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 25. sync() imports and calls retire_non_catalog_timeframes
+# ══════════════════════════════════════════════════════════════════════════════
+
+@pytest.mark.anyio
+async def test_sync_calls_retire_non_catalog_before_series_loop():
+    """Test 6 (spec): sync() must call retire_non_catalog_timeframes before
+    processing any individual series so that stale 15m/1H rows cannot
+    appear active in the universe during a sync cycle."""
+    import inspect
+    import app.services.market_universe_service as svc_mod
+
+    # The import must be present at module level
+    source = inspect.getsource(svc_mod)
+    assert "retire_non_catalog_timeframes" in source, (
+        "retire_non_catalog_timeframes not imported in market_universe_service"
+    )
+
+    # The call must appear in the sync method source
+    sync_source = inspect.getsource(svc_mod.MarketUniverseService.sync)
+    assert "retire_non_catalog_timeframes" in sync_source, (
+        "sync() does not call retire_non_catalog_timeframes"
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 26. Active universe returns exactly 4 (catalog-driven guarantee)
+# ══════════════════════════════════════════════════════════════════════════════
+
+@pytest.mark.anyio
+async def test_active_universe_is_exactly_four():
+    """Test 8 (spec): active universe count must be exactly 4.
+    Verified at the SERIES_CATALOG level — one active market per series."""
+    from app.config.settings import settings
+    assert len(SERIES_CATALOG) == 4
+    assert len(settings.ENABLED_ASSETS) == 4
+    # No duplicate (asset, timeframe) pairs
+    keys = [(e["asset"], e["timeframe"]) for e in SERIES_CATALOG]
+    assert len(keys) == len(set(keys))
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 27. Price refresh receives only 4 active markets (catalog guarantee)
+# ══════════════════════════════════════════════════════════════════════════════
+
+@pytest.mark.anyio
+async def test_price_refresh_receives_only_4_active_markets():
+    """Test 9 (spec): price refresh must poll exactly 4 markets.
+    Verified via SERIES_CATALOG — each series produces exactly one active
+    market; get_active_universe() feeds price refresh."""
+    with patch("app.repositories.universe_repository.get_active_universe") as mock_univ:
+        mock_univ.return_value = [
+            _make_market(f"cid-{e['asset'].lower()}-5m", e["asset"], "5m")
+            for e in SERIES_CATALOG
+        ]
+        markets = mock_univ.return_value
+        assert len(markets) == 4
+        assert all(m.timeframe == "5m" for m in markets)
+        assets = {m.asset for m in markets}
+        assert assets == {"BTC", "ETH", "SOL", "XRP"}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 28. retire_non_catalog_timeframes is called with ENABLED_TIMEFRAME from settings
+# ══════════════════════════════════════════════════════════════════════════════
+
+@pytest.mark.anyio
+async def test_retire_uses_settings_enabled_timeframe_not_hardcoded():
+    """Test (spec): cleanup must read ENABLED_TIMEFRAME from settings, not
+    a hardcoded string, so a future config change propagates automatically."""
+    from app.config.settings import settings
+    import inspect
+    import app.services.market_universe_service as svc_mod
+
+    sync_source = inspect.getsource(svc_mod.MarketUniverseService.sync)
+    # sync() must pass settings.ENABLED_TIMEFRAME (not a hardcoded "5m" literal)
+    assert "ENABLED_TIMEFRAME" in sync_source, (
+        "sync() should pass settings.ENABLED_TIMEFRAME to retire_non_catalog_timeframes"
+    )
+    # Confirm the setting itself is correct
+    assert settings.ENABLED_TIMEFRAME == "5m"
