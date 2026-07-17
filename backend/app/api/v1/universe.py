@@ -98,18 +98,56 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
         display = "UNKNOWN"
         mode    = "SEED"
 
+    # ── Extended countdown fields (spec §12) ─────────────────────────────────
+    # prediction_window_start / end: ISO strings of the market's trading window
+    start_time = m.start_time
+    trading_open_time_iso: str | None = None
+    if start_time is not None:
+        if start_time.tzinfo is None:
+            start_time = start_time.replace(tzinfo=timezone.utc)
+        trading_open_time_iso = start_time.isoformat()
+
+    prediction_window_end_iso: str | None = (
+        end_time.isoformat() if end_time is not None else None
+    )
+
+    # countdown_target: what the frontend actually ticks toward
+    if lc == LIFECYCLE_PRE_MARKET:
+        countdown_target = trading_open_time_iso
+    elif lc == LIFECYCLE_ACTIVE:
+        countdown_target = prediction_window_end_iso
+    else:
+        countdown_target = None
+
+    # countdown_mode: semantic label for the frontend display
+    if countdown_data_stale:
+        countdown_mode = "SYNCING"
+    elif lc == LIFECYCLE_PRE_MARKET:
+        countdown_mode = "STARTS_IN"
+    elif lc == LIFECYCLE_ACTIVE:
+        countdown_mode = "ENDS_IN"
+    elif lc in (LIFECYCLE_EXPIRED, LIFECYCLE_RESOLUTION_PENDING):
+        countdown_mode = "RESOLVING"
+    else:
+        countdown_mode = "STATIC"
+
     return resp.model_copy(update={
-        "lifecycle_state":       lc,
-        "execution_allowed":     is_active,
-        "is_pre_market":         is_pre,
-        "is_active_market":      is_active,
-        "is_expired":            is_exp,
-        "display_status":        display,
-        "data_mode":             mode,
-        "server_time":           server_time_iso,
-        "countdown_seconds":     countdown_seconds,
-        "countdown_source":      countdown_source,
-        "countdown_data_stale":  countdown_data_stale,
+        "lifecycle_state":           lc,
+        "execution_allowed":         is_active,
+        "is_pre_market":             is_pre,
+        "is_active_market":          is_active,
+        "is_expired":                is_exp,
+        "display_status":            display,
+        "data_mode":                 mode,
+        "server_time":               server_time_iso,
+        "countdown_seconds":         countdown_seconds,
+        "countdown_source":          countdown_source,
+        "countdown_data_stale":      countdown_data_stale,
+        "countdown_mode":            countdown_mode,
+        "prediction_window_start":   trading_open_time_iso,
+        "prediction_window_end":     prediction_window_end_iso,
+        "countdown_target":          countdown_target,
+        "trading_open_time":         trading_open_time_iso,
     })
 
 

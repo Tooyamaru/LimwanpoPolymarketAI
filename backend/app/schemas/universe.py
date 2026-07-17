@@ -64,6 +64,18 @@ class UniverseMarketResponse(BaseModel):
     countdown_source: str = "market_end_time"
     countdown_data_stale: bool = False
 
+    # ── Extended countdown fields (spec §12) ────────────────────────────────
+    # countdown_mode:          STARTS_IN | ENDS_IN | RESOLVING | SYNCING | STATIC
+    # prediction_window_start: ISO UTC — when the market trading window opens (= start_time)
+    # prediction_window_end:   ISO UTC — when the market trading window closes (= end_time)
+    # countdown_target:        ISO UTC — the timestamp the frontend counts down to
+    # trading_open_time:       ISO UTC — alias for prediction_window_start
+    countdown_mode: Optional[str] = None
+    prediction_window_start: Optional[str] = None
+    prediction_window_end: Optional[str] = None
+    countdown_target: Optional[str] = None
+    trading_open_time: Optional[str] = None
+
     model_config = {"from_attributes": True}
 
 

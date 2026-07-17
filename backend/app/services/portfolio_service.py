@@ -87,6 +87,23 @@ class PortfolioService:
         )
         return data
 
+    async def get_accounting_summary(self, session: AsyncSession) -> dict:
+        """
+        Global accounting snapshot — source of truth for dashboard financial widgets.
+
+        Returns
+        -------
+        dict matching AccountingResponse schema (spec §9).
+        """
+        data = await repo.get_accounting_summary(session)
+        logger.debug(
+            "Accounting summary assembled",
+            active_lots=data["portfolio_active_lots"],
+            open_exposure=data["open_exposure"],
+            available=data["spendable_available_capital"],
+        )
+        return data
+
     async def get_pnl_summary(self, session: AsyncSession) -> dict:
         """
         PnL aggregates: unrealized from OPEN positions, realized from CLOSED.

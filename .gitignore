@@ -42,5 +42,33 @@ Thumbs.db
 *.log
 logs/
 
-# Database
+# Replit internals
+.local/
+.agents/
+.cache/
+.config/
+.upm/
+
+# Python build artifacts
+.pythonlibs/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+.vercel/
+
+# Archives / secrets
+*.zip
+*.sqlite
 *.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.tmp
+*.pem
+*.key
+*.secret

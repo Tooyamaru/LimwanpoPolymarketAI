@@ -400,6 +400,11 @@ async def test_annotate_lifecycle_pre_market():
     market.countdown_seconds = None
     market.countdown_source = "market_end_time"
     market.countdown_data_stale = False
+    market.countdown_mode = None
+    market.prediction_window_start = None
+    market.prediction_window_end = None
+    market.countdown_target = None
+    market.trading_open_time = None
 
     resp = _annotate_lifecycle(market)
     assert resp.lifecycle_state   == "PRE_MARKET"
@@ -450,6 +455,11 @@ async def test_annotate_lifecycle_active():
     market.countdown_seconds = None
     market.countdown_source = "market_end_time"
     market.countdown_data_stale = False
+    market.countdown_mode = None
+    market.prediction_window_start = None
+    market.prediction_window_end = None
+    market.countdown_target = None
+    market.trading_open_time = None
 
     resp = _annotate_lifecycle(market)
     assert resp.lifecycle_state   == "ACTIVE"
@@ -500,6 +510,11 @@ async def test_annotate_lifecycle_expired():
     market.countdown_seconds = None
     market.countdown_source = "market_end_time"
     market.countdown_data_stale = False
+    market.countdown_mode = None
+    market.prediction_window_start = None
+    market.prediction_window_end = None
+    market.countdown_target = None
+    market.trading_open_time = None
 
     resp = _annotate_lifecycle(market)
     assert resp.lifecycle_state   == "EXPIRED"

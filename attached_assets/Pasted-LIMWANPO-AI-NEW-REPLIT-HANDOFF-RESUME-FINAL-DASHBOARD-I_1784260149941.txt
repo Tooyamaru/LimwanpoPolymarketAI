@@ -1,0 +1,630 @@
+LIMWANPO AI — NEW REPLIT HANDOFF + RESUME FINAL DASHBOARD INTEGRITY
+
+Saya memindahkan proyek LIMWANPO AI dari Replit lama ke Replit baru.
+
+Jangan langsung mengubah code.
+
+Pertama, identifikasi secara akurat versi proyek yang berhasil diimpor.
+
+Proyek mungkin berasal dari:
+
+- GitHub repository terbaru
+- ZIP terbaru
+- commit yang belum mengandung seluruh perubahan Replit lama
+
+Jangan menganggap seluruh perubahan terakhir sudah tersedia.
+
+==================================================
+1. VERIFY IMPORTED PROJECT STATE
+==================================================
+
+Jalankan:
+
+pwd
+find . -maxdepth 2 -type f | sort | head -200
+git status
+git branch --show-current
+git log --oneline -10
+git remote -v
+git diff --stat
+git diff
+
+Catat:
+
+- current branch
+- current commit hash
+- uncommitted files
+- untracked files
+- apakah repository berasal dari GitHub atau ZIP
+- apakah Git history tersedia
+
+Jangan menjalankan:
+
+- git reset --hard
+- git clean -fd
+- git checkout terhadap file berubah
+- git pull yang menimpa perubahan lokal
+
+==================================================
+2. VERIFY PROJECT STRUCTURE
+==================================================
+
+Pastikan file penting tersedia:
+
+- backend/app/main.py
+- backend/app/static/index.html
+- backend/app/repositories/card_summary_repository.py
+- backend/app/repositories/portfolio_repository.py
+- backend/app/services/portfolio_service.py
+- backend/app/api/v1/portfolio.py
+- backend/app/api/v1/universe.py
+- backend/app/schemas/card_summary.py
+- backend/app/schemas/portfolio.py
+- backend/app/schemas/universe.py
+- backend/app/tests/
+- backend/requirements.txt
+
+Jika struktur berbeda, cari lokasi sebenarnya sebelum melakukan edit.
+
+==================================================
+3. VERIFY ENVIRONMENT AND DEPENDENCIES
+==================================================
+
+Periksa:
+
+- Python version
+- backend/requirements.txt
+- Replit run command
+- .replit
+- replit.nix jika ada
+- database configuration
+- Redis configuration
+- migrations
+- required environment variables
+
+Jangan mencetak nilai secret ke output.
+
+Hanya tampilkan nama environment variable dan apakah tersedia:
+
+- DATABASE_URL
+- REDIS_URL
+- Polymarket/Gamma configuration
+- CLOB configuration
+- application settings
+
+Jika secret belum tersedia, laporkan sebagai MISSING.
+
+Jangan membuat secret palsu.
+Jangan hardcode credential.
+
+Install dependencies dari requirements project.
+
+==================================================
+4. VERIFY DATABASE CONTINUITY
+==================================================
+
+GitHub dan ZIP tidak otomatis menjamin database lama ikut berpindah.
+
+Tentukan apakah Replit baru menggunakan:
+
+A. Database lama yang sama
+atau
+B. Database baru/kosong
+
+Periksa secara aman:
+
+- database connection
+- migration status
+- table availability
+- position count
+- order count
+- trade decision count
+- market universe count
+
+Jangan mengubah data sebelum koneksi dan schema tervalidasi.
+
+Jika database baru:
+
+- jalankan migration resmi
+- jangan mengklaim bahwa posisi/history lama sudah ikut pindah
+- jangan membuat fake history
+
+Jika database lama:
+
+- jangan truncate
+- jangan reseed
+- jangan menghapus historical positions/orders
+
+==================================================
+5. DISCOVER WHICH FINAL CHANGES EXIST
+==================================================
+
+Audit apakah code yang diimpor sudah memiliki hal berikut.
+
+CARD DATA:
+
+- card fingerprint memasukkan perubahan cardSummary
+- UP/DOWN exposure terpisah
+- UP/DOWN side highlight berdasarkan posisi
+- entry_fill_count
+- entry_notional
+- exit_fill_count
+- exit_proceeds
+- open_shares
+- average_entry
+- open_cost_basis
+- side-specific lot/share/average fields
+
+PORTFOLIO:
+
+- GET /api/v1/portfolio/accounting
+- OPEN dan PARTIAL dihitung sebagai active
+- global accounting tidak berasal dari endpoint positions/open yang paginated
+- Resolution Result menggunakan global realized PnL
+- Available menggunakan:
+  initial capital + realized PnL - open exposure
+
+COUNTDOWN:
+
+- server_time
+- prediction_window_start
+- prediction_window_end
+- countdown_target
+- countdown_seconds
+- countdown_mode
+- countdown_source
+- countdown_data_stale
+- server/browser clock offset
+- STARTS IN / ENDS IN / RESOLVING / SYNCING
+
+FRONTEND:
+
+- separate portfolio refresh
+- race/sequence protection
+- current market lots dibedakan dari portfolio open lots
+- SHARES / AVG / COST ditampilkan
+- old condition response tidak menimpa new condition
+
+ARCHIVE:
+
+- .gitignore/exclusion rules tersedia
+
+Buat tabel:
+
+FEATURE
+PRESENT
+PARTIAL
+MISSING
+FILE/LINE
+
+Jangan mengedit sampai audit ini selesai.
+
+==================================================
+6. CHOOSE THE CORRECT RESUME PATH
+==================================================
+
+PATH A — CHANGES ARE ALREADY PRESENT
+
+Jika sebagian besar perubahan terakhir tersedia:
+
+- lanjutkan dari current implementation
+- jangan membuat duplicate endpoint/function/schema
+- fokus memperbaiki test/schema mismatch
+- audit parallel edits
+- kemudian jalankan validation
+
+PATH B — CHANGES ARE MISSING
+
+Jika project yang diimpor berasal dari commit lama:
+
+- jangan berpura-pura melanjutkan current diff
+- implementasikan hanya item yang benar-benar missing
+- gunakan arsitektur dan nama class yang memang ada pada imported code
+- jangan menyalin nama class atau route berdasarkan asumsi
+
+Report path yang dipilih sebelum mengedit:
+
+RESUME PATH: A atau B
+
+==================================================
+7. AUDIT FOR PARTIALLY APPLIED EDITS
+==================================================
+
+Cari:
+
+- duplicate imports
+- duplicate API routes
+- duplicate functions
+- duplicate schema fields
+- duplicate dictionary keys
+- malformed Python
+- malformed JavaScript
+- duplicate timers
+- duplicate polling intervals
+- unused sequence variables
+- frontend fetch terhadap endpoint yang belum ada
+- response schema yang tidak cocok dengan repository output
+
+Jalankan:
+
+python -m compileall -q backend/app
+
+Lakukan application import smoke test.
+
+Validasi JavaScript syntax.
+
+Jangan lanjut ke runtime sebelum compile/import berhasil.
+
+==================================================
+8. FIX THE KNOWN SCHEMA TEST FAILURE
+==================================================
+
+Current previous work stopped because test_card_integrity.py referenced a schema class name that did not match the actual class in:
+
+backend/app/schemas/card_summary.py
+
+Jalankan:
+
+grep -n "^class " backend/app/schemas/card_summary.py
+grep -R "CardSummary" -n backend/app/tests/test_card_integrity.py
+grep -R "card_summary" -n backend/app/api/v1 backend/app/schemas
+
+Identify:
+
+- actual production schema class
+- response model used by the API
+- incorrect class imported by the test
+
+Fix the test to use the actual production schema.
+
+Do not rename production code blindly hanya agar test lolos.
+
+Jika test dimaksudkan menguji API JSON, lebih baik panggil repository/API function dan validasi response sebenarnya.
+
+Run:
+
+pytest backend/app/tests/test_card_integrity.py -q
+
+==================================================
+9. VERIFY ACCOUNTING ENDPOINT
+==================================================
+
+Pastikan endpoint berikut tersedia tepat satu kali:
+
+GET /api/v1/portfolio/accounting
+
+Expected response:
+
+- initial_capital
+- portfolio_open_lots
+- portfolio_partial_lots
+- portfolio_active_lots
+- portfolio_active_positions
+- open_exposure
+- total_realized_pnl
+- total_unrealized_pnl
+- raw_available_capital
+- spendable_available_capital
+- cumulative_outcome
+- total_entry_fills
+- total_exit_fills
+
+Formulas:
+
+portfolio_active_lots =
+COUNT positions
+WHERE status IN ('OPEN', 'PARTIAL')
+
+open_exposure =
+SUM(remaining_quantity × entry_price)
+WHERE status IN ('OPEN', 'PARTIAL')
+
+raw_available_capital =
+initial_capital + total_realized_pnl - open_exposure
+
+cumulative_outcome =
+total_realized_pnl + total_unrealized_pnl
+
+Frontend global metrics harus memakai endpoint ini.
+
+==================================================
+10. VERIFY CARD LIVE REFRESH
+==================================================
+
+Pastikan fingerprint atau DOM patch memasukkan:
+
+- condition_id
+- active/open/partial lot count
+- entry_fill_count
+- entry_notional
+- exit_fill_count
+- exit_proceeds
+- open_shares
+- average_entry
+- open_cost_basis
+- UP/DOWN exposure
+- active side
+- realized/unrealized PnL
+- market_updated_at
+- stale state
+
+Required proof:
+
+same market price
++
+same signal
++
+changed cardSummary
+=
+card DOM updates
+
+Card tidak boleh menunggu perubahan harga untuk memperbarui posisi.
+
+==================================================
+11. VERIFY FRONTEND METRICS
+==================================================
+
+Resolution Result:
+
+- gunakan global total_realized_pnl
+- jangan gunakan daily_outcome
+
+TODAY RESULT boleh ditampilkan secara terpisah.
+
+Header:
+
+- gunakan label PORTFOLIO OPEN LOTS untuk global count
+atau
+- CURRENT MARKET LOTS untuk exact visible condition count
+
+Individual card:
+
+- exact condition_id only
+- LOTS
+- IN
+- OUT
+- SHARES
+- AVG ENTRY
+- COST BASIS
+
+Do not mix current-condition values with global portfolio labels.
+
+==================================================
+12. VERIFY COUNTDOWN SEMANTICS
+==================================================
+
+Expected modes:
+
+Before prediction window:
+
+STARTS IN 22h18m
+
+During five-minute prediction window:
+
+ENDS IN 04:59
+
+After window:
+
+RESOLVING
+
+Missing/stale timing:
+
+SYNCING
+
+Verify API includes:
+
+- trading_open_time
+- prediction_window_start
+- prediction_window_end
+- server_time
+- countdown_target
+- countdown_seconds
+- countdown_mode
+- countdown_source
+- countdown_data_stale
+- lifecycle_state
+
+Countdown frontend must use server offset.
+
+Do not display a bare “22h18” without explaining what it counts toward.
+
+==================================================
+13. RUN TARGETED TESTS
+==================================================
+
+Run:
+
+python -m compileall -q backend/app
+
+pytest backend/app/tests/test_card_integrity.py -q
+pytest backend/app/tests/test_card_summary.py -q
+pytest backend/app/tests/test_countdown.py -q
+pytest backend/app/tests/test_market_lifecycle_state.py -q
+pytest backend/app/tests/test_portfolio_repository.py -q
+pytest backend/app/tests/test_portfolio_service.py -q
+pytest backend/app/tests/test_portfolio_api.py -q
+pytest backend/app/tests/test_exit_lifecycle.py -q
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+
+==================================================
+14. RUN FULL SUITE
+==================================================
+
+Run the complete backend test suite.
+
+Do not claim completion unless:
+
+- collection succeeds
+- application imports
+- 0 failed
+- 0 errors
+- no route conflict
+- no schema mismatch
+
+Report exact total.
+
+==================================================
+15. RUNTIME VALIDATION
+==================================================
+
+Restart workflow once.
+
+Validate raw API:
+
+- /api/v1/portfolio/accounting
+- /api/v1/portfolio/pnl
+- /api/v1/positions/card-summary
+- /api/v1/universe/active
+- /api/v1/live-trades
+
+Reconcile:
+
+Available =
+Initial Capital + Realized - Exposure
+
+Cumulative =
+Realized + Unrealized
+
+Difference tolerance:
+
+<= $0.01
+
+Verify dashboard:
+
+- Resolution Result equals global realized PnL
+- Coverage equals accounting open exposure
+- Available equals accounting available
+- Portfolio Open Lots equals global active lots
+- Current card lots equals exact condition lots
+- countdown mode is explicit
+- card changes after position update even when price stays unchanged
+
+==================================================
+16. DATABASE MIGRATION SAFETY
+==================================================
+
+If schema/database migrations are needed on the new Replit:
+
+- inspect current migration history
+- create proper migration
+- do not edit production database manually unless necessary
+- do not drop historical tables/columns
+- do not truncate
+- verify upgrade from imported database state
+
+If the database is empty, state that runtime history cannot be compared with the old Replit.
+
+==================================================
+17. ARCHIVE HYGIENE
+==================================================
+
+Ensure future ZIP excludes:
+
+.git/*
+.local/*
+.pythonlibs/*
+.agents/*
+.pytest_cache/*
+__pycache__/*
+*.pyc
+.cache/*
+node_modules/*
+venv/*
+.venv/*
+dist/*
+build/*
+coverage/*
+.next/*
+.turbo/*
+.vercel/*
+.upm/*
+.config/*
+.env
+.env.*
+*.pem
+*.key
+*.secret
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.tmp
+*.zip
+
+Do not delete required runtime dependencies from Replit.
+Only exclude them from Git and archives.
+
+==================================================
+18. FINAL REPORT
+==================================================
+
+Report:
+
+1. Import source
+2. Commit hash
+3. Database continuity
+4. Environment status
+5. Resume path chosen
+6. Current diff audit
+7. Schema mismatch fix
+8. Production import
+9. Accounting endpoint
+10. PARTIAL counts
+11. Card fingerprint/live refresh
+12. Resolution Result
+13. Global vs current scopes
+14. SHARES/AVG/COST
+15. Countdown semantics
+16. Race protection
+17. Targeted tests
+18. Full suite
+19. Runtime reconciliation
+20. Screenshot
+21. Archive hygiene
+22. Files changed
+23. Remaining risks
+24. Final statuses
+
+Final statuses:
+
+NEW REPLIT MIGRATION:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+DATABASE CONTINUITY:
+- PASS
+- NEW EMPTY DATABASE
+- FAIL
+
+CARD LIVE REFRESH:
+- PASS
+- FAIL
+
+PORTFOLIO DISPLAY INTEGRITY:
+- PASS
+- FAIL
+
+LOT COUNT SCOPE:
+- PASS
+- FAIL
+
+COUNTDOWN SEMANTICS:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+ARCHIVE HYGIENE:
+- PASS
+- FAIL
+
+Jangan menyatakan selesai hanya karena project berhasil start.
+Full suite dan runtime reconciliation wajib dibuktikan.

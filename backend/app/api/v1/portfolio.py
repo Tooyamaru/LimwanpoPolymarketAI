@@ -17,6 +17,7 @@ from app.core.database import get_db_session
 from app.core.logging import get_logger
 from app.services.portfolio_service import PortfolioService
 from app.schemas.portfolio import (
+    AccountingResponse,
     OrderSummaryResponse,
     PnlSummaryResponse,
     PortfolioSummaryResponse,
@@ -29,6 +30,23 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 
 _service = PortfolioService()
+
+
+@router.get("/accounting", response_model=AccountingResponse)
+async def get_accounting(
+    session: AsyncSession = Depends(get_db_session),
+):
+    """
+    Global accounting snapshot — spec §9 source of truth for dashboard financial widgets.
+
+    portfolio_active_lots      = COUNT positions WHERE status IN ('OPEN', 'PARTIAL')
+    open_exposure              = SUM(remaining_quantity × entry_price) for active lots
+    raw_available_capital      = initial_capital + total_realized_pnl - open_exposure
+    spendable_available_capital = max(0, raw_available_capital)
+    cumulative_outcome          = total_realized_pnl + total_unrealized_pnl
+    """
+    data = await _service.get_accounting_summary(session)
+    return AccountingResponse(**data)
 
 
 @router.get("/summary", response_model=PortfolioSummaryResponse, response_model_by_alias=True)

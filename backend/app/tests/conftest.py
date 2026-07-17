@@ -13,6 +13,20 @@ def anyio_backend():
     return "asyncio"
 
 
+@pytest.fixture(scope="session", autouse=True)
+async def init_test_database():
+    """
+    Create all DB tables once per test session before any test runs.
+
+    The test client uses ASGITransport which bypasses the FastAPI lifespan
+    (and therefore skips the app startup init_db() call). Without this
+    fixture the portfolio_api integration tests fail with:
+        UndefinedTableError: relation "positions" does not exist
+    """
+    from app.core.database import init_db
+    await init_db()
+
+
 @pytest.fixture
 async def client() -> AsyncClient:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:

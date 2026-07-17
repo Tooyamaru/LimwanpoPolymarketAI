@@ -67,6 +67,11 @@ def _make_market_row(
     m.countdown_seconds = None
     m.countdown_source = "market_end_time"
     m.countdown_data_stale = False
+    m.countdown_mode = None
+    m.prediction_window_start = None
+    m.prediction_window_end = None
+    m.countdown_target = None
+    m.trading_open_time = None
     return m
 
 

@@ -817,10 +817,12 @@ function renderMarkets(){
       const conf=sig&&sig.confidence_score!=null?sig.confidence_score:
                  (opp&&opp.opportunity_score!=null?opp.opportunity_score:null);
       const dec=decisions[m.condition_id];
+      const _cs=cardSummary[m.condition_id];
+      const _csFp=_cs?[_cs.active_lot_count,_cs.entry_fill_count,(_cs.entry_notional||0).toFixed(2),_cs.exit_fill_count,(_cs.exit_proceeds||0).toFixed(2),(_cs.up_open_exposure||0).toFixed(4),(_cs.down_open_exposure||0).toFixed(4),(_cs.total_pnl!=null?_cs.total_pnl.toFixed(4):"n")].join(":"):"_";
       return m.condition_id+":"+m.status+":"+(cp?cp.yes_mid:"")+":" +
              (cp?cp.yes_ask:"")+":" +(cp?cp.yes_bid+":"+cp.no_mid:"") +
              ":"+cur+":"+m.opening_price+":"+(conf!=null?Math.round(conf):"") +
-             ":"+m.end_time+":"+(dec?dec.decision:"");
+             ":"+m.end_time+":"+(dec?dec.decision:"")+":"+_csFp;
     }).join("|");
     if(colFingerprints[asset]===fp)continue;
     colFingerprints[asset]=fp;
@@ -963,14 +965,14 @@ function renderCard(m){
     // Backend flagged timing data as stale/missing — show SYNCING not a fake timer
     _cdDisplay="SYNCING";
   } else if(lcs==="PRE_MARKET"&&m.start_time){
-    _cdMode="PRE";_cdTarget=m.start_time;_cdDisplay="OPENS "+fmtCountdown(m.start_time);
+    _cdMode="PRE";_cdTarget=m.start_time;_cdDisplay="STARTS IN "+fmtCountdown(m.start_time);
   } else if(lcs==="ACTIVE"&&m.end_time){
     // countdown_seconds (from backend) used to verify sanity; frontend ticks via fmtCountdown
-    _cdMode="ACTIVE";_cdTarget=m.end_time;_cdDisplay=fmtCountdown(m.end_time);
+    _cdMode="ACTIVE";_cdTarget=m.end_time;_cdDisplay="ENDS IN "+fmtCountdown(m.end_time);
   } else if(lcs==="EXPIRED"){
     _cdDisplay="EXPIRED";
   } else if(lcs==="RESOLUTION_PENDING"){
-    _cdDisplay="PENDING";
+    _cdDisplay="RESOLVING";
   } else if(lcs==="RESOLVED"){
     _cdDisplay="RESOLVED";
   } else {
@@ -1042,6 +1044,17 @@ function renderCard(m){
   h+='<div class="mc-ptb-item"><span class="mc-ptb-l">IN</span><span class="mc-ptb-v" style="color:'+NG+'">'+inFmt+'</span></div>';
   h+='<div class="mc-ptb-item"><span class="mc-ptb-l">OUT</span><span class="mc-ptb-v" style="color:'+NY+'">'+outFmt+'</span></div>';
   h+='</div>';
+  // ── ROW 3b: SHARES | AVG ENTRY | COST — only when an active position exists ──
+  if(cs&&cs.has_position){
+    const _shrFmt=cs.open_shares>0?cs.open_shares.toFixed(0):"—";
+    const _avgFmt=cs.average_entry!=null?cs.average_entry.toFixed(4):"—";
+    const _costFmt=cs.open_cost_basis>0?("$"+cs.open_cost_basis.toFixed(2)):"—";
+    h+='<div class="mc-ptb" style="grid-template-columns:1fr 1fr 1fr">';
+    h+='<div class="mc-ptb-item"><span class="mc-ptb-l">SHARES</span><span class="mc-ptb-v" style="color:'+NC+'">'+_shrFmt+'</span></div>';
+    h+='<div class="mc-ptb-item"><span class="mc-ptb-l">AVG ENTRY</span><span class="mc-ptb-v" style="color:'+TW+'">'+_avgFmt+'</span></div>';
+    h+='<div class="mc-ptb-item"><span class="mc-ptb-l">COST</span><span class="mc-ptb-v" style="color:'+TW+'">'+_costFmt+'</span></div>';
+    h+="</div>";
+  }
 
   // \u2500\u2500 ROW 4: CONF | GAP | SPREAD (3-column compact) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   h+='<div class="mc-ptb" style="grid-template-columns:1fr 1fr 1fr">';
@@ -1071,7 +1084,7 @@ function renderCard(m){
 setInterval(()=>{
   _cdEls.forEach(e=>{
     const v=fmtCountdown(e.dataset.end);
-    e.textContent=e.dataset.cdMode==="PRE"?("OPENS "+v):v;
+    e.textContent=e.dataset.cdMode==="PRE"?("STARTS IN "+v):("ENDS IN "+v);
   });
 },1000);
 

@@ -13,6 +13,7 @@ Sources:
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.expression import case
 
 from app.config.settings import settings
 from app.core.logging import get_logger
@@ -22,6 +23,94 @@ from app.models.risk_event import RiskEvent
 from app.models.trade_decision import TradeDecision
 
 logger = get_logger(__name__)
+
+
+async def get_accounting_summary(session: AsyncSession) -> dict:
+    """
+    Global accounting snapshot — source of truth for dashboard financial widgets.
+
+    Formulas (spec §9):
+      portfolio_active_lots      = COUNT positions WHERE status IN ('OPEN', 'PARTIAL')
+      open_exposure              = SUM(remaining_quantity × entry_price) WHERE status IN ('OPEN', 'PARTIAL')
+      raw_available_capital      = initial_capital + total_realized_pnl - open_exposure
+      spendable_available_capital = max(0, raw_available_capital)
+      cumulative_outcome          = total_realized_pnl + total_unrealized_pnl
+    """
+    initial_capital = settings.CAPITAL_INITIAL_USDC
+
+    # Active lot counts split by status
+    lot_rows = await session.execute(
+        select(Position.status, func.count(Position.id).label("cnt"))
+        .where(Position.status.in_(["OPEN", "PARTIAL"]))
+        .group_by(Position.status)
+    )
+    by_lot_status: dict[str, int] = {r[0]: r[1] for r in lot_rows.all()}
+    open_lots    = by_lot_status.get("OPEN",    0)
+    partial_lots = by_lot_status.get("PARTIAL", 0)
+    active_lots  = open_lots + partial_lots
+
+    # Open exposure: SUM(remaining_quantity * entry_price) for OPEN + PARTIAL lots
+    exp_row = await session.execute(
+        select(
+            func.coalesce(
+                func.sum(Position.remaining_quantity * Position.entry_price), 0.0
+            ).label("exposure")
+        ).where(Position.status.in_(["OPEN", "PARTIAL"]))
+    )
+    open_exposure = round(float(exp_row.scalar_one()), 6)
+
+    # Total realized PnL: CLOSED + PARTIAL (partial exits accumulate realized_pnl)
+    real_row = await session.execute(
+        select(
+            func.coalesce(func.sum(Position.realized_pnl), 0.0).label("total")
+        ).where(
+            Position.status.in_(["CLOSED", "PARTIAL"]),
+            Position.realized_pnl.is_not(None),
+        )
+    )
+    total_realized_pnl = round(float(real_row.scalar_one()), 6)
+
+    # Total unrealized PnL: OPEN + PARTIAL
+    unreal_row = await session.execute(
+        select(
+            func.coalesce(func.sum(Position.unrealized_pnl), 0.0).label("total")
+        ).where(
+            Position.status.in_(["OPEN", "PARTIAL"]),
+            Position.unrealized_pnl.is_not(None),
+        )
+    )
+    total_unrealized_pnl = round(float(unreal_row.scalar_one()), 6)
+
+    # Fill counts by order_type (ENTRY vs everything else = exit)
+    fill_rows = await session.execute(
+        select(Order.order_type, func.count(Order.id).label("cnt"))
+        .where(Order.status == "FILLED")
+        .group_by(Order.order_type)
+    )
+    by_fill_type: dict[str, int] = {r[0]: r[1] for r in fill_rows.all()}
+    total_entry_fills = by_fill_type.get("ENTRY", 0)
+    total_exit_fills  = sum(v for k, v in by_fill_type.items() if k != "ENTRY")
+
+    # Derived metrics
+    raw_available_capital       = initial_capital + total_realized_pnl - open_exposure
+    spendable_available_capital = max(0.0, raw_available_capital)
+    cumulative_outcome          = round(total_realized_pnl + total_unrealized_pnl, 6)
+
+    return {
+        "initial_capital":               initial_capital,
+        "portfolio_open_lots":           open_lots,
+        "portfolio_partial_lots":        partial_lots,
+        "portfolio_active_lots":         active_lots,
+        "portfolio_active_positions":    active_lots,
+        "open_exposure":                 open_exposure,
+        "total_realized_pnl":            total_realized_pnl,
+        "total_unrealized_pnl":          total_unrealized_pnl,
+        "raw_available_capital":         round(raw_available_capital, 6),
+        "spendable_available_capital":   round(spendable_available_capital, 6),
+        "cumulative_outcome":            cumulative_outcome,
+        "total_entry_fills":             total_entry_fills,
+        "total_exit_fills":              total_exit_fills,
+    }
 
 
 async def get_portfolio_summary(session: AsyncSession) -> dict:
