@@ -608,7 +608,7 @@ async function loadPortfolio(){
       fetch("/api/v1/positions/open"),
       fetch("/api/v1/portfolio/summary"),
       fetch("/api/v1/analytics/performance").catch(()=>null),
-      fetch("/api/v1/analytics/capital").catch(()=>null),
+      fetch("/api/v1/risk/capital-status").catch(()=>null),
       fetch("/api/v1/positions/card-summary").catch(()=>null),
       fetch("/api/v1/orders/stats").catch(()=>null),
     ]);
@@ -636,17 +636,24 @@ async function loadPortfolio(){
         analyticsData.total_fees=ad.total_fees_usdc||ad.total_fees||0;
       }catch(e){}
     }
-    // CAPITAL badge — single source of truth: real kill-switch state from the
-    // Capital Management Service. Never hardcoded.
+    // CAPITAL badge — single source of truth: /api/v1/risk/capital-status.
+    // Uses block_code (machine) for logic and block_reason (human) for display.
+    // Never reconstructed from multiple endpoints; never hardcoded.
     if(cr&&cr.ok){
       try{
         const cd=await cr.json();
-        analyticsData.daily_outcome=cd.daily_outcome||0;
+        // Support both legacy /analytics/capital (allowed/daily_outcome) and
+        // new /risk/capital-status (capital_blocked/daily_pnl).
+        const blocked=cd.capital_blocked!=null?cd.capital_blocked:(cd.allowed===false);
+        analyticsData.daily_outcome=cd.daily_pnl!=null?cd.daily_pnl:(cd.daily_outcome||0);
         analyticsData.drawdown_percent=cd.drawdown_percent||0;
         const capDot=el("hb-cap-dot"),capTxt=el("hb-cap-txt");
         if(capTxt&&capDot){
-          if(cd.allowed===false){
-            capTxt.textContent="CAPITAL BLOCKED"+(cd.reason?" · "+cd.reason:"");
+          if(blocked){
+            // Display human-readable reason: block_reason (e.g. "MAX DRAWDOWN LIMIT")
+            // or fall back to block_code with underscores → spaces.
+            const raw=cd.block_reason||(cd.reason?cd.reason.replace(/_/g," "):null);
+            capTxt.textContent="CAPITAL BLOCKED"+(raw?" · "+raw:"");
             capDot.style.background=RED;
           } else {
             capTxt.textContent="CAPITAL OK";

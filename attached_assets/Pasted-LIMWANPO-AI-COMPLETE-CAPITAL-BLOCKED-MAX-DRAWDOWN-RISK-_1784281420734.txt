@@ -1,0 +1,957 @@
+LIMWANPO AI — COMPLETE CAPITAL BLOCKED, MAX DRAWDOWN, RISK STATE, AND PORTFOLIO RECONCILIATION
+
+Current project state sudah tervalidasi:
+
+- 5M timestamp-slug discovery PASS
+- BTC/ETH/SOL/XRP current rolling markets PASS
+- countdown ENDS IN 00:00–05:00 PASS
+- rollover A → B PASS
+- condition_id berubah setiap rollover
+- YES/NO token IDs berubah setiap rollover
+- event_slug tersimpan pada 104/104 market rows
+- no 22-hour market regression
+- card condition isolation PASS
+- full test suite 930/930 PASS
+- current open positions = 0
+- current Coverage = $0.00
+- Initial Capital = $400.00
+- Resolution Result / Realized PnL = +$46.59
+- Available = $446.59
+- Cumulative Outcome = +$46.59
+
+Namun dashboard masih menampilkan:
+
+CAPITAL BLOCKED · MAX DRAWDOWN LIMIT
+
+Ini harus diaudit secara profesional dan dibetulkan hanya jika state tersebut
+stale, salah formula, salah sumber data, salah reset policy, atau salah label.
+
+JANGAN mengubah:
+
+- timestamp-slug discovery
+- market universe selection
+- 5M rollover
+- countdown
+- Gamma client
+- CLOB market binding
+- target price logic
+- trading signal formula
+- strategy thresholds
+- position sizing
+- ENTRY lifecycle
+- EXIT lifecycle
+- Portfolio Accounting formula
+- IN / OUT / LOTS definitions
+- dashboard visual theme
+
+Fokus hanya pada:
+
+- equity calculation
+- drawdown calculation
+- daily drawdown
+- all-time drawdown
+- session drawdown
+- persisted risk block
+- reset policy
+- stale risk state
+- frontend/backend blocked status consistency
+
+==================================================
+1. VERIFY CURRENT PROJECT STATE
+==================================================
+
+Jalankan:
+
+pwd
+git status
+git branch --show-current
+git rev-parse HEAD
+git log --oneline -10
+git diff --stat
+git diff
+python -m compileall -q backend/app
+
+Catat:
+
+- current commit
+- changed files
+- untracked files
+- current database connection
+- application mode
+- workflow status
+
+Jangan menjalankan:
+
+- git reset --hard
+- git clean -fd
+- truncate database
+- manual position deletion
+- manual PnL reset
+
+==================================================
+2. CAPTURE CURRENT RUNTIME ACCOUNTING
+==================================================
+
+Ambil raw API dan database values untuk:
+
+- initial_capital
+- total_realized_pnl
+- total_unrealized_pnl
+- open_exposure
+- raw_available_capital
+- spendable_available_capital
+- cumulative_outcome
+- portfolio_active_lots
+- portfolio_active_positions
+- current_equity
+- cash_balance
+- reserved_capital
+- peak_equity
+- daily_start_equity
+- session_start_equity
+
+Reconcile:
+
+Current Equity =
+Initial Capital + Realized PnL + Unrealized PnL
+
+Expected current runtime:
+
+Current Equity =
+$400.00 + $46.59 + $0.00
+= $446.59
+
+Available =
+Initial Capital + Realized PnL - Open Exposure
+
+Expected:
+
+$400.00 + $46.59 - $0.00
+= $446.59
+
+Cumulative Outcome =
+Realized PnL + Unrealized PnL
+
+Expected:
+
+$46.59 + $0.00
+= $46.59
+
+Tolerance:
+
+<= $0.01
+
+Jika API dan database berbeda, tampilkan kedua sumber dan trace sumber mismatch.
+
+==================================================
+3. TRACE CAPITAL BLOCKED END-TO-END
+==================================================
+
+Cari seluruh code terkait:
+
+grep -R "CAPITAL_BLOCKED" -n backend/app
+grep -R "MAX_DRAWDOWN" -n backend/app
+grep -R "max_drawdown" -n backend/app
+grep -R "drawdown" -n backend/app
+grep -R "capital_blocked" -n backend/app
+grep -R "daily_loss" -n backend/app
+grep -R "loss_streak" -n backend/app
+grep -R "blocked_reason" -n backend/app
+grep -R "risk_state" -n backend/app
+grep -R "peak_equity" -n backend/app
+
+Trace lengkap:
+
+database risk state
+→ risk repository
+→ risk service
+→ risk engine
+→ strategy gate
+→ entry decision block
+→ health/status API
+→ frontend header badge
+
+Tampilkan:
+
+- file path
+- function name
+- database table/column
+- exact formula
+- exact reset behavior
+- exact reason string
+- exact frontend field
+
+==================================================
+4. IDENTIFY THE EXACT BLOCK SOURCE
+==================================================
+
+Tentukan apakah `CAPITAL BLOCKED` berasal dari:
+
+A. all-time max drawdown
+B. daily max drawdown
+C. current session drawdown
+D. rolling drawdown
+E. consecutive-loss circuit breaker
+F. daily loss limit
+G. portfolio exposure limit
+H. persisted manual block
+I. stale cached health state
+J. frontend fallback label
+K. old database state
+L. different risk rule incorrectly labelled as max drawdown
+
+Report:
+
+capital_blocked
+blocked_reason
+blocked_source
+blocked_at
+blocked_until
+blocked_equity
+blocked_peak_equity
+blocked_drawdown_amount
+blocked_drawdown_percent
+reset_condition
+last_risk_update_at
+
+Do not infer only from the UI label.
+
+==================================================
+5. DEFINE CORRECT EQUITY AND DRAWDOWN FORMULAS
+==================================================
+
+Use explicit definitions.
+
+CURRENT EQUITY:
+
+current_equity =
+initial_capital
++ total_realized_pnl
++ total_unrealized_pnl
+
+Do not subtract Coverage from equity.
+
+Coverage is allocated capital, not a realized loss.
+
+AVAILABLE CAPITAL:
+
+available =
+initial_capital
++ total_realized_pnl
+- open_exposure
+
+ALL-TIME PEAK EQUITY:
+
+peak_equity =
+MAX(valid historical equity snapshots)
+
+ALL-TIME DRAWDOWN:
+
+drawdown_amount =
+MAX(0, peak_equity - current_equity)
+
+drawdown_percent =
+drawdown_amount / peak_equity
+
+DAILY EQUITY:
+
+daily_start_equity =
+equity snapshot at configured trading-day reset boundary
+
+daily_drawdown_amount =
+MAX(0, daily_start_equity - current_equity)
+
+daily_drawdown_percent =
+daily_drawdown_amount / daily_start_equity
+
+SESSION DRAWDOWN:
+
+session_drawdown =
+MAX(0, session_peak_equity - current_equity)
+
+Do not calculate drawdown using:
+
+- sum of losing trades only
+- gross losses without winning trades
+- historical lowest equity
+- open exposure
+- Coverage
+- Available instead of equity
+- card-local PnL
+- current active condition only
+- daily loss plus all-time loss twice
+- old Replit database values
+- stale cached values
+- peak from another portfolio/account
+
+==================================================
+6. AUDIT CURRENT PEAK EQUITY
+==================================================
+
+Query every stored equity/portfolio/risk snapshot involved in peak calculation.
+
+Show:
+
+- timestamp
+- equity
+- realized PnL
+- unrealized PnL
+- exposure
+- source
+- database row ID
+- session/day identifier
+
+Verify that peak equity belongs to:
+
+- this Replit database
+- this Initial Capital
+- this simulation account
+- this portfolio
+- this current environment
+
+Check for invalid peak values caused by:
+
+- duplicate snapshots
+- fake seed history
+- previous database
+- previous Initial Capital
+- test rows
+- manual reset
+- paper/live data mixing
+- equity calculation that added Available and Equity together
+- realized PnL counted twice
+
+If peak equity is invalid, do not simply overwrite it.
+
+Explain the root cause and rebuild it from valid historical snapshots.
+
+==================================================
+7. AUDIT DAILY RESET LOGIC
+==================================================
+
+Identify configured trading-day timezone.
+
+Do not assume UTC unless settings specify UTC.
+
+Verify:
+
+- daily reset timezone
+- daily reset hour
+- daily_start_equity timestamp
+- last_daily_reset_at
+- next_daily_reset_at
+- whether restart triggers reset
+- whether Replit migration triggers reset
+- whether midnight passed without reset
+
+Check for:
+
+- old daily loss state copied from previous day
+- daily loss not resetting
+- daily_start_equity = 0
+- daily_start_equity from another database
+- timezone mismatch
+- naive datetime vs aware datetime
+- reset job not running
+- reset worker disabled
+- reset state only in memory and lost on restart
+
+Daily reset must be deterministic and persisted.
+
+==================================================
+8. AUDIT PERSISTED BLOCK / LATCH BEHAVIOR
+==================================================
+
+Determine whether max drawdown is designed as:
+
+- temporary block
+- daily block
+- session block
+- permanent kill switch
+- manual-reset-only latch
+
+If it is a latch, show:
+
+- when it activated
+- exact equity at activation
+- exact threshold
+- reason
+- persisted column
+- recovery/reset policy
+- whether profitable recovery automatically clears it
+- whether day rollover clears it
+- whether administrator action is required
+
+A risk block may remain active after recovery only if that behavior is
+documented and intentional.
+
+Do not silently change a permanent kill switch into auto-reset.
+
+But do not keep a stale block if the documented policy says it should reset.
+
+==================================================
+9. AUDIT DATABASE CONTINUITY
+==================================================
+
+Since this is a new Replit, determine whether risk state came from:
+
+- same database
+- copied database
+- new database
+- seeded default row
+- migration-generated row
+- old risk snapshot
+- app-level cache
+
+Query:
+
+- positions count
+- orders count
+- trade decisions count
+- risk state rows
+- equity snapshots
+- daily risk state
+- capital management state
+- portfolio state
+
+Report:
+
+DATABASE CONTINUITY:
+- SAME DATABASE
+- COPIED DATABASE
+- NEW DATABASE
+- MIXED STATE
+- UNKNOWN
+
+If portfolio history and risk state came from different database lifecycles,
+that is a critical consistency bug.
+
+==================================================
+10. AUDIT EXPIRY / RESOLUTION PNL
+==================================================
+
+The current realized result is +$46.59 and Live Trades shows expiry exits.
+
+Verify every EXP OUT involved:
+
+- source condition_id
+- position ID
+- side
+- quantity
+- entry price
+- resolution price
+- realized PnL
+- closed_at
+- outcome result
+- settlement source
+- portfolio update timestamp
+- risk snapshot timestamp
+
+Reconcile:
+
+BTC +$51.19
+ETH +$34.09
+XRP -$37.50
+SOL -$1.19
+
+Expected total:
+
++$46.59
+
+Ensure risk engine consumes the same realized PnL as portfolio accounting.
+
+Do not let risk state use pre-settlement PnL while portfolio uses
+post-settlement PnL.
+
+==================================================
+11. DETERMINE THE CORRECT RESULT BEFORE EDITING
+==================================================
+
+Classify the current block:
+
+CASE A — VALID PERMANENT MAX-DRAWDOWN LATCH
+
+If a real historical drawdown exceeded the limit and policy requires manual
+reset:
+
+- keep blocked
+- expose exact historical evidence
+- display reset requirements
+- do not auto-unblock
+
+CASE B — VALID DAILY BLOCK
+
+If daily loss limit was exceeded:
+
+- keep blocked until configured daily reset
+- show next reset time
+- verify reset job
+
+CASE C — STALE DATABASE BLOCK
+
+If block refers to old equity/database/day:
+
+- clear through documented service/repository flow
+- do not run arbitrary SQL if application logic exists
+
+CASE D — FORMULA BUG
+
+If drawdown used Coverage, Available, or double-counted losses:
+
+- fix formula
+- rebuild derived state safely
+- add regression tests
+
+CASE E — FRONTEND STALE LABEL
+
+If backend is not blocked but frontend still shows blocked:
+
+- fix polling/data binding/cache
+- do not alter risk engine
+
+CASE F — WRONG LABEL
+
+If another risk rule triggered:
+
+- show correct reason
+- do not label it MAX DRAWDOWN
+
+Report classification before code changes.
+
+==================================================
+12. IMPLEMENT ONE SOURCE OF TRUTH FOR RISK STATE
+==================================================
+
+Create or standardize one backend response such as:
+
+GET /api/v1/risk/capital-status
+
+Expected fields:
+
+- capital_blocked
+- block_code
+- block_reason
+- block_scope
+- blocked_at
+- blocked_until
+- reset_policy
+- reset_available
+- current_equity
+- peak_equity
+- drawdown_amount
+- drawdown_percent
+- daily_start_equity
+- daily_drawdown_amount
+- daily_drawdown_percent
+- session_peak_equity
+- session_drawdown_amount
+- max_drawdown_limit
+- daily_loss_limit
+- consecutive_losses
+- consecutive_loss_limit
+- open_exposure
+- available_capital
+- last_updated_at
+- data_source
+
+Frontend header must use this response directly.
+
+Do not reconstruct the blocked state from multiple unrelated endpoints.
+
+==================================================
+13. FIX RESET POLICY IF REQUIRED
+==================================================
+
+If the documented policy allows automatic reset, use explicit rules.
+
+Example daily reset:
+
+- reset once per configured trading day
+- persist last_reset_date
+- update daily_start_equity
+- clear daily-only block
+- do not clear permanent/manual kill switch
+
+Example recovery reset:
+
+Only if intended by policy:
+
+- current_equity returns above recovery threshold
+- no unresolved accounting inconsistency
+- minimum cooldown elapsed
+- state transition recorded
+
+Never auto-clear:
+
+- corruption block
+- manual emergency stop
+- permanent max-loss kill switch
+- unresolved database mismatch
+
+Every reset must create an audit log.
+
+==================================================
+14. FIX FRONTEND DISPLAY
+==================================================
+
+Header status must accurately show one of:
+
+CAPITAL OK
+
+CAPITAL BLOCKED · MAX DRAWDOWN
+
+CAPITAL BLOCKED · DAILY LOSS LIMIT
+
+CAPITAL BLOCKED · LOSS STREAK
+
+CAPITAL BLOCKED · MANUAL STOP
+
+CAPITAL BLOCKED · ACCOUNTING ERROR
+
+CAPITAL COOLDOWN · until HH:MM
+
+RISK STATE SYNCING
+
+Do not show:
+
+MAX DRAWDOWN LIMIT
+
+when the actual block is another rule.
+
+When blocked, optionally show concise diagnostic:
+
+DD 12.3% / LIMIT 10.0%
+
+or:
+
+DAILY LOSS $42 / LIMIT $40
+
+Do not redesign the full header.
+
+==================================================
+15. FIX STALE FRONTEND STATE
+==================================================
+
+Audit frontend polling and caching.
+
+Verify:
+
+- risk status endpoint is polled
+- response sequence protection exists
+- older blocked response cannot overwrite newer unblocked response
+- browser refresh does not retain stale state
+- fallback label is not hardcoded
+- null/error response shows SYNCING, not BLOCKED
+- state updates after settlement
+- state updates after daily reset
+- state updates after manual reset
+
+Use exact backend block_code.
+
+==================================================
+16. SAFE DATABASE STATE CORRECTION
+==================================================
+
+If derived risk state is invalid:
+
+Prefer:
+
+- service method
+- repository method
+- migration/backfill script
+- audited administrative command
+
+Avoid arbitrary direct SQL unless no application path exists.
+
+When correcting state:
+
+- preserve historical event
+- preserve blocked_at history
+- record correction_reason
+- record old value
+- record new value
+- record timestamp
+- do not modify positions/orders/PnL
+
+Do not erase evidence of a real drawdown.
+
+==================================================
+17. TESTS — ACCOUNTING AND EQUITY
+==================================================
+
+Add/update tests:
+
+1. current_equity = initial + realized + unrealized
+2. Coverage does not reduce equity
+3. Available subtracts open exposure
+4. Cumulative Outcome = realized + unrealized
+5. positive realized PnL increases equity
+6. expired-position PnL reaches risk engine
+7. risk and portfolio use the same realized total
+8. no double counting of realized PnL
+9. no double counting of unrealized PnL
+10. partial positions included correctly
+
+==================================================
+18. TESTS — MAX DRAWDOWN
+==================================================
+
+11. no drawdown when current equity equals peak
+12. no drawdown when equity exceeds previous peak
+13. peak updates when equity makes a new high
+14. drawdown uses peak equity
+15. Coverage is not included in drawdown
+16. Available is not used as equity
+17. threshold blocks exactly when exceeded
+18. threshold does not block below limit
+19. drawdown percent handles zero/invalid peak safely
+20. stale peak from different portfolio rejected
+
+==================================================
+19. TESTS — DAILY RISK
+==================================================
+
+21. daily_start_equity set at reset boundary
+22. daily drawdown computed from daily start equity
+23. daily reset occurs once
+24. daily reset uses configured timezone
+25. restart does not duplicate reset
+26. old daily block clears only when policy allows
+27. permanent block survives daily reset
+28. next reset time is correct
+29. naive/aware datetime mismatch prevented
+30. new Replit does not inherit invalid daily state
+
+==================================================
+20. TESTS — BLOCK LATCH AND FRONTEND
+==================================================
+
+31. valid permanent latch remains blocked
+32. daily latch resets according to policy
+33. stale block state corrected
+34. backend unblocked state updates frontend
+35. old frontend response rejected
+36. wrong risk rule is not labelled max drawdown
+37. null risk response shows SYNCING
+38. manual stop cannot auto-clear
+39. audit event created on state correction
+40. current dashboard values reconcile to backend
+
+==================================================
+21. EXISTING REGRESSION TESTS
+==================================================
+
+Run existing:
+
+- Portfolio Accounting tests
+- PnL tests
+- position tests
+- order tests
+- expiry settlement tests
+- EXIT tests
+- Risk Engine tests
+- strategy gate tests
+- dashboard API tests
+- 5M discovery tests
+- rollover tests
+- full suite
+
+The existing 930 tests must remain green unless the count increases.
+
+==================================================
+22. RUNTIME VALIDATION
+==================================================
+
+Restart workflow once after tests pass.
+
+Capture raw responses for:
+
+- portfolio accounting
+- portfolio PnL
+- risk capital status
+- risk health/status
+- current positions
+- live trades
+- dashboard summary
+
+Show:
+
+initial_capital
+realized_pnl
+unrealized_pnl
+current_equity
+peak_equity
+drawdown
+limit
+capital_blocked
+block_code
+block_reason
+reset_policy
+available
+coverage
+
+Expected current accounting:
+
+initial_capital = 400.00
+realized_pnl = 46.59
+unrealized_pnl = 0.00
+current_equity = 446.59
+coverage = 0.00
+available = 446.59
+
+Then determine whether blocked=true or false according to documented risk
+history and reset policy.
+
+==================================================
+23. VERIFY ONE NEW ENTRY CYCLE IF UNBLOCKED
+==================================================
+
+Only if the correct result is CAPITAL OK:
+
+- allow normal engine cycle
+- do not force a fake entry
+- wait for a natural approved signal
+- verify Risk Engine no longer blocks with stale max drawdown reason
+
+Capture:
+
+- signal
+- risk decision
+- capital status
+- entry decision
+- order result
+
+If no natural signal occurs:
+
+report PENDING NATURAL ENTRY PROOF.
+
+Do not weaken risk thresholds just to generate a trade.
+
+==================================================
+24. VERIFY BLOCKED BEHAVIOR IF BLOCK IS VALID
+==================================================
+
+If block remains valid:
+
+- prove no new entries execute
+- prove Exit Engine remains active
+- prove portfolio settlement remains active
+- prove rollover remains active
+- show exact reset requirement
+- display correct blocked reason
+- do not disable the whole engine
+
+Risk block must prevent only prohibited new risk, not break monitoring,
+settlement, rollover, or exit.
+
+==================================================
+25. FINAL SCREENSHOT
+==================================================
+
+Take screenshot showing:
+
+- current 4 market cards
+- valid 5M countdown
+- correct portfolio values
+- correct capital status label
+- no 22-hour regression
+- no stale blocked reason
+
+If blocked remains valid, screenshot must show the correct reason.
+
+If unblocked, screenshot must show CAPITAL OK.
+
+==================================================
+26. FINAL REPORT
+==================================================
+
+Return:
+
+1. Current project state
+2. Database continuity
+3. Current accounting reconciliation
+4. Risk state source
+5. Current equity
+6. Peak equity
+7. Drawdown amount
+8. Drawdown percent
+9. Max drawdown limit
+10. Daily start equity
+11. Daily drawdown
+12. Blocked source
+13. Blocked timestamp
+14. Reset policy
+15. Root cause classification
+16. Code changes
+17. Database state correction
+18. Backend risk endpoint
+19. Frontend status binding
+20. Targeted test results
+21. Full-suite result
+22. Runtime accounting proof
+23. Runtime risk proof
+24. Entry/blocked behavior proof
+25. Screenshot
+26. Remaining risks
+27. Final statuses
+
+Final statuses:
+
+PORTFOLIO ACCOUNTING:
+- PASS
+- FAIL
+
+CURRENT EQUITY:
+- PASS
+- FAIL
+
+PEAK EQUITY INTEGRITY:
+- PASS
+- FAIL
+
+MAX DRAWDOWN FORMULA:
+- PASS
+- FAIL
+
+DAILY RESET:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+CAPITAL BLOCK STATE:
+- VALID BLOCK
+- CORRECTLY CLEARED
+- FAIL
+
+RISK LABEL ACCURACY:
+- PASS
+- FAIL
+
+FRONTEND RISK SYNC:
+- PASS
+- FAIL
+
+EXIT WHILE BLOCKED:
+- PASS
+- FAIL
+
+FULL SUITE:
+- PASS
+- FAIL
+
+Use PASS only if:
+
+- accounting reconciles within $0.01
+- current equity is correct
+- peak equity is validated
+- exact risk rule is identified
+- reset policy is explicit
+- stale state is removed if invalid
+- valid block remains if policy requires it
+- frontend reason matches backend
+- full tests pass
+- current market discovery and rollover remain untouched
+
+Jangan menyatakan CAPITAL OK hanya karena Available lebih dari $400.
+Jangan menyatakan block valid hanya karena database berkata blocked=true.
+Buktikan formula, history, threshold, dan reset policy.
