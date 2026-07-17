@@ -26,6 +26,7 @@ from app.repositories.universe_repository import (
     get_all_universe,
     get_upcoming_universe,
     get_universe_stats,
+    get_window_live_universe,
 )
 from app.schemas.universe import (
     AssetStats,
@@ -228,14 +229,25 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
             raw_start = raw_start.replace(tzinfo=timezone.utc)
         trading_open_time_iso = raw_start.isoformat()
 
-    # ── Parse exact prediction window from question text ──────────────────────
+    # ── Prediction window: use stored DB value first, fall back to re-parsing ──
     raw_end = m.end_time
     if raw_end is not None and raw_end.tzinfo is None:
         raw_end = raw_end.replace(tzinfo=timezone.utc)
 
-    pw_start, pw_end, pw_source = _parse_prediction_window(
-        m.question or "", raw_end
-    )
+    stored_pw_start = getattr(m, "prediction_window_start", None)
+    stored_pw_end   = getattr(m, "prediction_window_end", None)
+    stored_pw_src   = getattr(m, "prediction_window_source", None)
+
+    if stored_pw_start is not None and stored_pw_end is not None:
+        # Stored from discovery — most accurate, use directly
+        pw_start  = stored_pw_start if stored_pw_start.tzinfo else stored_pw_start.replace(tzinfo=timezone.utc)
+        pw_end    = stored_pw_end   if stored_pw_end.tzinfo   else stored_pw_end.replace(tzinfo=timezone.utc)
+        pw_source = stored_pw_src or "question_interval"
+    else:
+        # Not yet stored — parse from question text as fallback
+        pw_start, pw_end, pw_source = _parse_prediction_window(
+            m.question or "", raw_end
+        )
 
     prediction_window_start_iso: str | None = (
         pw_start.isoformat() if pw_start is not None else None
@@ -342,7 +354,13 @@ async def list_universe(
 async def list_active(
     session: AsyncSession = Depends(get_db_session),
 ) -> list[UniverseMarketResponse]:
-    markets = await get_active_universe(session)
+    # Primary: prediction-window-based selection (trading slot window live right now).
+    # This is the correct query for 5m markets whose prediction_window_* columns are set.
+    markets = await get_window_live_universe(session)
+    if not markets:
+        # Fallback: status-field-based query (covers legacy rows without pw data
+        # and markets where the window was missed during a sync gap).
+        markets = await get_active_universe(session)
     return [_annotate_lifecycle(m) for m in markets]
 
 

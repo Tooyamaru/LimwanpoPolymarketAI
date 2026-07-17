@@ -207,6 +207,13 @@ async def init_db() -> None:
                 ("phase9d_resolution", "ALTER TABLE outcome_learnings ADD COLUMN IF NOT EXISTS resolution_note TEXT NULL"),
                 ("phase9d_resolution", "CREATE INDEX IF NOT EXISTS ix_ol_outcome_source ON outcome_learnings (outcome_source)"),
                 ("phase9d_resolution", "CREATE INDEX IF NOT EXISTS ix_ol_winning_side ON outcome_learnings (winning_side)"),
+                # Timestamp-slug discovery: prediction window stored on market_universe
+                ("pw_discovery", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS prediction_window_start TIMESTAMPTZ NULL"),
+                ("pw_discovery", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS prediction_window_end TIMESTAMPTZ NULL"),
+                ("pw_discovery", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS prediction_window_source VARCHAR(32) NULL"),
+                ("pw_discovery", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS prediction_window_validated_at TIMESTAMPTZ NULL"),
+                ("pw_discovery", "CREATE INDEX IF NOT EXISTS ix_mu_pw_start ON market_universe (prediction_window_start)"),
+                ("pw_discovery", "CREATE INDEX IF NOT EXISTS ix_mu_pw_end ON market_universe (prediction_window_end)"),
                 # Phase 10: authoritative forced-expiry exit price carried from
                 # ExitEngine to ExecutionEngine (fixes stale-price close bug)
                 ("phase10_forced_exit", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS forced_exit_price DOUBLE PRECISION NULL"),

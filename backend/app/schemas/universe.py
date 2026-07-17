@@ -5,7 +5,7 @@ Universe response schemas — Layer 3: Universe Sync / Sprint 7.
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class UniverseMarketResponse(BaseModel):
@@ -77,6 +77,20 @@ class UniverseMarketResponse(BaseModel):
     trading_open_time: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+    @field_validator(
+        "prediction_window_start",
+        "prediction_window_end",
+        "countdown_target",
+        "trading_open_time",
+        mode="before",
+    )
+    @classmethod
+    def _coerce_dt_to_str(cls, v: object) -> Optional[str]:
+        """ORM model stores these as datetime; schema exposes them as ISO strings."""
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v  # type: ignore[return-value]
 
 
 class TimeframeStats(BaseModel):

@@ -365,6 +365,48 @@ class GammaSeriesClient:
         )
         return events
 
+    async def fetch_event_by_slug(self, event_slug: str) -> Optional[GammaEvent]:
+        """
+        Fetch a single Gamma event by its exact event slug.
+
+        Used for timestamp-slug primary discovery:
+            GET /events?slug={asset}-updown-5m-{unix_slot}
+
+        Returns the first matching event (there should be exactly one per slug),
+        or None if not found or parsing fails.
+        """
+        await asyncio.sleep(RATE_LIMIT_DELAY)
+        rows = await self._get_with_retry("/events", params={"slug": event_slug})
+        if not rows:
+            logger.debug("fetch_event_by_slug: no result", event_slug=event_slug)
+            return None
+        try:
+            raw = GammaEventRaw.model_validate(rows[0])
+            markets = self._parse_markets(raw.markets)
+            if not markets:
+                logger.debug(
+                    "fetch_event_by_slug: event has no markets",
+                    event_slug=event_slug,
+                )
+                return None
+            return GammaEvent(
+                event_id=str(raw.id) if raw.id else None,
+                slug=raw.slug,
+                title=raw.title,
+                start_time=_parse_dt(raw.start_date),
+                end_time=_parse_dt(raw.end_date),
+                is_active=raw.active,
+                is_closed=raw.closed,
+                markets=markets,
+            )
+        except Exception as exc:
+            logger.warning(
+                "fetch_event_by_slug: parse error",
+                event_slug=event_slug,
+                error=str(exc),
+            )
+            return None
+
     async def fetch_active_market(self, series_slug: str) -> Optional[GammaMarket]:
         """
         Return the single currently-active market for a series.

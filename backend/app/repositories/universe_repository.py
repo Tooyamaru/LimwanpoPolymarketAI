@@ -33,6 +33,10 @@ async def upsert_universe_market(
     start_time: Optional[datetime],
     end_time: Optional[datetime],
     status: str,
+    prediction_window_start: Optional[datetime] = None,
+    prediction_window_end: Optional[datetime] = None,
+    prediction_window_source: Optional[str] = None,
+    prediction_window_validated_at: Optional[datetime] = None,
 ) -> MarketUniverse:
     """
     Insert or update a MarketUniverse row identified by condition_id.
@@ -52,6 +56,15 @@ async def upsert_universe_market(
             existing.yes_token_id = yes_token_id
         if no_token_id is not None:
             existing.no_token_id = no_token_id
+        # Always update prediction window if we have new data
+        if prediction_window_start is not None:
+            existing.prediction_window_start = prediction_window_start
+        if prediction_window_end is not None:
+            existing.prediction_window_end = prediction_window_end
+        if prediction_window_source is not None:
+            existing.prediction_window_source = prediction_window_source
+        if prediction_window_validated_at is not None:
+            existing.prediction_window_validated_at = prediction_window_validated_at
         existing.updated_at = datetime.now(timezone.utc)
         await session.flush()
         logger.debug("Universe market updated", condition_id=condition_id, status=status)
@@ -70,6 +83,10 @@ async def upsert_universe_market(
         start_time=start_time,
         end_time=end_time,
         status=status,
+        prediction_window_start=prediction_window_start,
+        prediction_window_end=prediction_window_end,
+        prediction_window_source=prediction_window_source,
+        prediction_window_validated_at=prediction_window_validated_at,
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
     )
@@ -289,6 +306,30 @@ async def get_active_universe(session: AsyncSession) -> list[MarketUniverse]:
             MarketUniverse.status == "active",
             or_(MarketUniverse.start_time.is_(None), MarketUniverse.start_time <= now),
             or_(MarketUniverse.end_time.is_(None), MarketUniverse.end_time > now),
+        )
+        .order_by(MarketUniverse.asset, MarketUniverse.timeframe)
+    )
+    return list(result.scalars().all())
+
+
+async def get_window_live_universe(session: AsyncSession) -> list[MarketUniverse]:
+    """
+    Return markets whose prediction window is currently live:
+        prediction_window_start <= now < prediction_window_end
+
+    This is the CORRECT selection criterion for the active 5m card.
+    It does NOT use contract end_time, deployment startDate, or status='active'.
+
+    Falls back to empty list if no market has a parsed prediction window.
+    """
+    now = datetime.now(timezone.utc)
+    result = await session.execute(
+        select(MarketUniverse)
+        .where(
+            MarketUniverse.prediction_window_start.isnot(None),
+            MarketUniverse.prediction_window_end.isnot(None),
+            MarketUniverse.prediction_window_start <= now,
+            MarketUniverse.prediction_window_end > now,
         )
         .order_by(MarketUniverse.asset, MarketUniverse.timeframe)
     )

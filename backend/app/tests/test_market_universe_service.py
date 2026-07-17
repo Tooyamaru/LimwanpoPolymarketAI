@@ -137,6 +137,7 @@ async def test_sync_returns_summary_dict():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=GammaSeries(series_id="1", slug="test", title="Test"))
     mock_client.fetch_events = AsyncMock(return_value=[])
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -169,6 +170,7 @@ async def test_sync_processes_all_4_series():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=[])
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -198,6 +200,7 @@ async def test_sync_last_sync_is_set_after_run():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=[])
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -226,6 +229,7 @@ async def test_sync_errors_are_collected_not_raised():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(side_effect=RuntimeError("network failure"))
     mock_client.fetch_events = AsyncMock(side_effect=RuntimeError("network failure"))
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -266,6 +270,7 @@ async def test_sync_marks_first_event_active():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -333,6 +338,7 @@ async def test_sync_marks_remaining_events_upcoming():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -396,6 +402,7 @@ async def test_sprint91_three_consecutive_5m_windows_only_first_active():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -458,6 +465,7 @@ async def test_sprint91_two_markets_same_event_only_soonest_active():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=[single_event])
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -507,6 +515,7 @@ async def test_sprint91_single_market_is_active():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -558,6 +567,7 @@ async def test_sprint91_expired_market_is_not_active():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -615,6 +625,7 @@ async def test_sprint91_max_one_active_per_series():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=markets_and_events)
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -672,6 +683,7 @@ async def test_sprint91_no_active_when_all_markets_expired():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 
@@ -726,6 +738,7 @@ async def test_sync_upserts_only_events_returned_by_fetch_events():
     mock_client = MagicMock()
     mock_client.fetch_series = AsyncMock(return_value=None)
     mock_client.fetch_events = AsyncMock(return_value=events_returned)
+    mock_client.fetch_event_by_slug = AsyncMock(return_value=None)
     mock_client.close = AsyncMock()
     svc._client = mock_client
 

@@ -1,0 +1,500 @@
+LIMWANPO AI — RESUME VERIFIED 5M TIMESTAMP-SLUG DISCOVERY FIX
+
+Lanjutkan dari current codebase dan current git diff.
+
+JANGAN mengulang audit discovery dari awal.
+JANGAN mengembalikan kesimpulan gap 22 jam.
+JANGAN mengubah strategy, sizing, EXIT, Portfolio Accounting, atau UI theme.
+
+Current proven findings:
+
+- Gamma series pagination menemukan 2100 events.
+- Current market tidak masuk limit awal 20 karena sudah dibuat sekitar 24 jam sebelumnya.
+- startDate/endDate bukan exact prediction window 5M.
+- Slug yang benar:
+  {asset}-updown-5m-{unix_slot}
+- Current slot:
+  floor(server_unix_time / 300) * 300
+- Timestamp slug menemukan current dan adjacent 5M markets.
+- Genuine 22-hour gap DISPROVEN.
+- prediction_window.py sudah dibuat.
+- Model, migration, Gamma client, repository, universe service, dan API sudah diedit.
+- test_5m_discovery.py sudah dibuat.
+- compileall PASS.
+- 20/20 discovery tests PASS.
+- DB migration belum dijalankan.
+- /markets masih sempat Internal Server Error.
+- Full suite belum selesai karena quota habis.
+
+==================================================
+1. AUDIT CURRENT PARTIAL DIFF
+==================================================
+
+Jalankan:
+
+git status
+git diff --stat
+git diff
+python -m compileall -q backend/app
+
+Inspect every changed file:
+
+- backend/app/utils/prediction_window.py
+- backend/app/models/market_universe.py
+- backend/app/core/database.py
+- backend/app/services/gamma_series_client.py
+- backend/app/services/market_universe_service.py
+- backend/app/repositories/universe_repository.py
+- backend/app/api/v1/universe.py
+- backend/app/tests/test_5m_discovery.py
+
+Check for:
+
+- duplicate parser implementation
+- duplicate migration statements
+- duplicate imports
+- missing model/repository field mapping
+- partially replaced sync() code
+- unreachable old selection logic
+- references to removed functions
+- wrong slug timestamp using slot + 300
+- inconsistent asset slug prefixes
+- use of end_time for selecting current market
+- status-based selection overriding prediction-window selection
+
+Do not proceed until compile and application import succeed.
+
+==================================================
+2. VERIFY THE SLOT SEMANTICS EXACTLY
+==================================================
+
+The timestamp slug represents the START of the five-minute window.
+
+At server time:
+
+05:42 UTC
+
+Expected current slot:
+
+05:40 UTC
+
+Expected slug:
+
+btc-updown-5m-<05:40 UTC unix timestamp>
+
+Expected prediction window:
+
+05:40–05:45 UTC
+
+Do not use:
+
+current_slot + 300
+
+for the current market.
+
+Test exact boundary cases:
+
+05:39:59 → 05:35 slot
+05:40:00 → 05:40 slot
+05:44:59 → 05:40 slot
+05:45:00 → 05:45 slot
+
+==================================================
+3. VERIFY ALL FOUR ASSET SLUG PREFIXES
+==================================================
+
+Do not stop with BTC.
+
+Verify raw exact slug lookup for:
+
+BTC:
+btc-updown-5m-{slot}
+
+ETH:
+eth-updown-5m-{slot}
+
+SOL:
+sol-updown-5m-{slot}
+
+XRP:
+xrp-updown-5m-{slot}
+
+For every asset fetch:
+
+- previous slot
+- current slot
+- next slot
+- next +5 minutes
+- next +10 minutes
+
+Report:
+
+- slug
+- found
+- condition_id
+- question
+- prediction_window_start
+- prediction_window_end
+- accepting_orders
+- closed
+- token IDs
+
+All four cards must use independently verified condition IDs.
+
+==================================================
+4. APPLY DATABASE MIGRATION SAFELY
+==================================================
+
+New MarketUniverse fields must exist:
+
+- prediction_window_start
+- prediction_window_end
+- prediction_window_source
+- prediction_window_validated_at
+
+Verify:
+
+- model definitions
+- migration SQL
+- nullable handling for old rows
+- timezone-aware timestamp type
+- migration idempotency
+- no data loss
+
+Restart workflow once so init_db/migration executes.
+
+Then inspect actual database columns.
+
+Do not assume migration succeeded only because application starts.
+
+==================================================
+5. FIX /MARKETS INTERNAL SERVER ERROR
+==================================================
+
+After migration, call the exact failing endpoint.
+
+Capture:
+
+- HTTP status
+- exception stack trace
+- SQL error if any
+- response JSON
+
+Fix any mismatch between:
+
+- database columns
+- ORM model
+- repository result
+- Pydantic response schema
+
+Expected:
+
+- HTTP 200
+- valid JSON
+- no frontend JSON parse error
+
+Do not classify the old error as harmless without verifying it disappears.
+
+==================================================
+6. MAKE TIMESTAMP-SLUG LOOKUP THE PRIMARY CURRENT DISCOVERY
+==================================================
+
+For each asset, current discovery must:
+
+1. calculate current_slot
+2. construct exact timestamp slug
+3. fetch that exact event
+4. verify its parsed interval contains server_time
+5. persist it
+6. select it for the current card
+
+Also fetch adjacent slots:
+
+- previous slot for brief resolution/rollover recovery
+- next 1–3 slots for smooth rollover
+
+The paginated series query may remain as:
+
+- backfill
+- history
+- wider future cache
+
+But it must not determine the current card when exact current slug lookup succeeds.
+
+==================================================
+7. CORRECT SELECTION RULE
+==================================================
+
+For each asset:
+
+WINDOW_LIVE:
+
+prediction_window_start <= now
+AND prediction_window_end > now
+
+Select WINDOW_LIVE first.
+
+If exact current slug is temporarily missing:
+
+select nearest upcoming only when:
+
+0 < prediction_window_start - now <= 600 seconds
+
+Otherwise:
+
+NO_NEARBY_5M_MARKET
+
+Never select using:
+
+- contract end_time
+- deployment startDate
+- created_at
+- API order
+- database insertion order
+- generic status='active'
+
+==================================================
+8. DO NOT LET OLD STATUS LOGIC OVERRIDE SELECTION
+==================================================
+
+Audit:
+
+- demote_excess_active_markets
+- get_active_universe
+- expire_stale_markets
+- active status constraints
+
+These were designed around one status-active row chosen using end_time.
+
+Ensure they do not:
+
+- demote the correct timestamp-slug current market
+- reactivate a future 22-hour market
+- remove upcoming slot cache
+- force selection by contract lifecycle
+
+Prefer:
+
+candidate rows stored independently
+
+and selected current card derived from:
+
+prediction_window_start/end
+
+==================================================
+9. PRICE REFRESH MUST USE SELECTED CONDITION
+==================================================
+
+market_price_service currently calls get_active_universe().
+
+Verify it now receives exactly the four selected WINDOW_LIVE condition IDs.
+
+Expected:
+
+markets_polled = 4
+
+and each market satisfies:
+
+prediction_window_start <= now < prediction_window_end
+
+Do not poll future 22-hour condition IDs as the active card source.
+
+==================================================
+10. TARGET AND CARD DATA ISOLATION
+==================================================
+
+For the selected current condition:
+
+- target belongs to exact condition_id
+- CLOB token IDs belong to exact condition_id
+- UP/DOWN prices belong to exact condition_id
+- IN/OUT/LOTS use exact condition_id
+- countdown uses exact prediction window
+- GAP uses current condition target
+
+At rollover:
+
+- new condition replaces card condition
+- old local card data is cleared
+- old positions remain in global portfolio and Exit Engine
+
+==================================================
+11. RUN DISCOVERY TESTS AGAIN
+==================================================
+
+Run:
+
+python -m compileall -q backend/app
+
+pytest backend/app/tests/test_5m_discovery.py -q
+
+Expected:
+
+20/20 PASS or more if new cases are added.
+
+Add tests if missing:
+
+1. exact current-slot slug
+2. no slot+300 off-by-one bug
+3. BTC prefix
+4. ETH prefix
+5. SOL prefix
+6. XRP prefix
+7. current market interval contains now
+8. contract end_time ignored
+9. exact slug overrides series result
+10. future 22-hour market not selected
+11. current slot boundary at exact five-minute timestamp
+12. previous/current/next candidates persist
+13. missing current slug retries adjacent lookup
+14. duplicate condition IDs deduplicated
+
+==================================================
+12. RUN FULL TEST SUITE COMPLETELY
+==================================================
+
+The previous full suite started but did not finish.
+
+Run:
+
+pytest backend/app/tests/ -q
+
+Do not exclude test_5m_discovery.py from the final run.
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+No PASS while any regression remains.
+
+==================================================
+13. RUNTIME API PROOF
+==================================================
+
+After migration and restart, show raw JSON for:
+
+- /api/v1/universe/active
+- /api/v1/markets
+- card-summary endpoint
+- price endpoint
+
+For each asset show:
+
+- server_time
+- slug
+- condition_id
+- prediction_window_start
+- prediction_window_end
+- countdown_mode
+- countdown_seconds
+- selected_reason
+- accepting_orders
+- price timestamp
+
+Expected during an active window:
+
+countdown_mode = ENDS_IN
+0 <= countdown_seconds <= 300
+
+Expected card selection:
+
+current timestamp slot, not tomorrow's market.
+
+==================================================
+14. PROVE REAL ROLLOVER
+==================================================
+
+Do not stop after one screenshot.
+
+Capture at least:
+
+WINDOW A:
+- condition_id
+- slug
+- countdown near zero
+
+WINDOW B:
+- new condition_id
+- slug timestamp increases by 300
+- countdown resets near 05:00
+
+WINDOW C:
+- condition_id changes again
+- slug timestamp increases another 300
+
+Prove:
+
+- exact five-minute movement
+- no 22-hour card
+- no old countdown
+- no old prices
+- no old target
+- no old current-card lots
+- old positions remain globally managed
+
+==================================================
+15. FINAL REPORT
+==================================================
+
+Report:
+
+1. Current diff audit
+2. Migration result
+3. /markets error result
+4. BTC exact-slug proof
+5. ETH exact-slug proof
+6. SOL exact-slug proof
+7. XRP exact-slug proof
+8. Slot calculation
+9. Discovery selection result
+10. Price refresh selected IDs
+11. Card condition isolation
+12. Discovery tests
+13. Full suite
+14. Runtime Window A
+15. Runtime rollover A→B
+16. Runtime rollover B→C
+17. Screenshot
+18. Files changed
+19. Remaining risks
+20. Final statuses
+
+Statuses:
+
+TIMESTAMP-SLUG DISCOVERY:
+- PASS
+- FAIL
+
+CURRENT 5M SELECTION:
+- PASS
+- FAIL
+
+DATABASE MIGRATION:
+- PASS
+- FAIL
+
+MARKETS API:
+- PASS
+- FAIL
+
+5M ROLLOVER:
+- PASS
+- FAIL
+
+CARD CONDITION INTEGRITY:
+- PASS
+- FAIL
+
+Use PASS only if:
+
+- all four current slugs are verified
+- migration is applied
+- /markets returns 200
+- full suite passes
+- current cards show 0–5 minute countdown
+- three consecutive condition rollovers are proven
+- no 22-hour future market is selected

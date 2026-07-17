@@ -47,6 +47,21 @@ class MarketUniverse(Base):
         String(32), nullable=False, default="active", index=True
     )
 
+    # ── Prediction Window (timestamp-slug discovery) ──────────────────────────
+    # Parsed from the market question text; stored so selection never re-parses.
+    prediction_window_start: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    prediction_window_end: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    prediction_window_source: Mapped[Optional[str]] = mapped_column(
+        String(32), nullable=True
+    )
+    prediction_window_validated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     # ── Market Reference (Phase Next) ─────────────────────────────────────────
     # opening_price is fetched from Binance once at market discovery and stored
     # permanently.  The frontend reads this value instead of computing it.

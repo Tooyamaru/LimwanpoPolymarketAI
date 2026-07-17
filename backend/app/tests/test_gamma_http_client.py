@@ -174,6 +174,7 @@ async def test_universe_sync_empty_response_classified_correctly():
     with (
         patch.object(svc._client, "fetch_series", new_callable=AsyncMock, return_value=None),
         patch.object(svc._client, "fetch_events", new_callable=AsyncMock, return_value=[]),
+        patch.object(svc._client, "fetch_event_by_slug", new_callable=AsyncMock, return_value=None),
         patch(
             "app.services.market_universe_service.get_session_factory",
             return_value=lambda: mock_ctx,
