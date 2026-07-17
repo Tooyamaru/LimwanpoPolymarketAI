@@ -73,8 +73,12 @@ class UniverseMarketResponse(BaseModel):
     countdown_mode: Optional[str] = None
     prediction_window_start: Optional[str] = None
     prediction_window_end: Optional[str] = None
+    prediction_window_source: Optional[str] = None
     countdown_target: Optional[str] = None
     trading_open_time: Optional[str] = None
+    # Slug fields — exact rolling 5m event identity
+    event_slug: Optional[str] = None
+    market_slot_timestamp: Optional[int] = None
 
     model_config = {"from_attributes": True}
 
@@ -91,6 +95,30 @@ class UniverseMarketResponse(BaseModel):
         if isinstance(v, datetime):
             return v.isoformat()
         return v  # type: ignore[return-value]
+
+    @field_validator(
+        "event_slug",
+        "prediction_window_source",
+        mode="before",
+    )
+    @classmethod
+    def _coerce_str_or_none(cls, v: object) -> Optional[str]:
+        """Return the value as-is if it's a str or None; coerce anything else to None.
+        This prevents MagicMock objects (used in test helpers) from failing str validation."""
+        if v is None or isinstance(v, str):
+            return v
+        return None
+
+    @field_validator(
+        "market_slot_timestamp",
+        mode="before",
+    )
+    @classmethod
+    def _coerce_int_or_none(cls, v: object) -> Optional[int]:
+        """Return the value as-is if it's an int or None; coerce anything else to None."""
+        if v is None or isinstance(v, int):
+            return v
+        return None
 
 
 class TimeframeStats(BaseModel):

@@ -312,6 +312,17 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
         display = "UNKNOWN"
         mode    = "SEED"
 
+    # ── event_slug and market_slot_timestamp ─────────────────────────────────
+    # Use isinstance guard: getattr on a MagicMock returns a MagicMock (never None),
+    # so a plain truthiness check would pass and cause re.search to fail on a mock.
+    _raw_slug = getattr(m, "event_slug", None)
+    event_slug_val: str | None = _raw_slug if isinstance(_raw_slug, str) else None
+    market_slot_ts: int | None = None
+    if event_slug_val:
+        _slug_match = re.search(r"-(\d{10})$", event_slug_val)
+        if _slug_match:
+            market_slot_ts = int(_slug_match.group(1))
+
     return resp.model_copy(update={
         "lifecycle_state":           lc,
         "execution_allowed":         is_active,
@@ -327,8 +338,11 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
         "countdown_mode":            countdown_mode,
         "prediction_window_start":   prediction_window_start_iso,
         "prediction_window_end":     prediction_window_end_iso,
+        "prediction_window_source":  pw_source,
         "countdown_target":          countdown_target,
         "trading_open_time":         trading_open_time_iso,
+        "event_slug":                event_slug_val,
+        "market_slot_timestamp":     market_slot_ts,
     })
 
 

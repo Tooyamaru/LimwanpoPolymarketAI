@@ -214,6 +214,9 @@ async def init_db() -> None:
                 ("pw_discovery", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS prediction_window_validated_at TIMESTAMPTZ NULL"),
                 ("pw_discovery", "CREATE INDEX IF NOT EXISTS ix_mu_pw_start ON market_universe (prediction_window_start)"),
                 ("pw_discovery", "CREATE INDEX IF NOT EXISTS ix_mu_pw_end ON market_universe (prediction_window_end)"),
+                # event_slug — exact rolling 5m event identity persisted on upsert
+                ("event_slug_persist", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS event_slug VARCHAR(128) NULL"),
+                ("event_slug_persist", "CREATE INDEX IF NOT EXISTS ix_mu_event_slug ON market_universe (event_slug)"),
                 # Phase 10: authoritative forced-expiry exit price carried from
                 # ExitEngine to ExecutionEngine (fixes stale-price close bug)
                 ("phase10_forced_exit", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS forced_exit_price DOUBLE PRECISION NULL"),

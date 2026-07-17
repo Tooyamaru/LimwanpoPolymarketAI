@@ -37,6 +37,7 @@ async def upsert_universe_market(
     prediction_window_end: Optional[datetime] = None,
     prediction_window_source: Optional[str] = None,
     prediction_window_validated_at: Optional[datetime] = None,
+    event_slug: Optional[str] = None,
 ) -> MarketUniverse:
     """
     Insert or update a MarketUniverse row identified by condition_id.
@@ -65,6 +66,9 @@ async def upsert_universe_market(
             existing.prediction_window_source = prediction_window_source
         if prediction_window_validated_at is not None:
             existing.prediction_window_validated_at = prediction_window_validated_at
+        # Persist event_slug: only write a valid incoming slug; never overwrite with None.
+        if event_slug is not None and existing.event_slug is None:
+            existing.event_slug = event_slug
         existing.updated_at = datetime.now(timezone.utc)
         await session.flush()
         logger.debug("Universe market updated", condition_id=condition_id, status=status)
@@ -76,6 +80,7 @@ async def upsert_universe_market(
         series_slug=series_slug,
         series_id=series_id,
         event_id=event_id,
+        event_slug=event_slug,
         condition_id=condition_id,
         yes_token_id=yes_token_id,
         no_token_id=no_token_id,

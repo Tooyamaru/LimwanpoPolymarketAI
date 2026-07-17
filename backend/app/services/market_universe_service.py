@@ -312,6 +312,7 @@ class MarketUniverseService:
                                 prediction_window_end=pw_end,
                                 prediction_window_source=pw_source,
                                 prediction_window_validated_at=now,
+                                event_slug=event_slug,
                             )
                             total_upserted += 1
                             if row.opening_price is None:
@@ -391,6 +392,7 @@ class MarketUniverseService:
                             start_time=market_start,
                             end_time=market.end_time or event.end_time,
                             status=status,
+                            event_slug=event.slug if event.slug and "updown-5m" in event.slug else None,
                             prediction_window_start=pw_start,
                             prediction_window_end=pw_end,
                             prediction_window_source=pw_source,

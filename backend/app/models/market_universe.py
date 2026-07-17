@@ -29,6 +29,9 @@ class MarketUniverse(Base):
     series_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
 
     event_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
+    # Exact rolling 5-minute event slug: {asset}-updown-5m-{unix_slot}
+    # e.g. "btc-updown-5m-1784271300"  (distinct from series_slug)
+    event_slug: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
     condition_id: Mapped[str] = mapped_column(String(256), nullable=False)
 
     yes_token_id: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)

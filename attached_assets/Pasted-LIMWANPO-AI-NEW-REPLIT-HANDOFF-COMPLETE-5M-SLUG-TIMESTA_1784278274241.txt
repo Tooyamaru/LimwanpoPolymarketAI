@@ -1,0 +1,899 @@
+LIMWANPO AI — NEW REPLIT HANDOFF + COMPLETE 5M SLUG TIMESTAMP FIX
+
+Saya memindahkan LIMWANPO AI ke Replit baru.
+
+Lanjutkan proyek dari source code yang berhasil diimpor.
+
+JANGAN langsung mengubah code sebelum memeriksa versi project, database,
+migration, dan environment.
+
+JANGAN mengubah:
+
+- trading strategy
+- signal thresholds
+- position sizing
+- Risk Engine
+- ENTRY logic
+- EXIT logic
+- Portfolio Accounting
+- 5M-only configuration
+- dashboard visual theme
+- IN/OUT/LOTS formulas
+
+Fokus pekerjaan ini hanya pada:
+
+1. memverifikasi state project di Replit baru;
+2. memastikan timestamp-slug discovery masih bekerja;
+3. memperbaiki event_slug yang NULL;
+4. memastikan slug disimpan ke database dan dikembalikan API;
+5. memvalidasi slug timestamp terhadap prediction_window_start;
+6. membuktikan satu rollover 5M setelah restart;
+7. memastikan tidak kembali ke market 22 jam.
+
+==================================================
+CURRENT CONFIRMED STATE FROM PREVIOUS REPLIT
+==================================================
+
+Pekerjaan sebelumnya sudah membuktikan:
+
+- Polymarket 5M markets tersedia kontinu.
+- Current market dapat ditemukan menggunakan slug:
+
+  {asset}-updown-5m-{unix_slot}
+
+- Current slot dihitung:
+
+  floor(server_unix_timestamp / 300) * 300
+
+- Slug timestamp menunjukkan awal current 5-minute slot.
+- prediction_window_start harus berasal dari slug timestamp.
+- prediction_window_end harus prediction_window_start + 300 seconds.
+- Contract startDate/endDate tidak boleh digunakan sebagai window 5M.
+- Series query limit 20 sebelumnya hanya mengambil market terbaru yang
+  dibuat untuk hari berikutnya.
+- Timestamp-slug lookup adalah primary current-market discovery.
+- Paginated series data hanya digunakan sebagai upcoming/backfill.
+- Current active API sempat menghasilkan:
+
+  countdown_mode = ENDS_IN
+  countdown_seconds antara 0 dan 300
+
+- Empat aset sudah berada pada slot yang sama.
+- Satu rollover A → B sudah berhasil:
+  - window maju tepat 300 detik;
+  - seluruh condition_id berubah;
+  - seluruh YES/NO token berubah;
+  - countdown kembali sekitar 284 detik;
+  - tidak ada data card lama yang bocor;
+  - compileall berhasil.
+
+Masalah terakhir yang belum selesai:
+
+- event_slug pada API response bernilai NULL;
+- belum terbukti apakah slug:
+  - tidak tersimpan di database;
+  - tersimpan dengan nama field berbeda;
+  - tidak dipopulasikan pada upsert;
+  - atau hanya tidak diekspos oleh schema/API;
+- pengecekan berhenti karena kuota Replit habis.
+
+==================================================
+1. IDENTIFY THE IMPORTED PROJECT
+==================================================
+
+Jalankan:
+
+pwd
+git status
+git branch --show-current
+git rev-parse HEAD
+git log --oneline -10
+git remote -v
+git diff --stat
+git diff
+
+Report:
+
+- current branch
+- current commit hash
+- source project berasal dari GitHub atau ZIP
+- changed files
+- untracked files
+- apakah Git history tersedia
+
+Jangan menjalankan:
+
+- git reset --hard
+- git clean -fd
+- git checkout terhadap file berubah
+- git pull yang dapat menimpa perubahan lokal
+
+==================================================
+2. VERIFY PROJECT STRUCTURE
+==================================================
+
+Cari lokasi sebenarnya dari file berikut:
+
+- market_universe model
+- universe repository
+- market universe service
+- Gamma series client
+- prediction_window utility
+- universe API/schema
+- market price service
+- static/index.html
+- database migration/init code
+- test_5m_discovery.py
+- universe tests
+
+Expected paths kemungkinan:
+
+backend/app/models/market_universe.py
+backend/app/repositories/universe_repository.py
+backend/app/services/market_universe_service.py
+backend/app/services/gamma_series_client.py
+backend/app/utils/prediction_window.py
+backend/app/api/v1/universe.py
+backend/app/schemas/universe.py
+backend/app/core/database.py
+backend/app/tests/test_5m_discovery.py
+
+Jika struktur berbeda, gunakan struktur yang benar dari project ini.
+
+==================================================
+3. VERIFY ENVIRONMENT WITHOUT EXPOSING SECRETS
+==================================================
+
+Periksa:
+
+- Python version
+- .replit run command
+- dependency files
+- database configuration
+- migration mechanism
+- Redis configuration jika digunakan
+- Gamma/Polymarket configuration
+- CLOB configuration
+
+Untuk environment variables, hanya tampilkan:
+
+VARIABLE_NAME = PRESENT
+atau
+VARIABLE_NAME = MISSING
+
+Jangan mencetak isi secret.
+
+Periksa minimal:
+
+- DATABASE_URL
+- REDIS_URL jika digunakan
+- Gamma/Polymarket settings
+- CLOB settings
+- application mode/settings
+
+Jangan membuat credential palsu.
+Jangan hardcode secrets.
+
+==================================================
+4. VERIFY DATABASE CONTINUITY
+==================================================
+
+Tentukan apakah Replit baru memakai:
+
+A. database lama yang sama;
+atau
+B. database baru/kosong.
+
+Periksa secara read-only:
+
+- database connection
+- migration state
+- market_universe row count
+- position count
+- order count
+- trade decision count
+- active/current market count
+
+Jika database lama:
+
+- jangan truncate;
+- jangan reseed;
+- jangan menghapus history.
+
+Jika database baru:
+
+- jalankan migration resmi;
+- jalankan market sync;
+- jangan mengklaim history lama ikut berpindah.
+
+Report:
+
+DATABASE CONTINUITY:
+- SAME DATABASE
+- NEW EMPTY DATABASE
+- UNKNOWN
+- FAILED
+
+==================================================
+5. AUDIT CURRENT 5M IMPLEMENTATION
+==================================================
+
+Sebelum edit, verifikasi apakah current code memiliki:
+
+- timestamp-slug lookup;
+- asset slug prefixes;
+- current slot calculation;
+- prediction_window_start/end model fields;
+- prediction window migration;
+- fetch event by exact slug;
+- slug-based active selection;
+- get_window_live_universe;
+- /universe/active menggunakan window-live query;
+- paginated backfill hanya upcoming;
+- test_5m_discovery.py.
+
+Cari:
+
+grep -R "updown-5m" -n backend/app
+grep -R "prediction_window_start" -n backend/app
+grep -R "fetch_event_by_slug" -n backend/app
+grep -R "get_window_live_universe" -n backend/app
+grep -R "event_slug" -n backend/app
+grep -R "market_slug" -n backend/app
+grep -R "series_slug" -n backend/app
+
+Buat tabel:
+
+FEATURE
+PRESENT
+PARTIAL
+MISSING
+FILE
+
+Jangan membuat implementation duplikat.
+
+==================================================
+6. AUDIT THE NULL SLUG ROOT CAUSE
+==================================================
+
+Cari semua kandidat nama field:
+
+- event_slug
+- slug
+- market_slug
+- polymarket_slug
+- series_slug
+
+Trace alur lengkap:
+
+raw Gamma event slug
+→ Gamma client object
+→ MarketUniverseService
+→ repository upsert
+→ database column
+→ ORM model
+→ Pydantic schema
+→ /universe/active API response
+
+Tentukan salah satu root cause:
+
+A. raw Gamma response tidak dipetakan;
+B. service tidak meneruskan slug;
+C. repository tidak menyimpan slug;
+D. model tidak memiliki column;
+E. migration belum membuat column;
+F. database lama memiliki NULL rows;
+G. schema tidak mempunyai field;
+H. endpoint tidak mengembalikan field;
+I. nama field berbeda antara layer.
+
+Report root cause sebelum mengedit.
+
+==================================================
+7. USE ONE CANONICAL EVENT SLUG FIELD
+==================================================
+
+Gunakan satu field canonical:
+
+event_slug
+
+Jangan membuat beberapa field yang bermakna sama.
+
+Expected value:
+
+btc-updown-5m-<unix_slot>
+eth-updown-5m-<unix_slot>
+sol-updown-5m-<unix_slot>
+xrp-updown-5m-<unix_slot>
+
+Jika project sudah menggunakan field lain yang benar, pertahankan nama
+existing tersebut dan gunakan alias API `event_slug`.
+
+Jangan mengubah series_slug menjadi event_slug.
+
+Definitions:
+
+series_slug =
+identitas seri produk
+
+event_slug =
+identitas exact rolling 5M window
+
+==================================================
+8. PERSIST EVENT SLUG TO DATABASE
+==================================================
+
+Jika database/model belum memiliki event_slug:
+
+Tambahkan nullable string column:
+
+event_slug
+
+Tambahkan proper migration yang:
+
+- idempotent;
+- tidak menghapus data;
+- tidak drop column;
+- tidak truncate;
+- aman untuk database lama;
+- menggunakan panjang string yang cukup.
+
+Jika column sudah ada:
+
+- jangan membuat duplicate column;
+- audit mengapa nilainya NULL.
+
+Update repository upsert:
+
+New row:
+- event_slug = exact Gamma event slug
+
+Existing row:
+- update event_slug jika incoming value valid;
+- jangan menimpa valid slug dengan NULL;
+- condition_id tetap primary identity/deduplication source.
+
+==================================================
+9. BACKFILL EXISTING CURRENT ROWS SAFELY
+==================================================
+
+Setelah migration, lakukan controlled backfill untuk row yang:
+
+- event_slug IS NULL;
+- memiliki prediction_window_start valid;
+- asset termasuk BTC/ETH/SOL/XRP;
+- timeframe = 5m.
+
+Derive only when safe:
+
+slot_timestamp =
+int(prediction_window_start.timestamp())
+
+event_slug =
+{asset_prefix}-updown-5m-{slot_timestamp}
+
+Before saving, verify exact slug exists via Gamma.
+
+Do not create a slug only from assumption.
+
+If exact slug lookup fails:
+
+- leave event_slug NULL;
+- mark backfill status failed;
+- log condition_id and reason.
+
+Never alter:
+
+- positions
+- orders
+- PnL
+- targets
+- CLOB token IDs
+
+during slug backfill.
+
+==================================================
+10. EXPOSE SLUG AND SLOT TIMESTAMP IN API
+==================================================
+
+Update universe response schema/API to return:
+
+- event_slug
+- market_slot_timestamp
+- prediction_window_start
+- prediction_window_end
+- prediction_window_source
+- server_time
+- countdown_mode
+- countdown_seconds
+- condition_id
+- yes_token_id
+- no_token_id
+
+Define:
+
+market_slot_timestamp =
+integer Unix timestamp extracted from event_slug suffix
+
+or, if event_slug is valid:
+
+int(prediction_window_start.timestamp())
+
+The API must not silently return NULL when the database has a valid slug.
+
+Use datetime types consistently.
+
+Do not define ORM datetime fields as strict string fields unless proper
+serialization is configured.
+
+==================================================
+11. STRICT SLUG TIMESTAMP VALIDATION
+==================================================
+
+Extract suffix using a strict pattern such as:
+
+-(\d{10})$
+
+For every selected current market validate:
+
+slug_timestamp ==
+int(prediction_window_start.timestamp())
+
+prediction_window_end ==
+prediction_window_start + timedelta(seconds=300)
+
+event_slug prefix matches asset.
+
+Examples:
+
+BTC → btc-updown-5m-
+ETH → eth-updown-5m-
+SOL → sol-updown-5m-
+XRP → xrp-updown-5m-
+
+Reject or flag invalid if:
+
+- suffix missing;
+- suffix is not numeric;
+- prefix does not match asset;
+- timestamp differs from window start;
+- window duration is not 300 seconds.
+
+Do not silently repair mismatched production data without logging it.
+
+==================================================
+12. VERIFY CURRENT SLOT CALCULATION
+==================================================
+
+Use:
+
+current_slot =
+floor(server_unix_timestamp / 300) * 300
+
+Boundary tests:
+
+xx:39:59 → previous five-minute slot
+xx:40:00 → xx:40 slot
+xx:44:59 → xx:40 slot
+xx:45:00 → xx:45 slot
+
+Current exact event slug:
+
+{asset}-updown-5m-{current_slot}
+
+Do not use:
+
+current_slot + 300
+
+for the current market.
+
+==================================================
+13. VERIFY ACTIVE MARKET SELECTION
+==================================================
+
+Current market selection must use:
+
+prediction_window_start <= server_time
+AND prediction_window_end > server_time
+
+or exact current timestamp slug.
+
+Do not select based on:
+
+- contract endDate
+- deployment startDate
+- created_at
+- database insertion order
+- generic status='active'
+- first API result
+- latest deployed market
+
+For each asset, selected market must satisfy:
+
+0 <= countdown_seconds <= 300
+
+countdown_mode = ENDS_IN
+
+If the exact current event is temporarily unavailable:
+
+- retry current slug;
+- inspect adjacent slots;
+- do not immediately select a 22-hour future market.
+
+==================================================
+14. VERIFY GET_WINDOW_LIVE_UNIVERSE WIRING
+==================================================
+
+Confirm `/api/v1/universe/active` uses:
+
+get_window_live_universe
+
+or equivalent prediction-window query.
+
+A fallback to old `get_active_universe` must not return future 22-hour
+markets as current cards.
+
+If fallback is retained:
+
+- apply the same prediction window validation;
+- reject markets outside current/nearby 5M range.
+
+Do not allow status-based fallback to reintroduce the original bug.
+
+==================================================
+15. VERIFY PRICE REFRESH AND CARD CONDITION
+==================================================
+
+Market price refresh must receive exactly the four selected current
+condition IDs.
+
+Expected:
+
+markets_polled = 4
+
+For every card verify exact condition binding:
+
+- event_slug
+- condition_id
+- YES token ID
+- NO token ID
+- CLOB prices
+- countdown
+- target
+- GAP
+- LOTS
+- IN
+- OUT
+- SHARES
+- PnL
+
+No query may bind card-local data using only:
+
+asset + timeframe
+
+Exact condition_id is required.
+
+==================================================
+16. TARGETED TESTS
+==================================================
+
+Add/update production-level tests:
+
+1. event_slug stored on new upsert
+2. event_slug updated on existing NULL row
+3. valid event_slug not overwritten by NULL
+4. API exposes event_slug
+5. API exposes market_slot_timestamp
+6. BTC prefix validation
+7. ETH prefix validation
+8. SOL prefix validation
+9. XRP prefix validation
+10. suffix equals prediction_window_start timestamp
+11. prediction window duration equals 300 seconds
+12. malformed slug rejected/flagged
+13. wrong asset prefix rejected/flagged
+14. current_slot calculation exact
+15. current_slot does not use +300
+16. current market selected
+17. 22-hour future market rejected
+18. database migration idempotent
+19. existing NULL slug backfill only after exact Gamma verification
+20. API datetime serialization works
+21. get_window_live_universe used by active endpoint
+22. current CLOB tokens belong to selected condition
+23. existing EXIT tests remain passing
+24. existing Portfolio Accounting tests remain passing
+
+Do not write tests that only calculate hardcoded constants without invoking
+production code.
+
+==================================================
+17. COMPILE AND TARGETED VALIDATION
+==================================================
+
+Run:
+
+python -m compileall -q backend/app
+
+Run targeted tests:
+
+pytest backend/app/tests/test_5m_discovery.py -q
+pytest backend/app/tests/test_universe_repository.py -q
+pytest backend/app/tests/test_universe_api.py -q
+pytest backend/app/tests/test_market_universe_service.py -q
+pytest backend/app/tests/test_gamma_http_client.py -q
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+Fix production mismatches, not only test mocks.
+
+==================================================
+18. RUN FULL SUITE
+==================================================
+
+After targeted tests pass, run:
+
+pytest backend/app/tests -q
+
+Do not exclude discovery tests.
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+Do not declare success while any test fails.
+
+==================================================
+19. RESTART AND APPLY MIGRATION
+==================================================
+
+Restart workflow once after code and tests pass.
+
+Verify:
+
+- migration executes;
+- event_slug column exists;
+- prediction window columns exist;
+- application imports;
+- no duplicate route;
+- no database exception;
+- `/markets` returns HTTP 200;
+- `/universe/active` returns HTTP 200;
+- frontend receives valid JSON.
+
+Capture migration log.
+
+==================================================
+20. RUNTIME SLUG VERIFICATION
+==================================================
+
+For current BTC, ETH, SOL, and XRP show:
+
+- exact event_slug
+- suffix timestamp
+- UTC datetime from suffix
+- prediction_window_start
+- prediction_window_end
+- server_time
+- countdown_mode
+- countdown_seconds
+- condition_id
+- YES token ID
+- NO token ID
+
+Validate:
+
+event_slug suffix timestamp
+=
+prediction_window_start Unix timestamp
+
+prediction_window_end
+=
+prediction_window_start + 300 seconds
+
+Use the actual runtime year/date.
+
+Do not hardcode timestamps from an old report.
+
+==================================================
+21. ONE LIVE ROLLOVER PROOF
+==================================================
+
+Capture Window A and Window B.
+
+Window A:
+
+- event_slug
+- condition_id
+- prediction_window_start/end
+- countdown
+- token IDs
+
+After countdown reaches zero, capture Window B.
+
+Prove:
+
+slug_timestamp_B =
+slug_timestamp_A + 300
+
+prediction_window_start_B =
+prediction_window_start_A + 300 seconds
+
+condition_id_B != condition_id_A
+
+YES/NO token IDs changed
+
+countdown_B returns to approximately 240–300 seconds
+
+No:
+
+- STARTS IN 22h
+- old condition reuse
+- old token reuse
+- old card-local data leakage
+- manual application restart
+
+==================================================
+22. PORTFOLIO SAFETY DURING ROLLOVER
+==================================================
+
+Rollover must not change approved formulas.
+
+Verify:
+
+Coverage =
+SUM remaining_quantity × entry_price
+for all OPEN/PARTIAL global positions
+
+Available =
+initial capital + realized PnL - Coverage
+
+Cumulative Outcome =
+realized PnL + unrealized PnL
+
+Old-condition positions remain:
+
+- in global Portfolio;
+- in Coverage;
+- in Exit Engine;
+- in history;
+- in AI Live Trades.
+
+They must not appear as current-card positions after rollover.
+
+==================================================
+23. DASHBOARD SCREENSHOT
+==================================================
+
+Take a screenshot after the fix showing:
+
+- four market cards;
+- ENDS IN between 00:00 and 05:00;
+- no 22-hour countdown;
+- current Polymarket UP/DOWN prices;
+- four current markets;
+- correct portfolio values.
+
+Also capture raw API evidence for the screenshot timestamp.
+
+==================================================
+24. FILES CHANGED
+==================================================
+
+Report every changed file and reason.
+
+Expected possible files:
+
+- MarketUniverse model
+- database migration/init
+- Gamma client
+- market universe service
+- universe repository
+- universe schema
+- universe API
+- discovery tests
+- API tests
+
+Do not modify unrelated files.
+
+==================================================
+25. FINAL REPORT
+==================================================
+
+Return:
+
+1. Import source
+2. Commit hash
+3. Database continuity
+4. Environment status
+5. Current diff audit
+6. Null slug root cause
+7. Canonical slug field
+8. Database migration
+9. Existing-row backfill
+10. API slug exposure
+11. BTC slug validation
+12. ETH slug validation
+13. SOL slug validation
+14. XRP slug validation
+15. Slot timestamp reconciliation
+16. Active selection result
+17. Price/card condition binding
+18. Targeted tests
+19. Full suite
+20. Runtime Window A
+21. Runtime Window B
+22. Rollover result
+23. Portfolio continuity
+24. Screenshot
+25. Files changed
+26. Remaining risks
+27. Final statuses
+
+Final statuses:
+
+NEW REPLIT HANDOFF:
+- PASS
+- PASS WITH NOTES
+- FAIL
+
+DATABASE CONTINUITY:
+- PASS
+- NEW EMPTY DATABASE
+- FAIL
+
+EVENT SLUG PERSISTENCE:
+- PASS
+- FAIL
+
+SLUG API EXPOSURE:
+- PASS
+- FAIL
+
+SLUG TIMESTAMP INTEGRITY:
+- PASS
+- FAIL
+
+CURRENT 5M SELECTION:
+- PASS
+- FAIL
+
+ROLLOVER A→B:
+- PASS
+- FAIL
+
+CARD CONDITION ISOLATION:
+- PASS
+- FAIL
+
+PORTFOLIO CONTINUITY:
+- PASS
+- FAIL
+
+Use PASS only if:
+
+- project version is verified;
+- database state is known;
+- event_slug is stored;
+- event_slug is exposed by API;
+- suffix timestamp equals prediction_window_start;
+- current cards use exact current slot;
+- no 22-hour market is selected;
+- one live rollover succeeds;
+- all tests pass;
+- portfolio formulas remain unchanged.
+
+Jangan menyatakan selesai hanya karena dashboard berhasil dibuka.
+Jangan mengubah trading logic.
+Jangan membuat slug palsu tanpa memverifikasi Gamma.
+Jangan menghapus data historis.
