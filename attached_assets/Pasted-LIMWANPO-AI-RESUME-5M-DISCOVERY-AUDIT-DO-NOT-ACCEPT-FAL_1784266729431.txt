@@ -1,0 +1,488 @@
+LIMWANPO AI — RESUME 5M DISCOVERY AUDIT, DO NOT ACCEPT FALSE 22-HOUR GAP
+
+Lanjutkan dari current codebase.
+
+Audit sebelumnya menemukan kemungkinan root cause yang valid:
+
+current selection mengurutkan candidate berdasarkan contract end_time /
+settlement time, bukan prediction_window_start lima menit.
+
+Namun audit sebelumnya juga membuat kesimpulan yang BELUM TERBUKTI:
+
+“Polymarket hanya menyediakan rolling 5M pada sesi malam dan terdapat
+gap nyata sekitar 22 jam.”
+
+JANGAN menerima kesimpulan tersebut.
+
+Belum ada implementasi final.
+Belum ada migration.
+Belum ada tests.
+Kuota sebelumnya berhenti ketika membuka test_universe_repository.py.
+
+JANGAN mengubah:
+
+- strategy
+- sizing
+- EXIT
+- Portfolio Accounting
+- card IN/OUT/LOTS
+- 5M-only assets
+- visual layout
+
+Fokus hanya pada discovery, current-market lookup, selection, dan rollover.
+
+==================================================
+1. REOPEN CURRENT STATE
+==================================================
+
+Jalankan:
+
+git status
+git diff --stat
+git diff
+python -m compileall -q backend/app
+
+Pastikan audit sebelumnya tidak meninggalkan partial edit.
+
+Baca:
+
+- gamma_series_client.py
+- market_universe_service.py
+- universe_repository.py
+- universe model
+- universe API
+- engine workers
+- tests terkait universe/discovery
+
+==================================================
+2. SEPARATE TWO ROOT CAUSES
+==================================================
+
+Root cause A:
+
+Selection bug:
+
+market dipilih berdasarkan contract end_time,
+padahal harus berdasarkan parsed prediction_window_start/end.
+
+Root cause B:
+
+Discovery coverage bug:
+
+query mungkin tidak mengambil current/adjacent 5M markets karena:
+
+- wrong endpoint
+- wrong series
+- wrong tag
+- active/closed filter salah
+- ordering salah
+- pagination tidak lengkap
+- limit terlalu kecil
+- hanya mengambil events terbaru berdasarkan deployment date
+- hanya membaca first page
+- nested markets tidak diproses semua
+- slug current window tidak dicari
+- future deployment rows mendominasi result
+
+Audit A dan B secara terpisah.
+
+Jangan menyimpulkan “tidak ada market” hanya karena current query tidak
+menemukannya.
+
+==================================================
+3. PROVE RAW CURRENT WINDOW USING MULTIPLE LOOKUP METHODS
+==================================================
+
+Untuk BTC, ETH, SOL, XRP, lakukan lookup current 5M menggunakan beberapa
+cara independen.
+
+METHOD A — Existing Gamma series query
+
+- tampilkan exact endpoint
+- query parameters
+- series_id / tag_id
+- active/closed values
+- order
+- ascending
+- limit
+- offset
+- total pages fetched
+
+Fetch all pages sampai habis atau sampai current-time region ditemukan.
+
+METHOD B — Gamma markets/events search by exact slug prefix
+
+Cari slug seperti:
+
+btc-updown-5m-
+eth-updown-5m-
+sol-updown-5m-
+xrp-updown-5m-
+
+METHOD C — Timestamp-based slug candidates
+
+Polymarket 5M event slugs terlihat menggunakan Unix timestamp window,
+misalnya:
+
+btc-updown-5m-<timestamp>
+
+Derive:
+
+current_slot =
+floor(server_unix_timestamp / 300) * 300
+
+Try slots:
+
+current_slot - 600
+current_slot - 300
+current_slot
+current_slot + 300
+current_slot + 600
+current_slot + 900
+current_slot + 1200
+
+Untuk setiap aset, fetch exact slug candidates dan report:
+
+- found/not found
+- condition_id
+- question
+- closed
+- active
+- accepting_orders
+- window start/end
+- CLOB token IDs
+
+Jangan menganggap slug format tanpa memverifikasi respons nyata.
+
+METHOD D — Inspect Polymarket current/adjacent navigation data
+
+Gunakan data/API yang dipakai halaman market untuk berpindah ke:
+
+- previous window
+- current live window
+- next window
+
+Report endpoint atau metadata yang digunakan.
+
+==================================================
+4. PAGINATION MUST BE COMPLETE
+==================================================
+
+Audit gamma_series_client.py.
+
+Current limit 20 tidak boleh dianggap cukup.
+
+Implement pagination:
+
+offset = 0
+limit = maximum supported safe page size
+
+Loop until:
+
+- page empty
+- returned count < limit
+- or explicit total exhausted
+
+Collect every nested market.
+
+Deduplicate using:
+
+condition_id
+
+Report:
+
+- pages fetched
+- total raw events
+- total raw markets
+- total valid 5M intervals
+- nearest past
+- current live
+- nearest upcoming
+
+Do this separately for all four assets.
+
+==================================================
+5. VERIFY MARKET FREQUENCY FROM RAW WINDOWS
+==================================================
+
+Sort valid windows by:
+
+prediction_window_start
+
+Print at least 30 consecutive windows around server_time.
+
+Expected adjacency for rolling 5M:
+
+difference between consecutive starts = 300 seconds
+
+Report any gaps:
+
+window A end
+window B start
+gap seconds
+
+Only declare a genuine Polymarket gap if:
+
+- all discovery methods agree
+- pagination is complete
+- exact slug candidates are absent
+- current/adjacent navigation has no market
+- no valid candidate exists in raw Polymarket data
+
+A single incomplete Gamma query is not sufficient proof.
+
+==================================================
+6. DO NOT USE startDate/endDate AS THE 5M WINDOW
+==================================================
+
+Treat separately:
+
+contract_open_time
+contract_end_or_settlement_time
+prediction_window_start
+prediction_window_end
+
+Parse the exact five-minute window from verified question/slug metadata.
+
+Validation:
+
+prediction_window_end - prediction_window_start = 300 seconds
+
+Do not sort current markets using generic Gamma endDate.
+
+==================================================
+7. PERSIST WINDOW FIELDS ONLY AFTER DISCOVERY IS CORRECT
+==================================================
+
+After raw discovery is proven, add model/migration fields if missing:
+
+- prediction_window_start
+- prediction_window_end
+- prediction_window_source
+- prediction_window_validated_at
+
+Do not use API-layer parser as the sole source during every read.
+
+Parse once during discovery/sync and persist verified UTC values.
+
+Keep:
+
+- contract start/end metadata separately
+- historical candidates
+- multiple windows per asset
+
+Do not enforce only one database row per asset/timeframe.
+
+==================================================
+8. SELECTION ALGORITHM
+==================================================
+
+For each asset:
+
+LIVE candidate:
+
+prediction_window_start <= server_time
+AND prediction_window_end > server_time
+
+If multiple live candidates:
+
+choose the one with the latest prediction_window_start,
+then flag duplicates as data integrity errors.
+
+If no live candidate:
+
+choose nearest upcoming:
+
+MIN(prediction_window_start)
+WHERE prediction_window_start > server_time
+
+Do not choose based on:
+
+- API order
+- insertion order
+- contract end_time
+- created_at
+- generic status active
+
+==================================================
+9. SAFETY LIMIT IS A DISPLAY GUARD, NOT A DISCOVERY SUBSTITUTE
+==================================================
+
+A maximum upcoming distance may be used, for example 600 seconds.
+
+But do not use it to hide a discovery failure.
+
+Workflow:
+
+1. discovery complete
+2. current/nearest candidate computed
+3. if nearest truly exceeds limit:
+   return NO_NEARBY_5M_MARKET
+4. force discovery refresh immediately
+5. log evidence from every lookup method
+
+If a nearby exact slug exists but series query misses it:
+
+status must be DISCOVERY_BUG,
+not NO_NEARBY_5M_MARKET.
+
+==================================================
+10. CLOB VALIDATION
+==================================================
+
+For the selected current condition:
+
+- verify accepting_orders
+- verify token IDs
+- fetch YES/NO orderbooks
+- verify bid/ask timestamps
+- verify the market is not closed/resolved
+
+A future 22-hour candidate must not provide the card's CLOB while a nearer
+live market exists.
+
+==================================================
+11. TARGET PRICE VALIDATION
+==================================================
+
+For the exact current 5M window:
+
+- use official Price to Beat / Chainlink reference when available
+- identify exact source field/endpoint
+- target must correspond to the selected condition
+- target should lock at prediction_window_start
+- do not reuse old or future targets
+
+The official Polymarket market rules identify the window opening reference
+price as the Price to Beat.
+
+==================================================
+12. IMPLEMENT ONLY AFTER THE AUDIT TABLE
+==================================================
+
+Before edits, report a table:
+
+ASSET
+METHOD
+CANDIDATES FOUND
+CURRENT LIVE FOUND
+NEAREST UPCOMING
+DISTANCE
+PAGES FETCHED
+SELECTED CONDITION
+NOTES
+
+Then state:
+
+DISCOVERY ROOT CAUSE:
+SELECTION ROOT CAUSE:
+ACTUAL MARKET AVAILABILITY:
+
+Only then implement fixes.
+
+==================================================
+13. TESTS
+==================================================
+
+Add tests:
+
+1. all pages are fetched
+2. limit 20 cannot hide current market
+3. API order does not affect selection
+4. deployment date does not affect selection
+5. contract endDate does not determine selected window
+6. exact timestamp slug current window is discovered
+7. current live window selected
+8. nearest upcoming selected
+9. 22-hour future market rejected when nearby market exists
+10. missing nearby series result triggers alternate lookup
+11. no-nearby status only after all lookup methods fail
+12. consecutive starts differ by 300 seconds
+13. multiple candidates stored
+14. condition_id deduplication
+15. midnight rollover
+16. date/year rollover
+17. DST
+18. CLOB belongs to selected condition
+19. target belongs to selected condition
+20. existing EXIT/accounting tests remain passing
+
+==================================================
+14. RUNTIME PROOF
+==================================================
+
+Prove at least three consecutive real windows.
+
+For every window show:
+
+- server time
+- selected condition_id
+- question
+- slug
+- prediction start/end
+- discovery method
+- CLOB
+- target
+- countdown
+
+At rollover prove:
+
+condition A
+→ condition B after 5 minutes
+→ condition C after another 5 minutes
+
+No old card data leakage.
+
+If Polymarket truly has no nearby market:
+
+show complete raw evidence from every method,
+not only the current Gamma query.
+
+==================================================
+15. FINAL REPORT
+==================================================
+
+Report:
+
+1. Existing query problem
+2. Pagination result
+3. Series/tag result
+4. Exact slug result
+5. Current-navigation result
+6. Raw consecutive windows
+7. Whether a genuine gap exists
+8. Selection implementation
+9. Database migration
+10. CLOB binding
+11. Target binding
+12. Tests
+13. Three-window runtime proof
+14. Files changed
+15. Remaining risks
+16. Final statuses
+
+Statuses:
+
+DISCOVERY COVERAGE:
+- PASS
+- FAIL
+
+CURRENT WINDOW LOOKUP:
+- PASS
+- FAIL
+
+5M SELECTION:
+- PASS
+- FAIL
+
+5M ROLLOVER:
+- PASS
+- FAIL
+
+GENUINE GAP CLAIM:
+- PROVEN
+- DISPROVEN
+- UNVERIFIED
+
+Do not call the 22-hour gap genuine until all discovery paths have been
+exhausted.

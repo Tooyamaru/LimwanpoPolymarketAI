@@ -57,6 +57,14 @@ The dashboard is served at port 5000 (→ external port 80).
 
 Python packages installed via `pip install -r backend/requirements.txt`.
 
+## Setup Verification (2026-07-17 re-import)
+
+- Workflow restarted cleanly after re-import; `checkDatabase` confirms Postgres provisioned and ready.
+- Dashboard renders live at port 5000 — 8 engines active, 3 markets loaded, BTC/ETH/SOL/XRP price feeds operational (confirmed via screenshot).
+- No secrets required; Polymarket CLOB and Binance APIs are public; `DATABASE_URL` injected automatically by Replit managed Postgres.
+- Redis started in-workflow via `nix-shell -p redis --run "redis-server --daemonize yes ..."` — do not revert to bare `redis-server`.
+- Untracked file `attached_assets/Pasted-*.txt` present from import; not part of the application.
+
 ## Setup Verification (2026-07-13 re-import)
 
 - `.replit` `modules` was missing `postgresql-16` after this re-import (dropped in a prior commit); restored it so the Replit-managed Postgres integration stays wired up alongside the `postgresql` nix package already used for the client libs.
