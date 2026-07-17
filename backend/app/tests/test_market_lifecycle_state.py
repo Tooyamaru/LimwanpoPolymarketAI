@@ -395,6 +395,11 @@ async def test_annotate_lifecycle_pre_market():
     market.is_expired = False
     market.display_status = "ACTIVE"
     market.data_mode = "LIVE"
+    # Timing fields added in sprint-countdown; must be correct type for Pydantic
+    market.server_time = None
+    market.countdown_seconds = None
+    market.countdown_source = "market_end_time"
+    market.countdown_data_stale = False
 
     resp = _annotate_lifecycle(market)
     assert resp.lifecycle_state   == "PRE_MARKET"
@@ -440,6 +445,11 @@ async def test_annotate_lifecycle_active():
     market.is_expired = False
     market.display_status = "ACTIVE"
     market.data_mode = "LIVE"
+    # Timing fields added in sprint-countdown; must be correct type for Pydantic
+    market.server_time = None
+    market.countdown_seconds = None
+    market.countdown_source = "market_end_time"
+    market.countdown_data_stale = False
 
     resp = _annotate_lifecycle(market)
     assert resp.lifecycle_state   == "ACTIVE"
@@ -485,6 +495,11 @@ async def test_annotate_lifecycle_expired():
     market.is_expired = False
     market.display_status = "ACTIVE"
     market.data_mode = "LIVE"
+    # Timing fields added in sprint-countdown; must be correct type for Pydantic
+    market.server_time = None
+    market.countdown_seconds = None
+    market.countdown_source = "market_end_time"
+    market.countdown_data_stale = False
 
     resp = _annotate_lifecycle(market)
     assert resp.lifecycle_state   == "EXPIRED"
