@@ -1,0 +1,470 @@
+LIMWANPO AI — RESUME SHARE PRECISION + COUNTDOWN SEMANTICS AFTER QUOTA STOP
+
+Lanjutkan dari current codebase.
+
+Pekerjaan sebelumnya berhenti karena kuota bulanan habis.
+
+Current confirmed state:
+
+- backend/app/api/v1/universe.py sempat diedit
+- kemungkinan parser prediction window sudah mulai ditambahkan
+- frontend fmtShares belum terbukti dibuat
+- frontend countdown_mode/countdown_target belum terbukti dihubungkan
+- test baru belum dibuat
+- compile dan full suite belum dijalankan
+- runtime screenshot belum tersedia
+
+JANGAN mengulang seluruh proyek.
+JANGAN mengubah strategy, sizing, ENTRY, EXIT, Portfolio Accounting, atau konfigurasi 5M-only.
+
+==================================================
+1. AUDIT PARTIAL EDITS FIRST
+==================================================
+
+Jalankan:
+
+git status
+git diff --stat
+git diff -- backend/app/api/v1/universe.py
+git diff -- backend/app/static/index.html
+git diff -- backend/app/tests/test_countdown.py
+
+Periksa universe.py untuk:
+
+- duplicate import re
+- duplicate ZoneInfo import
+- duplicate _parse_prediction_window()
+- duplicate regex
+- partially inserted code
+- unreachable fallback
+- syntax error
+- conflicting countdown_mode assignments
+- countdown fields overwritten later in _annotate_lifecycle()
+
+Jangan membuat fungsi parser kedua jika satu sudah ada.
+
+Kemudian jalankan:
+
+python -m compileall -q backend/app
+
+Jika compile gagal, perbaiki current partial edit terlebih dahulu.
+
+==================================================
+2. COMPLETE PREDICTION WINDOW PARSER
+==================================================
+
+Gunakan raw Polymarket market question sebagai sumber utama exact 5-minute interval.
+
+Contoh:
+
+Bitcoin Up or Down — July 18, 3:55AM–4:00AM ET
+
+Parser harus menerima variasi:
+
+- hyphen "-"
+- en dash "–"
+- em dash "—"
+- spasi atau tanpa spasi
+- 3:55AM–4:00AM ET
+- 3:55 AM - 4:00 AM ET
+- AM/PM hanya ditulis pada masing-masing waktu
+- interval yang melintasi tengah malam
+
+Gunakan:
+
+ZoneInfo("America/New_York")
+
+Jangan memakai fixed UTC-4 atau UTC-5 karena harus mengikuti daylight-saving time.
+
+Return:
+
+- prediction_window_start UTC
+- prediction_window_end UTC
+- source = "question_interval"
+
+Validation:
+
+prediction_window_end - prediction_window_start == 300 seconds
+
+Jika interval bukan tepat 5 menit:
+
+- jangan menggunakannya
+- countdown_mode = SYNCING
+- log exact parse/validation reason
+
+==================================================
+3. YEAR AND DATE HANDLING
+==================================================
+
+Question sering tidak menyertakan tahun.
+
+Infer year menggunakan:
+
+1. market end_time year jika tersedia
+2. server current year sebagai fallback
+
+Pilih tanggal yang paling masuk akal dan paling dekat dengan market metadata.
+
+Handle year rollover:
+
+December → January
+
+Jangan menghasilkan prediction window satu tahun di masa lalu atau masa depan karena year inference salah.
+
+==================================================
+4. STRICT COUNTDOWN SEMANTICS
+==================================================
+
+Pisahkan:
+
+trading_open_time =
+Gamma/Polymarket startDate atau waktu kontrak mulai dapat diperdagangkan
+
+prediction_window_start =
+hasil exact question interval
+
+prediction_window_end =
+hasil exact question interval
+
+Rules:
+
+Before prediction_window_start:
+
+countdown_mode = STARTS_IN
+countdown_target = prediction_window_start
+countdown_seconds =
+prediction_window_start - server_time
+
+During prediction window:
+
+countdown_mode = ENDS_IN
+countdown_target = prediction_window_end
+countdown_seconds =
+prediction_window_end - server_time
+
+Required:
+
+0 <= countdown_seconds <= 300
+
+After prediction_window_end:
+
+countdown_mode = RESOLVING
+countdown_target = null
+countdown_seconds = 0
+
+Missing or invalid interval:
+
+countdown_mode = SYNCING
+countdown_target = null
+countdown_seconds = null
+countdown_data_stale = true
+
+Do not fall back to:
+
+ENDS_IN 22h14
+
+If the exact prediction interval cannot be determined.
+
+Do not use trading_open_time as prediction_window_start.
+
+==================================================
+5. API FIELDS
+==================================================
+
+Ensure /api/v1/universe/active returns:
+
+- condition_id
+- question
+- trading_open_time
+- prediction_window_start
+- prediction_window_end
+- server_time
+- countdown_target
+- countdown_seconds
+- countdown_mode
+- countdown_source
+- countdown_data_stale
+- lifecycle_state
+
+Allowed countdown_mode:
+
+- STARTS_IN
+- ENDS_IN
+- RESOLVING
+- SYNCING
+
+Allowed countdown_source:
+
+- question_interval
+- explicit_market_interval
+- missing
+
+Do not report market_end_time as prediction interval unless it has been verified against the question interval.
+
+==================================================
+6. COMPLETE SHARE PRECISION FRONTEND FIX
+==================================================
+
+Inspect:
+
+backend/app/static/index.html
+
+Find:
+
+open_shares.toFixed(0)
+
+Replace integer rounding with one shared helper:
+
+function fmtShares(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "0";
+
+  return n
+    .toFixed(4)
+    .replace(/\.?0+$/, "");
+}
+
+Expected:
+
+4.38   → 4.38
+10     → 10
+2.195  → 2.195
+2.1900 → 2.19
+0.005  → 0.005
+
+Do not use:
+
+- Math.round()
+- parseInt()
+- toFixed(0)
+
+Backend quantity must remain full precision.
+
+==================================================
+7. COMPLETE FRONTEND COUNTDOWN BINDING
+==================================================
+
+Frontend must use backend fields:
+
+- countdown_mode
+- countdown_target
+- countdown_data_stale
+
+Display:
+
+STARTS_IN:
+STARTS IN 22h09m
+
+ENDS_IN:
+ENDS IN 04:59
+
+RESOLVING:
+RESOLVING
+
+SYNCING:
+SYNCING
+
+Do not derive the mode again from generic lifecycle_state in JavaScript.
+
+Do not use market.end_time directly when countdown_target is available.
+
+Use the existing server clock offset:
+
+displayNow =
+Date.now() + serverOffsetMs
+
+remaining =
+countdownTarget - displayNow
+
+Resynchronize each universe poll.
+
+==================================================
+8. FORMAT COUNTDOWN CLEARLY
+==================================================
+
+For STARTS_IN:
+
+>= 1 hour:
+22h09m
+
+< 1 hour:
+09m32s
+
+For ENDS_IN:
+
+MM:SS only
+
+Examples:
+
+04:59
+00:08
+
+Never show:
+
+ENDS IN 22h14
+
+Never show a negative value.
+
+At zero:
+
+- refresh universe
+- transition to RESOLVING or next condition
+- do not reset the old condition to five minutes
+
+==================================================
+9. ADD REAL TESTS
+==================================================
+
+Update backend/app/tests/test_countdown.py.
+
+Add tests for:
+
+1. July 18, 3:55AM–4:00AM ET parses
+2. hyphen, en dash, and em dash variants
+3. whitespace variants parse
+4. AM/PM conversion works
+5. America/New_York DST summer conversion works
+6. America/New_York winter conversion works
+7. midnight-crossing interval works
+8. inferred year is correct
+9. interval duration is exactly 300 seconds
+10. pre-window returns STARTS_IN
+11. live window returns ENDS_IN
+12. ENDS_IN countdown never exceeds 300
+13. after window returns RESOLVING
+14. invalid question returns SYNCING
+15. unparseable active market does not return ENDS_IN 22 hours
+16. countdown_target matches selected boundary
+17. countdown_seconds matches target
+18. shares 4.38 are not rounded to 4
+19. shares 2.195 preserve precision
+20. existing countdown tests remain passing
+
+Prefer testing the actual parser/API function.
+
+Do not use tests that only calculate hardcoded constants without invoking production code.
+
+==================================================
+10. JAVASCRIPT VALIDATION
+==================================================
+
+After editing index.html:
+
+- validate JavaScript syntax
+- verify fmtShares is defined once
+- verify countdown formatter is defined once
+- verify only one countdown interval exists
+- verify no old formatter still uses toFixed(0)
+- verify no old “ENDS IN + end_time” fallback remains
+
+==================================================
+11. RUN VALIDATION
+==================================================
+
+Run:
+
+python -m compileall -q backend/app
+
+Then:
+
+pytest backend/app/tests/test_countdown.py -q
+pytest backend/app/tests/test_card_integrity.py -q
+pytest backend/app/tests/test_card_summary.py -q
+pytest backend/app/tests/test_market_lifecycle_state.py -q
+
+Then run the complete test suite.
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+Do not claim completion if compile or any test fails.
+
+==================================================
+12. RUNTIME PROOF
+==================================================
+
+Restart workflow once.
+
+For every active card show:
+
+- asset
+- condition_id
+- raw question
+- trading_open_time
+- parsed prediction_window_start
+- parsed prediction_window_end
+- server_time
+- countdown_mode
+- countdown_target
+- countdown_seconds
+- displayed countdown
+- open_shares API value
+- displayed SHARES value
+
+Expected:
+
+For $2.19 at 0.50:
+
+API open_shares = 4.38
+Dashboard SHARES = 4.38
+
+Before prediction window:
+
+STARTS IN ...
+
+During prediction window:
+
+ENDS IN 00:00–05:00
+
+After prediction window:
+
+RESOLVING
+
+Difference between API countdown and dashboard:
+
+<= 2 seconds
+
+Take a screenshot.
+
+==================================================
+13. FINAL REPORT
+==================================================
+
+Report:
+
+1. Partial diff audit
+2. Parser implementation
+3. Question variants supported
+4. DST/timezone handling
+5. Countdown mode result
+6. Share precision result
+7. Targeted test result
+8. Full-suite result
+9. Runtime API proof
+10. Screenshot proof
+11. Files changed
+12. Remaining risks
+13. Final statuses
+
+SHARE QUANTITY PRECISION:
+- PASS
+- FAIL
+
+COUNTDOWN INTERVAL PARSING:
+- PASS
+- FAIL
+
+COUNTDOWN SEMANTICS:
+- PASS
+- FAIL
+
+RUNTIME DISPLAY:
+- PASS
+- FAIL
+
+Do not modify any other working feature.

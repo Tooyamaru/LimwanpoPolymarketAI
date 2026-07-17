@@ -12,7 +12,10 @@ All list responses include computed lifecycle fields:
   is_expired, display_status, data_mode
 """
 
-from datetime import datetime, timezone
+import logging
+import re
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -43,6 +46,160 @@ from app.services.market_universe_service import (
 
 router = APIRouter(prefix="/universe", tags=["universe"])
 
+_log = logging.getLogger(__name__)
+
+# ── Prediction-window parser ──────────────────────────────────────────────────
+
+_ET = ZoneInfo("America/New_York")
+
+_MONTH_MAP: dict[str, int] = {
+    "january": 1, "february": 2, "march": 3, "april": 4,
+    "may": 5, "june": 6, "july": 7, "august": 8,
+    "september": 9, "october": 10, "november": 11, "december": 12,
+}
+
+# "July 18"
+_DATE_RE = re.compile(
+    r"(?P<month>January|February|March|April|May|June|July|August|"
+    r"September|October|November|December)\s+(?P<day>\d{1,2})",
+    re.IGNORECASE,
+)
+
+# "3:55AM–4:00AM ET" — supports -, –, — and optional spaces around separator;
+# AM/PM optional on either or both times.
+_TIME_RE = re.compile(
+    r"(?P<h1>\d{1,2}):(?P<m1>\d{2})\s*(?P<p1>[AaPp][Mm])?"
+    r"\s*[-\u2013\u2014]\s*"
+    r"(?P<h2>\d{1,2}):(?P<m2>\d{2})\s*(?P<p2>[AaPp][Mm])?"
+    r"(?:\s+ET)?"
+)
+
+
+def _parse_prediction_window(
+    question: str,
+    market_end_time: "datetime | None" = None,
+) -> "tuple[datetime | None, datetime | None, str]":
+    """
+    Parse the exact 5-minute prediction interval from a Polymarket question string.
+
+    Handles:
+      • hyphen, en-dash, em-dash separators
+      • optional whitespace around the separator
+      • AM/PM on one or both times
+      • midnight-crossing intervals
+      • year inference from market_end_time (or server year as fallback)
+      • year-rollover edge cases (Dec → Jan)
+
+    Returns:
+        (start_utc, end_utc, "question_interval")  on success
+        (None, None, "missing")                    on any failure
+    """
+    # 1. Find the date (Month Day)
+    dm = _DATE_RE.search(question)
+    if not dm:
+        _log.debug("pw_parse.no_date q=%s", question[:80])
+        return None, None, "missing"
+    month = _MONTH_MAP[dm.group("month").lower()]
+    day = int(dm.group("day"))
+
+    # 2. Infer reference time for year selection
+    now_utc = datetime.now(timezone.utc)
+    if market_end_time is not None:
+        ref = (
+            market_end_time
+            if market_end_time.tzinfo
+            else market_end_time.replace(tzinfo=timezone.utc)
+        )
+    else:
+        ref = now_utc
+    base_year = ref.year
+
+    # 3. Find the time range
+    tm = _TIME_RE.search(question)
+    if not tm:
+        _log.debug("pw_parse.no_time q=%s", question[:80])
+        return None, None, "missing"
+
+    h1, m1 = int(tm.group("h1")), int(tm.group("m1"))
+    h2, m2 = int(tm.group("h2")), int(tm.group("m2"))
+    p1 = (tm.group("p1") or "").upper()
+    p2 = (tm.group("p2") or "").upper()
+
+    # Propagate AM/PM if only one side carries it
+    if p1 and not p2:
+        p2 = p1
+    elif p2 and not p1:
+        p1 = p2
+    if not p1:
+        _log.debug("pw_parse.no_ampm q=%s", question[:80])
+        return None, None, "missing"
+
+    def _to24(h: int, ampm: str) -> int:
+        if ampm == "AM":
+            return 0 if h == 12 else h
+        return h if h == 12 else h + 12  # PM
+
+    h1_24 = _to24(h1, p1)
+    h2_24 = _to24(h2, p2)
+
+    # 4. Build start/end in ET for a candidate year; handle midnight crossing
+    def _try_year(yr: int) -> "tuple[datetime | None, datetime | None]":
+        try:
+            start_et = datetime(yr, month, day, h1_24, m1, 0, tzinfo=_ET)
+        except (ValueError, OverflowError):
+            return None, None
+
+        end_min = h2_24 * 60 + m2
+        start_min = h1_24 * 60 + m1
+        if end_min <= start_min:
+            # Midnight-crossing: end is on the next calendar day
+            next_date = start_et.date() + timedelta(days=1)
+            try:
+                end_et = datetime(
+                    next_date.year, next_date.month, next_date.day,
+                    h2_24, m2, 0, tzinfo=_ET,
+                )
+            except (ValueError, OverflowError):
+                return None, None
+        else:
+            try:
+                end_et = datetime(yr, month, day, h2_24, m2, 0, tzinfo=_ET)
+            except (ValueError, OverflowError):
+                return None, None
+
+        return start_et.astimezone(timezone.utc), end_et.astimezone(timezone.utc)
+
+    # Pick the candidate year whose result is closest to ref
+    best_start: "datetime | None" = None
+    best_end: "datetime | None" = None
+    best_dist = float("inf")
+    for yr in (base_year, base_year + 1, base_year - 1):
+        s, e = _try_year(yr)
+        if s is None:
+            continue
+        dist = abs((s - ref).total_seconds())
+        if dist < best_dist:
+            best_start, best_end, best_dist = s, e, dist
+
+    if best_start is None or best_end is None:
+        _log.debug("pw_parse.build_failed q=%s", question[:80])
+        return None, None, "missing"
+
+    # Reject windows more than ~6 months away from ref (indicates bad year inference)
+    if best_dist > 180 * 24 * 3600:
+        _log.warning("pw_parse.year_too_far dist_days=%.1f q=%s",
+                     best_dist / 86400, question[:80])
+        return None, None, "missing"
+
+    # 5. Validate: duration must be exactly 300 seconds
+    duration = (best_end - best_start).total_seconds()
+    if duration != 300:
+        _log.warning("pw_parse.invalid_duration duration=%.0f q=%s",
+                     duration, question[:80])
+        return None, None, "missing"
+
+    return best_start, best_end, "question_interval"
+
 
 # ── Lifecycle annotation helper ───────────────────────────────────────────────
 
@@ -51,29 +208,74 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
     Build a UniverseMarketResponse from an ORM row and populate all lifecycle
     state fields (computed from start_time/end_time, not stored in DB).
 
-    Also computes timing fields for accurate frontend countdown (spec §17):
-      server_time       — ISO UTC string of when this response was built.
-      countdown_seconds — max(0, floor(end_time - server_time)) in seconds.
-      countdown_source  — "market_end_time" | "missing".
-      countdown_data_stale — True when end_time is absent or invalid.
+    Countdown semantics (spec §4):
+      prediction_window_start/end — parsed from market question text (exact 5-min interval)
+      trading_open_time           — market contract start_time (when trading opens)
+      countdown_mode              — STARTS_IN | ENDS_IN | RESOLVING | SYNCING
+      countdown_target            — ISO UTC timestamp the frontend ticks toward
+      countdown_seconds           — integer seconds remaining (0–300 for ENDS_IN)
+      countdown_source            — question_interval | missing
+      countdown_data_stale        — True when interval cannot be parsed
     """
     now = datetime.now(timezone.utc)
     server_time_iso = now.isoformat()
 
-    # ── Countdown fields ───────────────────────────────────────────────────────
-    end_time = m.end_time
-    if end_time is not None:
-        if end_time.tzinfo is None:
-            end_time = end_time.replace(tzinfo=timezone.utc)
-        remaining = (end_time - now).total_seconds()
-        countdown_seconds = max(0, int(remaining))
-        countdown_source = "market_end_time"
-        countdown_data_stale = False
-    else:
-        countdown_seconds = None
-        countdown_source = "missing"
-        countdown_data_stale = True
+    # ── trading_open_time: when the market contract starts trading (start_time) ──
+    raw_start = m.start_time
+    trading_open_time_iso: str | None = None
+    if raw_start is not None:
+        if raw_start.tzinfo is None:
+            raw_start = raw_start.replace(tzinfo=timezone.utc)
+        trading_open_time_iso = raw_start.isoformat()
 
+    # ── Parse exact prediction window from question text ──────────────────────
+    raw_end = m.end_time
+    if raw_end is not None and raw_end.tzinfo is None:
+        raw_end = raw_end.replace(tzinfo=timezone.utc)
+
+    pw_start, pw_end, pw_source = _parse_prediction_window(
+        m.question or "", raw_end
+    )
+
+    prediction_window_start_iso: str | None = (
+        pw_start.isoformat() if pw_start is not None else None
+    )
+    prediction_window_end_iso: str | None = (
+        pw_end.isoformat() if pw_end is not None else None
+    )
+
+    # ── Countdown semantics (spec §4) ─────────────────────────────────────────
+    if pw_start is None or pw_end is None:
+        # Cannot parse question interval → SYNCING
+        countdown_mode = "SYNCING"
+        countdown_target: str | None = None
+        countdown_seconds: int | None = None
+        countdown_data_stale = True
+        countdown_source = "missing"
+    elif now < pw_start:
+        # Before prediction window → STARTS_IN
+        countdown_mode = "STARTS_IN"
+        countdown_target = pw_start.isoformat()
+        countdown_seconds = max(0, int((pw_start - now).total_seconds()))
+        countdown_data_stale = False
+        countdown_source = pw_source
+    elif now <= pw_end:
+        # During prediction window → ENDS_IN (0–300 s)
+        countdown_mode = "ENDS_IN"
+        countdown_target = pw_end.isoformat()
+        secs = int((pw_end - now).total_seconds())
+        countdown_seconds = max(0, min(300, secs))
+        countdown_data_stale = False
+        countdown_source = pw_source
+    else:
+        # After prediction window → RESOLVING
+        countdown_mode = "RESOLVING"
+        countdown_target = None
+        countdown_seconds = 0
+        countdown_data_stale = False
+        countdown_source = pw_source
+
+    # ── Lifecycle state ───────────────────────────────────────────────────────
     resp = UniverseMarketResponse.model_validate(m)
     lc = get_market_lifecycle_state(m)
 
@@ -98,39 +300,6 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
         display = "UNKNOWN"
         mode    = "SEED"
 
-    # ── Extended countdown fields (spec §12) ─────────────────────────────────
-    # prediction_window_start / end: ISO strings of the market's trading window
-    start_time = m.start_time
-    trading_open_time_iso: str | None = None
-    if start_time is not None:
-        if start_time.tzinfo is None:
-            start_time = start_time.replace(tzinfo=timezone.utc)
-        trading_open_time_iso = start_time.isoformat()
-
-    prediction_window_end_iso: str | None = (
-        end_time.isoformat() if end_time is not None else None
-    )
-
-    # countdown_target: what the frontend actually ticks toward
-    if lc == LIFECYCLE_PRE_MARKET:
-        countdown_target = trading_open_time_iso
-    elif lc == LIFECYCLE_ACTIVE:
-        countdown_target = prediction_window_end_iso
-    else:
-        countdown_target = None
-
-    # countdown_mode: semantic label for the frontend display
-    if countdown_data_stale:
-        countdown_mode = "SYNCING"
-    elif lc == LIFECYCLE_PRE_MARKET:
-        countdown_mode = "STARTS_IN"
-    elif lc == LIFECYCLE_ACTIVE:
-        countdown_mode = "ENDS_IN"
-    elif lc in (LIFECYCLE_EXPIRED, LIFECYCLE_RESOLUTION_PENDING):
-        countdown_mode = "RESOLVING"
-    else:
-        countdown_mode = "STATIC"
-
     return resp.model_copy(update={
         "lifecycle_state":           lc,
         "execution_allowed":         is_active,
@@ -144,7 +313,7 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
         "countdown_source":          countdown_source,
         "countdown_data_stale":      countdown_data_stale,
         "countdown_mode":            countdown_mode,
-        "prediction_window_start":   trading_open_time_iso,
+        "prediction_window_start":   prediction_window_start_iso,
         "prediction_window_end":     prediction_window_end_iso,
         "countdown_target":          countdown_target,
         "trading_open_time":         trading_open_time_iso,

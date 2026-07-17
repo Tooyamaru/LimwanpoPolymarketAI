@@ -437,14 +437,27 @@ const pctColor=p=>p>=80?NG:p>=60?NY:RED;
 // _svrOffsetMs is updated each loadMarkets() poll from market.server_time.
 let _svrOffsetMs=0;
 function fmtCountdown(targetStr){
+  // STARTS_IN format: >=1h → "22h09m"; <1h → "09m32s". Never negative.
   if(!targetStr)return"\u2014";
   const diff=Math.max(0,Math.floor((new Date(targetStr)-(Date.now()+_svrOffsetMs))/1000));
   const h=Math.floor(diff/3600),m=Math.floor((diff%3600)/60),s=diff%60;
-  if(diff<3600)return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
-  // >= 1 hour: use "HHhMM" to disambiguate from MM:SS format
-  return String(h).padStart(2,"0")+"h"+String(m).padStart(2,"0");
+  if(h>=1)return String(h)+"h"+String(m).padStart(2,"0")+"m";
+  return String(m).padStart(2,"0")+"m"+String(s).padStart(2,"0")+"s";
+}
+function fmtEndsIn(targetStr){
+  // ENDS_IN format: always MM:SS (prediction window max 300s). Never negative.
+  if(!targetStr)return"00:00";
+  const diff=Math.max(0,Math.min(300,Math.floor((new Date(targetStr)-(Date.now()+_svrOffsetMs))/1000)));
+  const m=Math.floor(diff/60),s=diff%60;
+  return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
 }
 function fmtVol(v){return v>1e9?(v/1e9).toFixed(1)+"B":v>1e6?(v/1e6).toFixed(1)+"M":v.toFixed(0)}
+function fmtShares(value){
+  // Preserve fractional shares: 4.38→"4.38", 10→"10", 2.1900→"2.19", 0.005→"0.005"
+  const n=Number(value);
+  if(!Number.isFinite(n))return"0";
+  return n.toFixed(4).replace(/\.?0+$/,"");
+}
 function fmtAssetPrice(sym,p){
   p=parseFloat(p);
   return sym==="BTC"?p.toLocaleString(undefined,{maximumFractionDigits:0}):
@@ -956,27 +969,23 @@ function renderCard(m){
   // Stale badge: shown when snapshot exceeds freshness threshold
   const _isStale=(cp&&cp.price_data_mode==="STALE")||(cs&&cs.market_data_stale===true);
 
-  // -- Countdown (lifecycle-state driven; lives in Row 1 next to the TF badge) --
-  // PRE_MARKET ticks down to start_time ("OPENS MM:SS"); ACTIVE ticks down to
-  // end_time (MM:SS, or HH:MM once >= 1h remains); EXPIRED/RESOLUTION_PENDING/
-  // RESOLVED/INVALID_TIME_STATE are static labels — never ticked, never negative.
+  // -- Countdown — driven by backend countdown_mode/countdown_target (spec §7) --
+  // Do NOT re-derive mode from lifecycle_state. Use backend fields directly.
+  // Resync countdown_target each universe poll so clock drift cannot accumulate.
   let _cdMode="STATIC",_cdTarget=null,_cdDisplay="\u2014";
-  if(m.countdown_data_stale){
-    // Backend flagged timing data as stale/missing — show SYNCING not a fake timer
+  const _bMode=m.countdown_mode||"SYNCING";
+  if(_bMode==="SYNCING"||m.countdown_data_stale){
     _cdDisplay="SYNCING";
-  } else if(lcs==="PRE_MARKET"&&m.start_time){
-    _cdMode="PRE";_cdTarget=m.start_time;_cdDisplay="STARTS IN "+fmtCountdown(m.start_time);
-  } else if(lcs==="ACTIVE"&&m.end_time){
-    // countdown_seconds (from backend) used to verify sanity; frontend ticks via fmtCountdown
-    _cdMode="ACTIVE";_cdTarget=m.end_time;_cdDisplay="ENDS IN "+fmtCountdown(m.end_time);
-  } else if(lcs==="EXPIRED"){
-    _cdDisplay="EXPIRED";
-  } else if(lcs==="RESOLUTION_PENDING"){
+  } else if(_bMode==="STARTS_IN"&&m.countdown_target){
+    _cdMode="STARTS_IN";_cdTarget=m.countdown_target;
+    _cdDisplay="STARTS IN "+fmtCountdown(m.countdown_target);
+  } else if(_bMode==="ENDS_IN"&&m.countdown_target){
+    _cdMode="ENDS_IN";_cdTarget=m.countdown_target;
+    _cdDisplay="ENDS IN "+fmtEndsIn(m.countdown_target);
+  } else if(_bMode==="RESOLVING"){
     _cdDisplay="RESOLVING";
-  } else if(lcs==="RESOLVED"){
-    _cdDisplay="RESOLVED";
   } else {
-    _cdDisplay="\u2014"; // INVALID_TIME_STATE or missing timestamps
+    _cdDisplay="\u2014";
   }
 
   // -- Status: lifecycle_state takes priority; AI decision only shown for ACTIVE markets --
@@ -1046,7 +1055,7 @@ function renderCard(m){
   h+='</div>';
   // ── ROW 3b: SHARES | AVG ENTRY | COST — only when an active position exists ──
   if(cs&&cs.has_position){
-    const _shrFmt=cs.open_shares>0?cs.open_shares.toFixed(0):"—";
+    const _shrFmt=cs.open_shares>0?fmtShares(cs.open_shares):"—";
     const _avgFmt=cs.average_entry!=null?cs.average_entry.toFixed(4):"—";
     const _costFmt=cs.open_cost_basis>0?("$"+cs.open_cost_basis.toFixed(2)):"—";
     h+='<div class="mc-ptb" style="grid-template-columns:1fr 1fr 1fr">';
@@ -1083,8 +1092,15 @@ function renderCard(m){
 // (EXPIRED/PENDING/RESOLVED/—) were never added to _cdEls.
 setInterval(()=>{
   _cdEls.forEach(e=>{
-    const v=fmtCountdown(e.dataset.end);
-    e.textContent=e.dataset.cdMode==="PRE"?("STARTS IN "+v):("ENDS IN "+v);
+    const mode=e.dataset.cdMode;
+    if(mode==="STARTS_IN"){
+      e.textContent="STARTS IN "+fmtCountdown(e.dataset.end);
+    } else if(mode==="ENDS_IN"){
+      const v=fmtEndsIn(e.dataset.end);
+      e.textContent="ENDS IN "+v;
+      // At zero: trigger universe refresh so card transitions to RESOLVING
+      if(v==="00:00")setTimeout(loadMarkets,500);
+    }
   });
 },1000);
 

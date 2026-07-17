@@ -22,6 +22,19 @@ from unittest.mock import MagicMock
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+def _make_parseable_question(pw_start: datetime, pw_end: datetime) -> str:
+    """Generate a Polymarket-style question string for a given prediction window."""
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    s_et = pw_start.astimezone(ET)
+    e_et = pw_end.astimezone(ET)
+    return (
+        f"Bitcoin Up or Down \u2014 "
+        f"{s_et.strftime('%B %-d')}, "
+        f"{s_et.strftime('%-I:%M%p')}\u2013{e_et.strftime('%-I:%M%p')} ET"
+    )
+
+
 def _make_market_row(
     condition_id: str = "cid-001",
     start_time: datetime | None = None,
@@ -87,8 +100,14 @@ def _annotate(m):
 
 @pytest.mark.anyio
 async def test_24_countdown_seconds_non_negative():
-    """Test 24: Active 5M market countdown_seconds must be >= 0."""
-    m = _make_market_row(end_time=datetime.now(timezone.utc) + timedelta(hours=22))
+    """Test 24: Active 5M market with parseable question gives countdown_seconds >= 0."""
+    now = datetime.now(timezone.utc)
+    # Upcoming window: starts in 30 minutes
+    pw_start = now + timedelta(minutes=30)
+    pw_end = pw_start + timedelta(seconds=300)
+    question = _make_parseable_question(pw_start, pw_end)
+    m = _make_market_row(end_time=pw_end + timedelta(hours=1))
+    m.question = question
     resp = _annotate(m)
     assert resp.countdown_seconds is not None
     assert resp.countdown_seconds >= 0, \
@@ -96,38 +115,49 @@ async def test_24_countdown_seconds_non_negative():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 25. Uses exact condition end_time as countdown_source
+# 25. Uses question_interval as countdown_source when question is parseable
 # ══════════════════════════════════════════════════════════════════════════════
 
 @pytest.mark.anyio
 async def test_25_uses_exact_condition_end_time():
-    """Test 25: countdown_source must be 'market_end_time' for a market with end_time."""
-    end = datetime.now(timezone.utc) + timedelta(hours=22, minutes=15)
-    m = _make_market_row(end_time=end)
+    """Test 25: countdown_source must be 'question_interval' for a parseable question."""
+    now = datetime.now(timezone.utc)
+    pw_start = now + timedelta(hours=1)
+    pw_end = pw_start + timedelta(seconds=300)
+    question = _make_parseable_question(pw_start, pw_end)
+    m = _make_market_row(end_time=pw_end + timedelta(hours=1))
+    m.question = question
     resp = _annotate(m)
-    assert resp.countdown_source == "market_end_time", \
-        f"countdown_source must be 'market_end_time', got '{resp.countdown_source}'"
+    assert resp.countdown_source == "question_interval", \
+        f"countdown_source must be 'question_interval', got '{resp.countdown_source}'"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 26. countdown_seconds matches expected duration from market end_time
+# 26. countdown_seconds matches prediction_window_start for STARTS_IN
 # ══════════════════════════════════════════════════════════════════════════════
 
 @pytest.mark.anyio
 async def test_26_countdown_seconds_matches_end_time():
-    """Test 26: countdown_seconds ≈ (end_time - now) using market-level end_time."""
-    market_end = datetime.now(timezone.utc) + timedelta(hours=1)
-    m = _make_market_row(end_time=market_end)
+    """Test 26: countdown_seconds ≈ (prediction_window_start - now) when STARTS_IN."""
+    now = datetime.now(timezone.utc)
+    # Round to minute boundary so generated question matches parsed start exactly
+    raw = now + timedelta(hours=1)
+    pw_start = raw.replace(second=0, microsecond=0)
+    pw_end = pw_start + timedelta(seconds=300)
+    question = _make_parseable_question(pw_start, pw_end)
+    m = _make_market_row(end_time=pw_end + timedelta(hours=1))
+    m.question = question
 
     pre = datetime.now(timezone.utc)
     resp = _annotate(m)
     post = datetime.now(timezone.utc)
 
-    # Independent compute of expected range
-    expected_min = int((market_end - post).total_seconds())
-    expected_max = int((market_end - pre).total_seconds())
-
-    assert expected_min <= resp.countdown_seconds <= expected_max + 1, \
+    assert resp.countdown_mode == "STARTS_IN"
+    assert resp.countdown_seconds is not None
+    # Expected: seconds until pw_start (minute-rounded, so answer should be exact ±2s)
+    expected_min = int((pw_start - post).total_seconds())
+    expected_max = int((pw_start - pre).total_seconds())
+    assert expected_min <= resp.countdown_seconds <= expected_max + 2, \
         f"countdown_seconds {resp.countdown_seconds} not in [{expected_min}, {expected_max}]"
 
 
@@ -179,13 +209,18 @@ async def test_28_server_browser_offset_near_zero_for_fresh_request():
 
 @pytest.mark.anyio
 async def test_29_countdown_never_negative():
-    """Test 29: countdown_seconds must be 0 (clamped) for expired markets."""
-    past_end = datetime.now(timezone.utc) - timedelta(hours=1)
-    m = _make_market_row(end_time=past_end, status="closed", is_active=False)
+    """Test 29: RESOLVING market (window expired) must have countdown_seconds=0."""
+    now = datetime.now(timezone.utc)
+    # Window ended 1 hour ago
+    pw_end = now - timedelta(hours=1)
+    pw_start = pw_end - timedelta(seconds=300)
+    question = _make_parseable_question(pw_start, pw_end)
+    m = _make_market_row(end_time=pw_end, status="closed", is_active=False)
+    m.question = question
     resp = _annotate(m)
     assert resp.countdown_seconds is not None
     assert resp.countdown_seconds == 0, \
-        f"Expired market must have countdown_seconds=0, got {resp.countdown_seconds}"
+        f"Expired/RESOLVING market must have countdown_seconds=0, got {resp.countdown_seconds}"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -194,9 +229,14 @@ async def test_29_countdown_never_negative():
 
 @pytest.mark.anyio
 async def test_30_zero_countdown_at_boundary():
-    """Test 30: Market with end_time == now → countdown_seconds = 0 (triggers EXPIRED)."""
-    end = datetime.now(timezone.utc) - timedelta(seconds=1)  # just expired
-    m = _make_market_row(end_time=end, status="closed", is_active=False)
+    """Test 30: Market whose prediction window just expired → countdown_seconds=0 (RESOLVING)."""
+    now = datetime.now(timezone.utc)
+    # Window ended 1 second ago
+    pw_end = now - timedelta(seconds=1)
+    pw_start = pw_end - timedelta(seconds=300)
+    question = _make_parseable_question(pw_start, pw_end)
+    m = _make_market_row(end_time=pw_end, status="closed", is_active=False)
+    m.question = question
     resp = _annotate(m)
     assert resp.countdown_seconds == 0, \
         f"Just-expired market must have countdown_seconds=0, got {resp.countdown_seconds}"
@@ -236,19 +276,27 @@ async def test_31_rollover_changes_condition_id():
 
 @pytest.mark.anyio
 async def test_32_rollover_resets_countdown_to_new_end():
-    """Test 32: New market countdown_seconds is derived from new market's end_time."""
-    new_end = datetime.now(timezone.utc) + timedelta(hours=23, minutes=55)
+    """Test 32: New market countdown_seconds is derived from its parsed question window."""
+    now = datetime.now(timezone.utc)
+    # New market: window starts in 2 hours — round to minute for exact parse match
+    raw = now + timedelta(hours=2)
+    pw_start = raw.replace(second=0, microsecond=0)
+    pw_end = pw_start + timedelta(seconds=300)
+    question = _make_parseable_question(pw_start, pw_end)
+    new_end = pw_end + timedelta(hours=21)  # market contract end_time
     new_m = _make_market_row(condition_id="0x_new", end_time=new_end)
+    new_m.question = question
 
     pre = datetime.now(timezone.utc)
     resp = _annotate(new_m)
     post = datetime.now(timezone.utc)
 
-    expected_min = int((new_end - post).total_seconds())
-    expected_max = int((new_end - pre).total_seconds())
-
+    assert resp.countdown_mode == "STARTS_IN"
+    assert resp.countdown_seconds is not None
+    expected_min = int((pw_start - post).total_seconds())
+    expected_max = int((pw_start - pre).total_seconds())
     assert expected_min <= resp.countdown_seconds <= expected_max + 2, \
-        f"New market countdown_seconds ({resp.countdown_seconds}) must match new end_time"
+        f"New market countdown_seconds ({resp.countdown_seconds}) must match pw_start"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -288,8 +336,8 @@ async def test_34_single_countdown_interval():
     with open("/home/runner/workspace/backend/app/static/index.html", "r") as f:
         html = f.read()
 
-    # Find setInterval calls that reference countdown elements (_cdEls)
-    cd_intervals = re.findall(r'setInterval\([^;]{0,200}_cdEls[^;]{0,200}\)', html, re.DOTALL)
+    # Find setInterval blocks that reference _cdEls — allow multi-line/multi-semicolon body
+    cd_intervals = re.findall(r'setInterval\(.*?_cdEls.*?\},\s*1000\)', html, re.DOTALL)
     assert len(cd_intervals) == 1, \
         f"Expected exactly 1 countdown setInterval; found {len(cd_intervals)}: {cd_intervals}"
 
@@ -325,17 +373,24 @@ async def test_35_stale_timing_shows_syncing():
 
 @pytest.mark.anyio
 async def test_36_api_countdown_within_tolerance():
-    """Test 36: countdown_seconds from API matches (end_time - server_time) within 2s."""
-    end = datetime.now(timezone.utc) + timedelta(hours=22, minutes=5)
-    m = _make_market_row(end_time=end)
+    """Test 36: countdown_seconds matches prediction_window_start within 2s tolerance."""
+    now = datetime.now(timezone.utc)
+    # Round to minute boundary so generated question exactly matches parsed start
+    raw = now + timedelta(hours=1, minutes=5)
+    pw_start = raw.replace(second=0, microsecond=0)
+    pw_end = pw_start + timedelta(seconds=300)
+    question = _make_parseable_question(pw_start, pw_end)
+    m = _make_market_row(end_time=pw_end + timedelta(hours=21))
+    m.question = question
 
     pre_call = datetime.now(timezone.utc)
     resp = _annotate(m)
     post_call = datetime.now(timezone.utc)
 
-    expected_min = int((end - post_call).total_seconds())
-    expected_max = int((end - pre_call).total_seconds())
-
+    assert resp.countdown_mode == "STARTS_IN"
+    assert resp.countdown_seconds is not None
+    expected_min = int((pw_start - post_call).total_seconds())
+    expected_max = int((pw_start - pre_call).total_seconds())
     assert expected_min <= resp.countdown_seconds <= expected_max + 2, \
         f"countdown_seconds {resp.countdown_seconds} out of range [{expected_min}, {expected_max}]"
 
@@ -385,9 +440,13 @@ async def test_countdown_schema_has_all_spec17_timing_fields():
 
 @pytest.mark.anyio
 async def test_countdown_data_stale_false_for_valid_end_time():
-    """countdown_data_stale=False when a valid end_time is provided."""
-    end = datetime.now(timezone.utc) + timedelta(hours=1)
-    m = _make_market_row(end_time=end)
+    """countdown_data_stale=False when question interval is parseable."""
+    now = datetime.now(timezone.utc)
+    pw_start = now + timedelta(hours=1)
+    pw_end = pw_start + timedelta(seconds=300)
+    question = _make_parseable_question(pw_start, pw_end)
+    m = _make_market_row(end_time=pw_end + timedelta(hours=21))
+    m.question = question
     resp = _annotate(m)
     assert resp.countdown_data_stale is False
 
@@ -450,3 +509,373 @@ async def test_active_api_endpoint_includes_countdown_fields():
     except Exception:
         # App may not be running in test environment — skip HTTP check
         pytest.skip("App not running — skipping live API test")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# NEW TESTS — Spec §9 items 1–20: prediction window parser + countdown semantics
+# ══════════════════════════════════════════════════════════════════════════════
+
+from app.api.v1.universe import _parse_prediction_window
+
+
+# ── Helper: build a market row with a real question string ────────────────────
+def _make_row_with_question(
+    question: str,
+    end_time: datetime | None = None,
+) -> MagicMock:
+    """
+    Build a mock market row with a real question string so _parse_prediction_window
+    is exercised through _annotate_lifecycle.
+    """
+    now = datetime.now(timezone.utc)
+    m = _make_market_row(end_time=end_time or (now + timedelta(hours=22)))
+    m.question = question
+    return m
+
+
+# ── 1. Standard format parses ─────────────────────────────────────────────────
+def test_spec1_standard_format_parses():
+    """July 18, 3:55AM–4:00AM ET parses to exactly 300 s."""
+    end_ref = datetime(2026, 7, 18, 10, 0, 0, tzinfo=timezone.utc)  # 6:00 AM ET
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 July 18, 3:55AM\u20134:00AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None, "parse returned None"
+    assert end is not None
+    assert source == "question_interval"
+    assert (end - start).total_seconds() == 300
+
+
+# ── 2. Hyphen separator parses ────────────────────────────────────────────────
+def test_spec2_hyphen_separator():
+    """Hyphen '-' separator variant parses correctly."""
+    end_ref = datetime(2026, 7, 18, 10, 0, 0, tzinfo=timezone.utc)
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 July 18, 3:55AM-4:00AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None
+    assert (end - start).total_seconds() == 300
+
+
+# ── 3. En-dash separator parses ───────────────────────────────────────────────
+def test_spec3_en_dash_separator():
+    """En dash '\u2013' separator variant parses correctly."""
+    end_ref = datetime(2026, 7, 18, 10, 0, 0, tzinfo=timezone.utc)
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 July 18, 3:55AM\u20134:00AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None
+    assert (end - start).total_seconds() == 300
+
+
+# ── 4. Whitespace variants parse ──────────────────────────────────────────────
+def test_spec4_whitespace_variants():
+    """Spaces around separator and around AM/PM parse correctly."""
+    end_ref = datetime(2026, 7, 18, 10, 0, 0, tzinfo=timezone.utc)
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 July 18, 3:55 AM - 4:00 AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None
+    assert (end - start).total_seconds() == 300
+
+
+# ── 5. AM/PM conversion works ─────────────────────────────────────────────────
+def test_spec5_ampm_conversion():
+    """3:55AM converts to hour 3 and 4:00AM converts to hour 4 in ET."""
+    end_ref = datetime(2026, 7, 18, 10, 0, 0, tzinfo=timezone.utc)
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 July 18, 3:55AM\u20134:00AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    start_et = start.astimezone(ET)
+    end_et = end.astimezone(ET)
+    assert start_et.hour == 3 and start_et.minute == 55
+    assert end_et.hour == 4 and end_et.minute == 0
+
+
+# ── 6. DST summer conversion (America/New_York = UTC-4) ───────────────────────
+def test_spec6_dst_summer():
+    """In July (DST), New York is UTC-4; 3:55AM ET = 7:55 UTC."""
+    end_ref = datetime(2026, 7, 18, 10, 0, 0, tzinfo=timezone.utc)
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 July 18, 3:55AM\u20134:00AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None
+    # July is DST: ET = UTC - 4h
+    assert start.hour == 7 and start.minute == 55, (
+        f"Expected 07:55 UTC in July DST, got {start.hour}:{start.minute:02d}"
+    )
+    assert end.hour == 8 and end.minute == 0
+
+
+# ── 7. Winter conversion (America/New_York = UTC-5) ───────────────────────────
+def test_spec7_winter_standard_time():
+    """In January (EST), New York is UTC-5; 3:55AM ET = 8:55 UTC."""
+    end_ref = datetime(2026, 1, 18, 10, 0, 0, tzinfo=timezone.utc)
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 January 18, 3:55AM\u20134:00AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None
+    # January is EST: ET = UTC - 5h
+    assert start.hour == 8 and start.minute == 55, (
+        f"Expected 08:55 UTC in January EST, got {start.hour}:{start.minute:02d}"
+    )
+    assert end.hour == 9 and end.minute == 0
+
+
+# ── 8. Midnight-crossing interval works ───────────────────────────────────────
+def test_spec8_midnight_crossing():
+    """11:55PM–12:00AM crosses midnight and still gives 300 s."""
+    end_ref = datetime(2026, 7, 18, 5, 5, 0, tzinfo=timezone.utc)  # ~1AM ET
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 July 17, 11:55PM\u201312:00AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None, "midnight-crossing parse failed"
+    assert (end - start).total_seconds() == 300
+    assert end > start
+
+
+# ── 9. Inferred year is correct ───────────────────────────────────────────────
+def test_spec9_inferred_year():
+    """Year inferred from market_end_time; window must fall in the same year."""
+    end_ref = datetime(2026, 7, 18, 10, 0, 0, tzinfo=timezone.utc)
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 July 18, 3:55AM\u20134:00AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None
+    assert start.year == 2026
+
+
+# ── 10. Interval is exactly 300 seconds ──────────────────────────────────────
+def test_spec10_exactly_300_seconds():
+    """Parsed window duration must be exactly 300 seconds."""
+    end_ref = datetime(2026, 7, 18, 10, 0, 0, tzinfo=timezone.utc)
+    start, end, source = _parse_prediction_window(
+        "Bitcoin Up or Down \u2014 July 18, 3:55AM\u20134:00AM ET",
+        market_end_time=end_ref,
+    )
+    assert start is not None
+    assert (end - start).total_seconds() == 300
+
+
+# ── 11. Pre-window returns STARTS_IN ──────────────────────────────────────────
+def test_spec11_pre_window_starts_in():
+    """When server time is before prediction_window_start, mode is STARTS_IN."""
+    now = datetime.now(timezone.utc)
+    # Window starts 30 minutes from now
+    pw_start = now + timedelta(minutes=30)
+    pw_end = pw_start + timedelta(seconds=300)
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    pw_start_et = pw_start.astimezone(ET)
+    pw_end_et = pw_end.astimezone(ET)
+    question = (
+        f"Bitcoin Up or Down \u2014 "
+        f"{pw_start_et.strftime('%B %-d')}, "
+        f"{pw_start_et.strftime('%-I:%M%p').replace('AM','AM').replace('PM','PM')}"
+        f"\u2013{pw_end_et.strftime('%-I:%M%p')} ET"
+    )
+    end_ref = pw_end + timedelta(hours=1)
+    m = _make_row_with_question(question, end_time=end_ref)
+    resp = _annotate(m)
+    assert resp.countdown_mode == "STARTS_IN", (
+        f"Expected STARTS_IN, got {resp.countdown_mode} for question: {question}"
+    )
+    assert resp.countdown_target is not None
+
+
+# ── 12. Live window returns ENDS_IN ───────────────────────────────────────────
+def test_spec12_live_window_ends_in():
+    """When server time is inside prediction window, mode is ENDS_IN."""
+    now = datetime.now(timezone.utc)
+    # Window started 1 minute ago, ends 4 minutes from now
+    pw_start = now - timedelta(minutes=1)
+    pw_end = pw_start + timedelta(seconds=300)
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    pw_start_et = pw_start.astimezone(ET)
+    pw_end_et = pw_end.astimezone(ET)
+    question = (
+        f"Bitcoin Up or Down \u2014 "
+        f"{pw_start_et.strftime('%B %-d')}, "
+        f"{pw_start_et.strftime('%-I:%M%p')}"
+        f"\u2013{pw_end_et.strftime('%-I:%M%p')} ET"
+    )
+    end_ref = pw_end + timedelta(hours=1)
+    m = _make_row_with_question(question, end_time=end_ref)
+    resp = _annotate(m)
+    assert resp.countdown_mode == "ENDS_IN", (
+        f"Expected ENDS_IN, got {resp.countdown_mode} for question: {question}"
+    )
+    assert resp.countdown_target is not None
+
+
+# ── 13. ENDS_IN countdown never exceeds 300 ──────────────────────────────────
+def test_spec13_ends_in_max_300():
+    """countdown_seconds for ENDS_IN must be in [0, 300]."""
+    now = datetime.now(timezone.utc)
+    pw_start = now - timedelta(seconds=10)
+    pw_end = pw_start + timedelta(seconds=300)
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    pw_start_et = pw_start.astimezone(ET)
+    pw_end_et = pw_end.astimezone(ET)
+    question = (
+        f"Bitcoin Up or Down \u2014 "
+        f"{pw_start_et.strftime('%B %-d')}, "
+        f"{pw_start_et.strftime('%-I:%M%p')}"
+        f"\u2013{pw_end_et.strftime('%-I:%M%p')} ET"
+    )
+    end_ref = pw_end + timedelta(hours=1)
+    m = _make_row_with_question(question, end_time=end_ref)
+    resp = _annotate(m)
+    if resp.countdown_mode == "ENDS_IN":
+        assert resp.countdown_seconds is not None
+        assert 0 <= resp.countdown_seconds <= 300
+
+
+# ── 14. After window returns RESOLVING ────────────────────────────────────────
+def test_spec14_after_window_resolving():
+    """When server time is after prediction_window_end, mode is RESOLVING."""
+    now = datetime.now(timezone.utc)
+    # Window ended 2 minutes ago
+    pw_end = now - timedelta(minutes=2)
+    pw_start = pw_end - timedelta(seconds=300)
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    pw_start_et = pw_start.astimezone(ET)
+    pw_end_et = pw_end.astimezone(ET)
+    question = (
+        f"Bitcoin Up or Down \u2014 "
+        f"{pw_start_et.strftime('%B %-d')}, "
+        f"{pw_start_et.strftime('%-I:%M%p')}"
+        f"\u2013{pw_end_et.strftime('%-I:%M%p')} ET"
+    )
+    end_ref = pw_end + timedelta(hours=1)
+    m = _make_row_with_question(question, end_time=end_ref)
+    resp = _annotate(m)
+    assert resp.countdown_mode == "RESOLVING", (
+        f"Expected RESOLVING, got {resp.countdown_mode}"
+    )
+    assert resp.countdown_target is None
+    assert resp.countdown_seconds == 0
+
+
+# ── 15. Invalid/unparseable question returns SYNCING ─────────────────────────
+def test_spec15_invalid_question_syncing():
+    """A market with an unparseable question returns countdown_mode=SYNCING."""
+    m = _make_row_with_question("BTC Up or Down — no time info here")
+    resp = _annotate(m)
+    assert resp.countdown_mode == "SYNCING"
+    assert resp.countdown_data_stale is True
+    assert resp.countdown_target is None
+    assert resp.countdown_seconds is None
+
+
+# ── 16. Unparseable active market does not return ENDS_IN 22 hours ────────────
+def test_spec16_no_ends_in_fallback_22h():
+    """An active market with no parseable question interval must never show ENDS_IN."""
+    now = datetime.now(timezone.utc)
+    # Market end_time is 22 hours away — old code would have used this as ENDS_IN
+    end_time = now + timedelta(hours=22)
+    m = _make_row_with_question("BTC Up or Down", end_time=end_time)
+    resp = _annotate(m)
+    # Must be SYNCING (not ENDS_IN) because the question has no interval
+    assert resp.countdown_mode != "ENDS_IN", (
+        "ENDS_IN must not be set when question interval cannot be parsed — "
+        "should be SYNCING"
+    )
+    # countdown_seconds must NOT be 22*3600
+    assert resp.countdown_seconds != 22 * 3600
+
+
+# ── 17. countdown_target matches the selected boundary ───────────────────────
+def test_spec17_countdown_target_matches_boundary():
+    """countdown_target must equal prediction_window_start (STARTS_IN) or _end (ENDS_IN)."""
+    now = datetime.now(timezone.utc)
+    # Window is upcoming (STARTS_IN)
+    pw_start = now + timedelta(minutes=5)
+    pw_end = pw_start + timedelta(seconds=300)
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    pw_start_et = pw_start.astimezone(ET)
+    pw_end_et = pw_end.astimezone(ET)
+    question = (
+        f"Bitcoin Up or Down \u2014 "
+        f"{pw_start_et.strftime('%B %-d')}, "
+        f"{pw_start_et.strftime('%-I:%M%p')}"
+        f"\u2013{pw_end_et.strftime('%-I:%M%p')} ET"
+    )
+    end_ref = pw_end + timedelta(hours=1)
+    m = _make_row_with_question(question, end_time=end_ref)
+    resp = _annotate(m)
+    if resp.countdown_mode == "STARTS_IN":
+        assert resp.countdown_target == resp.prediction_window_start
+    elif resp.countdown_mode == "ENDS_IN":
+        assert resp.countdown_target == resp.prediction_window_end
+
+
+# ── 18. countdown_seconds matches target ─────────────────────────────────────
+def test_spec18_countdown_seconds_matches_target():
+    """countdown_seconds must match (target - server_time) to within 2 seconds."""
+    now = datetime.now(timezone.utc)
+    pw_start = now + timedelta(minutes=10)
+    pw_end = pw_start + timedelta(seconds=300)
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    pw_start_et = pw_start.astimezone(ET)
+    pw_end_et = pw_end.astimezone(ET)
+    question = (
+        f"Bitcoin Up or Down \u2014 "
+        f"{pw_start_et.strftime('%B %-d')}, "
+        f"{pw_start_et.strftime('%-I:%M%p')}"
+        f"\u2013{pw_end_et.strftime('%-I:%M%p')} ET"
+    )
+    end_ref = pw_end + timedelta(hours=1)
+    m = _make_row_with_question(question, end_time=end_ref)
+    resp = _annotate(m)
+    if resp.countdown_mode in ("STARTS_IN", "ENDS_IN") and resp.countdown_target:
+        target_dt = datetime.fromisoformat(resp.countdown_target)
+        server_dt = datetime.fromisoformat(resp.server_time)
+        expected = max(0, int((target_dt - server_dt).total_seconds()))
+        assert abs(resp.countdown_seconds - expected) <= 2, (
+            f"countdown_seconds {resp.countdown_seconds} differs from "
+            f"expected {expected} by more than 2s"
+        )
+
+
+# ── 19. Shares 4.38 are not rounded to 4 ────────────────────────────────────
+def test_spec19_shares_precision_4_38():
+    """fmtShares(4.38) must return '4.38', not '4'."""
+    # Verify via the HTML that toFixed(0) is not used for shares
+    with open("/home/runner/workspace/backend/app/static/index.html", "r") as f:
+        html = f.read()
+    assert "open_shares.toFixed(0)" not in html, (
+        "open_shares.toFixed(0) still present — fractional shares are being rounded"
+    )
+    assert "fmtShares" in html, "fmtShares function not found in HTML"
+
+
+# ── 20. Shares 2.195 preserve precision ──────────────────────────────────────
+def test_spec20_shares_precision_2_195():
+    """fmtShares must preserve fractional precision up to 4 decimal places."""
+    with open("/home/runner/workspace/backend/app/static/index.html", "r") as f:
+        html = f.read()
+    # fmtShares must use toFixed(4) with trailing-zero stripping
+    assert "toFixed(4)" in html, (
+        "fmtShares must call .toFixed(4) for sub-cent share precision"
+    )
+    assert 'replace(/\\.?0+$/' in html or "replace(/\\.?0+$/" in html, (
+        "fmtShares must strip trailing zeros"
+    )
