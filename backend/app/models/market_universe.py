@@ -108,6 +108,35 @@ class MarketUniverse(Base):
         String(512), nullable=True
     )
 
+    # ── Target reconciliation diagnostics (spec §5 / §10) ─────────────────────
+    # Chainlink candidate: which tick-selection rule was used before official
+    # reconciliation (e.g. "tick_at_or_before", "nearest_tick", "none_available")
+    target_candidate_rule: Mapped[Optional[str]] = mapped_column(
+        String(64), nullable=True
+    )
+    # Comparison value from official Polymarket source (Gamma API), stored even
+    # when it differs from the Chainlink candidate so delta can be audited.
+    target_official_comparison_value: Mapped[Optional[float]] = mapped_column(
+        Double(), nullable=True
+    )
+    # candidate value − official value (signed); None until both are known.
+    target_difference: Mapped[Optional[float]] = mapped_column(
+        Double(), nullable=True
+    )
+    # Retry bookkeeping — target worker updates these on every attempt.
+    target_retry_count: Mapped[int] = mapped_column(
+        nullable=False, default=0, server_default="0"
+    )
+    target_last_attempt_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    target_next_attempt_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    target_last_error: Mapped[Optional[str]] = mapped_column(
+        String(512), nullable=True
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

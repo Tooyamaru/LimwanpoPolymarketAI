@@ -241,6 +241,14 @@ async def init_db() -> None:
                 ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_stale BOOLEAN NOT NULL DEFAULT TRUE"),
                 ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_validation_error VARCHAR(512) NULL"),
                 ("chainlink_target", "CREATE INDEX IF NOT EXISTS ix_mu_target_verified ON market_universe (target_verified)"),
+                # Target reconciliation diagnostics (spec §5 / §10)
+                ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_candidate_rule VARCHAR(64) NULL"),
+                ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_official_comparison_value DOUBLE PRECISION NULL"),
+                ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_difference DOUBLE PRECISION NULL"),
+                ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_retry_count INTEGER NOT NULL DEFAULT 0"),
+                ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_last_attempt_at TIMESTAMPTZ NULL"),
+                ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_next_attempt_at TIMESTAMPTZ NULL"),
+                ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_last_error VARCHAR(512) NULL"),
             ]
             for label, stmt in all_migrations:
                 await run_migration(conn, stmt, label)

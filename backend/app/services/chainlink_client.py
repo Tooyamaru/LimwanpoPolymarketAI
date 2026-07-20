@@ -266,6 +266,47 @@ class ChainlinkRTDSClient:
             if t.received_at.timestamp() >= since_ts
         ]
 
+    def get_tick_at_or_before(self, asset: str, ts_ms: int) -> Optional[ChainlinkTick]:
+        """
+        Return the latest tick whose source_ts_ms is <= ts_ms.
+
+        Used for Chainlink candidate lookup against a prediction_window_start
+        boundary.  Returns None when no tick exists at or before that moment.
+        """
+        candidates = [
+            t for t in self._ticks.get(asset, deque())
+            if t.source_ts_ms <= ts_ms
+        ]
+        return max(candidates, key=lambda t: t.source_ts_ms) if candidates else None
+
+    def get_tick_nearest(self, asset: str, ts_ms: int) -> Optional[ChainlinkTick]:
+        """
+        Return the tick with the smallest absolute delta to ts_ms.
+
+        Considers ALL ticks (before and after the boundary).
+        Returns None when the tick history is empty.
+        """
+        ticks = list(self._ticks.get(asset, deque()))
+        if not ticks:
+            return None
+        return min(ticks, key=lambda t: abs(t.source_ts_ms - ts_ms))
+
+    def get_ticks_window(
+        self, asset: str, from_ms: int, to_ms: int
+    ) -> list[ChainlinkTick]:
+        """
+        Return all ticks with from_ms <= source_ts_ms <= to_ms, ordered ascending.
+
+        Used for diagnostics and multi-window reconciliation.
+        """
+        return sorted(
+            (
+                t for t in self._ticks.get(asset, deque())
+                if from_ms <= t.source_ts_ms <= to_ms
+            ),
+            key=lambda t: t.source_ts_ms,
+        )
+
     def get_candles(
         self,
         asset: str,

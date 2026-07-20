@@ -31,6 +31,7 @@ from app.workers.engine_workers import (
     run_position_tracking_loop,
     run_price_refresh_loop,
     run_risk_engine_loop,
+    run_rollover_monitor_loop,
     run_signal_engine_loop,
     run_strategy_engine_loop,
     run_target_worker_loop,
@@ -403,6 +404,20 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             interval=settings.TARGET_WORKER_INTERVAL_SECONDS,
         )
 
+    # ── Rollover monitor — boundary trigger (spec §7/§8/§10) ─────────────────
+    # Watches prediction_window_end per asset; at the 5-minute boundary triggers
+    # immediate universe sync + CLOB refresh + target worker cycle without
+    # waiting for the next periodic tick.
+    rollover_monitor_task = asyncio.create_task(
+        run_rollover_monitor_loop(
+            universe_service,
+            price_service,
+            target_service=_target_worker if settings.TARGET_WORKER_ENABLED else None,
+            universe_ready=universe_ready_event,
+        )
+    )
+    logger.info("Rollover monitor started (boundary trigger every 5 s)")
+
     # ── Engine registration — always runs regardless of WATCHDOG_ENABLED ────
     # registered_engines: every active engine, passed to engine_health so
     # /health/detailed can report all of them (including not_started).
@@ -485,6 +500,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     for task, name in [
         (watchdog_task, "watchdog"),
         (chainlink_task, "chainlink"),
+        (rollover_monitor_task, "rollover_monitor"),
         (target_worker_task, "target_worker"),
         (universe_task, "universe"),
         (price_task, "price"),
