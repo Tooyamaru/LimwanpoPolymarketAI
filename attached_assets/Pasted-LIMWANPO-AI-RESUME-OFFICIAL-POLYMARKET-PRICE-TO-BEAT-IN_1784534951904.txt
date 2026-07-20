@@ -1,0 +1,715 @@
+LIMWANPO AI — RESUME OFFICIAL POLYMARKET PRICE TO BEAT INTEGRATION AND FINAL VALIDATION
+
+Lanjutkan dari current codebase dan current git diff.
+
+JANGAN mengulang pencarian endpoint Price to Beat.
+Endpoint resmi sudah berhasil ditemukan dan dibuktikan.
+
+CONFIRMED OFFICIAL SOURCE:
+
+GET https://polymarket.com/api/crypto/crypto-price
+
+Parameters:
+
+- symbol
+- eventStartTime
+- variant=fiveminute
+- endDate
+
+Example:
+
+GET /api/crypto/crypto-price
+?symbol=BTC
+&eventStartTime=2026-07-20T07:00:00Z
+&variant=fiveminute
+&endDate=2026-07-20T07:05:00Z
+
+Confirmed response:
+
+{
+  "openPrice": 63857.4171821043,
+  "closePrice": null
+}
+
+The openPrice matched exactly the value embedded in the official
+Polymarket event page React Query dehydrated state.
+
+Confirmed for:
+
+- BTC
+- ETH
+- SOL
+- XRP
+
+Current partial implementation reportedly includes:
+
+- backend/app/services/polymarket_ptb_client.py created
+- target_worker.py partially updated with Priority 0 PTB lookup
+- target_source_url and target_source_field_path added to model
+- database migrations partially added
+- test_polymarket_ptb.py created
+- test_universe_api.py edited
+- quota stopped immediately after “Ran tests”
+- final test result is unknown
+
+Current screenshot shows:
+
+- TARGET populated on BTC/ETH/SOL/XRP
+- target values close to current Chainlink reference
+- CLOB UP/DOWN populated
+- countdown working
+- no active positions
+- capital blocked by DAILY LOSS LIMIT
+
+Do not modify the Daily Loss Limit in this task.
+
+JANGAN mengubah:
+
+- RTDS Chainlink protocol
+- Chainlink header/chart
+- CLOB implementation
+- timestamp-slug discovery
+- 5M selection
+- countdown
+- rollover algorithm except target rebinding validation
+- Portfolio Accounting
+- strategy scoring
+- sizing
+- ENTRY formula
+- EXIT formula
+- Risk Engine
+- dashboard layout/theme
+
+==================================================
+1. AUDIT CURRENT PARTIAL DIFF
+==================================================
+
+Run:
+
+git status
+git diff --stat
+git diff
+git log --oneline -5
+python -m compileall -q backend/app
+
+Inspect every changed file, especially:
+
+- backend/app/services/polymarket_ptb_client.py
+- backend/app/services/target_worker.py
+- backend/app/models/market_universe.py
+- backend/app/core/database.py
+- backend/app/tests/test_polymarket_ptb.py
+- backend/app/tests/test_universe_api.py
+
+Check for:
+
+- partial edit
+- duplicate client
+- duplicate model column
+- duplicate migration
+- missing import
+- incorrect class/function name
+- malformed URL encoding
+- test importing nonexistent function
+- target worker still bypassing the new client
+- old Gamma-only target path overriding PTB result
+- unsafe test skip hiding a real regression
+
+Do not continue until compile succeeds.
+
+==================================================
+2. VERIFY THE DEDICATED PTB CLIENT
+==================================================
+
+There must be one canonical client:
+
+polymarket_ptb_client.py
+
+It must accept:
+
+- asset
+- event_slug
+- condition_id
+- prediction_window_start
+- prediction_window_end
+
+Construct:
+
+symbol = BTC / ETH / SOL / XRP
+
+eventStartTime =
+prediction_window_start formatted exactly as UTC ISO-8601
+
+endDate =
+prediction_window_end formatted exactly as UTC ISO-8601
+
+variant =
+fiveminute
+
+Endpoint:
+
+https://polymarket.com/api/crypto/crypto-price
+
+Validate response:
+
+- response HTTP 200
+- JSON object
+- openPrice exists
+- openPrice numeric
+- openPrice > 0
+- closePrice may be null while current window is active
+- response belongs to the requested time window
+
+Return:
+
+- price_to_beat
+- close_price
+- source = POLYMARKET_CRYPTO_PRICE_API
+- source_url
+- source_field_path = openPrice
+- asset
+- event_slug
+- condition_id
+- prediction_window_start
+- prediction_window_end
+- fetched_at
+- verified
+
+Do not return verified=true if:
+
+- HTTP failed
+- openPrice missing
+- openPrice invalid
+- asset unsupported
+- event slug mismatch
+- condition mismatch
+- prediction window invalid
+- duration is not 300 seconds
+
+==================================================
+3. DERIVE WINDOW FROM VERIFIED DATABASE FIELDS
+==================================================
+
+Use canonical database fields:
+
+prediction_window_start
+prediction_window_end
+
+Do not derive the request from:
+
+- contract endDate
+- Gamma deployment time
+- created_at
+- current server time
+- current candle time
+- arbitrary current slot when processing an older condition
+
+Validate:
+
+prediction_window_end
+-
+prediction_window_start
+=
+300 seconds
+
+The event slug timestamp should equal:
+
+int(prediction_window_start.timestamp())
+
+Reject mismatch.
+
+==================================================
+4. TARGET WORKER SOURCE PRIORITY
+==================================================
+
+Required order:
+
+PRIORITY 0:
+
+Official Polymarket Crypto Price API openPrice
+
+PRIORITY 1:
+
+Any verified official Gamma field, only if genuinely available and bound to
+the same event/window
+
+PRIORITY 2:
+
+Chainlink prestart candidate for diagnostics only
+
+Chainlink candidate must remain:
+
+target_verified = false
+target_source = CHAINLINK_PRESTART_CANDIDATE
+
+The official PTB endpoint result may set:
+
+target_verified = true
+target_source = POLYMARKET_CRYPTO_PRICE_API
+
+Do not allow Gamma failure to overwrite a valid official PTB result with
+PENDING.
+
+Do not allow an unverified Chainlink candidate to overwrite a verified
+official target.
+
+==================================================
+5. TARGET PERSISTENCE
+==================================================
+
+Persist:
+
+- target_price
+- target_source
+- target_source_url
+- target_source_field_path
+- target_source_timestamp
+- target_locked_at
+- target_event_slug
+- target_condition_id
+- target_verified
+- target_stale
+- target_validation_error
+- target_retry_count
+- target_last_attempt_at
+- target_next_attempt_at
+- target_last_error
+
+Required:
+
+target_event_slug == current row event_slug
+
+target_condition_id == current row condition_id
+
+target_price == official openPrice
+
+Once verified:
+
+- target may not change for that condition
+- later worker cycles must not overwrite it
+- restart must reload the same value
+- browser refresh must not modify it
+- Chainlink updates must not modify it
+
+If the same endpoint later returns a different openPrice:
+
+- retain the first verified target
+- create TARGET_CONFLICT
+- record old/new values
+- block new entry
+
+==================================================
+6. MIGRATION VALIDATION
+==================================================
+
+Verify actual database columns exist:
+
+- target_source_url
+- target_source_field_path
+
+And all earlier target fields.
+
+Migration must be:
+
+- idempotent
+- ADD COLUMN IF NOT EXISTS
+- nullable-safe
+- no table recreation
+- no data deletion
+- no position/order mutation
+
+Restart once after tests pass and inspect actual database schema.
+
+Do not assume editing the ORM model migrated the current database.
+
+==================================================
+7. API AND FRONTEND BINDING
+==================================================
+
+Verify active universe/card API exposes:
+
+- target_price
+- target_source
+- target_source_url
+- target_source_field_path
+- target_verified
+- target_event_slug
+- target_condition_id
+- target_locked_at
+- target_validation_error
+
+Frontend rules:
+
+Verified:
+
+TARGET <value>
+GAP <value>
+MONITORING / READY according to strategy
+
+Pending:
+
+TARGET PENDING
+GAP —
+WAIT
+
+Do not show a numeric TARGET unless target_verified=true.
+
+==================================================
+8. GAP FORMULA
+==================================================
+
+Only calculate when:
+
+- target_verified = true
+- Chainlink reference is fresh
+- Chainlink asset matches card asset
+- target event slug matches
+- target condition ID matches
+- current condition ID matches
+- CLOB belongs to current condition
+
+Formula:
+
+gap_absolute =
+current_chainlink_price - official_openPrice
+
+gap_percent =
+gap_absolute / official_openPrice * 100
+
+Validate screenshot values mathematically.
+
+Example expectation shortly after window start:
+
+- small positive or negative gap is normal
+- target remains fixed
+- Chainlink current price continues changing
+
+Do not round before calculation.
+
+Round only for display.
+
+==================================================
+9. CLOB CONDITION INTEGRITY
+==================================================
+
+For every current card prove:
+
+- selected condition_id
+- YES token ID
+- NO token ID
+- CLOB snapshot condition_id
+- UP bid/ask
+- DOWN bid/ask
+- snapshot timestamp
+
+Required:
+
+CLOB snapshot condition_id
+==
+selected current condition_id
+
+If new condition has no CLOB snapshot yet:
+
+display CLOB SYNCING
+
+Do not display previous-window probabilities.
+
+==================================================
+10. ROLLOVER TARGET PROOF
+==================================================
+
+Capture one natural rollover.
+
+WINDOW A:
+
+- event_slug
+- condition_id
+- prediction window
+- official openPrice
+- target_verified=true
+- target_locked_at
+- Chainlink current price
+- GAP
+- CLOB token IDs
+
+At Window A expiry:
+
+- Window A target remains historical
+- current card target clears
+- new condition selected
+- new token IDs selected
+- Window B initially shows TARGET PENDING if request has not returned yet
+
+WINDOW B:
+
+- event_slug timestamp = Window A + 300 seconds
+- new condition_id
+- official endpoint called with Window B start/end
+- new openPrice loaded
+- target_verified=true
+- target differs or independently matches official value
+- GAP recalculated
+- no Window A target leakage
+
+A delayed Window A request must not write to Window B.
+
+==================================================
+11. ENDPOINT CROSS-CHECK
+==================================================
+
+For three consecutive BTC windows capture:
+
+- start/end
+- official openPrice
+- official closePrice
+- next window openPrice
+
+Check whether:
+
+closePrice Window A
+==
+openPrice Window B
+
+within official precision/rounding.
+
+Record the result but do not make target verification depend on this
+continuity relationship.
+
+Also validate one current window each for:
+
+- ETH
+- SOL
+- XRP
+
+==================================================
+12. TESTS FOR PTB CLIENT
+==================================================
+
+Complete test_polymarket_ptb.py.
+
+Required tests:
+
+1. BTC endpoint URL built correctly
+2. ETH endpoint URL built correctly
+3. SOL endpoint URL built correctly
+4. XRP endpoint URL built correctly
+5. eventStartTime exact UTC format
+6. endDate exact UTC format
+7. variant equals fiveminute
+8. openPrice parsed correctly
+9. closePrice null accepted for active window
+10. invalid openPrice rejected
+11. missing openPrice rejected
+12. HTTP failure remains pending
+13. malformed JSON remains pending
+14. unsupported asset rejected
+15. window duration other than 300 seconds rejected
+16. event slug timestamp mismatch rejected
+17. condition mismatch rejected
+18. official result has priority over Gamma
+19. official result has priority over Chainlink candidate
+20. unverified candidate cannot overwrite verified target
+21. verified target remains immutable
+22. rollover stale result rejected
+23. source URL persisted
+24. field path persisted
+25. GAP requires verified target
+
+Use production functions, not hardcoded assertions only.
+
+==================================================
+13. UNIVERSE API TEST
+==================================================
+
+The earlier full suite had one pre-existing asyncio/event-loop failure in:
+
+test_universe_api.py
+
+Do not merely hide it with an unconditional skip unless the exact reason is
+documented and no production regression exists.
+
+Preferred:
+
+- use the correct async fixture
+- ensure database pool and client share the same event loop
+- isolate test DB connection
+- close client/pool correctly
+
+If it must be skipped:
+
+- add an explicit reason
+- create a replacement repository/service-level test for the same behavior
+- report the skipped count honestly
+
+==================================================
+14. TARGETED VALIDATION
+==================================================
+
+Run:
+
+python -m compileall -q backend/app
+
+pytest backend/app/tests/test_polymarket_ptb.py -q
+pytest backend/app/tests/test_target_clob_gap.py -q
+pytest backend/app/tests/test_chainlink_protocol.py -q
+pytest backend/app/tests/test_5m_discovery.py -q
+pytest backend/app/tests/test_universe_api.py -q
+pytest backend/app/tests/test_strategy_engine.py -q
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+Fix every failure introduced by this work.
+
+==================================================
+15. FULL SUITE
+==================================================
+
+Run:
+
+pytest backend/app/tests -q
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+Do not declare FULL PASS if:
+
+- tests were not completed
+- a new test fails
+- migration was not applied
+- runtime was not restarted
+- target was not proven across rollover
+
+==================================================
+16. RUNTIME API PROOF
+==================================================
+
+After restart capture raw API for BTC/ETH/SOL/XRP:
+
+- event_slug
+- condition_id
+- prediction_window_start
+- prediction_window_end
+- target_price
+- target_source
+- target_source_url
+- target_source_field_path
+- target_verified
+- target_locked_at
+- Chainlink reference
+- GAP
+- YES/NO prices
+
+Expected:
+
+target_source =
+POLYMARKET_CRYPTO_PRICE_API
+
+target_source_field_path =
+openPrice
+
+target_verified =
+true
+
+==================================================
+17. SCREENSHOT
+==================================================
+
+Take screenshot showing:
+
+- CHAINLINK header
+- verified TARGET for all four assets
+- small realistic GAP values
+- current UP/DOWN CLOB prices
+- current countdown
+- no old target leakage
+- no TARGET PENDING after successful endpoint response
+
+Capital Blocked · Daily Loss Limit may remain visible.
+
+Do not change that risk status in this task.
+
+==================================================
+18. FINAL REPORT
+==================================================
+
+Report:
+
+1. Partial diff audit
+2. Endpoint URL
+3. BTC response
+4. ETH response
+5. SOL response
+6. XRP response
+7. Client implementation
+8. Target-worker priority
+9. Database migration
+10. Target persistence
+11. Target immutability
+12. GAP calculation
+13. CLOB condition integrity
+14. Rollover A→B
+15. BTC three-window continuity
+16. Targeted tests
+17. Full suite
+18. Runtime API
+19. Screenshot
+20. Files changed
+21. Remaining risks
+22. Final statuses
+
+Statuses:
+
+OFFICIAL PTB ENDPOINT:
+- PASS
+- FAIL
+
+PTB CLIENT:
+- PASS
+- FAIL
+
+TARGET VERIFICATION:
+- PASS
+- FAIL
+
+TARGET PERSISTENCE:
+- PASS
+- FAIL
+
+TARGET IMMUTABILITY:
+- PASS
+- FAIL
+
+TARGET ROLLOVER:
+- PASS
+- FAIL
+
+GAP INTEGRITY:
+- PASS
+- FAIL
+
+CLOB CONDITION INTEGRITY:
+- PASS
+- FAIL
+
+FULL SUITE:
+- PASS
+- FAIL
+
+TRADING DATA READY:
+- PASS
+- FAIL
+
+Do not re-search the endpoint.
+Do not change unrelated systems.
+Resume from the current partial implementation and finish validation.

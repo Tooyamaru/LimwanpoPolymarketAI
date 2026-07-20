@@ -1,7 +1,18 @@
 """
 Target Worker — fetches official Price to Beat for each active market.
 
-Priority order (per spec §2/§5):
+Priority order (per spec §2/§4/§5):
+  0. Official Polymarket Crypto Price API (CONFIRMED endpoint):
+       GET https://polymarket.com/api/crypto/crypto-price
+           ?symbol=BTC|ETH|SOL|XRP
+           &eventStartTime=<pw_start UTC ISO-8601>
+           &variant=fiveminute
+           &endDate=<pw_end UTC ISO-8601>
+       response.openPrice → target_price
+     → target_verified=True, target_source="POLYMARKET_CRYPTO_PRICE_API"
+     → target_source_url = full request URL
+     → target_source_field_path = "openPrice"
+
   1. Official Polymarket field from Gamma API event response:
        priceToBeat, price_to_beat, initialValue, initial_value,
        referencePrice, reference_price, openPrice, open_price,
@@ -19,7 +30,7 @@ Priority order (per spec §2/§5):
 
   3. No official field and no usable Chainlink tick:
      → target_price = None, target_verified = False
-     → target_validation_error = "No official Price to Beat field in Gamma API"
+     → target_validation_error = "No official Price to Beat field available"
      → target_candidate_rule = "none_available"
 
 Design decisions:
@@ -30,7 +41,9 @@ Design decisions:
     previous window cannot write into a new one (spec §7).
   - Retry bookkeeping: target_retry_count, target_last_attempt_at,
     target_next_attempt_at, target_last_error are updated on every cycle.
-  - Uses create_verified_httpx_client() for all outbound HTTPS calls.
+  - Uses create_verified_httpx_client() for all outbound HTTPS calls (via
+    polymarket_ptb_client and directly for Gamma).
+  - Priority 0 result cannot be overwritten by Priority 1 or 2.
 """
 
 from __future__ import annotations
@@ -45,6 +58,7 @@ from app.core.logging import get_logger
 from app.models.market_universe import MarketUniverse
 from app.services.chainlink_client import get_chainlink_client
 from app.services.http_client import create_verified_httpx_client
+from app.services.polymarket_ptb_client import fetch_ptb
 
 logger = get_logger(__name__)
 
@@ -159,12 +173,18 @@ class TargetWorker:
         """
         Try to find the official Price to Beat for *market*.
 
-        Priority 1: Gamma API official field → returns verified result.
+        Priority 0: Official Polymarket Crypto Price API → verified result.
+        Priority 1: Gamma API official field → verified result.
         Priority 2: Chainlink RTDS candidate (unverified, diagnostic only).
-        Priority 3: Neither available → returns pending result.
+        Priority 3: Neither available → pending result.
         """
         event_slug = market.event_slug
         condition_id = market.condition_id
+
+        # ── Priority 0: Official Polymarket Crypto Price API ─────────────────
+        ptb_result = await self._probe_ptb_api(market)
+        if ptb_result is not None:
+            return ptb_result
 
         # ── Priority 1: Gamma API ─────────────────────────────────────────────
         gamma_result = await self._probe_gamma(http, market)
@@ -185,6 +205,77 @@ class TargetWorker:
 
         # ── Priority 3: Nothing available ────────────────────────────────────
         return None
+
+    async def _probe_ptb_api(
+        self, market: MarketUniverse
+    ) -> Optional[dict]:
+        """
+        Priority 0: Query the official Polymarket Crypto Price API.
+
+        Returns a verified result dict when openPrice is successfully fetched.
+        Returns None when the request fails or the market is not eligible
+        (missing prediction_window, unsupported asset), allowing the caller
+        to fall through to Gamma (Priority 1).
+
+        IMPORTANT: A successful result from this method takes precedence over
+        Gamma and Chainlink — it must never be overwritten by Priority 1 or 2.
+        """
+        condition_id = market.condition_id
+
+        # Must have valid prediction window (both start and end)
+        if market.prediction_window_start is None or market.prediction_window_end is None:
+            logger.debug(
+                "[PTB] No prediction_window — skipping PTB API",
+                condition_id=condition_id[:12],
+                asset=market.asset,
+            )
+            return None
+
+        try:
+            result = await fetch_ptb(
+                asset=market.asset,
+                event_slug=market.event_slug,
+                condition_id=condition_id,
+                prediction_window_start=market.prediction_window_start,
+                prediction_window_end=market.prediction_window_end,
+            )
+        except Exception as exc:
+            logger.warning(
+                "[PTB] Unexpected error calling fetch_ptb",
+                asset=market.asset,
+                condition_id=condition_id[:12],
+                error=str(exc),
+            )
+            return None
+
+        if not result.verified:
+            logger.debug(
+                "[PTB] Fetch returned unverified — falling through to Gamma",
+                asset=market.asset,
+                condition_id=condition_id[:12],
+                error=result.validation_error,
+            )
+            return None
+
+        logger.info(
+            "[PTB] Priority 0 target locked",
+            asset=market.asset,
+            condition_id=condition_id[:12],
+            price_to_beat=result.price_to_beat,
+            source=result.source,
+        )
+        return {
+            "target_price": result.price_to_beat,
+            "target_source": result.source,
+            "target_source_url": result.source_url,
+            "target_source_field_path": result.source_field_path,
+            "target_raw_source": result.source_url,
+            "target_event_slug": market.event_slug,
+            "target_condition_id": condition_id,
+            "target_verified": True,
+            "target_candidate_rule": "ptb_api",
+            "target_validation_error": None,
+        }
 
     async def _probe_gamma(
         self, http, market: MarketUniverse
@@ -418,6 +509,8 @@ class TargetWorker:
             .values(
                 target_price=result["target_price"],
                 target_source=result["target_source"],
+                target_source_url=result.get("target_source_url"),
+                target_source_field_path=result.get("target_source_field_path"),
                 target_raw_source=result.get("target_raw_source"),
                 target_event_slug=result.get("target_event_slug"),
                 target_condition_id=result.get("target_condition_id"),

@@ -249,6 +249,9 @@ async def init_db() -> None:
                 ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_last_attempt_at TIMESTAMPTZ NULL"),
                 ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_next_attempt_at TIMESTAMPTZ NULL"),
                 ("target_reconcile", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_last_error VARCHAR(512) NULL"),
+                # Official PTB API source traceability (Priority 0)
+                ("ptb_source_trace", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_source_url VARCHAR(1024) NULL"),
+                ("ptb_source_trace", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_source_field_path VARCHAR(64) NULL"),
             ]
             for label, stmt in all_migrations:
                 await run_migration(conn, stmt, label)

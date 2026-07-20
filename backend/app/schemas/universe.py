@@ -43,6 +43,9 @@ class UniverseMarketResponse(BaseModel):
     target_verified: bool = False
     target_stale: bool = True
     target_validation_error: Optional[str] = None
+    # Official PTB API source traceability (populated when source = POLYMARKET_CRYPTO_PRICE_API)
+    target_source_url: Optional[str] = None
+    target_source_field_path: Optional[str] = None
 
     # ── Lifecycle state fields (computed at API layer, not stored in DB) ─────────
     # lifecycle_state: canonical state derived from start_time/end_time/now
@@ -118,6 +121,8 @@ class UniverseMarketResponse(BaseModel):
         "target_event_slug",
         "target_condition_id",
         "target_validation_error",
+        "target_source_url",
+        "target_source_field_path",
         mode="before",
     )
     @classmethod

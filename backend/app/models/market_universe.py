@@ -107,6 +107,12 @@ class MarketUniverse(Base):
     target_validation_error: Mapped[Optional[str]] = mapped_column(
         String(512), nullable=True
     )
+    # ── Official PTB API source traceability ──────────────────────────────────
+    # Persisted when target_source = POLYMARKET_CRYPTO_PRICE_API.
+    # target_source_url:        full request URL including all query parameters
+    # target_source_field_path: JSON field name where the value was read ("openPrice")
+    target_source_url: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
+    target_source_field_path: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
 
     # ── Target reconciliation diagnostics (spec §5 / §10) ─────────────────────
     # Chainlink candidate: which tick-selection rule was used before official

@@ -36,16 +36,33 @@ async def client() -> AsyncClient:
 @pytest.fixture(autouse=True)
 async def reset_db_engine():
     """
-    Reset the SQLAlchemy async engine singleton after each test function.
+    Reset the SQLAlchemy async engine singleton before AND after each test.
 
     asyncpg connections are bound to the event loop that created them.
-    pytest-asyncio creates a fresh loop per test by default, so without
-    this reset the engine from test N tries to reuse connections that
-    belong to test N-1's (now-closed) loop, causing:
+    pytest-asyncio creates a fresh loop per test by default.  Without the
+    pre-test reset, the engine created during the session-scoped
+    init_test_database fixture (which runs on the session's event loop) is
+    still alive when the first test starts on its own event loop, causing:
         RuntimeError: Task got Future attached to a different loop
+
+    Resetting before yielding ensures every test starts with a clean engine
+    that will connect on the current test's event loop.  Resetting after
+    yielding (existing behaviour) cleans up so the next test also starts
+    fresh.
     """
-    yield
+    # ── Pre-test reset ────────────────────────────────────────────────────────
     from app.core import database
+    if database._engine is not None:
+        try:
+            await database._engine.dispose()
+        except Exception:
+            pass
+        database._engine = None
+        database._session_factory = None
+
+    yield
+
+    # ── Post-test reset ───────────────────────────────────────────────────────
     if database._engine is not None:
         try:
             await database._engine.dispose()
