@@ -178,6 +178,78 @@ async def update_market_reference(
     return written
 
 
+async def update_market_target(
+    session: AsyncSession,
+    *,
+    condition_id: str,
+    target_price: Optional[float],
+    target_source: Optional[str],
+    target_raw_source: Optional[str],
+    target_source_timestamp: Optional[datetime],
+    target_locked_at: Optional[datetime],
+    target_event_slug: Optional[str],
+    target_condition_id_check: Optional[str],
+    target_verified: bool,
+    target_stale: bool,
+    target_validation_error: Optional[str],
+) -> bool:
+    """
+    Persist target / Price to Beat fields for a market.
+
+    Conditional update: only writes when target_verified IS FALSE in the DB,
+    preventing concurrent workers from overwriting a locked verified target.
+
+    Returns True when a row was updated, False when skipped (already locked).
+    """
+    now = datetime.now(timezone.utc)
+    stmt = (
+        update(MarketUniverse)
+        .where(
+            MarketUniverse.condition_id == condition_id,
+            MarketUniverse.target_verified == False,  # noqa: E712
+        )
+        .values(
+            target_price=target_price,
+            target_source=target_source,
+            target_raw_source=target_raw_source,
+            target_source_timestamp=target_source_timestamp,
+            target_locked_at=target_locked_at,
+            target_event_slug=target_event_slug,
+            target_condition_id=target_condition_id_check,
+            target_verified=target_verified,
+            target_stale=target_stale,
+            target_validation_error=target_validation_error,
+            updated_at=now,
+        )
+    )
+    result = await session.execute(stmt)
+    written = result.rowcount > 0
+    await session.flush()
+    if written:
+        logger.info(
+            "Market target updated",
+            condition_id=condition_id,
+            target_price=target_price,
+            target_verified=target_verified,
+        )
+    return written
+
+
+async def get_unverified_targets(session: AsyncSession) -> list[MarketUniverse]:
+    """Return active markets that do not yet have a verified target."""
+    now = datetime.now(timezone.utc)
+    result = await session.execute(
+        select(MarketUniverse)
+        .where(
+            MarketUniverse.status == "active",
+            MarketUniverse.target_verified == False,  # noqa: E712
+            or_(MarketUniverse.end_time.is_(None), MarketUniverse.end_time > now),
+        )
+        .order_by(MarketUniverse.asset)
+    )
+    return list(result.scalars().all())
+
+
 async def demote_excess_active_markets(
     session: AsyncSession,
     asset: str,

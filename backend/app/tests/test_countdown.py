@@ -85,6 +85,17 @@ def _make_market_row(
     m.prediction_window_end = None
     m.countdown_target = None
     m.trading_open_time = None
+    # Chainlink RTDS target fields (spec §3 — always explicit in test factories)
+    m.target_price = None
+    m.target_source = None
+    m.target_raw_source = None
+    m.target_source_timestamp = None
+    m.target_locked_at = None
+    m.target_event_slug = None
+    m.target_condition_id = None
+    m.target_verified = False
+    m.target_stale = True
+    m.target_validation_error = None
     return m
 
 

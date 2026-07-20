@@ -229,6 +229,18 @@ async def init_db() -> None:
                 ("multi_lot", "UPDATE positions SET remaining_quantity = CASE WHEN status = 'CLOSED' THEN 0 ELSE quantity END WHERE remaining_quantity IS NULL"),
                 ("multi_lot", "UPDATE positions SET entry_sequence = 1 WHERE entry_sequence IS NULL"),
                 ("multi_lot", "CREATE INDEX IF NOT EXISTS ix_position_condition_status ON positions (condition_id, status)"),
+                # Chainlink RTDS — target / Price to Beat fields on market_universe
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_price DOUBLE PRECISION NULL"),
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_source VARCHAR(64) NULL"),
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_raw_source VARCHAR(256) NULL"),
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_source_timestamp TIMESTAMPTZ NULL"),
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_locked_at TIMESTAMPTZ NULL"),
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_event_slug VARCHAR(128) NULL"),
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_condition_id VARCHAR(256) NULL"),
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_verified BOOLEAN NOT NULL DEFAULT FALSE"),
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_stale BOOLEAN NOT NULL DEFAULT TRUE"),
+                ("chainlink_target", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_validation_error VARCHAR(512) NULL"),
+                ("chainlink_target", "CREATE INDEX IF NOT EXISTS ix_mu_target_verified ON market_universe (target_verified)"),
             ]
             for label, stmt in all_migrations:
                 await run_migration(conn, stmt, label)

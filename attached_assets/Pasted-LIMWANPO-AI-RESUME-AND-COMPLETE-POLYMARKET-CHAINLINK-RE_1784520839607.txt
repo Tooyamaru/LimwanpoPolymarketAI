@@ -1,0 +1,846 @@
+LIMWANPO AI — RESUME AND COMPLETE POLYMARKET CHAINLINK REFERENCE, OFFICIAL PRICE TO BEAT, TARGET LOCKING, AND PRICE-SOURCE INTEGRITY
+
+Lanjutkan dari current codebase dan current git diff.
+
+Pekerjaan sebelumnya berhenti karena kuota Replit habis setelah partial
+implementation Polymarket RTDS Chainlink.
+
+JANGAN mengulang implementasi dari awal.
+JANGAN menghapus perubahan yang sudah benar.
+JANGAN mengubah 5M timestamp-slug discovery.
+JANGAN mengubah rollover.
+JANGAN mengubah CLOB condition binding.
+JANGAN mengubah strategy score, sizing formula, EXIT formula, atau
+Portfolio Accounting.
+JANGAN menggunakan Binance sebagai fallback tersembunyi.
+
+==================================================
+CURRENT CONFIRMED PARTIAL STATE
+==================================================
+
+Sudah mulai dibuat:
+
+- backend/app/services/chainlink_client.py
+- backend/app/api/v1/chainlink.py
+- Chainlink settings
+- target_* database/model fields
+- target persistence repository functions
+- Chainlink-based market_reference_service
+- strategy price-source integrity gate
+- Chainlink worker startup/shutdown
+- Chainlink API router
+- frontend loadChainlink()
+- frontend TARGET/GAP integration
+- test_price_source_integrity.py
+- beberapa AsyncMock warning fixes
+
+Current screenshot:
+
+- 4 current rolling 5M cards
+- countdown ENDS IN sekitar 04:17
+- semua TARGET menampilkan PENDING
+- GAP dan spread sebagian tidak tersedia
+- 3 ACTIVE PREDICTIONS
+- Coverage $150
+- TARGET belum terverifikasi
+- FORCED_EXIT_PENDING masih terlihat
+
+Pekerjaan berhenti setelah:
+
+- schema validator diedit
+- CHAINLINK_INTEGRITY_GATE_ENABLED diubah menjadi False
+- full suite belum dijalankan ulang
+- runtime Chainlink belum dibuktikan
+
+==================================================
+1. AUDIT CURRENT PARTIAL DIFF
+==================================================
+
+Jalankan:
+
+git status
+git diff --stat
+git diff
+python -m compileall -q backend/app
+
+Tampilkan seluruh changed files.
+
+Periksa:
+
+- duplicate Chainlink client
+- duplicate API route
+- duplicate target fields
+- duplicate migrations
+- duplicate workers
+- malformed frontend JavaScript
+- duplicate polling intervals
+- requirements dependency missing
+- partially inserted validators
+- strategy gate partially connected
+- old Binance target path masih aktif
+
+Jangan membuat file/function kedua jika sudah ada.
+
+==================================================
+2. RESTORE SAFE PRODUCTION GATE DEFAULT
+==================================================
+
+Critical correction:
+
+JANGAN menggunakan:
+
+CHAINLINK_INTEGRITY_GATE_ENABLED = False
+
+sebagai production default hanya agar test lama lulus.
+
+Production/default behavior harus:
+
+CHAINLINK_INTEGRITY_GATE_ENABLED = True
+
+atau environment configuration yang secara eksplisit default ke enabled.
+
+Untuk tests yang mengharapkan entry:
+
+- mock Chainlink sehat
+- mock fresh reference price
+- mock verified target
+- mock correct condition/event binding
+
+Tests yang memang menguji strategy lama dapat memakai fixture atau
+monkeypatch khusus.
+
+Jangan mematikan safety gate secara global.
+
+Required entry blocks:
+
+- TARGET_UNVERIFIED
+- TARGET_PENDING
+- TARGET_CONDITION_MISMATCH
+- TARGET_EVENT_MISMATCH
+- REFERENCE_PRICE_UNAVAILABLE
+- REFERENCE_PRICE_STALE
+- REFERENCE_SOURCE_MISMATCH
+- CLOB_CONDITION_MISMATCH
+- TARGET_CONFLICT
+
+Target PENDING tidak boleh menghasilkan entry baru.
+
+Exit, settlement, rollover, discovery, dan portfolio refresh tetap berjalan.
+
+==================================================
+3. DO NOT WEAKEN PRODUCTION SCHEMA FOR TEST MOCKS
+==================================================
+
+Current failures berasal dari MagicMock yang tidak mempunyai target fields.
+
+Jangan membuat production schema menerima semua object asing sebagai None
+hanya agar mock test lolos.
+
+Preferred fix:
+
+Update test market factories agar selalu mempunyai nilai nyata:
+
+- target_price = None
+- target_source = None
+- target_raw_source = None
+- target_source_timestamp = None
+- target_locked_at = None
+- target_event_slug = None
+- target_condition_id = None
+- target_verified = False
+- target_stale = True
+- target_validation_error = None
+
+Production schema boleh mempunyai validator terbatas untuk:
+
+- datetime → ISO string
+- valid string atau None
+- valid boolean atau None
+
+Tetapi jangan menyembunyikan data production invalid secara diam-diam.
+
+==================================================
+4. VERIFY WEBSOCKET DEPENDENCY PERSISTENCE
+==================================================
+
+websockets sempat di-install secara interaktif.
+
+Pastikan dependency tersimpan di project dependency file:
+
+- backend/requirements.txt
+atau
+- pyproject.toml
+
+Jangan bergantung pada package install sementara di Replit environment.
+
+Pin versi kompatibel yang benar.
+
+Restart baru harus tetap dapat import:
+
+backend/app/services/chainlink_client.py
+
+==================================================
+5. VERIFY OFFICIAL RTDS CONNECTION
+==================================================
+
+Validate actual runtime connection to:
+
+wss://ws-live-data.polymarket.com
+
+Use official subscription format for:
+
+topic = crypto_prices_chainlink
+
+Symbols:
+
+BTC = btc/usd
+ETH = eth/usd
+SOL = sol/usd
+XRP = xrp/usd
+
+Capture raw sanitized messages for every asset:
+
+- topic
+- type
+- symbol
+- value
+- source timestamp
+- received_at
+
+Do not print secrets.
+
+Prove:
+
+- connected = true
+- subscribed = true
+- receiving = true
+- healthy = true
+- each asset receives updates
+- heartbeat/ping works
+- reconnect works
+- out-of-order message rejected
+- stale message flagged
+
+Do not mark healthy merely because WebSocket connection opened.
+
+Healthy requires fresh valid messages.
+
+==================================================
+6. VERIFY CHAINLINK API ENDPOINT
+==================================================
+
+Call:
+
+GET /api/v1/chainlink/prices
+
+Expected response per asset:
+
+- asset
+- symbol
+- value
+- source
+- source_timestamp
+- received_at
+- age_ms
+- stale
+- connected
+- subscribed
+- healthy
+- sequence/update counter
+
+Expected:
+
+source = POLYMARKET_RTDS_CHAINLINK
+
+Do not return Binance data from this endpoint.
+
+If no Chainlink data:
+
+- value = null
+- healthy = false
+- stale = true
+- exact error/state exposed
+
+==================================================
+7. DEFINE HEADER PRICE SOURCE CORRECTLY
+==================================================
+
+The large asset price displayed in each market card/header must use:
+
+Polymarket RTDS Chainlink
+
+not Binance.
+
+Required:
+
+BTC card/header → btc/usd
+ETH card/header → eth/usd
+SOL card/header → sol/usd
+XRP card/header → xrp/usd
+
+Expose:
+
+- reference_price
+- reference_price_source
+- reference_price_timestamp
+- reference_price_age_ms
+- reference_price_stale
+
+Display concise badge:
+
+CHAINLINK
+CHAINLINK STALE
+SYNCING
+
+Do not claim POLYMARKET/CHAINLINK if the displayed number still comes from
+Binance.
+
+==================================================
+8. REMOVE BINANCE FROM PRIMARY MARKET DATA
+==================================================
+
+The user requires all primary market data to come from Polymarket.
+
+Primary dashboard values:
+
+- market identity: Polymarket Gamma
+- reference price: Polymarket RTDS Chainlink
+- target: official Polymarket Price to Beat
+- UP/DOWN: Polymarket CLOB
+- settlement: official Polymarket resolution
+
+Do not use Binance for:
+
+- card asset price
+- target
+- GAP
+- strategy direction
+- settlement
+- PnL valuation
+- integrity checks
+
+If historical candlestick chart still uses Binance:
+
+This does not satisfy all-Polymarket mode.
+
+Preferred:
+
+- build chart candles from Chainlink RTDS ticks;
+- aggregate OHLC for the displayed interval;
+- label chart CHAINLINK RTDS.
+
+If historical RTDS data before application startup is unavailable:
+
+- show chart from available Chainlink session history;
+- display DATA STARTED AT <timestamp>;
+- do not silently backfill using Binance.
+
+24H volume may not be available from Chainlink.
+
+If unavailable:
+
+VOLUME —
+SOURCE UNAVAILABLE
+
+Do not display Binance volume without explicit secondary-source approval.
+
+==================================================
+9. DO NOT TREAT FIRST RECEIVED TICK AS OFFICIAL TARGET
+==================================================
+
+Critical rule:
+
+The first Chainlink tick received after application detects rollover is not
+automatically the official Price to Beat.
+
+Network/polling delay can make it several seconds late.
+
+For every window distinguish:
+
+prediction_window_start
+Chainlink source timestamp
+received_at
+application lock time
+
+Required target priority:
+
+1. official Polymarket Price to Beat for exact event_slug/condition_id
+2. exact Chainlink observation selected using Polymarket's documented rule
+3. otherwise TARGET PENDING
+
+Do not use:
+
+- current Chainlink price several seconds later
+- first tick after restart
+- first tick after poll
+- Binance candle open
+- previous window target
+- future window target
+- Gamma contract startDate
+- current market spot as fallback
+
+==================================================
+10. FIND THE ACTUAL OFFICIAL PRICE TO BEAT SOURCE
+==================================================
+
+Do not invent an endpoint.
+
+For one current event:
+
+- fetch exact Gamma event by event_slug
+- inspect event and market fields
+- inspect metadata used by the Polymarket market page
+- inspect available official public API/network responses
+- search fields such as:
+  - priceToBeat
+  - price_to_beat
+  - initialValue
+  - initial_value
+  - referencePrice
+  - reference_price
+  - openPrice
+  - oraclePrice
+
+Report:
+
+- exact endpoint
+- exact response field
+- raw sanitized response
+- condition_id/event_slug binding
+- timestamp semantics
+
+If no official programmatic field exists:
+
+State this clearly.
+
+Do not set target_verified=true.
+
+Keep:
+
+TARGET PENDING
+
+and block entry.
+
+==================================================
+11. TARGET PERSISTENCE AND IMMUTABILITY
+==================================================
+
+Persist per exact condition:
+
+- target_price
+- target_source
+- target_raw_source
+- target_source_timestamp
+- target_locked_at
+- target_event_slug
+- target_condition_id
+- target_verified
+- target_stale
+- target_validation_error
+
+Required invariants:
+
+target_event_slug == market.event_slug
+target_condition_id == market.condition_id
+target window == exact current prediction window
+
+Once verified:
+
+- target must remain immutable
+- restart reloads same target
+- browser refresh does not modify it
+- repeated worker runs do not modify it
+
+If a different value arrives:
+
+- retain verified original
+- create TARGET_CONFLICT alert
+- block new entry
+- record old/new values and timestamps
+
+==================================================
+12. DO NOT USE opening_price AS AN UNVERIFIED BYPASS
+==================================================
+
+The partial implementation considered storing Chainlink target into both:
+
+- target_price
+- opening_price
+
+for backward compatibility.
+
+Audit every consumer of opening_price.
+
+Do not allow old code to treat opening_price as verified when:
+
+target_verified = false
+
+Preferred:
+
+- target_price is canonical Price to Beat
+- opening_price remains legacy/read-only or is deprecated
+- strategy/GAP/frontend use target_price only
+- no fallback from target_price to opening_price for new current markets
+
+Existing historical verified legacy values may be migrated only with explicit
+source evidence.
+
+==================================================
+13. TARGET WORKER TIMING
+==================================================
+
+The target worker must:
+
+- identify exact current condition
+- know exact prediction_window_start
+- query official target source
+- persist once
+- retry while pending
+- stop retrying after verified
+- never lock a late arbitrary tick
+
+If official target unavailable:
+
+- remain PENDING
+- store retry_count
+- store last_attempt_at
+- store next_attempt_at
+- store validation_error
+
+Do not repeatedly overwrite PENDING with current spot.
+
+==================================================
+14. FRONTEND DISPLAY RULES
+==================================================
+
+Current screenshot correctly shows PENDING instead of a fake target.
+
+Keep that safety behavior.
+
+TARGET VERIFIED:
+
+TARGET 64,737.15
+badge VERIFIED
+
+TARGET unavailable:
+
+TARGET PENDING
+GAP —
+badge SYNCING or UNVERIFIED
+
+Reference stale:
+
+REFERENCE STALE
+GAP —
+
+Never show GAP when:
+
+- target not verified
+- target stale
+- reference stale
+- source mismatch
+- condition mismatch
+- event mismatch
+
+UP/DOWN must continue to come from exact current CLOB token IDs.
+
+==================================================
+15. RECONCILE CURRENT ACTIVE POSITIONS
+==================================================
+
+Current screenshot shows:
+
+- TARGET PENDING
+- 3 ACTIVE PREDICTIONS
+- Coverage $150
+
+For all three positions show:
+
+- opened_at
+- condition_id
+- event_slug
+- target_verified at decision time
+- reference source at decision time
+- strategy decision
+- risk event
+- order fill
+- position status
+
+Determine whether they were opened:
+
+A. before Chainlink changes
+B. while target was verified
+C. while TARGET was PENDING
+D. because integrity gate was disabled
+
+If any entry occurred while target was PENDING/unverified:
+
+- classify as PRICE_SOURCE_INTEGRITY_BREACH
+- do not delete the position
+- keep Exit Engine active
+- block further new entries
+- record audit event
+
+==================================================
+16. PRESERVE EXIT FOR EXPIRED POSITIONS
+==================================================
+
+Current screenshot shows FORCED_EXIT_PENDING for expired positions.
+
+Price-source gate must never block:
+
+- EXIT
+- expiry settlement
+- resolution reconciliation
+- position closure
+
+Audit the expired positions independently.
+
+Do not wait for target verification to close an old position.
+
+Do not use unverified target for settlement.
+
+Settlement must use official Polymarket outcome.
+
+==================================================
+17. TEST STRATEGY CORRECTLY
+==================================================
+
+Do not disable production integrity gate to satisfy existing tests.
+
+For strategy tests expecting OPEN:
+
+mock:
+
+- Chainlink connected
+- Chainlink subscribed
+- fresh asset price
+- target verified
+- target condition match
+- target event match
+- CLOB condition match
+
+For blocking tests:
+
+verify exact block codes.
+
+Add tests:
+
+1. production default gate enabled
+2. target pending blocks entry
+3. target unverified blocks entry
+4. stale Chainlink blocks entry
+5. missing Chainlink blocks entry
+6. wrong symbol blocks entry
+7. target condition mismatch blocks entry
+8. target event mismatch blocks entry
+9. CLOB mismatch blocks entry
+10. verified compatible sources allow normal strategy evaluation
+11. Exit decision bypasses entry-only source gate
+12. settlement bypasses entry-only source gate
+
+==================================================
+18. FIX SCHEMA TEST FACTORIES
+==================================================
+
+Update test factories in:
+
+- test_countdown.py
+- test_market_lifecycle_state.py
+- universe API tests
+- strategy tests
+
+Set all new fields explicitly.
+
+Do not rely on MagicMock automatically creating arbitrary attributes.
+
+Run:
+
+pytest backend/app/tests/test_countdown.py -q
+pytest backend/app/tests/test_market_lifecycle_state.py -q
+pytest backend/app/tests/test_strategy_engine.py -q
+pytest backend/app/tests/test_price_source_integrity.py -q
+
+All must pass.
+
+==================================================
+19. DATABASE MIGRATION VALIDATION
+==================================================
+
+Verify target columns exist in actual database.
+
+Migration must be:
+
+- idempotent
+- nullable-safe
+- no data loss
+- no duplicate columns
+- compatible with current Replit database
+
+Do not assume model creation means existing database was migrated.
+
+Show actual database columns.
+
+==================================================
+20. FULL TEST SUITE
+==================================================
+
+Run:
+
+python -m compileall -q backend/app
+
+Validate JavaScript syntax.
+
+Run targeted tests, then:
+
+pytest backend/app/tests -q
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+Required:
+
+0 failed
+0 errors
+0 unawaited-coroutine warnings
+
+Do not declare success immediately after editing validator/settings.
+
+==================================================
+21. RUNTIME PROOF — WINDOW A
+==================================================
+
+For BTC, ETH, SOL, XRP capture:
+
+- event_slug
+- condition_id
+- prediction start/end
+- current Chainlink value
+- Chainlink source timestamp
+- freshness age
+- exact target
+- target source
+- target timestamp
+- target verified
+- CLOB token IDs
+- UP/DOWN bid/ask
+- displayed header
+- displayed target
+- displayed GAP
+
+Prove DOM equals API.
+
+No Binance value may appear as primary reference.
+
+==================================================
+22. RUNTIME PROOF — ROLLOVER A → B
+==================================================
+
+Capture one natural rollover.
+
+Prove:
+
+- event_slug changes by +300 seconds
+- condition_id changes
+- Chainlink header continues updating
+- old target is removed
+- new target remains PENDING until verified
+- verified new target belongs to Window B
+- old target never leaks
+- CLOB token IDs change
+- GAP stays hidden until compatible sources are ready
+
+==================================================
+23. FINAL REPORT
+==================================================
+
+Return:
+
+1. Partial diff audit
+2. Chainlink dependency persistence
+3. RTDS connection state
+4. BTC Chainlink proof
+5. ETH Chainlink proof
+6. SOL Chainlink proof
+7. XRP Chainlink proof
+8. Header source before/after
+9. Official Price to Beat source
+10. Target locking rule
+11. Target verification result
+12. Target immutability
+13. opening_price audit
+14. GAP source integrity
+15. Current three-position audit
+16. Entry-gate result
+17. Expired-position Exit continuity
+18. Schema/test fixes
+19. Migration result
+20. Targeted tests
+21. Full suite
+22. Runtime Window A
+23. Rollover A→B
+24. Screenshot
+25. Files changed
+26. Remaining risks
+27. Final statuses
+
+Statuses:
+
+CHAINLINK RTDS CONNECTION:
+- PASS
+- FAIL
+
+HEADER POLYMARKET SOURCE:
+- PASS
+- FAIL
+
+OFFICIAL PRICE TO BEAT:
+- PASS
+- PENDING OFFICIAL SOURCE
+- FAIL
+
+TARGET CONDITION INTEGRITY:
+- PASS
+- FAIL
+
+TARGET TIMESTAMP INTEGRITY:
+- PASS
+- FAIL
+
+TARGET VERIFICATION:
+- PASS
+- PENDING
+- FAIL
+
+GAP SOURCE INTEGRITY:
+- PASS
+- FAIL
+
+ENTRY SOURCE GATE:
+- PASS
+- FAIL
+
+EXIT CONTINUITY:
+- PASS
+- FAIL
+
+FULL SUITE:
+- PASS
+- FAIL
+
+Use full PASS only if:
+
+- production integrity gate remains enabled
+- current header values are Chainlink RTDS
+- no Binance fallback enters primary data
+- official target is verified
+- target matches exact condition/window
+- GAP uses compatible sources
+- no entry occurs while target is pending
+- runtime proof succeeds
+- full suite is green

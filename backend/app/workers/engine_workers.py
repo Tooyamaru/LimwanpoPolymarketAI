@@ -735,6 +735,70 @@ async def run_outcome_learning_loop(
 
 # ── Dynamic Engine Weight (Priority 3) ────────────────────────────────────────
 
+async def run_chainlink_loop(client) -> None:
+    """
+    Chainlink RTDS background loop.
+
+    Connects to wss://ws-live-data.polymarket.com and subscribes to live
+    Chainlink oracle prices.  Reconnects automatically on disconnect.
+    This loop runs for the life of the process — it is cancelled only on
+    graceful shutdown.
+    """
+    from app.config.settings import settings as _s
+    if not _s.CHAINLINK_ENABLED:
+        logger.info("Chainlink RTDS disabled — loop not started")
+        return
+    try:
+        await client.run()
+    except asyncio.CancelledError:
+        await client.stop()
+        raise
+    except Exception as exc:
+        logger.error("Chainlink RTDS loop fatal error", error=str(exc))
+
+
+async def run_target_worker_loop(
+    service,
+    universe_ready: asyncio.Event | None = None,
+) -> None:
+    """
+    Target worker background loop.
+
+    Fetches the official Price to Beat (from Gamma API) for every active
+    market that has not yet been verified.  Runs every
+    TARGET_WORKER_INTERVAL_SECONDS (default 30 s) after the universe is ready.
+    """
+    from app.config.settings import settings as _s
+    if not _s.TARGET_WORKER_ENABLED:
+        logger.info("Target worker disabled — loop not started")
+        return
+
+    async def _one_cycle():
+        from app.core.database import get_session_factory
+        factory = get_session_factory()
+        async with factory() as session:
+            await service.run_once(session)
+
+    if universe_ready is not None:
+        await universe_ready.wait()
+
+    # First cycle on startup
+    try:
+        await _one_cycle()
+        engine_health.record_heartbeat("target_worker")
+        logger.info("Target worker startup run complete")
+    except Exception as exc:
+        logger.error("Target worker startup run failed", error=str(exc))
+
+    while True:
+        await asyncio.sleep(_s.TARGET_WORKER_INTERVAL_SECONDS)
+        try:
+            await _one_cycle()
+            engine_health.record_heartbeat("target_worker")
+        except Exception as exc:
+            logger.error("Target worker periodic run failed", error=str(exc))
+
+
 async def run_dynamic_weight_loop(
     service,
     universe_ready: asyncio.Event | None = None,

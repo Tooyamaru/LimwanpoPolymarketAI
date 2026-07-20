@@ -51,3 +51,5 @@
 - [Audit report drift](audit-report-drift.md) — multi-phase audit reports must rewrite superseded findings as historical everywhere they're mentioned, not just once, or reviewer fails on internal inconsistency
 - [SSL httpx client fix](ssl-httpx-fix.md) — ALL httpx.AsyncClient() must use create_verified_httpx_client(); bare client kills entire pipeline (CLOB, Binance, BTC chart all fail)
 - [Drawdown formula fix](drawdown-formula-fix.md) — equity curve must start from initial_capital (not 0); starting at 0 creates false peak when winners close ms before losers in same batch
+- [Chainlink RTDS integration](chainlink-rtds.md) — WebSocket connects to wss://ws-live-data.polymarket.com but sends no data (likely needs auth); integrity gate blocks OPEN_LONG_* when target_verified=False or Chainlink stale
+- [Target worker design](target-worker-design.md) — Gamma API probe for priceToBeat/initialValue/openPrice; immutable once target_verified=True; target_worker runs every 30s after universe_ready

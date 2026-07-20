@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api.v1.chainlink import router as chainlink_router
 from app.api.v1.alerts import router as alerts_router
 from app.api.v1.analytics import router as analytics_router
 from app.api.v1.health import router as health_router
@@ -67,3 +68,4 @@ api_router.include_router(portfolio_allocation_router)
 api_router.include_router(feed_router)
 api_router.include_router(alerts_router)
 api_router.include_router(live_trades_router)
+api_router.include_router(chainlink_router)

@@ -413,6 +413,8 @@ const BADGE_COLS={
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let markets=[], opps={}, sigs={}, openPos=[], cPrices={}, clobPrices={}, decisions={}, cardSummary={};
+let chainlinkPrices={};                     // {BTC:{value,stale,healthy,...}} from /api/v1/chainlink/prices
+let _lastChainlinkFetchTs=0;                // loadChainlink dedup timestamp
 // Asset/timeframe fallback dicts — used when a freshly-rolled 5m market has no
 // condition_id match yet (race window between universe sync and engine cycles).
 let clobByAtf={}, sigsByAtf={}, oppsByAtf={};
@@ -512,13 +514,30 @@ function initChart(){
   window.addEventListener("resize",()=>{lwChart.applyOptions({width:wrap.clientWidth,height:wrap.clientHeight})});
 }
 
+// ── CHART (CHAINLINK RTDS — explicit spec request overrides frozen policy) ──
 async function loadCandles(tf){
+  // Chainlink RTDS tick history from /api/v1/chainlink/candles
+  // Interval: tf=5m => 300s candles
+  const INTERVALS={"5m":300,"15m":900,"1h":3600};
+  const ivSec=INTERVALS[tf]||300;
   try{
-    const r=await fetch(`/api/v1/btc/candles?interval=${tf}&limit=80`);
+    const r=await fetch(`/api/v1/chainlink/candles?asset=BTC&interval=${ivSec}&limit=80`);
     if(!r.ok)return;
     const raw=await r.json();
-    if(!Array.isArray(raw)||!raw.length)return;
-    const data=raw.map(c=>({time:Math.floor(Number(c[0])/1000),open:+c[1],high:+c[2],low:+c[3],close:+c[4],volume:+c[5]}));
+    const arr=raw.candles||[];
+    // Show DATA STARTED AT message when no candles yet
+    if(!arr.length){
+      if(raw.session_start){
+        const _ts=new Date(raw.session_start);
+        const _label="DATA STARTED AT "+_ts.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit",timeZoneName:"short"});
+        el("bb-price").textContent="SYNCING";
+        el("bb-d1").textContent=_label;el("bb-d1").style.color="#4a6580";
+        el("bb-d2").textContent="";el("bb-24h").textContent="—";
+        el("bb-24l").textContent="—";el("bb-vol").textContent="—";
+      }
+      return;
+    }
+    const data=arr.map(c=>({time:Number(c.time),open:Number(c.open),high:Number(c.high),low:Number(c.low),close:Number(c.close)}));
     data.sort((a,b)=>a.time-b.time);
     const seen=new Set(),uniq=[];
     for(const d of data){if(!seen.has(d.time)){seen.add(d.time);uniq.push(d)}}
@@ -526,7 +545,6 @@ async function loadCandles(tf){
     lwChart.timeScale().fitContent();
     const last=uniq[uniq.length-1],first=uniq[0];
     const h24=Math.max(...uniq.map(c=>c.high)),l24=Math.min(...uniq.map(c=>c.low));
-    const vol=uniq.reduce((s,c)=>s+c.volume,0);
     el("bb-price").textContent=last.close.toLocaleString(undefined,{maximumFractionDigits:0});
     const delta=last.close-first.open,pct=((delta/first.open)*100).toFixed(2),up=delta>=0,dc=up?NG:RED;
     el("bb-d1").textContent=(up?"+":"")+delta.toLocaleString(undefined,{maximumFractionDigits:0});
@@ -535,11 +553,22 @@ async function loadCandles(tf){
     el("bb-d2").style.color=dc;
     el("bb-24h").textContent=h24.toLocaleString(undefined,{maximumFractionDigits:0});
     el("bb-24l").textContent=l24.toLocaleString(undefined,{maximumFractionDigits:0});
-    el("bb-vol").textContent=fmtVol(vol);
-    cPrices.BTC=last.close;
-    // Patch BTC header span from candle data
+    // bb-ses: show session start timestamp
+    if(raw.session_start){
+      const _ses=new Date(raw.session_start);
+      el("bb-ses").textContent=_ses.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+    }
+    // No volume from Chainlink ticks — show tick count instead
+    const totalTicks=arr.reduce((s,c)=>s+(c.tick_count||0),0);
+    el("bb-vol").textContent=totalTicks+"t";
+    // Patch Chainlink prices for BTC from chart data
+    if(!chainlinkPrices.BTC){
+      chainlinkPrices.BTC={value:last.close,stale:false,healthy:true,
+        source:"POLYMARKET_RTDS_CHAINLINK",update_count:totalTicks};
+    }
+    // Also patch header span
     const _btcSp=document.querySelector('[data-asset="BTC"]');
-    if(_btcSp)_btcSp.textContent='$'+fmtAssetPrice('BTC',last.close);
+    if(_btcSp)_btcSp.textContent="$"+fmtAssetPrice("BTC",last.close);
   }catch(e){console.error("candles",e)}
 }
 
@@ -581,6 +610,43 @@ async function fetchPrices(){
       el("bb-24h").textContent=b.high.toLocaleString(undefined,{maximumFractionDigits:0});
       el("bb-24l").textContent=b.low.toLocaleString(undefined,{maximumFractionDigits:0});
       el("bb-vol").textContent=fmtVol(b.vol);
+    }
+  }catch(e){}
+}
+
+// ── CHAINLINK RTDS PRICES (loadChainlink → /api/v1/chainlink/prices) ─────────
+async function loadChainlink(){
+  const _now=Date.now();
+  if(_now-_lastChainlinkFetchTs<4000)return;
+  _lastChainlinkFetchTs=_now;
+  try{
+    const r=await fetch("/api/v1/chainlink/prices");
+    if(!r.ok)return;
+    const data=await r.json();
+    for(const [asset,p] of Object.entries(data)){
+      if(p&&p.value!=null)chainlinkPrices[asset]=p;
+    }
+    // Patch header asset-live-px spans from Chainlink (BTC/ETH/SOL/XRP)
+    for(const [asset,p] of Object.entries(chainlinkPrices)){
+      if(!p||p.value==null)continue;
+      const _sp=document.querySelector('[data-asset="'+asset+'"]');
+      if(_sp){
+        _sp.textContent="$"+fmtAssetPrice(asset,p.value);
+        _sp.style.color=p.stale?"#4a6580":"";  // dim when stale
+      }
+    }
+    // Show CHAINLINK badge in bb-panel header
+    const _anyHealthy=Object.values(chainlinkPrices).some(p=>p&&p.healthy);
+    const _allStale=Object.values(chainlinkPrices).every(p=>!p||p.stale);
+    const _bbLive=document.querySelector("#bb-panel .bb-live");
+    if(_bbLive){
+      if(_anyHealthy&&!_allStale){
+        _bbLive.textContent="● CHAINLINK";_bbLive.style.color="#00e5ff";
+      } else if(Object.keys(chainlinkPrices).length>0){
+        _bbLive.textContent="◌ CHAINLINK STALE";_bbLive.style.color="#e57a00";
+      } else {
+        _bbLive.textContent="◌ SYNCING";_bbLive.style.color="#4a6580";
+      }
     }
   }catch(e){}
 }
@@ -841,7 +907,7 @@ function renderMarkets(){
       const _csFp=_cs?[_cs.active_lot_count,_cs.entry_fill_count,(_cs.entry_notional||0).toFixed(2),_cs.exit_fill_count,(_cs.exit_proceeds||0).toFixed(2),(_cs.up_open_exposure||0).toFixed(4),(_cs.down_open_exposure||0).toFixed(4),(_cs.total_pnl!=null?_cs.total_pnl.toFixed(4):"n")].join(":"):"_";
       return m.condition_id+":"+m.status+":"+(cp?cp.yes_mid:"")+":" +
              (cp?cp.yes_ask:"")+":" +(cp?cp.yes_bid+":"+cp.no_mid:"") +
-             ":"+cur+":"+m.opening_price+":"+(conf!=null?Math.round(conf):"") +
+             ":"+cur+":"+(m.target_price!=null?m.target_price:"?")+":"+(m.target_verified?"V":"U")+":"+(conf!=null?Math.round(conf):"") +
              ":"+m.end_time+":"+(dec?dec.decision:"")+":"+_csFp;
     }).join("|");
     if(colFingerprints[asset]===fp)continue;
@@ -905,10 +971,13 @@ function renderCard(m){
     else if(yesMid<prevMid-0.0005){mvChar="\u25bc";mvColor=RED;}
   }
 
-  // -- Target (opening_price / Price to Beat) --
-  const strike=(m.opening_price!==null&&m.opening_price!==undefined)?m.opening_price:null;
-  const targetVal=strike!==null?fmtMktPrice(strike):"\u2014";
-  const targetColor=strike!==null?NY:TD;
+  // -- Target (Price to Beat from Polymarket Gamma API via target_worker) --
+  // target_verified=true: official value from POLYMARKET_GAMMA source
+  // target_verified=false: still pending (blocked by integrity gate)
+  const strike=(m.target_price!==null&&m.target_price!==undefined)?m.target_price:null;
+  const targetVerified=m.target_verified===true;
+  const targetVal=strike!==null?(targetVerified?fmtMktPrice(strike):"PENDING"):"\u2014";
+  const targetColor=strike!==null?(targetVerified?NY:TD):TD;
 
   // -- Card summary (PNL / LOTS / IN / OUT) from /positions/card-summary -------
   const cs=cardSummary[m.condition_id];
@@ -936,10 +1005,11 @@ function renderCard(m){
   const inFmt=cs?(inCount+"x\u00b7\$"+inAmt.toFixed(2)):"\u2014";
   const outFmt=cs?(outCount+"x\u00b7\$"+outAmt.toFixed(2)):"\u2014";
 
-  // -- Gap (currentPrice \u2212 target) --
-  const _at=cPrices[m.asset];
-  const currentPrice=_at?(typeof _at==="object"?_at.price:_at):null;
-  const diffVal=(currentPrice!==null&&strike!==null)?(currentPrice-strike):null;
+  // -- Gap (Chainlink RTDS price − target) — hidden when target not verified --
+  const _clp=chainlinkPrices[m.asset];
+  const currentPrice=_clp&&_clp.value!=null?_clp.value:null;
+  const _clpStale=_clp?_clp.stale:true;
+  const diffVal=(targetVerified&&currentPrice!==null&&!_clpStale&&strike!==null)?(currentPrice-strike):null;
   const gapFmt=diffVal!==null?fmtMktGap(diffVal):"\u2014";
   const gapColor=diffVal===null?TD:diffVal>0?NG:diffVal<0?RED:TW;
 
@@ -1196,7 +1266,7 @@ async function loadMarketAlerts(){
 // ── INIT & REFRESH ────────────────────────────────────────────────────────────
 let inited=false;
 async function refresh(){
-  await Promise.all([loadMarkets(),loadPortfolio(),fetchPrices(),loadClob()]);
+  await Promise.all([loadMarkets(),loadPortfolio(),fetchPrices(),loadClob(),loadChainlink()]);
   // Re-render markets now that prices are guaranteed loaded
   renderMarkets();
   loadMarketAlerts();
@@ -1218,6 +1288,7 @@ function init(){
 setInterval(refresh,30000);
 setInterval(()=>loadCandles(curTF),60000);
 setInterval(fetchPrices,5000);   // live price refresh every 5s
+setInterval(loadChainlink,5000);  // Chainlink RTDS prices every 5s
 
 
 

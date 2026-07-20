@@ -323,6 +323,29 @@ class Settings(BaseSettings):
     # Prevents stale decisions from being acted on after market state has changed.
     EXECUTION_MAX_DECISION_AGE_MINUTES: int = 30
 
+    # ── Chainlink RTDS (Polymarket Real-Time Data Service) ────────────────────
+    # WebSocket connection to wss://ws-live-data.polymarket.com for live
+    # Chainlink oracle prices (BTC, ETH, SOL, XRP).  This is the ONLY
+    # permitted source for asset reference prices used in predictions.
+    CHAINLINK_ENABLED: bool = True
+    CHAINLINK_WS_URL: str = "wss://ws-live-data.polymarket.com"
+    CHAINLINK_TOPIC: str = "crypto_prices_chainlink"
+    CHAINLINK_STALE_SECONDS: int = 60        # price is stale after 60 s without update
+    CHAINLINK_RECONNECT_SECONDS: int = 5     # delay between reconnect attempts
+    CHAINLINK_TICK_HISTORY_SIZE: int = 2000  # per-symbol ring buffer for OHLC candles
+
+    # Integrity gate — OPEN_LONG_* is blocked unless:
+    #   target_verified=True AND target_price is not None AND Chainlink fresh
+    # Production default: True. Only disable for isolated unit testing.
+    # This setting MUST remain True in production — changing it is forbidden
+    # without an explicit spec change.
+    CHAINLINK_INTEGRITY_GATE_ENABLED: bool = True
+
+    # Target worker — fetches official Price to Beat from Gamma API for each
+    # active market.  Runs every N seconds; skips already-verified markets.
+    TARGET_WORKER_ENABLED: bool = True
+    TARGET_WORKER_INTERVAL_SECONDS: int = 30
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def normalise_db_url(cls, v: str) -> str:

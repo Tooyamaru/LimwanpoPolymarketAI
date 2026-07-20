@@ -6,6 +6,16 @@ produce TradeDecision records.
 
 Decision rules (applied in order):
 
+  0. Chainlink Integrity Gate (OPEN_LONG_* only, entry-only):
+       target_verified=False  → SKIP  (skip_reason=TARGET_UNVERIFIED)
+       target_price is None   → SKIP  (skip_reason=TARGET_PENDING)
+       no Chainlink price     → SKIP  (skip_reason=REFERENCE_PRICE_UNAVAILABLE)
+       Chainlink price stale  → SKIP  (skip_reason=REFERENCE_PRICE_STALE)
+     Gate is disabled when:
+       • CHAINLINK_INTEGRITY_GATE_ENABLED=False (unit-test override only)
+       • market row not found in DB (non-blocking; logs a warning)
+       • decision is EXIT / WATCH / SKIP (gate is entry-only)
+
   1. spread_yes > SPREAD_THRESHOLD (0.02) → SKIP  (skip_reason=HIGH_SPREAD)
   2. direction == NEUTRAL               → SKIP  (skip_reason=NEUTRAL_DIRECTION)
   3. signal_confidence < MIN_SIGNAL_CONFIDENCE (20, AMM-init calibrated) → SKIP (skip_reason=LOW_SIGNAL_CONFIDENCE)
@@ -33,13 +43,16 @@ sync before its first cycle.
 from datetime import datetime, timezone
 from typing import Optional
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.settings import settings
 from app.core.logging import get_logger
+from app.models.market_universe import MarketUniverse
 from app.repositories import opportunity_repository as opp_repo
 from app.repositories import signal_repository as sig_repo
 from app.repositories import trade_decision_repository as td_repo
+from app.services.chainlink_client import get_chainlink_client
 from app.services.position_sizing_service import PositionSizingService
 
 logger = get_logger(__name__)
@@ -58,6 +71,52 @@ MIN_SIGNAL_CONFIDENCE: float = settings.STRATEGY_MIN_SIGNAL_CONFIDENCE
 MIN_SIGNAL_CONFIDENCE_MTF: float = settings.STRATEGY_MIN_SIGNAL_CONFIDENCE_MTF
 
 _sizing_service = PositionSizingService()
+
+# ── Chainlink Integrity Gate ──────────────────────────────────────────────────
+
+
+def _check_price_source_integrity(
+    market: "MarketUniverse",
+    chainlink_client,
+) -> tuple[bool, Optional[str]]:
+    """
+    Check whether the price source integrity requirements are satisfied for
+    an OPEN_LONG_* entry on *market*.
+
+    This gate is ENTRY-ONLY.  It must never be applied to EXIT, WATCH, or SKIP.
+
+    Returns
+    -------
+    (allowed, block_code)
+        allowed=True   → gate passes; normal strategy evaluation continues
+        allowed=False  → block_code is the reason (persisted as skip_reason)
+
+    Block codes
+    -----------
+    TARGET_PENDING              target_price is None
+    TARGET_UNVERIFIED           target_price is set but target_verified=False
+    REFERENCE_PRICE_UNAVAILABLE Chainlink client has no price for this asset
+    REFERENCE_PRICE_STALE       Chainlink price age > CHAINLINK_STALE_SECONDS
+    """
+    # ── target checks ─────────────────────────────────────────────────────
+    if market.target_price is None:
+        return False, "TARGET_PENDING"
+
+    if not market.target_verified:
+        return False, "TARGET_UNVERIFIED"
+
+    # ── Chainlink freshness checks ─────────────────────────────────────────
+    if chainlink_client is None:
+        return False, "REFERENCE_PRICE_UNAVAILABLE"
+
+    asset_price = chainlink_client.get_price(market.asset)
+    if asset_price is None:
+        return False, "REFERENCE_PRICE_UNAVAILABLE"
+
+    if asset_price.stale:
+        return False, "REFERENCE_PRICE_STALE"
+
+    return True, None
 
 
 def _make_decision(
@@ -144,8 +203,68 @@ class StrategyEngine:
         errors = 0
         persist_skips: bool = getattr(settings, "STRATEGY_PERSIST_SKIPS", False)
 
+        # ── Pre-fetch market universe for integrity gate ──────────────────────
+        # One DB query per cycle (not per opportunity) to build a lookup dict.
+        market_by_cid: dict[str, MarketUniverse] = {}
+        if settings.CHAINLINK_INTEGRITY_GATE_ENABLED:
+            try:
+                from sqlalchemy import select as _select
+                rows = await session.execute(
+                    _select(MarketUniverse).where(
+                        MarketUniverse.status.in_(["active", "upcoming"])
+                    )
+                )
+                for row in rows.scalars().all():
+                    market_by_cid[row.condition_id] = row
+            except Exception as exc:
+                logger.warning(
+                    "Strategy engine: market universe prefetch failed",
+                    error=str(exc),
+                )
+
+        # Fetch chainlink client (module-level import; injectable in tests)
+        _chainlink = None
+        if settings.CHAINLINK_INTEGRITY_GATE_ENABLED:
+            try:
+                _chainlink = get_chainlink_client()
+            except Exception:
+                pass
+
         for opp in opportunities:
             try:
+                # ── Chainlink Integrity Gate (ENTRY-ONLY) ─────────────────────
+                if settings.CHAINLINK_INTEGRITY_GATE_ENABLED:
+                    market_row = market_by_cid.get(opp.condition_id)
+                    if market_row is not None:
+                        _allowed, _block_code = _check_price_source_integrity(
+                            market_row, _chainlink
+                        )
+                        if not _allowed:
+                            logger.info(
+                                "Strategy engine: integrity gate blocked",
+                                condition_id=opp.condition_id[:12],
+                                asset=opp.asset,
+                                block_code=_block_code,
+                            )
+                            counters["SKIP"] = counters.get("SKIP", 0) + 1
+                            if persist_skips:
+                                await td_repo.insert_decision(
+                                    session,
+                                    condition_id=opp.condition_id,
+                                    asset=opp.asset,
+                                    timeframe=opp.timeframe,
+                                    decision="SKIP",
+                                    opportunity_score=opp.opportunity_score,
+                                    direction=opp.direction,
+                                    yes_mid=opp.yes_mid,
+                                    yes_bid=opp.yes_bid,
+                                    yes_ask=opp.yes_ask,
+                                    spread_yes=opp.spread_yes,
+                                    skip_reason=_block_code,
+                                    position_size_usdc=None,
+                                )
+                            continue
+
                 # Phase 1: fetch latest signal confidence for this market
                 signal_confidence: Optional[float] = None
                 mtf_confirmed: Optional[bool] = False

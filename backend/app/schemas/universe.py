@@ -30,6 +30,20 @@ class UniverseMarketResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    # ── Target / Price to Beat (Chainlink integration) ─────────────────────────
+    # Set by target_worker from official Polymarket source (Gamma API).
+    # target_verified=True is required before entry decisions are allowed.
+    target_price: Optional[float] = None
+    target_source: Optional[str] = None
+    target_raw_source: Optional[str] = None
+    target_source_timestamp: Optional[datetime] = None
+    target_locked_at: Optional[datetime] = None
+    target_event_slug: Optional[str] = None
+    target_condition_id: Optional[str] = None
+    target_verified: bool = False
+    target_stale: bool = True
+    target_validation_error: Optional[str] = None
+
     # ── Lifecycle state fields (computed at API layer, not stored in DB) ─────────
     # lifecycle_state: canonical state derived from start_time/end_time/now
     #   PRE_MARKET        — now < start_time; seed data visible but no execution
@@ -99,6 +113,11 @@ class UniverseMarketResponse(BaseModel):
     @field_validator(
         "event_slug",
         "prediction_window_source",
+        "target_source",
+        "target_raw_source",
+        "target_event_slug",
+        "target_condition_id",
+        "target_validation_error",
         mode="before",
     )
     @classmethod
@@ -117,6 +136,29 @@ class UniverseMarketResponse(BaseModel):
     def _coerce_int_or_none(cls, v: object) -> Optional[int]:
         """Return the value as-is if it's an int or None; coerce anything else to None."""
         if v is None or isinstance(v, int):
+            return v
+        return None
+
+    @field_validator(
+        "target_verified",
+        "target_stale",
+        mode="before",
+    )
+    @classmethod
+    def _coerce_bool(cls, v: object) -> bool:
+        """Coerce non-bool values (e.g. MagicMock) to False for safety."""
+        if isinstance(v, bool):
+            return v
+        return False
+
+    @field_validator(
+        "target_price",
+        mode="before",
+    )
+    @classmethod
+    def _coerce_float_or_none(cls, v: object) -> Optional[float]:
+        """Coerce non-float/None values to None."""
+        if v is None or isinstance(v, (int, float)):
             return v
         return None
 

@@ -77,6 +77,37 @@ class MarketUniverse(Base):
         String(16), nullable=True, default="PENDING"
     )
 
+    # ── Target / Price to Beat (Chainlink integration) ─────────────────────────
+    # target_price is the canonical Price to Beat, set by the target_worker from
+    # an official Polymarket source (Gamma API priceToBeat field, or if absent a
+    # verified Chainlink RTDS observation at prediction_window_start).
+    #
+    # Integrity gate (CHAINLINK_INTEGRITY_GATE_ENABLED=True):
+    #   OPEN_LONG_* is BLOCKED unless target_verified=True.
+    #   Exit / settlement decisions bypass this gate entirely.
+    #
+    # Immutable once locked: target_worker stops retrying when target_verified=True.
+    target_price: Mapped[Optional[float]] = mapped_column(Double(), nullable=True)
+    target_source: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    target_raw_source: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
+    target_source_timestamp: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    target_locked_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    target_event_slug: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    target_condition_id: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
+    target_verified: Mapped[bool] = mapped_column(
+        nullable=False, default=False, server_default="false"
+    )
+    target_stale: Mapped[bool] = mapped_column(
+        nullable=False, default=True, server_default="true"
+    )
+    target_validation_error: Mapped[Optional[str]] = mapped_column(
+        String(512), nullable=True
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

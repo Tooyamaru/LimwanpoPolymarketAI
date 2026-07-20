@@ -15,6 +15,7 @@ from app.core.database import close_db, init_db
 from app.core.logging import get_logger, setup_logging
 from app.core.redis import close_redis
 from app.workers.engine_workers import (
+    run_chainlink_loop,
     run_decision_engine_loop,
     run_dynamic_weight_loop,
     run_execution_engine_loop,
@@ -32,6 +33,7 @@ from app.workers.engine_workers import (
     run_risk_engine_loop,
     run_signal_engine_loop,
     run_strategy_engine_loop,
+    run_target_worker_loop,
     run_trend_engine_loop,
     run_universe_sync_loop,
     run_volatility_engine_loop,
@@ -52,6 +54,26 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         env=settings.APP_ENV,
     )
     await init_db()
+
+    # ── Chainlink RTDS client (singleton — started before all engines) ────────
+    # The client connects to wss://ws-live-data.polymarket.com and subscribes
+    # to live Chainlink oracle prices. Started first so prices are available
+    # by the time the strategy engine needs them for the integrity gate.
+    chainlink_task = None
+    if settings.CHAINLINK_ENABLED:
+        from app.services.chainlink_client import ChainlinkRTDSClient, set_chainlink_client
+        _chainlink_client = ChainlinkRTDSClient()
+        set_chainlink_client(_chainlink_client)
+        chainlink_task = asyncio.create_task(
+            run_chainlink_loop(_chainlink_client)
+        )
+        app.state.chainlink_client = _chainlink_client
+        logger.info(
+            "Chainlink RTDS client started",
+            url=settings.CHAINLINK_WS_URL,
+            topic=settings.CHAINLINK_TOPIC,
+            integrity_gate=settings.CHAINLINK_INTEGRITY_GATE_ENABLED,
+        )
 
     # DEF-002 fix: gate that downstream engines wait on before their first
     # cycle.  Set by universe sync after its startup run completes so that
@@ -364,6 +386,23 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         interval=settings.POSITION_TRACKING_INTERVAL_SECONDS,
     )
 
+    # ── Target worker (every 30 s) ────────────────────────────────────────────
+    # Fetches the official Price to Beat from the Gamma API for each active
+    # market that has not yet been verified.  Runs after universe_ready so
+    # the market_universe table already contains the current condition IDs.
+    target_worker_task = None
+    if settings.TARGET_WORKER_ENABLED:
+        from app.services.target_worker import TargetWorker
+        _target_worker = TargetWorker()
+        target_worker_task = asyncio.create_task(
+            run_target_worker_loop(_target_worker, universe_ready=universe_ready_event)
+        )
+        app.state.target_worker = _target_worker
+        logger.info(
+            "Target worker started",
+            interval=settings.TARGET_WORKER_INTERVAL_SECONDS,
+        )
+
     # ── Engine registration — always runs regardless of WATCHDOG_ENABLED ────
     # registered_engines: every active engine, passed to engine_health so
     # /health/detailed can report all of them (including not_started).
@@ -445,6 +484,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     for task, name in [
         (watchdog_task, "watchdog"),
+        (chainlink_task, "chainlink"),
+        (target_worker_task, "target_worker"),
         (universe_task, "universe"),
         (price_task, "price"),
         (signal_task, "signal"),
