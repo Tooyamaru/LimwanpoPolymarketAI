@@ -1,0 +1,666 @@
+LIMWANPO AI — RESUME AFTER OFFICIAL RTDS PROTOCOL SUCCESS
+
+Lanjutkan dari current codebase dan current git diff.
+
+JANGAN mengulang investigasi protokol RTDS.
+JANGAN membuat Chainlink client kedua.
+JANGAN menghapus perubahan terakhir tanpa audit.
+JANGAN mengubah 5M discovery, rollover, CLOB binding, Portfolio Accounting,
+strategy score, sizing, atau EXIT formula.
+
+==================================================
+CURRENT CONFIRMED STATE
+==================================================
+
+Official Polymarket RTDS probe sudah berhasil.
+
+Validated subscription payload:
+
+{
+  "action": "subscribe",
+  "subscriptions": [
+    {
+      "topic": "crypto_prices_chainlink",
+      "type": "*",
+      "filters": ""
+    }
+  ]
+}
+
+Required application keepalive:
+
+PING
+
+sent every 5 seconds.
+
+Validated raw update format:
+
+{
+  "connection_id": "...",
+  "topic": "crypto_prices_chainlink",
+  "type": "update",
+  "timestamp": ...,
+  "payload": {
+    "symbol": "btc/usd",
+    "timestamp": ...,
+    "value": ...,
+    "full_accuracy_value": "..."
+  }
+}
+
+Probe confirmed that messages flow without authentication.
+
+Previous run then:
+
+- rewrote backend/app/services/chainlink_client.py
+- created/updated backend/app/api/v1/chainlink.py
+- wrote a frontend modification file/script
+- created backend/app/tests/test_chainlink_protocol.py
+- stopped immediately because quota was exhausted
+
+No compile, test, restart, API proof, or screenshot occurred afterward.
+
+==================================================
+1. AUDIT THE PARTIAL EDITS FIRST
+==================================================
+
+Run:
+
+git status
+git diff --stat
+git diff
+python -m compileall -q backend/app
+
+Inspect specifically:
+
+- backend/app/services/chainlink_client.py
+- backend/app/api/v1/chainlink.py
+- backend/app/static/index.html
+- backend/app/tests/test_chainlink_protocol.py
+- backend/requirements.txt
+- backend/app/config/settings.py
+- backend/app/main.py
+- backend/app/workers/engine_workers.py
+
+Check for:
+
+- duplicate Chainlink client definitions
+- duplicate routes
+- duplicate polling intervals
+- old malformed subscription payload
+- missing imports
+- partially written frontend JavaScript
+- syntax corruption from Python replacement script
+- test file that imports nonexistent names
+- installed but unpinned websockets dependency
+
+Do not edit further until this audit is complete.
+
+==================================================
+2. VERIFY THE CLIENT USES ONLY THE OFFICIAL PROTOCOL
+==================================================
+
+There must be exactly one subscription payload:
+
+{
+  "action": "subscribe",
+  "subscriptions": [
+    {
+      "topic": "crypto_prices_chainlink",
+      "type": "*",
+      "filters": ""
+    }
+  ]
+}
+
+Remove every legacy payload such as:
+
+{
+  "type": "subscribe",
+  "channel": "crypto_prices_chainlink"
+}
+
+or:
+
+{
+  "action": "subscribe",
+  "topic": "crypto_prices_chainlink"
+}
+
+No credentials or authentication fields.
+
+==================================================
+3. VERIFY THE PING TASK
+==================================================
+
+Send the literal string:
+
+PING
+
+every 5 seconds.
+
+Requirements:
+
+- exactly one ping task
+- starts after connection opens
+- cancels when connection closes
+- cancels at application shutdown
+- does not survive reconnection
+- does not create duplicate tasks
+- transport-level ping may remain enabled separately
+
+==================================================
+4. VERIFY THE OFFICIAL MESSAGE PARSER
+==================================================
+
+Accept only valid updates where:
+
+topic == "crypto_prices_chainlink"
+type == "update"
+
+Read:
+
+payload.symbol
+payload.timestamp
+payload.value
+payload.full_accuracy_value
+
+Map at minimum:
+
+btc/usd → BTC
+eth/usd → ETH
+sol/usd → SOL
+xrp/usd → XRP
+
+BNB may be supported for the bottom ticker, but it is optional and must not
+delay the four primary markets.
+
+Reject:
+
+- malformed payloads
+- missing symbols
+- nonnumeric values
+- zero/negative values
+- out-of-order source timestamps
+- unknown symbols from primary market state
+
+Store:
+
+- asset
+- symbol
+- value
+- full_accuracy_value
+- source_timestamp
+- outer_timestamp
+- received_at
+- update_count
+
+==================================================
+5. VERIFY CONNECTION STATE DEFINITIONS
+==================================================
+
+connected =
+WebSocket handshake succeeded
+
+subscribed =
+official payload sent successfully
+
+receiving =
+at least one valid update parsed
+
+healthy =
+connected
+AND subscribed
+AND receiving
+AND BTC/ETH/SOL/XRP are all fresh
+
+Expose:
+
+- connected
+- subscribed
+- receiving
+- healthy
+- last_message_at
+- last_valid_tick_at
+- reconnect_count
+- parse_error_count
+- last_error
+- subscription_payload_version
+
+Do not wait for a subscription acknowledgement if the feed does not send
+one.
+
+Set subscribed=true after successful send, but healthy remains false until
+valid ticks arrive.
+
+==================================================
+6. VERIFY DEPENDENCY PERSISTENCE
+==================================================
+
+Ensure websockets is stored in:
+
+backend/requirements.txt
+
+or the actual project dependency file.
+
+Do not rely on an interactive Replit package installation.
+
+Restarting the Replit environment must still import the client successfully.
+
+==================================================
+7. VERIFY THE CHAINLINK API
+==================================================
+
+Expected endpoints:
+
+GET /api/v1/chainlink/health
+GET /api/v1/chainlink/prices
+GET /api/v1/chainlink/candles
+
+/prices must return for BTC, ETH, SOL, XRP:
+
+- asset
+- symbol
+- value
+- full_accuracy_value
+- source = POLYMARKET_RTDS_CHAINLINK
+- source_timestamp
+- received_at
+- age_ms
+- stale
+- update_count
+
+/health must return the connection-state fields.
+
+/candles must aggregate only RTDS ticks.
+
+No Binance data may enter any Chainlink endpoint.
+
+==================================================
+8. REMOVE BINANCE FROM PRIMARY HEADER DATA
+==================================================
+
+Audit every frontend reference to:
+
+- cPrices
+- fetchPrices
+- /api/v1/crypto/ticker
+- Binance
+- btc/candles
+- loadCandles
+- asset-live-px
+- buildCryptoTicker
+
+For BTC, ETH, SOL, and XRP:
+
+asset header price =
+Chainlink RTDS only
+
+When unavailable:
+
+—
+SYNCING
+
+Do not show a Binance number beside a Chainlink/SYNCING label.
+
+Remove Binance from:
+
+- card/header reference price
+- TARGET comparison
+- GAP
+- strategy reference input
+- integrity validation
+- chart primary data
+
+==================================================
+9. FIX THE BOTTOM TICKER
+==================================================
+
+Use Chainlink values for:
+
+- BTC
+- ETH
+- SOL
+- XRP
+
+BNB may be shown only if the RTDS feed actually supplies bnb/usd.
+
+Chainlink does not provide official 24-hour percentage change through this
+topic.
+
+Use one of these honest labels:
+
+SESSION +0.12%
+
+calculated from the first tick of the current application session,
+
+or display no percentage.
+
+Do not label session change as 24H change.
+
+==================================================
+10. FIX THE CHART
+==================================================
+
+BTC chart must use:
+
+GET /api/v1/chainlink/candles
+
+Candles must be aggregated from Chainlink ticks only.
+
+Do not:
+
+- call the Binance candles endpoint
+- seed Chainlink state from Binance candles
+- populate the chart from a Binance fallback
+
+If history is insufficient:
+
+CHAINLINK SESSION DATA
+STARTED AT HH:MM:SS
+
+Volume:
+
+VOLUME —
+SOURCE UNAVAILABLE
+
+Do not display Binance volume.
+
+==================================================
+11. VERIFY FRONTEND STATE AND FINGERPRINT
+==================================================
+
+Use one state store:
+
+chainlinkPrices
+
+For primary asset values.
+
+Ensure:
+
+- asset headers read chainlinkPrices
+- fingerprint includes Chainlink value and freshness
+- ticker reads Chainlink state
+- card GAP reads Chainlink state
+- chart price reads Chainlink state
+- old cPrices cannot overwrite Chainlink values
+- stale response sequence cannot overwrite fresh data
+- no duplicate loadChainlink intervals
+
+Remove fetchPrices from startup and intervals if it only supplies Binance
+primary prices.
+
+==================================================
+12. TARGET REMAINS A SEPARATE PROBLEM
+==================================================
+
+Fixing current Chainlink reference prices does not automatically verify the
+official Price to Beat.
+
+Do not set:
+
+target_verified = true
+
+merely because RTDS is now receiving.
+
+TARGET priority remains:
+
+1. official Polymarket Price to Beat for exact event
+2. exact Chainlink window-start observation only after its selection rule is
+   reconciled with Polymarket
+3. otherwise PENDING
+
+Keep:
+
+TARGET PENDING
+GAP —
+
+until official verification is complete.
+
+Do not select the first tick received after rollover as the target.
+
+==================================================
+13. KEEP THE ENTRY INTEGRITY GATE ENABLED
+==================================================
+
+Block new OPEN entries when:
+
+- TARGET_PENDING
+- TARGET_UNVERIFIED
+- REFERENCE_PRICE_UNAVAILABLE
+- REFERENCE_PRICE_STALE
+- TARGET_CONDITION_MISMATCH
+- TARGET_EVENT_MISMATCH
+- CLOB_CONDITION_MISMATCH
+- TARGET_CONFLICT
+
+Do not block:
+
+- Exit Engine
+- expiry settlement
+- forced exit
+- market discovery
+- rollover
+- portfolio accounting
+
+==================================================
+14. TEST THE OFFICIAL PROTOCOL
+==================================================
+
+Inspect test_chainlink_protocol.py.
+
+Required tests:
+
+1. official payload exact structure
+2. action equals subscribe
+3. subscriptions is an array
+4. topic equals crypto_prices_chainlink
+5. type equals *
+6. filters equals empty string
+7. no auth fields
+8. literal PING sent every 5 seconds
+9. valid update parsed
+10. payload symbol parsed
+11. payload timestamp parsed
+12. payload value parsed
+13. malformed message rejected
+14. out-of-order message rejected
+15. connected alone is not healthy
+16. subscription send sets subscribed
+17. valid update sets receiving
+18. four fresh primary assets set healthy
+19. stale primary asset makes health false
+20. unknown symbol does not corrupt primary state
+21. API source is POLYMARKET_RTDS_CHAINLINK
+22. Chainlink endpoint contains no Binance fallback
+23. frontend unavailable state shows SYNCING
+24. frontend never shows Binance beside Chainlink label
+25. chart candles contain only RTDS ticks
+26. session percent is not labelled 24H
+27. target pending still blocks entry
+28. Exit Engine bypasses entry-only gate
+29. reconnect creates only one ping task
+30. shutdown cancels ping cleanly
+
+Use production functions, not only hardcoded test constants.
+
+==================================================
+15. JAVASCRIPT VALIDATION
+==================================================
+
+Validate:
+
+- JavaScript syntax
+- chainlinkPrices defined once
+- loadChainlink defined once
+- buildCryptoTicker defined once
+- Chainlink interval defined once
+- no cPrices use remains in primary display
+- no Binance candles call remains
+- no candle-close seeding of Chainlink prices
+- no old fetchPrices call updates asset-live-px
+
+==================================================
+16. TARGETED TESTS
+==================================================
+
+Run:
+
+python -m compileall -q backend/app
+
+pytest backend/app/tests/test_chainlink_protocol.py -q
+pytest backend/app/tests/test_price_source_integrity.py -q
+pytest backend/app/tests/test_strategy_engine.py -q
+pytest backend/app/tests/test_countdown.py -q
+pytest backend/app/tests/test_market_lifecycle_state.py -q
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+==================================================
+17. FULL TEST SUITE
+==================================================
+
+Run:
+
+pytest backend/app/tests -q
+
+Required:
+
+- 0 failed
+- 0 errors
+- 0 unawaited-coroutine warnings
+
+Do not assume the previous 983-test result is still valid after rewriting
+the client and frontend.
+
+==================================================
+18. RUNTIME VALIDATION
+==================================================
+
+Restart workflow once.
+
+Capture:
+
+GET /api/v1/chainlink/health
+
+Expected:
+
+connected = true
+subscribed = true
+receiving = true
+healthy = true
+
+GET /api/v1/chainlink/prices
+
+Required:
+
+- fresh BTC
+- fresh ETH
+- fresh SOL
+- fresh XRP
+- natural update_count increase
+- changing values
+- source = POLYMARKET_RTDS_CHAINLINK
+
+GET /api/v1/chainlink/candles
+
+Required:
+
+- nonempty BTC candles after enough ticks
+- timestamps in order
+- OHLC values derived from RTDS history
+- no Binance source
+
+==================================================
+19. DASHBOARD SCREENSHOT
+==================================================
+
+Screenshot must show:
+
+- BTC/ETH/SOL/XRP header values from Chainlink
+- CHAINLINK LIVE
+- no SYNCING when feed is healthy
+- nonempty Chainlink BTC chart
+- volume unavailable honestly shown
+- current 5M countdown
+- current CLOB UP/DOWN
+- TARGET either verified or honestly pending
+- GAP hidden while target pending
+- no Binance fallback
+
+==================================================
+20. FINAL REPORT
+==================================================
+
+Report:
+
+1. Partial diff audit
+2. Official payload implementation
+3. PING implementation
+4. Parser implementation
+5. Connection state
+6. BTC tick proof
+7. ETH tick proof
+8. SOL tick proof
+9. XRP tick proof
+10. Chainlink API result
+11. Header source result
+12. Ticker source result
+13. Chart source result
+14. Binance-removal audit
+15. Target status
+16. Entry integrity gate
+17. Targeted tests
+18. Full suite
+19. Runtime screenshot
+20. Files changed
+21. Remaining risks
+22. Final statuses
+
+Statuses:
+
+RTDS PROTOCOL:
+- PASS
+- FAIL
+
+CHAINLINK RECEIVING:
+- PASS
+- FAIL
+
+HEADER CHAINLINK SOURCE:
+- PASS
+- FAIL
+
+CHAINLINK TICKER:
+- PASS
+- FAIL
+
+CHAINLINK CHART:
+- PASS
+- FAIL
+
+BINANCE PRIMARY FALLBACK:
+- REMOVED
+- FAIL
+
+OFFICIAL PRICE TO BEAT:
+- PASS
+- PENDING OFFICIAL SOURCE
+- FAIL
+
+ENTRY INTEGRITY:
+- PASS
+- FAIL
+
+FULL SUITE:
+- PASS
+- FAIL
+
+Do not declare completion until compile, all tests, restart, API proof, and
+screenshot are complete.

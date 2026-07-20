@@ -428,6 +428,7 @@ let _lastLtKey="";               // live-trades dedup key
 let _lastTickerKey="";           // crypto ticker dirty check
 let _cdEls=[];                   // cached countdown elements (refreshed after renderMarkets)
 let _lastPriceFetchTs=0;         // fetchPrices dedup timestamp
+let _chainlinkSessionPx={};      // {BTC:firstValue,...} for SESSION % calc
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 const confColor=c=>c>=80?NG:c>=60?"#22ee55":c>=45?NC:c>=30?NY:TD;
@@ -593,24 +594,6 @@ async function fetchPrices(){
       cPrices[d.symbol]={price:d.price,pct:d.pct_change,high:d.high,low:d.low,vol:d.volume};
     }
     buildCryptoTicker();
-    // Patch header asset price spans — only text, no DOM rebuild
-    for(const d of data){
-      const _sp=document.querySelector('[data-asset="'+d.symbol+'"]');
-      if(_sp&&d.price!=null)_sp.textContent='$'+fmtAssetPrice(d.symbol,d.price);
-    }
-    if(cPrices.BTC&&typeof cPrices.BTC==="object"){
-      const b=cPrices.BTC;
-      el("bb-price").textContent=b.price.toLocaleString(undefined,{maximumFractionDigits:0});
-      const up=b.pct>=0,dc=up?NG:RED;
-      const chg=b.price-b.price/(1+b.pct/100);
-      el("bb-d1").textContent=(up?"+":"")+chg.toLocaleString(undefined,{maximumFractionDigits:0});
-      el("bb-d1").style.color=dc;
-      el("bb-d2").textContent=(up?"+":"")+b.pct.toFixed(2)+"%";
-      el("bb-d2").style.color=dc;
-      el("bb-24h").textContent=b.high.toLocaleString(undefined,{maximumFractionDigits:0});
-      el("bb-24l").textContent=b.low.toLocaleString(undefined,{maximumFractionDigits:0});
-      el("bb-vol").textContent=fmtVol(b.vol);
-    }
   }catch(e){}
 }
 
@@ -624,7 +607,10 @@ async function loadChainlink(){
     if(!r.ok)return;
     const data=await r.json();
     for(const [asset,p] of Object.entries(data)){
-      if(p&&p.value!=null)chainlinkPrices[asset]=p;
+      if(p&&p.value!=null){
+        chainlinkPrices[asset]=p;
+        if(_chainlinkSessionPx[asset]==null)_chainlinkSessionPx[asset]=p.value;
+      }
     }
     // Patch header asset-live-px spans from Chainlink (BTC/ETH/SOL/XRP)
     for(const [asset,p] of Object.entries(chainlinkPrices)){
@@ -652,16 +638,28 @@ async function loadChainlink(){
 }
 
 function buildCryptoTicker(){
-  const pairs=["BTC","ETH","SOL","XRP","BNB"];
-  // Skip rebuild if prices unchanged — use display-precision values to avoid stale ticker
-  const key=pairs.map(s=>{const d=cPrices[s];if(!d||typeof d!=="object")return"—";return fmtAssetPrice(s,d.price)+":"+d.pct.toFixed(2);}).join("|");
+  // Chainlink RTDS only — no Binance data.
+  // Percentage label: SESSION change (first tick of this app session), not 24H.
+  const pairs=["BTC","ETH","SOL","XRP"];
+  const key=pairs.map(s=>{
+    const d=chainlinkPrices[s];
+    if(!d||d.value==null)return"—";
+    const sp=_chainlinkSessionPx[s];
+    const pct=sp&&sp>0?(((d.value-sp)/sp)*100).toFixed(2):null;
+    return fmtAssetPrice(s,d.value)+":"+(pct||"?");
+  }).join("|");
   if(key===_lastTickerKey)return;
   _lastTickerKey=key;
   const items=pairs.map(sym=>{
-    const d=cPrices[sym];
-    if(!d||typeof d!=="object")return"";
-    const up=d.pct>=0,dc=up?NG:RED;
-    return `<span class="ctick-item"><span class="ctick-sym">${sym}</span><span class="ctick-price">${fmtAssetPrice(sym,d.price)}</span><span class="ctick-delta" style="color:${dc}">${up?"+":""}${d.pct.toFixed(2)}%</span></span>`;
+    const d=chainlinkPrices[sym];
+    if(!d||d.value==null)return"";
+    const sp=_chainlinkSessionPx[sym];
+    const pct=sp&&sp>0?((d.value-sp)/sp)*100:null;
+    const up=pct!=null?pct>=0:true;
+    const dc=pct!=null?(up?NG:RED):"#4a6580";
+    const pctStr=pct!=null?(up?"+":"")+pct.toFixed(2)+"%":"";
+    const label=pctStr?`<span class="ctick-delta" style="color:${dc}">SESSION ${pctStr}</span>`:"";
+    return `<span class="ctick-item"><span class="ctick-sym">${sym}</span><span class="ctick-price">${fmtAssetPrice(sym,d.value)}</span>${label}</span>`;
   }).join("");
   el("ctick").innerHTML=items+items;
 }
@@ -893,12 +891,12 @@ function renderMarkets(){
     const cc=confColor(avgConf);
 
     // ── Fingerprint: skip DOM rebuild if nothing visible changed ──────────────
-    const _lp=cPrices[asset];
-    const _lpv=_lp?(typeof _lp==="object"?_lp.price+":"+(_lp.pct||0).toFixed(3):String(_lp)):"—";
+    const _lp=chainlinkPrices[asset];
+    const _lpv=_lp&&_lp.value!=null?String(_lp.value.toFixed(2)):"—";
     const fp=_lpv+"|"+ap.length+":"+aCap.toFixed(0)+"|"+am.map(m=>{
       const cp=clobPrices[m.condition_id];
-      const _at=cPrices[m.asset];
-      const cur=_at?(typeof _at==="object"?_at.price:_at):null;
+      const _at=chainlinkPrices[m.asset];
+      const cur=_at&&_at.value!=null?_at.value:null;
       const sig=sigs[m.condition_id],opp=opps[m.condition_id];
       const conf=sig&&sig.confidence_score!=null?sig.confidence_score:
                  (opp&&opp.opportunity_score!=null?opp.opportunity_score:null);
@@ -924,7 +922,7 @@ function renderMarkets(){
             <div class="asset-icon-grp" style="gap:7px;align-items:center">
               <span class="asset-icon" style="font-size:15px;line-height:1">${ICONS[asset]||asset}</span>
               <span class="asset-name">${asset}</span>
-              ${(()=>{const _p=cPrices[asset];const _v=_p?(typeof _p==="object"?_p.price:_p):null;return '<span class="asset-live-px" data-asset="'+asset+'">'+(_v!==null?'$'+fmtAssetPrice(asset,_v):'—')+'</span>';})()}
+              ${(()=>{const _p=chainlinkPrices[asset];const _v=_p&&_p.value!=null?_p.value:null;const _clSt=_p&&_p.stale;return '<span class="asset-live-px" data-asset="'+asset+'"'+(_clSt?' style="color:#4a6580"':'')+'>'+(_v!==null?'$'+fmtAssetPrice(asset,_v):(Object.keys(chainlinkPrices).length>0?'SYNCING':'—'))+'</span>';})()}
             </div>
             <div class="asset-pos-info">
               <div class="asset-pos-compact">${posLabel} &middot; ${capLabel}</div>
@@ -1266,7 +1264,7 @@ async function loadMarketAlerts(){
 // ── INIT & REFRESH ────────────────────────────────────────────────────────────
 let inited=false;
 async function refresh(){
-  await Promise.all([loadMarkets(),loadPortfolio(),fetchPrices(),loadClob(),loadChainlink()]);
+  await Promise.all([loadMarkets(),loadPortfolio(),loadClob(),loadChainlink()]);
   // Re-render markets now that prices are guaranteed loaded
   renderMarkets();
   loadMarketAlerts();
@@ -1287,7 +1285,7 @@ function init(){
 
 setInterval(refresh,30000);
 setInterval(()=>loadCandles(curTF),60000);
-setInterval(fetchPrices,5000);   // live price refresh every 5s
+// fetchPrices (Binance) removed — Chainlink RTDS is the sole price source
 setInterval(loadChainlink,5000);  // Chainlink RTDS prices every 5s
 
 
