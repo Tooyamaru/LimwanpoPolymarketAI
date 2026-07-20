@@ -1,0 +1,523 @@
+LIMWANPO AI — COMPLETE OFFICIAL PRICE TO BEAT RECONCILIATION AND TARGET/ROLLOVER ORDERING
+
+Lanjutkan dari current codebase dan current git diff.
+
+Current confirmed state:
+
+- Polymarket RTDS Chainlink works
+- header uses Chainlink
+- Binance primary fallback removed
+- CLOB UP/DOWN values have appeared
+- SESSION H/L labels fixed
+- TICKS label fixed
+- SESSION START label fixed
+- test_target_clob_gap passes
+- full suite previously reported 1053 passed
+- TARGET is still not locking in runtime
+- work stopped while debugging universe rollover and target worker
+- get_tick_at_or_before() was added
+- target worker currently considers a Chainlink tick up to five minutes
+  before prediction_window_start
+
+CRITICAL:
+
+Do NOT mark a five-minute-lookback tick as target_verified=true unless it
+has been reconciled with the exact Price to Beat displayed by Polymarket.
+
+JANGAN mengubah:
+
+- official RTDS protocol
+- Chainlink WebSocket subscription
+- PING implementation
+- 5M timestamp-slug discovery algorithm
+- Portfolio Accounting
+- strategy score
+- sizing formula
+- EXIT formula
+- dashboard visual theme
+
+==================================================
+1. AUDIT CURRENT FINAL DIFF
+==================================================
+
+Run:
+
+git status
+git diff --stat
+git diff
+python -m compileall -q backend/app
+
+Inspect:
+
+- backend/app/services/chainlink_client.py
+- backend/app/services/target_worker.py
+- backend/app/services/market_universe_service.py
+- backend/app/repositories/universe_repository.py
+- backend/app/api/v1/universe.py
+- backend/app/api/v1/chainlink.py
+- backend/app/static/index.html
+- backend/app/tests/test_target_clob_gap.py
+
+Report the exact current behavior of:
+
+- get_tick_nearest()
+- get_tick_at_or_before()
+- target_verified assignment
+- target_source assignment
+- target worker polling timing
+- universe rollover timing
+
+Do not edit until this is clear.
+
+==================================================
+2. REMOVE UNSAFE AUTOMATIC VERIFICATION
+==================================================
+
+If target worker currently does:
+
+latest tick at/before window start
+within five minutes
+→ target_verified=true
+
+change it.
+
+Until official reconciliation succeeds:
+
+target_price =
+candidate Chainlink value, optionally stored for diagnostics
+
+target_source =
+CHAINLINK_PRESTART_CANDIDATE
+
+target_verified =
+false
+
+target_validation_error =
+OFFICIAL_PRICE_TO_BEAT_NOT_RECONCILED
+
+Frontend remains:
+
+TARGET PENDING
+GAP —
+
+Entry remains blocked.
+
+Do not delete candidate data; store it separately for comparison.
+
+==================================================
+3. FIND THE EXACT POLYMARKET PRICE TO BEAT VALUE
+==================================================
+
+For the exact current event_slug:
+
+1. Open the public Polymarket event page.
+2. Capture the visible Price to Beat.
+3. Inspect the page's network requests.
+4. Inspect:
+   - HTML
+   - Next.js/RSC payload
+   - embedded JSON
+   - public API responses
+5. Search for the exact displayed numeric value.
+
+Search fields and text including:
+
+- Price to Beat
+- priceToBeat
+- price_to_beat
+- initialValue
+- initial_value
+- referencePrice
+- reference_price
+- openPrice
+- oraclePrice
+
+Do not invent an endpoint.
+
+Do not use FAQ/SEO text alone unless the numeric value is confirmed to match
+the actual visible trading component.
+
+Report:
+
+- event_slug
+- condition_id
+- visible Price to Beat
+- exact endpoint/resource
+- exact response field/path
+- source timestamp
+- value precision
+- whether it is available before or after window start
+
+==================================================
+4. RECONCILE CHAINLINK TICKS AGAINST POLYMARKET
+==================================================
+
+For at least three consecutive BTC windows capture:
+
+- event_slug
+- condition_id
+- prediction_window_start
+- visible official Price to Beat
+- all Chainlink ticks from start - 5 minutes to start + 30 seconds
+- previous tick before start
+- nearest tick
+- first tick after start
+- source timestamps
+- values
+- delta from window start
+
+Compare candidate rules:
+
+A. latest tick at or before start
+B. nearest tick to start
+C. first tick at or after start
+D. another observed deterministic rule
+
+For every candidate calculate:
+
+candidate value - official Price to Beat
+
+Do not select a rule from only one window.
+
+Required before verification:
+
+- same rule matches at least three consecutive windows
+- difference is only legitimate display rounding
+- source timestamp semantics are consistent
+
+Then repeat verification for:
+
+- ETH
+- SOL
+- XRP
+
+at least one real window each.
+
+==================================================
+5. DEFINE THE VERIFIED TARGET RULE
+==================================================
+
+Only after reconciliation, implement the proven rule.
+
+Persist:
+
+- target_price
+- target_source
+- target_source_timestamp
+- target_locked_at
+- target_event_slug
+- target_condition_id
+- target_verified
+- target_validation_error
+- target_candidate_rule
+- target_official_comparison_value
+- target_difference
+
+Required:
+
+target_event_slug == exact current event_slug
+target_condition_id == exact current condition_id
+
+If official comparison fails:
+
+target_verified=false
+TARGET PENDING
+ENTRY blocked
+
+Do not automatically widen lookback until some value is found.
+
+==================================================
+6. HANDLE CHAINLINK STALENESS CORRECTLY
+==================================================
+
+Current log observed tick age around 295 seconds.
+
+Define:
+
+reference_stale =
+current_time - last_valid_source_timestamp > configured threshold
+
+When stale:
+
+- healthy=false
+- display CHAINLINK STALE
+- primary header displays — or clearly stale last value
+- GAP —
+- no new entry
+- do not verify a new target using the stale current feed
+- keep stored historical ticks available for official reconciliation
+
+Historical tick lookup and current reference health are separate concepts.
+
+A historical tick may be inspected, but current stale state must not be
+reported as LIVE.
+
+==================================================
+7. FIX UNIVERSE ROLLOVER ORDERING
+==================================================
+
+Log suggested:
+
+current clock passed 06:00
+but selected market still had prediction_window_start=05:55
+
+Trace:
+
+- exact universe sync time
+- current_slot
+- constructed current slug
+- selected condition_id
+- API response generation time
+- target worker cycle time
+- price worker cycle time
+
+Required rollover order:
+
+1. calculate new current_slot
+2. discover exact new event_slug
+3. persist/select new condition
+4. expose new universe active response
+5. bind new YES/NO token IDs
+6. refresh CLOB
+7. start target reconciliation for the new condition
+8. update frontend
+
+Target worker must not continue processing the previous selected condition
+as the current card after rollover.
+
+Add:
+
+- selected_snapshot_id
+- selected_generated_at
+- condition generation/sequence
+- stale-worker-result rejection
+
+A delayed target result from Window A must not write into Window B.
+
+==================================================
+8. FORCE CURRENT-SLOT RECHECK AT BOUNDARY
+==================================================
+
+Do not wait for a slow periodic universe cycle after the five-minute
+boundary.
+
+At prediction_window_end:
+
+- trigger immediate current-slot discovery
+- trigger immediate active-market selection
+- trigger CLOB refresh
+- trigger target reconciliation
+
+Periodic background polling remains as backup.
+
+Do not restart the application manually.
+
+==================================================
+9. CLOB CURRENT-CONDITION PROOF
+==================================================
+
+CLOB values appeared in runtime, but prove exact binding.
+
+For BTC/ETH/SOL/XRP show:
+
+- current event_slug
+- current condition_id
+- YES token ID
+- NO token ID
+- price snapshot condition_id
+- bid/ask timestamp
+- snapshot age
+- displayed UP/DOWN values
+
+Required:
+
+price_snapshot.condition_id == current_card.condition_id
+
+After rollover:
+
+- old price response rejected
+- new condition snapshot loaded
+- no temporary old UP/DOWN display
+- if no new snapshot yet, show CLOB SYNCING
+
+Do not display old prices during the rollover gap.
+
+==================================================
+10. TARGET WORKER SCHEDULING
+==================================================
+
+Target verification should run:
+
+- immediately after new condition selection
+- again when official Price to Beat becomes available
+- controlled retry while pending
+- stop after verified
+
+Persist:
+
+- target_retry_count
+- target_last_attempt_at
+- target_next_attempt_at
+- target_last_error
+
+Do not depend only on a generic 30-second worker cadence.
+
+==================================================
+11. TESTS
+==================================================
+
+Add/update tests:
+
+1. five-minute-lookback candidate is not automatically verified
+2. unverified candidate remains TARGET PENDING
+3. official reconciliation is required
+4. one-window match is insufficient
+5. three-window consistent match allows rule approval
+6. mismatched official value remains unverified
+7. stale current feed is not healthy
+8. stale current feed cannot enable entry
+9. historical stale tick remains available for diagnostics
+10. current slot updates exactly at five-minute boundary
+11. old universe condition rejected after rollover
+12. old target-worker result rejected after rollover
+13. new condition triggers target worker immediately
+14. new condition triggers CLOB refresh immediately
+15. CLOB snapshot condition must equal selected condition
+16. old CLOB snapshot cannot display on new card
+17. current-condition missing CLOB displays SYNCING
+18. verified target remains immutable
+19. target from old event cannot leak
+20. full existing suite remains passing
+
+==================================================
+12. VALIDATION
+==================================================
+
+Run:
+
+python -m compileall -q backend/app
+
+Validate JavaScript syntax.
+
+Run:
+
+pytest backend/app/tests/test_target_clob_gap.py -q
+pytest backend/app/tests/test_chainlink_protocol.py -q
+pytest backend/app/tests/test_5m_discovery.py -q
+pytest backend/app/tests/test_countdown.py -q
+pytest backend/app/tests/test_market_lifecycle_state.py -q
+
+Then:
+
+pytest backend/app/tests -q
+
+Report exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+
+==================================================
+13. RUNTIME PROOF
+==================================================
+
+Capture:
+
+WINDOW A:
+- current event
+- official Price to Beat
+- candidate ticks
+- verified target
+- CLOB values
+- displayed GAP
+
+ROLLOVER A→B:
+- slot +300
+- new condition
+- new token IDs
+- immediate CLOB refresh
+- target starts PENDING
+- official target reconciles
+- target becomes VERIFIED
+- GAP appears
+
+ROLLOVER B→C:
+prove the same again.
+
+Required:
+
+- no stale universe condition
+- no stale target write
+- no old CLOB leakage
+- no arbitrary five-minute-lookback verification
+- no entry while target pending
+
+==================================================
+14. FINAL REPORT
+==================================================
+
+Report:
+
+1. Current diff audit
+2. Unsafe lookback behavior before/after
+3. Official Price to Beat source
+4. Three-window BTC reconciliation
+5. ETH reconciliation
+6. SOL reconciliation
+7. XRP reconciliation
+8. Proven target selection rule
+9. Target verification
+10. Chainlink staleness handling
+11. Universe rollover ordering
+12. CLOB exact-condition proof
+13. Target worker scheduling
+14. Tests
+15. Runtime screenshots
+16. Files changed
+17. Remaining risks
+18. Final statuses
+
+Statuses:
+
+CHAINLINK REFERENCE:
+- PASS
+- FAIL
+
+OFFICIAL PRICE TO BEAT SOURCE:
+- PASS
+- FAIL
+
+TARGET SELECTION RULE:
+- PROVEN
+- UNVERIFIED
+- FAIL
+
+TARGET VERIFICATION:
+- PASS
+- PENDING
+- FAIL
+
+CHAINLINK STALENESS:
+- PASS
+- FAIL
+
+UNIVERSE ROLLOVER ORDERING:
+- PASS
+- FAIL
+
+CLOB CURRENT CONDITION:
+- PASS
+- FAIL
+
+GAP INTEGRITY:
+- PASS
+- FAIL
+
+TRADING READY:
+- PASS
+- FAIL
+
+Do not declare completion until the displayed Polymarket Price to Beat is
+matched by a proven deterministic source rule.
