@@ -271,12 +271,15 @@ class ExitEngine:
             o.condition_id: o for o in opp_rows.scalars().all()
         }
 
-        # ── Build market end_time map — needed to detect expired positions ─────
+        # ── Build prediction_window_end map — used to detect expired 5M windows ─
+        # Uses market.prediction_window_end exclusively; no fallback to end_time.
+        # If prediction_window_end is missing, the position is logged with
+        # INVALID_PREDICTION_WINDOW and continues normal (non-expiry) evaluation.
         mkt_rows = await session.execute(
-            select(MarketUniverse.condition_id, MarketUniverse.end_time)
+            select(MarketUniverse.condition_id, MarketUniverse.prediction_window_end)
             .where(MarketUniverse.condition_id.in_(condition_ids))
         )
-        market_end_map: dict[str, datetime] = {
+        market_pw_end_map: dict[str, Optional[datetime]] = {
             row[0]: row[1] for row in mkt_rows.all()
         }
 
@@ -330,22 +333,35 @@ class ExitEngine:
 
                 opp = opp_map.get(pos.condition_id)
 
-                # ── Detect expired market (must run before exit_price logic) ──
-                # Opportunity rows retain stale minutes_to_expiry values after
-                # a market closes, so the normal EXPIRY_EXIT trigger never fires
-                # for positions on expired markets.  We detect expiry via the
-                # authoritative market_universe.end_time and force-close using
-                # Polymarket resolution evidence.
+                # ── Detect expired prediction window (must run before exit_price) ─
+                # Expiry is determined by market.prediction_window_end only.
+                # No fallback to end_time — that column must never gate an exit.
+                #
+                # If prediction_window_end is None (missing metadata), the engine
+                # logs INVALID_PREDICTION_WINDOW and skips the expiry block so
+                # normal triggers (stop-loss, profit-target, etc.) still fire.
+                # The position is retained for recovery or official settlement.
+                #
+                # Exit does NOT require WINDOW_LIVE — RESOLVING and RESOLVED
+                # markets must still be processed.
                 #
                 # No 0.5 fallback: if resolution data is unavailable the position
                 # is skipped this cycle and retried until data arrives.
                 forced_expiry_exit = False
                 forced_exit_price: Optional[float] = None
-                market_end = market_end_map.get(pos.condition_id)
-                if market_end is not None:
-                    if market_end.tzinfo is None:
-                        market_end = market_end.replace(tzinfo=timezone.utc)
-                    if market_end <= now:
+                pw_end = market_pw_end_map.get(pos.condition_id)
+                if pw_end is None:
+                    # prediction_window_end missing — log and fall through to
+                    # normal trigger evaluation; never use end_time as a substitute.
+                    logger.debug(
+                        "Exit engine: INVALID_PREDICTION_WINDOW — prediction_window_end not set, skipping expiry check",
+                        position_id=pos.id,
+                        condition_id=pos.condition_id[:12],
+                    )
+                else:
+                    if pw_end.tzinfo is None:
+                        pw_end = pw_end.replace(tzinfo=timezone.utc)
+                    if now >= pw_end:
                         resolution = resolution_map.get(pos.condition_id)
                         if resolution is not None:
                             # Use confirmed Polymarket resolution prices only.
@@ -358,11 +374,11 @@ class ExitEngine:
 
                             if raw_price is None:
                                 logger.info(
-                                    "Exit engine: expired market, resolution row exists but price is None — retrying",
+                                    "Exit engine: prediction window expired, resolution row exists but price is None — retrying",
                                     position_id=pos.id,
                                     condition_id=pos.condition_id[:12],
                                     side=pos.side,
-                                    market_end=market_end.isoformat(),
+                                    prediction_window_end=pw_end.isoformat(),
                                 )
                                 skipped += 1
                                 continue
@@ -370,7 +386,7 @@ class ExitEngine:
                             forced_exit_price = float(raw_price)
                             forced_expiry_exit = True
                             logger.info(
-                                "Exit engine: expired market — forced close",
+                                "Exit engine: prediction window expired — forced close",
                                 position_id=pos.id,
                                 condition_id=pos.condition_id[:12],
                                 asset=pos.asset,
@@ -378,19 +394,19 @@ class ExitEngine:
                                 side=pos.side,
                                 forced_exit_price=forced_exit_price,
                                 resolution_source=resolution.outcome_source,
-                                market_end=market_end.isoformat(),
+                                prediction_window_end=pw_end.isoformat(),
                             )
                         else:
                             # No resolution data yet — skip and retry.
                             # Never use 0.5 as a synthetic exit price.
                             logger.info(
-                                "Exit engine: expired market, no resolution data yet — retrying",
+                                "Exit engine: prediction window expired, no resolution data yet — retrying",
                                 position_id=pos.id,
                                 condition_id=pos.condition_id[:12],
                                 asset=pos.asset,
                                 timeframe=pos.timeframe,
                                 side=pos.side,
-                                market_end=market_end.isoformat(),
+                                prediction_window_end=pw_end.isoformat(),
                             )
                             skipped += 1
                             continue

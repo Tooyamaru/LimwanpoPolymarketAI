@@ -1,0 +1,225 @@
+LIMWANPO AI — PHASE A CHECKPOINT 9: EXIT AFTER ROLLOVER ONLY
+
+Lanjutkan dari Checkpoint 8 yang sudah:
+
+- Execution prediction-window tests 20/20 PASS
+- Execution regression 40/40 PASS
+- compile PASS
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full test suite.
+JANGAN menjalankan aplikasi atau restart workflow.
+JANGAN menyentuh Strategy, Risk, Execution, database migration, API,
+frontend, Chainlink, TARGET, CLOB entry pricing, Portfolio Accounting,
+atau sizing formula.
+JANGAN menggunakan subagent.
+
+Target tahap ini hanya:
+
+1. backend/app/services/exit_engine.py
+2. backend/app/tests/test_exit_prediction_window.py
+3. existing Exit regression tests bila file Exit berubah
+
+==================================================
+1. INSPECT CURRENT EXIT FLOW
+==================================================
+
+Baca hanya:
+
+- backend/app/services/exit_engine.py
+- backend/app/models/position.py
+- backend/app/models/market_universe.py
+- existing Exit test files
+
+Laporkan singkat:
+
+- bagaimana OPEN/PARTIAL positions diambil
+- bagaimana market condition dicari
+- apakah expiry memakai end_time
+- apakah Exit hanya memproses current dashboard conditions
+- bagaimana close reason dan close order dibuat
+
+==================================================
+2. EXIT MUST REMAIN GLOBAL
+==================================================
+
+Exit Engine harus memproses seluruh position dengan status:
+
+OPEN
+PARTIAL
+atau status aktif ekuivalen yang sudah ada
+
+Jangan membatasi posisi berdasarkan empat current dashboard cards.
+
+Posisi Window A harus tetap diproses setelah dashboard rollover ke Window B.
+
+Market lookup harus berdasarkan exact:
+
+position.condition_id
+
+Bukan hanya asset atau current selected market.
+
+==================================================
+3. USE PREDICTION WINDOW END
+==================================================
+
+Untuk market 5M gunakan hanya:
+
+market.prediction_window_end
+
+At:
+
+now >= prediction_window_end
+
+posisi masuk jalur expiry/resolution handling.
+
+Jangan menggunakan:
+
+market.end_time
+market.start_time
+prediction_window_end or end_time
+contract lifecycle
+
+Jika prediction_window_end hilang:
+
+- jangan fallback ke end_time
+- jangan membuat fake exit
+- log INVALID_PREDICTION_WINDOW
+- posisi tetap dikelola untuk recovery/official resolution
+- jangan crash seluruh worker
+
+==================================================
+4. EXIT MUST NOT REQUIRE WINDOW_LIVE
+==================================================
+
+Exit/close handling harus tetap berjalan ketika lifecycle market:
+
+RESOLVING
+RESOLVED
+INVALID metadata recovery
+
+Jangan menambahkan gate:
+
+prediction_lifecycle_state == WINDOW_LIVE
+
+WINDOW_LIVE hanya untuk entry, bukan exit.
+
+==================================================
+5. ROLLOVER SAFETY
+==================================================
+
+Saat current dashboard sudah Window B:
+
+- position Window A tetap ditemukan melalui exact condition_id
+- Exit tidak mengganti condition A dengan condition B
+- Exit tidak memakai token IDs Window B
+- close action tetap terikat ke position/condition A
+- current card disappearance tidak menghapus posisi lama
+
+Jangan mengalihkan posisi lama ke market baru berdasarkan asset.
+
+==================================================
+6. NO FABRICATED EXIT PRICE
+==================================================
+
+Jangan membuat:
+
+- fallback 0.5
+- midpoint palsu
+- synthetic settled price
+- manual status close
+
+Jika executable exit price tidak tersedia:
+
+- pertahankan posisi
+- retry sesuai existing worker behavior
+- atau tunggu official settlement
+- jangan mengubah realized PnL
+
+Existing legitimate price-source logic jangan diubah.
+
+==================================================
+7. CREATE NARROW TEST FILE
+==================================================
+
+Buat:
+
+backend/app/tests/test_exit_prediction_window.py
+
+Test minimal:
+
+1. OPEN position current condition diproses
+2. PARTIAL position diproses
+3. position lama tetap diproses setelah rollover
+4. lookup memakai exact position.condition_id
+5. current card condition B tidak mengganti condition A
+6. now sebelum prediction end tidak dianggap expired
+7. exact prediction end dianggap expired
+8. setelah prediction end dianggap expired
+9. contract end_time masa depan tidak menunda expiry 5M
+10. missing prediction_window_end tidak fallback ke end_time
+11. RESOLVING market tetap dapat diproses Exit
+12. Exit tidak membutuhkan WINDOW_LIVE
+13. unavailable exit price tidak membuat fake trade
+14. unavailable exit price tidak menutup position
+15. unavailable exit price tidak mengubah realized PnL
+16. satu invalid position tidak menghentikan position valid lain
+17. current dashboard absence tidak menghapus old position
+18. old condition menggunakan token/market binding sendiri
+19. no synthetic 0.5 exit
+20. global open-position query tidak difilter hanya current universe
+
+Gunakan fixed timezone-aware UTC datetimes.
+
+Mock hanya dependency yang diperlukan.
+
+==================================================
+8. VALIDATE ONLY THIS CHECKPOINT
+==================================================
+
+Run:
+
+python -m compileall -q backend/app/services/exit_engine.py
+
+pytest backend/app/tests/test_exit_prediction_window.py -q
+
+Setelah test baru PASS, jalankan existing Exit regression saja, misalnya:
+
+pytest backend/app/tests/test_exit_engine.py -q
+pytest backend/app/tests/test_exit_lifecycle.py -q
+
+Jika salah satu file tidak ada, jangan membuatnya hanya untuk command ini.
+
+Jika fixture lama memakai end_time:
+
+- tambahkan realistic prediction_window_end
+- jangan melemahkan production logic
+- jangan menambahkan fallback end_time
+
+Jika gagal:
+
+- baca hanya targeted traceback
+- edit hanya Exit Engine dan related Exit test fixtures
+- maksimal 3 percobaan
+
+Jangan menjalankan test lain.
+Jangan menjalankan full suite.
+
+Setelah PASS, berhenti.
+
+Laporan maksimal 14 baris:
+
+POSITION SCOPE:
+MARKET LOOKUP:
+EXPIRY SOURCE:
+EXACT END HANDLING:
+WINDOW_LIVE REQUIRED:
+ROLLOVER HANDLING:
+CONDITION BINDING:
+END_TIME FALLBACK:
+MISSING WINDOW HANDLING:
+FAKE EXIT PRICE:
+EXIT TESTS:
+EXIT REGRESSION:
+FAILED:
+FINAL STATUS:
