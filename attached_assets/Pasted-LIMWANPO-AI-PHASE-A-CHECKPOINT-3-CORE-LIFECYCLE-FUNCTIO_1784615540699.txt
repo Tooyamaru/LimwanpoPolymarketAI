@@ -1,0 +1,127 @@
+LIMWANPO AI — PHASE A CHECKPOINT 3: CORE LIFECYCLE FUNCTION ONLY
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full test suite.
+JANGAN menjalankan aplikasi.
+JANGAN restart workflow.
+JANGAN menyentuh engine, database, model, API, frontend, Chainlink, TARGET,
+CLOB, Portfolio Accounting, atau sizing.
+JANGAN menggunakan subagent.
+
+Target tahap ini hanya 2 file:
+
+1. backend/app/utils/prediction_window.py
+2. backend/app/tests/test_prediction_window_lifecycle.py
+
+==================================================
+1. IMPLEMENT CANONICAL FUNCTION
+==================================================
+
+Tambahkan constants:
+
+PRED_WINDOW_UPCOMING = "UPCOMING"
+PRED_WINDOW_LIVE = "WINDOW_LIVE"
+PRED_RESOLVING = "RESOLVING"
+PRED_RESOLVED = "RESOLVED"
+PRED_ROLLOVER_SYNCING = "ROLLOVER_SYNCING"
+PRED_INVALID = "INVALID"
+
+Tambahkan function:
+
+get_prediction_window_lifecycle(
+    prediction_window_start,
+    prediction_window_end,
+    now=None,
+    resolved=False,
+    metadata_valid=True,
+)
+
+Return dictionary:
+
+{
+    "state": <constant>,
+    "valid": <bool>,
+    "validation_error": <str or None>,
+    "seconds_to_start": <int or None>,
+    "seconds_to_end": <int or None>,
+}
+
+Rules:
+
+- now default = datetime.now(timezone.utc)
+- semua datetime wajib timezone-aware
+- start wajib ada
+- end wajib ada
+- end > start
+- duration harus tepat 300 detik
+- metadata_valid=False → INVALID
+- resolved=True dengan metadata valid → RESOLVED
+- now < start → UPCOMING
+- start <= now < end → WINDOW_LIVE
+- now >= end dan belum resolved → RESOLVING
+
+Jangan gunakan start_time/end_time kontrak.
+Jangan tambahkan fallback.
+Jangan mengubah fungsi lama yang sudah ada.
+
+==================================================
+2. CREATE UNIT TEST FILE
+==================================================
+
+Buat:
+
+backend/app/tests/test_prediction_window_lifecycle.py
+
+Gunakan fixed timezone-aware UTC datetimes.
+
+Test minimal:
+
+1. upcoming
+2. exact start is WINDOW_LIVE
+3. middle of window is WINDOW_LIVE
+4. one second before end is WINDOW_LIVE
+5. exact end is RESOLVING
+6. after end is RESOLVING
+7. resolved is RESOLVED
+8. missing start is INVALID
+9. missing end is INVALID
+10. naive start is INVALID
+11. naive end is INVALID
+12. end <= start is INVALID
+13. duration 299 seconds is INVALID
+14. duration 301 seconds is INVALID
+15. metadata_valid=False is INVALID
+16. seconds_to_start correct
+17. seconds_to_end correct
+
+==================================================
+3. VALIDATE ONLY THIS SCOPE
+==================================================
+
+Run:
+
+python -m compileall -q backend/app/utils/prediction_window.py
+pytest backend/app/tests/test_prediction_window_lifecycle.py -q
+
+Jika gagal:
+
+- baca hanya traceback ini
+- edit hanya dua file tersebut
+- maksimal 3 percobaan
+
+Setelah PASS, berhenti.
+
+Jangan menjalankan test lain.
+
+Laporan maksimal 12 baris:
+
+FUNCTION:
+STATES:
+COMPILE:
+TESTS:
+PASSED:
+FAILED:
+FILES CHANGED:
+SEMANTIC NOTES:
+NEXT CHECKPOINT:
+FINAL STATUS:

@@ -103,3 +103,103 @@ def slot_contains_time(slot: int, t: Optional[datetime] = None) -> bool:
         t = datetime.now(timezone.utc)
     ts = t.timestamp()
     return slot <= ts < slot + SLOT_SECONDS
+
+
+# ---------------------------------------------------------------------------
+# Prediction-window lifecycle states
+# ---------------------------------------------------------------------------
+
+PRED_WINDOW_UPCOMING = "UPCOMING"
+PRED_WINDOW_LIVE = "WINDOW_LIVE"
+PRED_RESOLVING = "RESOLVING"
+PRED_RESOLVED = "RESOLVED"
+PRED_ROLLOVER_SYNCING = "ROLLOVER_SYNCING"
+PRED_INVALID = "INVALID"
+
+_REQUIRED_DURATION = 300  # seconds
+
+
+def get_prediction_window_lifecycle(
+    prediction_window_start,
+    prediction_window_end,
+    now=None,
+    resolved: bool = False,
+    metadata_valid: bool = True,
+) -> dict:
+    """
+    Return the canonical lifecycle state of a prediction window.
+
+    Args:
+        prediction_window_start: UTC-aware datetime marking window open.
+        prediction_window_end:   UTC-aware datetime marking window close.
+        now:                     Current time (defaults to datetime.now(timezone.utc)).
+        resolved:                True when Polymarket has settled the market.
+        metadata_valid:          False forces INVALID regardless of other fields.
+
+    Returns:
+        {
+            "state":            one of the PRED_* constants,
+            "valid":            bool,
+            "validation_error": str or None,
+            "seconds_to_start": int or None,
+            "seconds_to_end":   int or None,
+        }
+    """
+    if now is None:
+        now = datetime.now(timezone.utc)
+
+    def _invalid(reason: str) -> dict:
+        return {
+            "state": PRED_INVALID,
+            "valid": False,
+            "validation_error": reason,
+            "seconds_to_start": None,
+            "seconds_to_end": None,
+        }
+
+    # --- structural validation ---
+    if not metadata_valid:
+        return _invalid("metadata_valid=False")
+
+    if prediction_window_start is None:
+        return _invalid("prediction_window_start is required")
+
+    if prediction_window_end is None:
+        return _invalid("prediction_window_end is required")
+
+    if prediction_window_start.tzinfo is None:
+        return _invalid("prediction_window_start must be timezone-aware")
+
+    if prediction_window_end.tzinfo is None:
+        return _invalid("prediction_window_end must be timezone-aware")
+
+    if prediction_window_end <= prediction_window_start:
+        return _invalid("prediction_window_end must be after prediction_window_start")
+
+    duration = (prediction_window_end - prediction_window_start).total_seconds()
+    if int(duration) != _REQUIRED_DURATION:
+        return _invalid(
+            f"prediction window duration must be exactly {_REQUIRED_DURATION}s, got {int(duration)}s"
+        )
+
+    # --- timing fields (always populated once valid) ---
+    seconds_to_start = int((prediction_window_start - now).total_seconds())
+    seconds_to_end = int((prediction_window_end - now).total_seconds())
+
+    # --- state resolution ---
+    if resolved:
+        state = PRED_RESOLVED
+    elif now < prediction_window_start:
+        state = PRED_WINDOW_UPCOMING
+    elif prediction_window_start <= now < prediction_window_end:
+        state = PRED_WINDOW_LIVE
+    else:
+        state = PRED_RESOLVING
+
+    return {
+        "state": state,
+        "valid": True,
+        "validation_error": None,
+        "seconds_to_start": seconds_to_start,
+        "seconds_to_end": seconds_to_end,
+    }
