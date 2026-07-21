@@ -1,0 +1,208 @@
+LIMWANPO AI — PHASE A CHECKPOINT 6: RISK WINDOW GATE ONLY
+
+Lanjutkan dari current checkpoint.
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full test suite.
+JANGAN menjalankan aplikasi atau restart workflow.
+JANGAN menyentuh Strategy, Execution, Exit, database migration, model,
+repository signature, API, frontend, Chainlink, TARGET, CLOB, Portfolio
+Accounting, atau sizing formula.
+JANGAN menggunakan subagent.
+
+Target tahap ini hanya:
+
+1. backend/app/services/risk_engine.py
+2. backend/app/tests/test_risk_prediction_window.py
+
+==================================================
+1. INSPECT CURRENT RISK FLOW
+==================================================
+
+Baca hanya:
+
+- backend/app/services/risk_engine.py
+- backend/app/models/trade_decision.py
+- backend/app/models/market_universe.py
+
+Laporkan singkat:
+
+- bagaimana pending entry decisions diambil
+- di mana capital gate dijalankan
+- di mana financial/risk rules dijalankan
+- apakah MarketUniverse saat ini sudah diambil
+- bagaimana EXIT decisions dipisahkan dari entry decisions
+
+==================================================
+2. BATCH-FETCH CURRENT MARKET ROWS
+==================================================
+
+Ambil seluruh condition_id unik dari pending ENTRY decisions saja.
+
+Lakukan satu batched query ke MarketUniverse.
+
+Buat:
+
+market_by_condition_id
+
+Jangan query satu kali per decision.
+
+EXIT decisions tidak perlu lifecycle WINDOW_LIVE dan tidak boleh ikut
+diblok oleh gate entry ini.
+
+==================================================
+3. USE CANONICAL LIFECYCLE
+==================================================
+
+Import:
+
+get_prediction_window_lifecycle
+PRED_WINDOW_LIVE
+
+Untuk setiap pending ENTRY decision:
+
+market = market_by_condition_id[decision.condition_id]
+
+Validasi sebelum capital/risk rules:
+
+1. market ditemukan
+2. prediction_window_start tersedia
+3. prediction_window_end tersedia
+4. lifecycle valid
+5. lifecycle state == WINDOW_LIVE
+6. current UTC time < prediction_window_end
+
+Jangan menggunakan:
+
+market.start_time
+market.end_time
+contract lifecycle
+fallback generic time
+
+==================================================
+4. BLOCK CODES
+==================================================
+
+Gunakan explicit reason:
+
+market tidak ditemukan:
+MARKET_NOT_IN_UNIVERSE
+
+prediction metadata invalid:
+INVALID_PREDICTION_WINDOW
+
+state bukan WINDOW_LIVE:
+MARKET_NOT_WINDOW_LIVE
+
+current time >= prediction_window_end:
+PREDICTION_WINDOW_ENDED
+
+Setelah lifecycle gate PASS, baru jalankan:
+
+- capital availability gate
+- drawdown/daily-loss gate
+- existing financial risk rules
+
+Jangan mengubah existing financial formulas.
+
+==================================================
+5. CURRENT CHECKPOINT LIMITATION
+==================================================
+
+TradeDecision belum memiliki:
+
+- decision_event_slug
+- decision_prediction_window_start
+- decision_prediction_window_end
+
+Pada checkpoint ini:
+
+- jangan menambahkan migration
+- jangan mengubah model/repository
+- jangan membuat DECISION_WINDOW_STALE check palsu
+
+Laporkan stale-decision binding sebagai NEXT CHECKPOINT.
+
+Exact condition_id tetap harus digunakan.
+
+==================================================
+6. EXIT DECISIONS MUST BYPASS ENTRY GATE
+==================================================
+
+Pastikan lifecycle check hanya untuk ENTRY decisions:
+
+OPEN_LONG_YES
+OPEN_LONG_NO
+atau status entry-equivalent yang sudah ada.
+
+EXIT / CLOSE / forced-exit risk handling:
+
+- tidak membutuhkan WINDOW_LIVE
+- tidak diblok ketika market RESOLVING
+- tetap melewati existing exit-risk path
+
+Jangan mengubah Exit Engine.
+
+==================================================
+7. CREATE NARROW TEST FILE
+==================================================
+
+Buat:
+
+backend/app/tests/test_risk_prediction_window.py
+
+Test minimal:
+
+1. WINDOW_LIVE entry lanjut ke financial rules
+2. UPCOMING entry diblok
+3. RESOLVING entry diblok
+4. missing start diblok INVALID_PREDICTION_WINDOW
+5. missing end diblok INVALID_PREDICTION_WINDOW
+6. 299-second window diblok
+7. 301-second window diblok
+8. market tidak ditemukan diblok MARKET_NOT_IN_UNIVERSE
+9. exact end diblok PREDICTION_WINDOW_ENDED
+10. lifecycle gate berjalan sebelum capital gate
+11. financial rules tidak dipanggil ketika lifecycle gagal
+12. live entry tetap dapat diblok oleh existing capital rule
+13. EXIT decision tidak diblok karena non-live market
+14. market rows diambil dalam satu batched query
+15. contract end_time tidak dapat mengizinkan entry
+
+Gunakan fixed timezone-aware UTC datetimes.
+
+Mock hanya dependency yang diperlukan.
+
+==================================================
+8. VALIDATE ONLY THIS CHECKPOINT
+==================================================
+
+Run:
+
+python -m compileall -q backend/app/services/risk_engine.py
+pytest backend/app/tests/test_risk_prediction_window.py -q
+
+Jika gagal:
+
+- baca hanya traceback tersebut
+- edit hanya Risk Engine dan test file
+- maksimal 3 percobaan
+
+Jangan menjalankan test lain.
+
+Setelah PASS, berhenti.
+
+Laporan maksimal 12 baris:
+
+MARKET LOOKUP:
+ENTRY LIFECYCLE GATE:
+EXIT BYPASS:
+BLOCK CODES:
+CAPITAL GATE ORDER:
+FINANCIAL RULES CHANGED:
+COMPILE:
+TESTS:
+PASSED:
+FAILED:
+FILES CHANGED:
+FINAL STATUS:

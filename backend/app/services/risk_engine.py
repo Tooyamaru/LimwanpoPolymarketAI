@@ -72,11 +72,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.settings import settings
 from app.core.logging import get_logger
+from app.models.market_universe import MarketUniverse
 from app.models.order import Order
 from app.models.position import Position
 from app.models.trade_decision import TradeDecision
 from app.repositories import risk_repository as risk_repo
 from app.repositories import trade_decision_repository as td_repo
+from app.utils.prediction_window import PRED_WINDOW_LIVE, get_prediction_window_lifecycle
 
 logger = get_logger(__name__)
 
@@ -143,6 +145,16 @@ class RiskEngine:
             previous_entry_decisions = await self._get_previous_entry_decisions(
                 session, pending_cids
             )
+            # ── Batch-fetch MarketUniverse rows for all pending ENTRY CIDs ────
+            # One query per cycle — never one query per decision.
+            mu_result = await session.execute(
+                select(MarketUniverse).where(
+                    MarketUniverse.condition_id.in_(pending_cids)
+                )
+            )
+            market_by_condition_id: dict = {
+                m.condition_id: m for m in mu_result.scalars().all()
+            }
             now = datetime.now(timezone.utc)
 
             # Running snapshots mutated in-memory as each decision in this batch
@@ -153,9 +165,16 @@ class RiskEngine:
 
             for td in pending:
                 try:
-                    # Capital gate fires before all other rules
-                    if not capital_status.allowed:
-                        block_reason: Optional[str] = capital_status.reason
+                    # ── Prediction window lifecycle gate (ENTRY only) ─────────
+                    # Runs FIRST — before capital gate and all financial rules.
+                    lc_block = self._check_entry_lifecycle_gate(
+                        td, market_by_condition_id, started
+                    )
+                    if lc_block is not None:
+                        block_reason: Optional[str] = lc_block
+                    # Capital gate fires before financial rules
+                    elif not capital_status.allowed:
+                        block_reason = capital_status.reason
                     else:
                         block_reason = self._check_rules(
                             td=td,
@@ -485,6 +504,97 @@ class RiskEngine:
 
                 if not improved:
                     return "SCALE_IN_NO_IMPROVEMENT"
+
+        return None
+
+    # ── Lifecycle gate ─────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _check_entry_lifecycle_gate(
+        td: TradeDecision,
+        market_by_condition_id: dict,
+        now: datetime,
+    ) -> Optional[str]:
+        """
+        Validates that a pending ENTRY decision falls within an active prediction
+        window (WINDOW_LIVE) before any capital or financial rules are evaluated.
+
+        Checks in order:
+          1. market row found in universe
+          2. prediction_window_start present
+          3. prediction_window_end present
+          4. lifecycle metadata valid (e.g. duration exactly 300 s)
+          5. current time < prediction_window_end (explicit end-time guard)
+          6. lifecycle state == PRED_WINDOW_LIVE
+
+        Returns the block-reason string for the first failing check, or None
+        when all checks pass (gate open).
+
+        Block codes:
+          MARKET_NOT_IN_UNIVERSE    — condition_id absent from market_universe
+          INVALID_PREDICTION_WINDOW — start/end missing or window metadata invalid
+          PREDICTION_WINDOW_ENDED   — now >= prediction_window_end
+          MARKET_NOT_WINDOW_LIVE    — state is UPCOMING, RESOLVING, etc.
+        """
+        market = market_by_condition_id.get(td.condition_id)
+        if market is None:
+            logger.info(
+                "Risk lifecycle gate: market not in universe",
+                condition_id=td.condition_id[:12],
+                asset=td.asset,
+                timeframe=td.timeframe,
+                reason="MARKET_NOT_IN_UNIVERSE",
+            )
+            return "MARKET_NOT_IN_UNIVERSE"
+
+        pw_start = market.prediction_window_start
+        pw_end = market.prediction_window_end
+
+        if pw_start is None or pw_end is None:
+            logger.info(
+                "Risk lifecycle gate: prediction window fields missing",
+                condition_id=td.condition_id[:12],
+                asset=td.asset,
+                pw_start=pw_start,
+                pw_end=pw_end,
+                reason="INVALID_PREDICTION_WINDOW",
+            )
+            return "INVALID_PREDICTION_WINDOW"
+
+        lc = get_prediction_window_lifecycle(pw_start, pw_end, now=now)
+
+        if not lc["valid"]:
+            logger.info(
+                "Risk lifecycle gate: prediction window invalid",
+                condition_id=td.condition_id[:12],
+                asset=td.asset,
+                lc_error=lc.get("validation_error"),
+                reason="INVALID_PREDICTION_WINDOW",
+            )
+            return "INVALID_PREDICTION_WINDOW"
+
+        # Explicit end-time guard — catches exact-end and post-end cases
+        # with a dedicated block code distinct from the upstream state check.
+        if now >= pw_end:
+            logger.info(
+                "Risk lifecycle gate: prediction window ended",
+                condition_id=td.condition_id[:12],
+                asset=td.asset,
+                pw_end=pw_end.isoformat(),
+                now=now.isoformat(),
+                reason="PREDICTION_WINDOW_ENDED",
+            )
+            return "PREDICTION_WINDOW_ENDED"
+
+        if lc["state"] != PRED_WINDOW_LIVE:
+            logger.info(
+                "Risk lifecycle gate: window not WINDOW_LIVE",
+                condition_id=td.condition_id[:12],
+                asset=td.asset,
+                lc_state=lc["state"],
+                reason="MARKET_NOT_WINDOW_LIVE",
+            )
+            return "MARKET_NOT_WINDOW_LIVE"
 
         return None
 
