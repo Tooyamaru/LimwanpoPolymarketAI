@@ -54,6 +54,7 @@ from app.repositories import signal_repository as sig_repo
 from app.repositories import trade_decision_repository as td_repo
 from app.services.chainlink_client import get_chainlink_client
 from app.services.position_sizing_service import PositionSizingService
+from app.utils.prediction_window import PRED_WINDOW_LIVE, get_prediction_window_lifecycle
 
 logger = get_logger(__name__)
 
@@ -203,15 +204,18 @@ class StrategyEngine:
         errors = 0
         persist_skips: bool = getattr(settings, "STRATEGY_PERSIST_SKIPS", False)
 
-        # ── Pre-fetch market universe for integrity gate ──────────────────────
-        # One DB query per cycle (not per opportunity) to build a lookup dict.
+        # ── Pre-fetch market universe (batch, one query per cycle) ───────────
+        # Used for both the prediction-window lifecycle gate and the Chainlink
+        # integrity gate.  Always fetched regardless of gate settings; keyed
+        # by condition_id of the current opportunity set so we never perform
+        # one query per opportunity.
         market_by_cid: dict[str, MarketUniverse] = {}
-        if settings.CHAINLINK_INTEGRITY_GATE_ENABLED:
+        all_cids = list({opp.condition_id for opp in opportunities})
+        if all_cids:
             try:
-                from sqlalchemy import select as _select
                 rows = await session.execute(
-                    _select(MarketUniverse).where(
-                        MarketUniverse.status.in_(["active", "upcoming"])
+                    select(MarketUniverse).where(
+                        MarketUniverse.condition_id.in_(all_cids)
                     )
                 )
                 for row in rows.scalars().all():
@@ -289,14 +293,87 @@ class StrategyEngine:
                     signal_confidence=signal_confidence,
                     mtf_confirmed=mtf_confirmed,
                 )
-                counters[decision] = counters.get(decision, 0) + 1
 
-                if decision == "SKIP" and not persist_skips:
-                    continue
+                # ── Decision routing ───────────────────────────────────────────
+                if decision == "SKIP":
+                    counters["SKIP"] = counters.get("SKIP", 0) + 1
+                    if not persist_skips:
+                        continue
+                    # persisted SKIP — fall through to insert at bottom
 
-                # ── Layer 13: position sizing ──────────────────────────────────
-                position_size_usdc: Optional[float] = None
-                if decision in ("OPEN_LONG_YES", "OPEN_LONG_NO"):
+                elif decision == "WATCH":
+                    counters["WATCH"] = counters.get("WATCH", 0) + 1
+                    # fall through to insert at bottom
+
+                else:
+                    # OPEN_LONG_YES or OPEN_LONG_NO
+                    # ── Prediction window lifecycle gate (ENTRY-ONLY) ──────────
+                    market_row = market_by_cid.get(opp.condition_id)
+                    if market_row is None:
+                        logger.info(
+                            "Strategy engine: OPEN blocked — market not in universe",
+                            condition_id=opp.condition_id[:12],
+                            asset=opp.asset,
+                            timeframe=opp.timeframe,
+                            reason="MARKET_NOT_IN_UNIVERSE",
+                        )
+                        counters["SKIP"] = counters.get("SKIP", 0) + 1
+                        if persist_skips:
+                            await td_repo.insert_decision(
+                                session,
+                                condition_id=opp.condition_id,
+                                asset=opp.asset,
+                                timeframe=opp.timeframe,
+                                decision="SKIP",
+                                opportunity_score=opp.opportunity_score,
+                                direction=opp.direction,
+                                yes_mid=opp.yes_mid,
+                                yes_bid=opp.yes_bid,
+                                yes_ask=opp.yes_ask,
+                                spread_yes=opp.spread_yes,
+                                skip_reason="MARKET_NOT_IN_UNIVERSE",
+                                position_size_usdc=None,
+                            )
+                        continue
+
+                    lc = get_prediction_window_lifecycle(
+                        market_row.prediction_window_start,
+                        market_row.prediction_window_end,
+                        now=started,
+                    )
+                    if not lc["valid"] or lc["state"] != PRED_WINDOW_LIVE:
+                        logger.info(
+                            "Strategy engine: OPEN blocked — window not WINDOW_LIVE",
+                            condition_id=opp.condition_id[:12],
+                            asset=opp.asset,
+                            timeframe=opp.timeframe,
+                            lc_state=lc["state"],
+                            lc_error=lc.get("validation_error"),
+                            reason="MARKET_NOT_WINDOW_LIVE",
+                        )
+                        counters["SKIP"] = counters.get("SKIP", 0) + 1
+                        if persist_skips:
+                            await td_repo.insert_decision(
+                                session,
+                                condition_id=opp.condition_id,
+                                asset=opp.asset,
+                                timeframe=opp.timeframe,
+                                decision="SKIP",
+                                opportunity_score=opp.opportunity_score,
+                                direction=opp.direction,
+                                yes_mid=opp.yes_mid,
+                                yes_bid=opp.yes_bid,
+                                yes_ask=opp.yes_ask,
+                                spread_yes=opp.spread_yes,
+                                skip_reason="MARKET_NOT_WINDOW_LIVE",
+                                position_size_usdc=None,
+                            )
+                        continue
+
+                    # Lifecycle gate passed — now count and size
+                    counters[decision] = counters.get(decision, 0) + 1
+
+                    # ── Layer 13: position sizing ──────────────────────────────
                     position_size_usdc = _sizing_service.calculate(opp.opportunity_score)
                     if position_size_usdc is None:
                         logger.info(
@@ -321,6 +398,24 @@ class StrategyEngine:
                         mtf_confirmed=mtf_confirmed,
                     )
 
+                    await td_repo.insert_decision(
+                        session,
+                        condition_id=opp.condition_id,
+                        asset=opp.asset,
+                        timeframe=opp.timeframe,
+                        decision=decision,
+                        opportunity_score=opp.opportunity_score,
+                        direction=opp.direction,
+                        yes_mid=opp.yes_mid,
+                        yes_bid=opp.yes_bid,
+                        yes_ask=opp.yes_ask,
+                        spread_yes=opp.spread_yes,
+                        skip_reason=skip_reason,
+                        position_size_usdc=position_size_usdc,
+                    )
+                    continue
+
+                # ── SKIP (persisted) or WATCH: insert with no sizing ──────────
                 await td_repo.insert_decision(
                     session,
                     condition_id=opp.condition_id,
@@ -334,7 +429,7 @@ class StrategyEngine:
                     yes_ask=opp.yes_ask,
                     spread_yes=opp.spread_yes,
                     skip_reason=skip_reason,
-                    position_size_usdc=position_size_usdc,
+                    position_size_usdc=None,
                 )
             except Exception as exc:
                 logger.error(

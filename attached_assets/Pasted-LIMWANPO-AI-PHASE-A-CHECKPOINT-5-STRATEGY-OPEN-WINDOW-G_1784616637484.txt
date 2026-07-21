@@ -1,0 +1,184 @@
+LIMWANPO AI — PHASE A CHECKPOINT 5: STRATEGY OPEN WINDOW GATE ONLY
+
+Lanjutkan dari current checkpoint.
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full test suite.
+JANGAN menjalankan aplikasi atau restart workflow.
+JANGAN menyentuh Risk, Execution, Exit, database migration, API, frontend,
+Chainlink, TARGET, CLOB, Portfolio Accounting, atau sizing formula.
+JANGAN menggunakan subagent.
+
+Target tahap ini hanya:
+
+1. backend/app/services/strategy_engine.py
+2. backend/app/tests/test_strategy_prediction_window.py
+
+==================================================
+1. INSPECT CURRENT STRATEGY FLOW
+==================================================
+
+Baca hanya:
+
+- backend/app/services/strategy_engine.py
+- backend/app/repositories/trade_decision_repository.py
+- backend/app/models/opportunity.py
+- backend/app/models/market_universe.py
+
+Laporkan singkat:
+
+- di mana opportunity diambil
+- di mana _make_decision dipanggil
+- di mana OPEN_LONG_YES / OPEN_LONG_NO dihitung
+- di mana TradeDecision disimpan
+- apakah MarketUniverse sudah diambil berdasarkan condition_id
+
+==================================================
+2. BATCH-FETCH MARKET ROWS
+==================================================
+
+Ambil seluruh condition_id unik dari opportunities.
+
+Lakukan satu batched query ke MarketUniverse.
+
+Buat dictionary:
+
+market_by_condition_id
+
+Jangan melakukan satu query per opportunity.
+
+Jika market row untuk condition tidak ditemukan:
+
+- OPEN decision tidak boleh dibuat
+- gunakan reason MARKET_NOT_IN_UNIVERSE
+- WATCH/SKIP diagnostic boleh tetap berjalan
+
+==================================================
+3. USE CANONICAL LIFECYCLE
+==================================================
+
+Import:
+
+get_prediction_window_lifecycle
+PRED_WINDOW_LIVE
+
+Untuk setiap opportunity, hitung lifecycle dari:
+
+market.prediction_window_start
+market.prediction_window_end
+
+Gunakan timezone-aware UTC now.
+
+OPEN_LONG_YES atau OPEN_LONG_NO hanya boleh disimpan jika:
+
+lifecycle["valid"] is True
+AND lifecycle["state"] == PRED_WINDOW_LIVE
+
+Jangan menggunakan:
+
+market.start_time
+market.end_time
+contract lifecycle
+fallback generic market time
+
+==================================================
+4. NON-LIVE DECISION HANDLING
+==================================================
+
+Jika _make_decision menghasilkan OPEN tetapi prediction window tidak LIVE:
+
+- jangan simpan sebagai OPEN
+- jangan jalankan sizing untuk entry tersebut
+- jangan increment open_long_yes/open_long_no
+- increment skip
+- reason = MARKET_NOT_WINDOW_LIVE
+
+WATCH dan SKIP asli dari strategy logic tetap diperbolehkan.
+
+Jangan mengubah AI score atau decision threshold.
+
+==================================================
+5. PERSIST WINDOW BINDING
+==================================================
+
+Periksa signature insert_decision saat ini.
+
+Pada checkpoint ini jangan membuat migration baru.
+
+Jika repository/model sudah mendukung field berikut, isi:
+
+- decision_event_slug
+- decision_prediction_window_start
+- decision_prediction_window_end
+
+Jika belum mendukung:
+
+- jangan mengubah database/model pada checkpoint ini
+- simpan hanya fields yang sudah tersedia
+- laporkan binding fields sebagai NEXT CHECKPOINT
+
+Selalu simpan exact condition_id dari opportunity/current market.
+
+==================================================
+6. CREATE NARROW TEST FILE
+==================================================
+
+Buat:
+
+backend/app/tests/test_strategy_prediction_window.py
+
+Test minimal:
+
+1. WINDOW_LIVE + OPEN_LONG_YES disimpan
+2. WINDOW_LIVE + OPEN_LONG_NO disimpan
+3. UPCOMING OPEN diblok
+4. RESOLVING OPEN diblok
+5. INVALID missing start diblok
+6. INVALID missing end diblok
+7. 299-second window diblok
+8. market tidak ditemukan diblok
+9. WATCH tetap diperbolehkan di luar live window
+10. SKIP tetap diperbolehkan
+11. blocked OPEN tidak memanggil sizing
+12. blocked OPEN tidak memanggil insert sebagai OPEN
+13. open counter tidak bertambah ketika diblok
+14. market rows diambil dalam satu batched query
+15. contract end_time tidak dapat mengizinkan OPEN
+
+Gunakan fixed timezone-aware UTC datetimes.
+
+Jangan menguji Risk atau Execution pada file ini.
+
+==================================================
+7. VALIDATE ONLY THIS CHECKPOINT
+==================================================
+
+Run:
+
+python -m compileall -q backend/app/services/strategy_engine.py
+pytest backend/app/tests/test_strategy_prediction_window.py -q
+
+Jika gagal:
+
+- baca hanya traceback test tersebut
+- edit hanya Strategy Engine dan test file
+- maksimal 3 percobaan
+
+Jangan menjalankan test lain.
+
+Setelah PASS, berhenti.
+
+Laporan maksimal 12 baris:
+
+MARKET LOOKUP:
+LIFECYCLE SOURCE:
+OPEN LIVE:
+OPEN NON-LIVE:
+WATCH/SKIP:
+SIZING ON BLOCK:
+COMPILE:
+TESTS:
+PASSED:
+FAILED:
+FILES CHANGED:
+FINAL STATUS:
