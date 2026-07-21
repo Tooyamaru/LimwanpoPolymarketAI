@@ -14,15 +14,28 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from app.services.execution_engine import ExecutionEngine
 
 
+# ── Binding constants (module-level so market + td share identical values) ────
+# Window is WINDOW_LIVE: START = now-60s, END = START+300s = now+240s.
+# 240 s of future buffer prevents the window from expiring mid-test-run.
+_NOW_REF = datetime.now(timezone.utc)
+_BINDING_SLUG = "btc-updown-5m-1784271300"
+_BINDING_START = _NOW_REF - timedelta(seconds=60)
+_BINDING_END = _BINDING_START + timedelta(seconds=300)   # = _NOW_REF + 240s
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 
-def _make_active_market() -> MagicMock:
-    """Return a mock MarketUniverse row whose lifecycle is ACTIVE right now."""
-    now = datetime.now(timezone.utc)
+def _make_active_market(condition_id: str = "0xabc") -> MagicMock:
+    """Return a mock MarketUniverse row with a valid WINDOW_LIVE prediction window."""
     market = MagicMock()
-    market.start_time = now - timedelta(minutes=10)
-    market.end_time   = now + timedelta(minutes=50)
+    market.condition_id = condition_id
+    market.event_slug = _BINDING_SLUG
+    market.prediction_window_start = _BINDING_START
+    market.prediction_window_end = _BINDING_END
+    # Keep contract times consistent (not used by new gate, but harmless)
+    market.start_time = _BINDING_START
+    market.end_time = _BINDING_END
     return market
 
 
@@ -43,6 +56,9 @@ def _make_td(
     exit_reason: str | None = None,
     target_position_id: int | None = None,
     forced_exit_price: float | None = None,
+    decision_event_slug: str | None = _BINDING_SLUG,
+    decision_prediction_window_start: datetime | None = _BINDING_START,
+    decision_prediction_window_end: datetime | None = _BINDING_END,
 ) -> MagicMock:
     td = MagicMock()
     td.id = id
@@ -65,6 +81,10 @@ def _make_td(
     td.forced_exit_price = forced_exit_price
     # Set to None so the stale-decision check (decided_at is not None) is skipped
     td.decided_at = None
+    # Phase A: window binding fields
+    td.decision_event_slug = decision_event_slug
+    td.decision_prediction_window_start = decision_prediction_window_start
+    td.decision_prediction_window_end = decision_prediction_window_end
     return td
 
 

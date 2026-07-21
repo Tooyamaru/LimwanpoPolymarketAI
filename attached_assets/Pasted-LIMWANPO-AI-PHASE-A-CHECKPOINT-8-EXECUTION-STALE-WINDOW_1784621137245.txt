@@ -1,0 +1,234 @@
+LIMWANPO AI — PHASE A CHECKPOINT 8: EXECUTION STALE-WINDOW REJECTION ONLY
+
+Lanjutkan dari Checkpoint 7B yang sudah:
+
+- binding tests 26/26 PASS
+- Strategy regression 15/15 PASS
+- compile PASS
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full test suite.
+JANGAN menjalankan aplikasi atau restart workflow.
+JANGAN menyentuh Strategy, Risk, Exit, database migration, model,
+repository, API, frontend, Chainlink, TARGET, Portfolio Accounting,
+sizing formula, atau CLOB pricing logic.
+JANGAN menggunakan subagent.
+
+Target tahap ini hanya:
+
+1. backend/app/services/execution_engine.py
+2. backend/app/tests/test_execution_prediction_window.py
+3. existing execution regression test jika file Execution berubah
+
+==================================================
+1. INSPECT CURRENT EXECUTION FLOW
+==================================================
+
+Baca hanya:
+
+- backend/app/services/execution_engine.py
+- backend/app/models/trade_decision.py
+- backend/app/models/market_universe.py
+
+Laporkan singkat:
+
+- bagaimana RISK_APPROVED decisions diambil
+- bagaimana MarketUniverse dicari
+- lifecycle apa yang saat ini dipakai
+- kapan reserved capital dilepas saat rejection
+- bagaimana duplicate execution dicegah
+
+==================================================
+2. USE CANONICAL PREDICTION LIFECYCLE
+==================================================
+
+Import:
+
+get_prediction_window_lifecycle
+PRED_WINDOW_LIVE
+
+Jangan menggunakan contract lifecycle untuk mengizinkan entry.
+
+Immediately before execution, gunakan current UTC time dan validasi:
+
+1. current MarketUniverse ditemukan
+2. decision.condition_id == market.condition_id
+3. decision.decision_event_slug tersedia
+4. decision.decision_event_slug == market.event_slug
+5. decision.decision_prediction_window_start tersedia
+6. decision.decision_prediction_window_end tersedia
+7. decision start == market.prediction_window_start
+8. decision end == market.prediction_window_end
+9. canonical lifecycle valid
+10. lifecycle state == WINDOW_LIVE
+11. now < market.prediction_window_end
+
+Jangan menggunakan:
+
+market.start_time
+market.end_time
+contract lifecycle
+prediction_window_end or end_time
+generic fallback
+
+==================================================
+3. EXPLICIT REJECTION CODES
+==================================================
+
+Gunakan alasan terminal yang jelas:
+
+MARKET_NOT_IN_UNIVERSE
+INVALID_DECISION_WINDOW_BINDING
+DECISION_CONDITION_STALE
+DECISION_EVENT_SLUG_STALE
+DECISION_WINDOW_STALE
+INVALID_PREDICTION_WINDOW
+MARKET_NOT_WINDOW_LIVE
+PREDICTION_WINDOW_ENDED
+
+Suggested priority:
+
+- market missing
+- missing decision binding
+- condition mismatch
+- event-slug mismatch
+- start/end mismatch
+- invalid current prediction metadata
+- ended window
+- non-live state
+
+Exact end boundary:
+
+now >= prediction_window_end
+→ PREDICTION_WINDOW_ENDED
+
+==================================================
+4. FAIL CLOSED
+==================================================
+
+Jika validation gagal:
+
+- jangan mengambil executable price
+- jangan submit paper order
+- jangan membuat Trade
+- jangan mengubah position
+- ubah decision ke existing terminal rejected/failed status
+- simpan explicit reason
+- release reserved capital melalui existing release mechanism
+- jangan release dua kali
+- jangan retry decision tersebut sebagai entry
+
+Jangan mengubah capital reservation formula.
+
+==================================================
+5. VALID EXECUTION
+==================================================
+
+Jika seluruh validation PASS:
+
+- existing execution flow berjalan tanpa perubahan
+- existing CLOB token/price logic tetap dipakai
+- existing slippage dan paper-execution behavior tetap dipakai
+- exact condition_id decision/current market dipertahankan
+
+Jangan mengubah AI decision, size, atau price source.
+
+==================================================
+6. CURRENT MARKET QUERY
+==================================================
+
+Fetch current MarketUniverse berdasarkan exact decision.condition_id.
+
+Jangan mengganti decision Window A dengan condition Window B berdasarkan
+asset saja.
+
+Jika exact condition lama tidak lagi menjadi current executable market:
+
+- reject stale decision
+- jangan execute terhadap card/condition baru
+
+Satu decision tidak boleh dialihkan ke market lain.
+
+==================================================
+7. CREATE NARROW TEST FILE
+==================================================
+
+Buat:
+
+backend/app/tests/test_execution_prediction_window.py
+
+Test minimal:
+
+1. valid WINDOW_LIVE binding dapat melanjutkan execution
+2. market tidak ditemukan ditolak
+3. missing decision_event_slug ditolak
+4. missing decision_prediction_window_start ditolak
+5. missing decision_prediction_window_end ditolak
+6. condition mismatch ditolak
+7. event_slug mismatch ditolak
+8. prediction start mismatch ditolak
+9. prediction end mismatch ditolak
+10. UPCOMING market ditolak
+11. exact end ditolak PREDICTION_WINDOW_ENDED
+12. RESOLVING market ditolak
+13. invalid 299-second window ditolak
+14. invalid 301-second window ditolak
+15. generic contract end_time tidak dapat mengizinkan execution
+16. rejected decision tidak meminta executable price
+17. rejected decision tidak membuat Trade
+18. rejected decision melepaskan reserved capital sekali
+19. valid decision tetap memakai exact condition_id
+20. Window A decision tidak dieksekusi terhadap Window B
+
+Gunakan fixed timezone-aware UTC datetimes.
+
+Mock hanya dependency yang diperlukan.
+
+==================================================
+8. VALIDATE ONLY THIS CHECKPOINT
+==================================================
+
+Run:
+
+python -m compileall -q backend/app/services/execution_engine.py
+
+pytest backend/app/tests/test_execution_prediction_window.py -q
+
+Setelah test baru PASS, jalankan existing Execution regression saja:
+
+pytest backend/app/tests/test_execution_engine.py -q
+pytest backend/app/tests/test_market_lifecycle_state.py -q
+
+Jika fixture lama belum memiliki binding fields:
+
+- tambahkan realistic event_slug
+- tambahkan exact decision prediction start/end
+- jangan melemahkan production validation
+
+Jika gagal:
+
+- baca hanya traceback targeted tests
+- edit hanya Execution Engine dan related test fixtures
+- maksimal 3 percobaan
+
+Jangan menjalankan test lain.
+Jangan menjalankan full suite.
+
+Setelah PASS, berhenti.
+
+Laporan maksimal 14 baris:
+
+CURRENT MARKET LOOKUP:
+LIFECYCLE SOURCE:
+CONDITION VALIDATION:
+EVENT SLUG VALIDATION:
+WINDOW VALIDATION:
+EXACT END HANDLING:
+CONTRACT END_TIME FALLBACK:
+REJECTION STATUS:
+RESERVED CAPITAL RELEASE:
+EXECUTION TESTS:
+EXECUTION REGRESSION:
+PASSED:
+FAILED:
+FINAL STATUS:

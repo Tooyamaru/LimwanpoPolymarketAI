@@ -46,12 +46,39 @@ from app.models.opportunity import Opportunity
 from app.models.position import Position
 from app.models.trade_decision import TradeDecision
 from app.repositories import order_repository as order_repo
-from app.services.market_universe_service import (
-    LIFECYCLE_ACTIVE,
-    get_market_lifecycle_state,
-)
+from app.utils.prediction_window import PRED_WINDOW_LIVE, get_prediction_window_lifecycle
 
 logger = get_logger(__name__)
+
+
+async def _reject_window(
+    session: AsyncSession,
+    td: TradeDecision,
+    reason: str,
+    now_iso: str,
+) -> tuple:
+    """
+    Mark an entry decision BLOCKED (terminal) when prediction-window
+    validation fails, then return the (None, True) skip sentinel.
+
+    Marking BLOCKED releases the capital slot — the Risk Engine and
+    Execution Engine will never retry a BLOCKED decision.
+    """
+    await session.execute(
+        update(TradeDecision)
+        .where(TradeDecision.id == td.id)
+        .values(status="BLOCKED")
+    )
+    logger.warning(
+        "Execution rejected: stale prediction window",
+        decision_id=td.id,
+        condition_id=td.condition_id,
+        asset=td.asset,
+        timeframe=td.timeframe,
+        reject_reason=reason,
+        now_utc=now_iso,
+    )
+    return None, True
 
 
 def _compute_fee(price: float, quantity: float) -> float:
@@ -362,47 +389,58 @@ class ExecutionEngine:
         skipped_flag is True when price data is unavailable.
         """
         now = datetime.now(timezone.utc)
+        _now_iso = now.isoformat()
 
-        # ── Lifecycle revalidation (independent of Decision Engine output) ──────
-        # The execution engine must verify market state itself.  A decision can be
-        # queued for seconds or minutes before the engine processes it; the market
-        # may have expired or never been in its active window.
+        # ── Fetch current MarketUniverse by exact decision condition_id ───────
+        # One decision must never be redirected to a different market.
         _market_row = (await session.execute(
             select(MarketUniverse).where(MarketUniverse.condition_id == td.condition_id)
         )).scalar_one_or_none()
 
         if _market_row is None:
-            logger.warning(
-                "Execution blocked: condition_id not found in universe",
-                decision_id=td.id,
-                condition_id=td.condition_id,
-                reject_reason="MARKET_NOT_IN_UNIVERSE",
-            )
-            return None, True
+            return await _reject_window(session, td, "MARKET_NOT_IN_UNIVERSE", _now_iso)
 
-        _lifecycle = get_market_lifecycle_state(_market_row, now)
-        if _lifecycle != LIFECYCLE_ACTIVE:
-            _reject_map = {
-                "PRE_MARKET":         "MARKET_NOT_STARTED",
-                "EXPIRED":            "MARKET_EXPIRED",
-                "RESOLUTION_PENDING": "MARKET_EXPIRED",
-                "RESOLVED":           "MARKET_EXPIRED",
-                "INVALID_TIME_STATE": "INVALID_MARKET_TIME",
-            }
-            _reject_reason = _reject_map.get(_lifecycle, "MARKET_NOT_ACTIVE")
-            logger.warning(
-                "Execution blocked: market lifecycle gate",
-                decision_id=td.id,
-                condition_id=td.condition_id,
-                asset=td.asset,
-                timeframe=td.timeframe,
-                lifecycle=_lifecycle,
-                reject_reason=_reject_reason,
-                market_start=str(_market_row.start_time),
-                market_end=str(_market_row.end_time),
-                now_utc=now.isoformat(),
-            )
-            return None, True
+        # ── Prediction-window binding validation (ENTRY-ONLY) ─────────────────
+        # All 11 checks must pass before any price fetch or order submission.
+
+        # 1. Decision binding fields must be fully populated.
+        if (
+            not td.decision_event_slug
+            or td.decision_prediction_window_start is None
+            or td.decision_prediction_window_end is None
+        ):
+            return await _reject_window(session, td, "INVALID_DECISION_WINDOW_BINDING", _now_iso)
+
+        # 2. Condition identity must match the current market row.
+        if td.condition_id != _market_row.condition_id:
+            return await _reject_window(session, td, "DECISION_CONDITION_STALE", _now_iso)
+
+        # 3. Event slug must match the current market (detects 5-minute rollover).
+        if td.decision_event_slug != _market_row.event_slug:
+            return await _reject_window(session, td, "DECISION_EVENT_SLUG_STALE", _now_iso)
+
+        # 4. Window start must match (decision was made for a different slot).
+        if td.decision_prediction_window_start != _market_row.prediction_window_start:
+            return await _reject_window(session, td, "DECISION_WINDOW_STALE", _now_iso)
+
+        # 5. Window end must match.
+        if td.decision_prediction_window_end != _market_row.prediction_window_end:
+            return await _reject_window(session, td, "DECISION_WINDOW_STALE", _now_iso)
+
+        # 6. Exact end boundary — reject at or after prediction_window_end.
+        if now >= _market_row.prediction_window_end:
+            return await _reject_window(session, td, "PREDICTION_WINDOW_ENDED", _now_iso)
+
+        # 7–9. Canonical lifecycle must be valid and WINDOW_LIVE.
+        _lc = get_prediction_window_lifecycle(
+            _market_row.prediction_window_start,
+            _market_row.prediction_window_end,
+            now=now,
+        )
+        if not _lc["valid"]:
+            return await _reject_window(session, td, "INVALID_PREDICTION_WINDOW", _now_iso)
+        if _lc["state"] != PRED_WINDOW_LIVE:
+            return await _reject_window(session, td, "MARKET_NOT_WINDOW_LIVE", _now_iso)
 
         # ── Stale decision check ────────────────────────────────────────────────
         _max_age = settings.EXECUTION_MAX_DECISION_AGE_MINUTES
