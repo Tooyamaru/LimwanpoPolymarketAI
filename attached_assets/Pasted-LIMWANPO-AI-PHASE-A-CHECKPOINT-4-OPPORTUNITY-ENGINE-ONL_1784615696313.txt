@@ -1,0 +1,154 @@
+LIMWANPO AI — PHASE A CHECKPOINT 4: OPPORTUNITY ENGINE ONLY
+
+Lanjutkan dari current checkpoint.
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full test suite.
+JANGAN menjalankan aplikasi atau restart workflow.
+JANGAN menyentuh Strategy, Risk, Execution, Exit, database, API, frontend,
+Chainlink, TARGET, CLOB, Portfolio Accounting, atau sizing.
+JANGAN menggunakan subagent.
+
+Target tahap ini hanya:
+
+1. backend/app/services/opportunity_engine.py
+2. satu test file khusus Opportunity lifecycle
+
+==================================================
+1. INSPECT CURRENT OPPORTUNITY FLOW
+==================================================
+
+Baca hanya:
+
+- backend/app/services/opportunity_engine.py
+- backend/app/repositories/universe_repository.py
+
+Laporkan singkat apakah Opportunity Engine saat ini memakai:
+
+- get_active_universe
+- get_window_live_universe
+- market.end_time
+- prediction_window_end
+
+==================================================
+2. USE CANONICAL 5M LIFECYCLE
+==================================================
+
+Import dari:
+
+app.utils.prediction_window
+
+gunakan:
+
+- get_prediction_window_lifecycle
+- PRED_WINDOW_LIVE
+
+Opportunity Engine harus mengambil market melalui:
+
+get_window_live_universe(session)
+
+Bukan:
+
+get_active_universe(session)
+
+Untuk setiap market, validasi lagi menggunakan:
+
+get_prediction_window_lifecycle(
+    market.prediction_window_start,
+    market.prediction_window_end,
+    now=now,
+    resolved=False,
+    metadata_valid=True,
+)
+
+Market hanya boleh dievaluasi jika:
+
+result["state"] == PRED_WINDOW_LIVE
+AND result["valid"] is True
+
+Jika tidak:
+
+- skip market
+- jangan membuat opportunity
+- log alasan singkat
+
+==================================================
+3. TIME REMAINING
+==================================================
+
+Hitung hanya dari:
+
+market.prediction_window_end - now
+
+Jangan gunakan:
+
+market.end_time
+prediction_window_end or end_time
+
+Jika prediction_window_end hilang atau invalid:
+
+- skip market
+- jangan fallback
+- jangan error seluruh worker
+
+Existing scoring formula jangan diubah.
+
+==================================================
+4. CREATE NARROW TEST FILE
+==================================================
+
+Buat:
+
+backend/app/tests/test_opportunity_prediction_window.py
+
+Test minimal:
+
+1. WINDOW_LIVE market dievaluasi
+2. UPCOMING market dilewati
+3. RESOLVING market dilewati
+4. missing prediction start dilewati
+5. missing prediction end dilewati
+6. invalid 299-second window dilewati
+7. invalid 301-second window dilewati
+8. time remaining memakai prediction_window_end
+9. generic end_time tidak dapat membuat market valid
+10. repository call memakai get_window_live_universe
+11. satu market invalid tidak menghentikan market valid lain
+
+Gunakan fixed UTC datetimes.
+
+Mock hanya dependency yang diperlukan.
+
+==================================================
+5. VALIDATE ONLY THIS CHECKPOINT
+==================================================
+
+Run:
+
+python -m compileall -q backend/app/services/opportunity_engine.py
+pytest backend/app/tests/test_opportunity_prediction_window.py -q
+
+Jika gagal:
+
+- baca hanya traceback tersebut
+- edit hanya Opportunity Engine dan test file
+- maksimal 3 percobaan
+
+Jangan menjalankan test lain.
+
+Setelah PASS, berhenti.
+
+Laporan maksimal 12 baris:
+
+OLD UNIVERSE SOURCE:
+NEW UNIVERSE SOURCE:
+OLD TIME SOURCE:
+NEW TIME SOURCE:
+COMPILE:
+TESTS:
+PASSED:
+FAILED:
+FILES CHANGED:
+FALLBACK TO END_TIME:
+NEXT CHECKPOINT:
+FINAL STATUS:

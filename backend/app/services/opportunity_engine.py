@@ -56,7 +56,8 @@ from app.models.market_universe import MarketUniverse
 from app.models.signal import Signal
 from app.repositories import opportunity_repository as repo
 from app.repositories.market_price_repository import get_latest_by_condition
-from app.repositories.universe_repository import get_active_universe
+from app.repositories.universe_repository import get_window_live_universe
+from app.utils.prediction_window import PRED_WINDOW_LIVE, get_prediction_window_lifecycle
 
 logger = get_logger(__name__)
 
@@ -190,10 +191,10 @@ class OpportunityEngine:
             }
         """
         started = datetime.now(timezone.utc)
-        active_markets: list[MarketUniverse] = await get_active_universe(session)
+        active_markets: list[MarketUniverse] = await get_window_live_universe(session)
 
         if not active_markets:
-            logger.debug("Opportunity engine: no active markets, evaluation skipped")
+            logger.debug("Opportunity engine: no WINDOW_LIVE markets, evaluation skipped")
             return {
                 "markets_evaluated": 0,
                 "top_score": 0.0,
@@ -213,9 +214,27 @@ class OpportunityEngine:
         signal_cutoff = started - timedelta(hours=1)
 
         for market in active_markets:
+            # ── Canonical lifecycle gate ───────────────────────────────────────
+            lc = get_prediction_window_lifecycle(
+                market.prediction_window_start,
+                market.prediction_window_end,
+                now=started,
+                resolved=False,
+                metadata_valid=True,
+            )
+            if lc["state"] != PRED_WINDOW_LIVE or not lc["valid"]:
+                logger.debug(
+                    "Opportunity engine: market skipped (not WINDOW_LIVE)",
+                    condition_id=(market.condition_id or "")[:12],
+                    state=lc["state"],
+                    reason=lc.get("validation_error"),
+                )
+                skipped_no_data += 1
+                continue
+
             try:
                 score, did_skip = await self._evaluate_market(
-                    session, market, signal_cutoff
+                    session, market, signal_cutoff, now=started
                 )
                 if did_skip:
                     skipped_no_data += 1
@@ -263,6 +282,7 @@ class OpportunityEngine:
         session: AsyncSession,
         market: MarketUniverse,
         signal_cutoff: datetime,
+        now: Optional[datetime] = None,
     ) -> tuple[float, bool]:
         """
         Evaluate one market. Returns (score, skipped_flag).
@@ -300,10 +320,11 @@ class OpportunityEngine:
         last_signal_severity = sig_rows[0][1] if sig_rows else None
 
         # ── Time to expiry ─────────────────────────────────────────────────────
-        minutes_to_expiry: Optional[float] = None
-        if market.end_time is not None:
+        if now is None:
             now = datetime.now(timezone.utc)
-            remaining = (market.end_time - now).total_seconds() / 60.0
+        minutes_to_expiry: Optional[float] = None
+        if market.prediction_window_end is not None:
+            remaining = (market.prediction_window_end - now).total_seconds() / 60.0
             minutes_to_expiry = round(remaining, 1) if remaining > 0 else 0.0
 
         # ── Compute sub-scores ─────────────────────────────────────────────────
