@@ -370,6 +370,44 @@ class StrategyEngine:
                             )
                         continue
 
+                    # ── Window binding validation (ENTRY-ONLY) ────────────────
+                    # event_slug and prediction window timestamps must be
+                    # present on the market row before an OPEN is persisted.
+                    # This check runs after WINDOW_LIVE passes; failures become
+                    # SKIP (not counted as OPEN) and are not sized.
+                    _event_slug = market_row.event_slug
+                    _pw_start = market_row.prediction_window_start
+                    _pw_end = market_row.prediction_window_end
+                    if not _event_slug or _pw_start is None or _pw_end is None:
+                        logger.info(
+                            "Strategy engine: OPEN blocked — incomplete window binding",
+                            condition_id=opp.condition_id[:12],
+                            asset=opp.asset,
+                            timeframe=opp.timeframe,
+                            event_slug_present=bool(_event_slug),
+                            pw_start_present=_pw_start is not None,
+                            pw_end_present=_pw_end is not None,
+                            reason="INVALID_DECISION_WINDOW_BINDING",
+                        )
+                        counters["SKIP"] = counters.get("SKIP", 0) + 1
+                        if persist_skips:
+                            await td_repo.insert_decision(
+                                session,
+                                condition_id=opp.condition_id,
+                                asset=opp.asset,
+                                timeframe=opp.timeframe,
+                                decision="SKIP",
+                                opportunity_score=opp.opportunity_score,
+                                direction=opp.direction,
+                                yes_mid=opp.yes_mid,
+                                yes_bid=opp.yes_bid,
+                                yes_ask=opp.yes_ask,
+                                spread_yes=opp.spread_yes,
+                                skip_reason="INVALID_DECISION_WINDOW_BINDING",
+                                position_size_usdc=None,
+                            )
+                        continue
+
                     # Lifecycle gate passed — now count and size
                     counters[decision] = counters.get(decision, 0) + 1
 
@@ -412,6 +450,9 @@ class StrategyEngine:
                         spread_yes=opp.spread_yes,
                         skip_reason=skip_reason,
                         position_size_usdc=position_size_usdc,
+                        decision_event_slug=_event_slug,
+                        decision_prediction_window_start=_pw_start,
+                        decision_prediction_window_end=_pw_end,
                     )
                     continue
 

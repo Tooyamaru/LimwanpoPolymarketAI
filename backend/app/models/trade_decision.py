@@ -96,6 +96,20 @@ class TradeDecision(Base):
         ),
     )
 
+    # ── Window binding (set for OPEN_LONG_* entries) ─────────────────────────
+    decision_event_slug: Mapped[Optional[str]] = mapped_column(
+        String(128), nullable=True,
+        comment="Polymarket event slug at decision time; NULL for historical rows",
+    )
+    decision_prediction_window_start: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+        comment="Prediction window start bound at decision time (TIMESTAMPTZ)",
+    )
+    decision_prediction_window_end: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+        comment="Prediction window end bound at decision time (TIMESTAMPTZ)",
+    )
+
     # ── Timestamps ────────────────────────────────────────────────────────────
     decided_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

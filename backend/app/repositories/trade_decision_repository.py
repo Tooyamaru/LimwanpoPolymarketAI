@@ -39,6 +39,9 @@ async def insert_decision(
     position_size_usdc: Optional[float] = None,
     status: str = "PENDING",
     decided_at: Optional[datetime] = None,
+    decision_event_slug: Optional[str] = None,
+    decision_prediction_window_start: Optional[datetime] = None,
+    decision_prediction_window_end: Optional[datetime] = None,
 ) -> TradeDecision:
     """Append a new trade decision row and return the persisted object."""
     if decided_at is None:
@@ -59,6 +62,9 @@ async def insert_decision(
         skip_reason=skip_reason,
         position_size_usdc=position_size_usdc,
         decided_at=decided_at,
+        decision_event_slug=decision_event_slug,
+        decision_prediction_window_start=decision_prediction_window_start,
+        decision_prediction_window_end=decision_prediction_window_end,
     )
     session.add(row)
 

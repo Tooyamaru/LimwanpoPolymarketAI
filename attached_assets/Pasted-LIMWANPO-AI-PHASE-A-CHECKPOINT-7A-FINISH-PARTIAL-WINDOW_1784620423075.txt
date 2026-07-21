@@ -1,0 +1,172 @@
+LIMWANPO AI — PHASE A CHECKPOINT 7A: FINISH PARTIAL WINDOW BINDING + COMPILE ONLY
+
+Lanjutkan dari current working tree dan partial edits.
+
+JANGAN mengulang implementasi dari awal.
+JANGAN audit seluruh repository.
+JANGAN menjalankan pytest.
+JANGAN menjalankan aplikasi atau restart workflow.
+JANGAN menggunakan subagent.
+JANGAN menyentuh Risk, Execution, Exit, API, frontend, Chainlink, TARGET,
+CLOB, Portfolio Accounting, atau sizing formula.
+
+Scope hanya:
+
+1. backend/app/models/trade_decision.py
+2. backend/app/core/database.py
+3. backend/app/repositories/trade_decision_repository.py
+4. backend/app/services/strategy_engine.py
+
+==================================================
+1. AUDIT PARTIAL EDITS
+==================================================
+
+Run:
+
+git diff --stat
+git diff -- \
+backend/app/models/trade_decision.py \
+backend/app/core/database.py \
+backend/app/repositories/trade_decision_repository.py \
+backend/app/services/strategy_engine.py
+
+Periksa hanya:
+
+- duplicate fields
+- duplicate migration entries
+- incomplete repository signature
+- repository fields tidak dimasukkan ke ORM row
+- syntax/indentation error
+- Strategy belum mengirim binding
+
+==================================================
+2. VERIFY MODEL FIELDS
+==================================================
+
+TradeDecision harus memiliki nullable fields:
+
+decision_event_slug
+decision_prediction_window_start
+decision_prediction_window_end
+
+Requirements:
+
+- decision_event_slug nullable string
+- start/end memakai timezone-aware DateTime
+- historical rows dengan NULL tetap valid
+- jangan menambah snapshot ID karena Strategy belum memiliki snapshot nyata
+
+Jangan mengubah existing columns.
+
+==================================================
+3. VERIFY IDEMPOTENT MIGRATION
+==================================================
+
+Gunakan migration mechanism project yang sudah ada.
+
+Required SQL semantics:
+
+ADD COLUMN IF NOT EXISTS decision_event_slug ...
+ADD COLUMN IF NOT EXISTS decision_prediction_window_start TIMESTAMPTZ
+ADD COLUMN IF NOT EXISTS decision_prediction_window_end TIMESTAMPTZ
+
+Requirements:
+
+- additive only
+- safe repeated startup
+- no DROP
+- no DELETE
+- no table recreation
+- no historical data update
+
+Pastikan migration tuple tidak duplikat.
+
+==================================================
+4. COMPLETE REPOSITORY SIGNATURE
+==================================================
+
+insert_decision harus menerima optional parameters:
+
+decision_event_slug=None
+decision_prediction_window_start=None
+decision_prediction_window_end=None
+
+Existing callers tanpa parameters baru tetap bekerja.
+
+Pastikan nilai dimasukkan ke TradeDecision ORM row:
+
+decision_event_slug=decision_event_slug
+decision_prediction_window_start=decision_prediction_window_start
+decision_prediction_window_end=decision_prediction_window_end
+
+==================================================
+5. COMPLETE STRATEGY BINDING
+==================================================
+
+Gunakan market_by_cid yang sudah dibuat pada Checkpoint 5.
+
+Untuk OPEN_LONG_YES / OPEN_LONG_NO, setelah lifecycle WINDOW_LIVE PASS tetapi
+SEBELUM counter OPEN dan sebelum sizing, validasi:
+
+- market ditemukan
+- market.condition_id == opportunity.condition_id
+- market.event_slug tersedia dan tidak kosong
+- market.prediction_window_start tersedia
+- market.prediction_window_end tersedia
+
+Jika salah:
+
+- jangan increment OPEN counter
+- jangan panggil sizing
+- ubah handling menjadi SKIP
+- reason = INVALID_DECISION_WINDOW_BINDING
+- persist SKIP hanya mengikuti existing STRATEGY_PERSIST_SKIPS behavior
+- jangan menyimpan OPEN
+
+Jika valid, panggil insert_decision dengan:
+
+condition_id=opportunity.condition_id
+decision_event_slug=market.event_slug
+decision_prediction_window_start=market.prediction_window_start
+decision_prediction_window_end=market.prediction_window_end
+
+WATCH dan SKIP asli jangan diubah.
+
+Jangan membuat query tambahan per opportunity.
+
+==================================================
+6. COMPILE ONLY
+==================================================
+
+Run:
+
+python -m compileall -q \
+backend/app/models/trade_decision.py \
+backend/app/core/database.py \
+backend/app/repositories/trade_decision_repository.py \
+backend/app/services/strategy_engine.py
+
+Jika compile gagal:
+
+- perbaiki hanya empat file scope
+- maksimal 2 percobaan
+
+Jangan membuat test file pada tahap ini.
+Jangan menjalankan pytest.
+
+Setelah compile PASS, berhenti.
+
+Laporan maksimal 12 baris:
+
+MODEL FIELDS:
+TIMEZONE COLUMNS:
+MIGRATION:
+MIGRATION DUPLICATES:
+REPOSITORY SIGNATURE:
+ORM ASSIGNMENT:
+STRATEGY BINDING:
+CONDITION CHECK:
+MISSING BINDING HANDLING:
+SIZING ON BLOCK:
+COMPILE:
+FINAL STATUS:

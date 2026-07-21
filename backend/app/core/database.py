@@ -252,6 +252,10 @@ async def init_db() -> None:
                 # Official PTB API source traceability (Priority 0)
                 ("ptb_source_trace", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_source_url VARCHAR(1024) NULL"),
                 ("ptb_source_trace", "ALTER TABLE market_universe ADD COLUMN IF NOT EXISTS target_source_field_path VARCHAR(64) NULL"),
+                # Phase A: window binding — event slug + prediction window on trade_decisions
+                ("window_binding", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS decision_event_slug VARCHAR(128) NULL"),
+                ("window_binding", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS decision_prediction_window_start TIMESTAMPTZ NULL"),
+                ("window_binding", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS decision_prediction_window_end TIMESTAMPTZ NULL"),
             ]
             for label, stmt in all_migrations:
                 await run_migration(conn, stmt, label)
