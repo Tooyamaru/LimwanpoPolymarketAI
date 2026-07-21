@@ -64,6 +64,7 @@ def make_market(
     pw_start=START,
     pw_end=END,
     end_time=None,
+    event_slug="btc-above-65000-jul21",
 ):
     """Create a minimal MarketUniverse-like namespace."""
     return SimpleNamespace(
@@ -72,6 +73,7 @@ def make_market(
         timeframe="5m",
         prediction_window_start=pw_start,
         prediction_window_end=pw_end,
+        event_slug=event_slug,
         end_time=end_time,
         target_price=65000.0,
         target_verified=True,

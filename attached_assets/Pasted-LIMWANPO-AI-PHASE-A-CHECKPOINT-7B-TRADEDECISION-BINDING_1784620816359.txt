@@ -1,0 +1,120 @@
+LIMWANPO AI — PHASE A CHECKPOINT 7B: TRADEDECISION BINDING TESTS ONLY
+
+Lanjutkan dari Checkpoint 7A yang sudah COMPILE_PASS.
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full test suite.
+JANGAN menjalankan aplikasi atau restart workflow.
+JANGAN mengubah production code kecuali test menemukan bug nyata.
+JANGAN menyentuh Risk, Execution, Exit, API, frontend, Chainlink, TARGET,
+CLOB, Portfolio Accounting, atau sizing.
+JANGAN menggunakan subagent.
+
+Scope utama:
+
+1. backend/app/tests/test_trade_decision_window_binding.py
+2. hanya jika test membuktikan bug:
+   - backend/app/models/trade_decision.py
+   - backend/app/core/database.py
+   - backend/app/repositories/trade_decision_repository.py
+   - backend/app/services/strategy_engine.py
+
+==================================================
+1. CREATE NARROW TEST FILE
+==================================================
+
+Buat:
+
+backend/app/tests/test_trade_decision_window_binding.py
+
+Gunakan fixed timezone-aware UTC datetimes.
+
+Test minimal:
+
+1. TradeDecision memiliki decision_event_slug
+2. TradeDecision memiliki decision_prediction_window_start
+3. TradeDecision memiliki decision_prediction_window_end
+4. ketiga field nullable untuk historical row
+5. insert_decision menerima ketiga parameter baru
+6. repository menyimpan exact event_slug
+7. repository menyimpan exact prediction start
+8. repository menyimpan exact prediction end
+9. existing caller tanpa binding fields tetap bekerja
+10. Strategy OPEN_LONG_YES mengirim exact binding
+11. Strategy OPEN_LONG_NO mengirim exact binding
+12. Strategy mengirim exact condition_id
+13. missing event_slug memblok OPEN
+14. missing prediction start memblok OPEN
+15. missing prediction end memblok OPEN
+16. condition mismatch menghasilkan INVALID_DECISION_WINDOW_BINDING
+17. blocked binding tidak memanggil sizing
+18. blocked binding tidak disimpan sebagai OPEN
+19. blocked binding tidak menaikkan OPEN counter
+20. migration memakai ADD COLUMN IF NOT EXISTS untuk ketiga field
+21. migration tidak mengandung DROP TABLE
+22. migration tidak mengandung DELETE FROM atau TRUNCATE
+23. WATCH behavior tetap bekerja
+24. SKIP behavior tetap bekerja
+
+Untuk condition mismatch, unit-test helper validasi Strategy secara langsung
+jika alur dictionary normal tidak memungkinkan mismatched row masuk.
+
+Jangan melemahkan condition check hanya agar test mudah dibuat.
+
+==================================================
+2. RUN BINDING TEST ONLY
+==================================================
+
+Run:
+
+pytest backend/app/tests/test_trade_decision_window_binding.py -q
+
+Jika gagal:
+
+- baca hanya traceback file ini
+- perbaiki hanya bug yang dibuktikan test
+- maksimal 3 percobaan
+
+==================================================
+3. RUN STRATEGY REGRESSION ONLY
+==================================================
+
+Setelah binding test PASS, jalankan:
+
+pytest backend/app/tests/test_strategy_prediction_window.py -q
+
+Jika fixture lama belum memiliki event_slug:
+
+- tambahkan realistic event_slug pada fixture market
+- jangan melemahkan production binding validation
+
+Jangan menjalankan test lain.
+
+==================================================
+4. FINAL COMPILE
+==================================================
+
+Run:
+
+python -m compileall -q \
+backend/app/models/trade_decision.py \
+backend/app/core/database.py \
+backend/app/repositories/trade_decision_repository.py \
+backend/app/services/strategy_engine.py
+
+Setelah semua PASS, berhenti.
+
+Laporan maksimal 12 baris:
+
+BINDING TESTS:
+BINDING PASSED:
+BINDING FAILED:
+STRATEGY REGRESSION:
+STRATEGY PASSED:
+STRATEGY FAILED:
+MIGRATION SAFETY:
+HISTORICAL NULL COMPATIBILITY:
+BLOCKED OPEN SIZING:
+FILES CHANGED:
+COMPILE:
+FINAL STATUS:
