@@ -1,0 +1,175 @@
+LIMWANPO AI — PHASE A CHECKPOINT 10B: OFFICIAL OUTCOME FAIL-CLOSED CORRECTION
+
+Lanjutkan dari current codebase.
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full test suite.
+JANGAN menjalankan aplikasi atau restart.
+JANGAN menyentuh Strategy, Risk, Execution, Exit, database migration, API,
+frontend, Chainlink, TARGET, CLOB, Portfolio Accounting, atau sizing.
+JANGAN menggunakan subagent.
+
+Scope hanya:
+
+1. backend/app/services/outcome_learning_service.py
+2. backend/app/tests/test_outcome_prediction_window.py
+3. backend/app/tests/test_outcome_learning_service.py hanya jika fixture
+   lama perlu disesuaikan
+
+==================================================
+1. CORRECT THE SEMANTIC VIOLATION
+==================================================
+
+Current incorrect behavior:
+
+- official outcome NOT_AVAILABLE
+- winning_side=None
+- learning record tetap dibuat
+- evaluated bertambah
+
+Required behavior:
+
+Jika official Polymarket outcome belum tersedia:
+
+- jangan membuat learning record
+- jangan memanggil repository create/upsert learning
+- jangan menandai condition sebagai already evaluated
+- jangan settle atau mengubah PnL
+- count sebagai skipped atau resolution_pending
+- retry pada worker cycle berikutnya
+
+Jangan mengubah test agar menerima NOT_AVAILABLE learning record.
+
+Perbaiki production behavior.
+
+==================================================
+2. REMOVE REALIZED_PNL_PROXY AS OUTCOME LABEL
+==================================================
+
+REALIZED_PNL_PROXY tidak boleh menentukan:
+
+- winning_side
+- actual_outcome
+- correct / incorrect decision
+- learning label
+- official market resolution
+
+Official learning hanya boleh dibuat ketika existing Gamma/Polymarket
+resolution pathway memberikan resolved outcome yang eksplisit.
+
+Jika direct official resolution tidak tersedia:
+
+- return resolution pending
+- jangan fallback ke realized PnL
+- jangan fallback ke GAP
+- jangan fallback ke Chainlink
+- jangan fallback ke CLOB midpoint
+- jangan menebak UP/DOWN
+
+Existing position PnL boleh tetap dibaca sebagai trading performance data,
+tetapi tidak boleh dipakai sebagai market outcome.
+
+==================================================
+3. EXACT REQUIRED FLOW
+==================================================
+
+For each eligible market:
+
+prediction_window_end <= now
+→ poll official Polymarket resolution
+
+Jika official status belum resolved:
+→ skip learning
+→ no write
+→ retry later
+
+Jika official status resolved tetapi winning outcome tidak valid:
+→ skip learning
+→ log OFFICIAL_OUTCOME_INVALID
+→ retry/investigate
+→ no write
+
+Jika official status resolved dan exact winning side tersedia:
+→ validate exact condition/event/window binding
+→ idempotency check
+→ create learning once
+
+==================================================
+4. FIX TEST ASSERTION
+==================================================
+
+Pada test exact prediction end:
+
+official outcome NOT_AVAILABLE harus menghasilkan:
+
+evaluated == 0
+
+dan salah satu:
+
+skipped == 1
+atau resolution_pending == 1
+
+Repository learning write harus:
+
+not called
+
+Jangan mengubah assertion menjadi evaluated == 1.
+
+==================================================
+5. ADD OR CORRECT TESTS
+==================================================
+
+Pastikan test mencakup:
+
+1. exact prediction end + NOT_AVAILABLE → no learning
+2. after prediction end + NOT_AVAILABLE → no learning
+3. NOT_AVAILABLE → repository create tidak dipanggil
+4. NOT_AVAILABLE → idempotency marker tidak dibuat
+5. NOT_AVAILABLE → settlement tidak dipanggil
+6. REALIZED_PNL_PROXY tidak dapat menghasilkan winning_side
+7. realized profit tidak otomatis berarti decision correct
+8. realized loss tidak otomatis berarti decision incorrect
+9. direct official UP resolution membuat learning sekali
+10. direct official DOWN resolution membuat learning sekali
+11. repeated official resolution tidak duplicate
+12. one pending market tidak menghentikan resolved market lain
+
+==================================================
+6. VALIDATE ONLY THIS CORRECTION
+==================================================
+
+Run:
+
+python -m compileall -q \
+backend/app/services/outcome_learning_service.py
+
+pytest backend/app/tests/test_outcome_prediction_window.py -q
+
+Kemudian:
+
+pytest backend/app/tests/test_outcome_learning_service.py -q
+
+Jika gagal:
+
+- baca hanya targeted traceback
+- edit hanya scope checkpoint
+- maksimal 3 percobaan
+
+Jangan menjalankan full suite.
+
+Setelah PASS, berhenti.
+
+Laporan maksimal 12 baris:
+
+OFFICIAL SOURCE:
+PNL PROXY REMOVED:
+NOT_AVAILABLE WRITE:
+NOT_AVAILABLE SETTLEMENT:
+PENDING RETRY:
+DIRECT UP:
+DIRECT DOWN:
+DUPLICATE PROTECTION:
+NEW TESTS:
+REGRESSION:
+FAILED:
+FINAL STATUS:

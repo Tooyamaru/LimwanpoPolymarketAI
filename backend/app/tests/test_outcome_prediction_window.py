@@ -607,3 +607,244 @@ async def test_one_invalid_market_does_not_stop_others():
     assert result["evaluated"] == 1
     upsert.assert_called_once()
     assert upsert.call_args.kwargs["condition_id"] == CID_B
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Checkpoint 10B — Fail-Closed Correctness (12 explicit tests)
+# ══════════════════════════════════════════════════════════════════════════════
+
+class TestFailClosedCorrectness:
+    """
+    Verify the fail-closed semantic: learning records are created ONLY when
+    official Polymarket/Gamma resolution returns a confirmed winning side.
+    PnL proxy, GAP inference, Chainlink, and CLOB midpoint are permanently
+    excluded as outcome sources.
+    """
+
+    # 1. exact prediction end + NOT_AVAILABLE → no learning
+    @pytest.mark.asyncio
+    async def test_exact_pw_end_not_available_no_learning(self):
+        """pw_end=_EXACT, Gamma=NOT_AVAILABLE → evaluated=0, resolution_pending=1, no upsert."""
+        dl = make_dl()
+        market = make_market(prediction_window_end=_EXACT)
+        result, upsert = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            resolution_map={CID_A: no_resolution()},
+        )
+        assert result["evaluated"] == 0
+        assert result["resolution_pending"] == 1
+        upsert.assert_not_called()
+
+    # 2. after prediction end + NOT_AVAILABLE → no learning
+    @pytest.mark.asyncio
+    async def test_after_pw_end_not_available_no_learning(self):
+        """pw_end=_PAST, Gamma=NOT_AVAILABLE → evaluated=0, resolution_pending=1, no upsert."""
+        dl = make_dl()
+        market = make_market(prediction_window_end=_PAST)
+        result, upsert = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            resolution_map={CID_A: no_resolution()},
+        )
+        assert result["evaluated"] == 0
+        assert result["resolution_pending"] == 1
+        upsert.assert_not_called()
+
+    # 3. NOT_AVAILABLE → repository create not called
+    @pytest.mark.asyncio
+    async def test_not_available_upsert_not_called(self):
+        """NOT_AVAILABLE → ol_repo.upsert_outcome must never be called."""
+        dl = make_dl()
+        pos = make_position()
+        market = make_market(prediction_window_end=_PAST)
+        _, upsert = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            pos_map={CID_A: pos},
+            resolution_map={CID_A: no_resolution()},
+        )
+        upsert.assert_not_called()
+
+    # 4. NOT_AVAILABLE → idempotency marker not set (no record written → retry eligible)
+    @pytest.mark.asyncio
+    async def test_not_available_no_idempotency_write(self):
+        """NOT_AVAILABLE → no upsert → already_evaluated remains False → retry works."""
+        dl = make_dl()
+        market = make_market(prediction_window_end=_PAST)
+        # First cycle: pending
+        result1, upsert1 = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            already_evaluated=set(),          # not yet evaluated
+            resolution_map={CID_A: no_resolution()},
+        )
+        assert result1["resolution_pending"] == 1
+        upsert1.assert_not_called()
+        # Second cycle with same NOT_AVAILABLE: still pending (idempotency not blocked)
+        result2, upsert2 = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            already_evaluated=set(),          # still not evaluated (no write happened)
+            resolution_map={CID_A: no_resolution()},
+        )
+        assert result2["resolution_pending"] == 1
+        upsert2.assert_not_called()
+
+    # 5. NOT_AVAILABLE → settlement not called (no PnL mutation)
+    @pytest.mark.asyncio
+    async def test_not_available_no_settlement(self):
+        """NOT_AVAILABLE → upsert not called → no PnL settlement path executed."""
+        dl = make_dl()
+        pos = make_position(realized_pnl=5.0)  # profitable position
+        market = make_market(prediction_window_end=_PAST)
+        _, upsert = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            pos_map={CID_A: pos},
+            resolution_map={CID_A: no_resolution()},
+        )
+        # No upsert means no outcome record and no settlement triggered
+        upsert.assert_not_called()
+
+    # 6. REALIZED_PNL_PROXY cannot produce winning_side
+    @pytest.mark.asyncio
+    async def test_pnl_proxy_cannot_produce_winning_side(self):
+        """Positive realized PnL with NOT_AVAILABLE resolution → winning_side never set."""
+        dl = make_dl(decision="BUY_YES")
+        pos = make_position(realized_pnl=10.0)   # clearly profitable
+        market = make_market(prediction_window_end=_PAST)
+        _, upsert = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            pos_map={CID_A: pos},
+            resolution_map={CID_A: no_resolution()},  # NOT_AVAILABLE despite profit
+        )
+        # Service must not call upsert with a proxy-derived winning_side
+        upsert.assert_not_called()
+
+    # 7. Realized profit ≠ decision correct (no auto-correct from PnL)
+    @pytest.mark.asyncio
+    async def test_realized_profit_not_auto_correct(self):
+        """Positive PnL + NOT_AVAILABLE → correct must not be set to True."""
+        dl = make_dl(decision="BUY_YES")
+        pos = make_position(realized_pnl=50.0)
+        market = make_market(prediction_window_end=_PAST)
+        _, upsert = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            pos_map={CID_A: pos},
+            resolution_map={CID_A: no_resolution()},
+        )
+        # If upsert were called with correct=True from PnL, test would fail.
+        # Correct behavior: no upsert at all.
+        upsert.assert_not_called()
+
+    # 8. Realized loss ≠ decision incorrect (no auto-wrong from PnL)
+    @pytest.mark.asyncio
+    async def test_realized_loss_not_auto_incorrect(self):
+        """Negative PnL + NOT_AVAILABLE → correct must not be set to False."""
+        dl = make_dl(decision="BUY_YES")
+        pos = make_position(realized_pnl=-20.0)
+        market = make_market(prediction_window_end=_PAST)
+        _, upsert = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            pos_map={CID_A: pos},
+            resolution_map={CID_A: no_resolution()},
+        )
+        upsert.assert_not_called()
+
+    # 9. Direct official YES resolution creates learning once
+    @pytest.mark.asyncio
+    async def test_direct_yes_resolution_creates_learning_once(self):
+        """DIRECT YES outcome → upsert called once with winning_side=YES, source=DIRECT."""
+        dl = make_dl(decision="BUY_YES")
+        pos = make_position()
+        market = make_market(prediction_window_end=_PAST)
+        result, upsert = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            pos_map={CID_A: pos},
+            resolution_map={CID_A: direct_resolution("YES")},
+        )
+        assert result["evaluated"] == 1
+        assert result["resolution_pending"] == 0
+        upsert.assert_called_once()
+        kwargs = upsert.call_args.kwargs
+        assert kwargs["winning_side"] == "YES"
+        assert kwargs["outcome_source"] == "DIRECT_POLYMARKET_RESOLUTION"
+        assert kwargs["correct"] is True
+
+    # 10. Direct official NO resolution creates learning once
+    @pytest.mark.asyncio
+    async def test_direct_no_resolution_creates_learning_once(self):
+        """DIRECT NO outcome → upsert called once with winning_side=NO, correct=True."""
+        dl = make_dl(decision="BUY_NO")
+        pos = make_position()
+        market = make_market(prediction_window_end=_PAST)
+        result, upsert = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            pos_map={CID_A: pos},
+            resolution_map={CID_A: direct_resolution("NO")},
+        )
+        assert result["evaluated"] == 1
+        upsert.assert_called_once()
+        kwargs = upsert.call_args.kwargs
+        assert kwargs["winning_side"] == "NO"
+        assert kwargs["outcome_source"] == "DIRECT_POLYMARKET_RESOLUTION"
+        assert kwargs["correct"] is True
+
+    # 11. Repeated official resolution does not duplicate
+    @pytest.mark.asyncio
+    async def test_repeated_official_resolution_no_duplicate(self):
+        """already_evaluated=True on second cycle → upsert never called a second time."""
+        dl = make_dl(decision="BUY_YES")
+        pos = make_position()
+        market = make_market(prediction_window_end=_PAST)
+        # First cycle: success
+        result1, upsert1 = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            pos_map={CID_A: pos},
+            resolution_map={CID_A: direct_resolution("YES")},
+        )
+        assert result1["evaluated"] == 1
+        upsert1.assert_called_once()
+        # Second cycle: already_evaluated blocks re-learning
+        result2, upsert2 = await run_service(
+            markets=[market],
+            dl_map={CID_A: dl},
+            pos_map={CID_A: pos},
+            already_evaluated={CID_A},
+            resolution_map={CID_A: direct_resolution("YES")},
+        )
+        assert result2["evaluated"] == 0
+        assert result2["skipped"] >= 1
+        upsert2.assert_not_called()
+
+    # 12. One pending market does not stop a resolved market
+    @pytest.mark.asyncio
+    async def test_one_pending_market_does_not_stop_resolved(self):
+        """Two markets: one pending (NOT_AVAILABLE), one resolved (DIRECT) → both processed."""
+        dl_a = make_dl(condition_id=CID_A, decision="BUY_YES")
+        dl_b = make_dl(condition_id=CID_B, decision="BUY_NO")
+        pos_b = make_position(condition_id=CID_B)
+        market_a = make_market(condition_id=CID_A, event_slug=SLUG_A, prediction_window_end=_PAST)
+        market_b = make_market(condition_id=CID_B, event_slug=SLUG_B, prediction_window_end=_PAST)
+
+        result, upsert = await run_service(
+            markets=[market_a, market_b],
+            dl_map={CID_A: dl_a, CID_B: dl_b},
+            pos_map={CID_B: pos_b},
+            resolution_map={
+                CID_A: no_resolution(),         # pending
+                CID_B: direct_resolution("NO"), # resolved
+            },
+        )
+        assert result["resolution_pending"] == 1
+        assert result["evaluated"] == 1
+        assert result["errors"] == 0
+        upsert.assert_called_once()
+        assert upsert.call_args.kwargs["condition_id"] == CID_B

@@ -51,6 +51,11 @@ from app.services.market_type_performance_service import MarketTypePerformanceSe
 
 logger = get_logger(__name__)
 
+# Sentinel returned by _evaluate_market when official resolution is not yet
+# available.  Signals run() to count the market as resolution_pending and
+# perform no write or idempotency mark — the worker will retry next cycle.
+_RESOLUTION_PENDING = object()
+
 # Confidence thresholds for calibration evaluation
 CONFIDENCE_HIGH = 65.0
 CONFIDENCE_LOW  = 35.0
@@ -116,11 +121,11 @@ class OutcomeLearningService:
         )
         expired_markets = list(expired_markets_result.scalars().all())
 
-        evaluated = 0
-        skipped   = 0
-        errors    = 0
+        evaluated          = 0
+        skipped            = 0
+        resolution_pending = 0
+        errors             = 0
         direct_resolution_count = 0
-        pnl_proxy_count = 0
 
         async with GammaSeriesClient() as gamma_client:
             for market in expired_markets:
@@ -146,12 +151,12 @@ class OutcomeLearningService:
                         continue
 
                     outcome = await self._evaluate_market(session, market, gamma_client)
-                    if outcome is not None:
+                    if outcome is _RESOLUTION_PENDING:
+                        # Official resolution not yet available — no write, retry next cycle.
+                        resolution_pending += 1
+                    elif outcome is not None:
                         evaluated += 1
-                        if getattr(outcome, "outcome_source", None) == OUTCOME_SOURCE_DIRECT:
-                            direct_resolution_count += 1
-                        elif getattr(outcome, "outcome_source", None) == OUTCOME_SOURCE_PROXY:
-                            pnl_proxy_count += 1
+                        direct_resolution_count += 1  # all learned outcomes are DIRECT
                 except Exception as exc:
                     logger.error(
                         "Outcome learning error",
@@ -188,7 +193,7 @@ class OutcomeLearningService:
             expired_markets=len(expired_markets),
             evaluated=evaluated,
             direct_resolution=direct_resolution_count,
-            pnl_proxy=pnl_proxy_count,
+            resolution_pending=resolution_pending,
             skipped=skipped,
             errors=errors,
             duration_ms=elapsed_ms,
@@ -197,7 +202,7 @@ class OutcomeLearningService:
             "expired_markets": len(expired_markets),
             "evaluated": evaluated,
             "direct_resolution": direct_resolution_count,
-            "pnl_proxy": pnl_proxy_count,
+            "resolution_pending": resolution_pending,
             "skipped": skipped,
             "errors": errors,
             "duration_ms": elapsed_ms,
@@ -264,7 +269,9 @@ class OutcomeLearningService:
             )
             return None
 
-        # 2. Find any CLOSED position for this market
+        # 2. Find any CLOSED position for this market.
+        #    Position PnL is stored as trading performance data only — it is
+        #    never used to determine correctness or winning_side.
         pos_result = await session.execute(
             select(Position)
             .where(
@@ -276,7 +283,10 @@ class OutcomeLearningService:
         )
         position: Optional[Position] = pos_result.scalar_one_or_none()
 
-        # 3. Phase 9D: Attempt direct Polymarket/Gamma resolution (PRIMARY source)
+        actual_pnl:  Optional[float] = position.realized_pnl if position is not None else None
+        position_id: Optional[int]   = position.id           if position is not None else None
+
+        # 3. Poll official Polymarket/Gamma resolution — ONLY source of correctness.
         yes_token_id = getattr(market, "yes_token_id", None)
         no_token_id  = getattr(market, "no_token_id", None)
 
@@ -286,80 +296,51 @@ class OutcomeLearningService:
             no_token_id=no_token_id,
         )
 
-        # 4. Determine correctness and outcome_source
-        correct: Optional[bool] = None
-        actual_pnl: Optional[float] = None
-        position_id: Optional[int] = None
-        outcome_type: str
-        outcome_source: str
-        winning_side: Optional[str] = None
-        winning_token_id: Optional[str] = None
-
-        if position is not None:
-            actual_pnl  = position.realized_pnl
-            position_id = position.id
-
-        if resolution.outcome_source == OUTCOME_SOURCE_DIRECT:
-            # PRIMARY: Direct Polymarket resolution — use winning_side for correctness
-            winning_side     = resolution.winning_side
-            winning_token_id = resolution.winning_token_id
-            outcome_source   = OUTCOME_SOURCE_DIRECT
-
-            if prediction == "BUY_YES":
-                correct      = (winning_side == "YES")
-                outcome_type = "POSITION" if position is not None else "NO_POSITION"
-            elif prediction == "BUY_NO":
-                correct      = (winning_side == "NO")
-                outcome_type = "POSITION" if position is not None else "NO_POSITION"
-            else:
-                # WAIT — cannot determine correctness from direction alone
-                correct      = None
-                outcome_type = "WAIT_UNKNOWN"
-
+        # 4. Fail-closed gate — only proceed when official resolution is confirmed.
+        #    No PnL proxy, no GAP inference, no Chainlink, no CLOB midpoint.
+        if resolution.outcome_source != OUTCOME_SOURCE_DIRECT:
             logger.info(
-                "[Phase 9D] Direct resolution used for correctness",
+                "Official resolution pending — no learning record created, will retry",
                 condition_id=condition_id[:16],
                 asset=asset,
-                prediction=prediction,
-                winning_side=winning_side,
-                correct=correct,
-                outcome_source=outcome_source,
-            )
-
-        elif position is not None and prediction in ("BUY_YES", "BUY_NO"):
-            # FALLBACK: REALIZED_PNL_PROXY — position PnL > 0 as proxy
-            # (only when direct resolution is NOT_AVAILABLE)
-            correct      = (actual_pnl is not None and actual_pnl > 0)
-            outcome_type = "POSITION"
-            outcome_source = OUTCOME_SOURCE_PROXY
-
-            logger.info(
-                "[Phase 9D] PnL proxy used for correctness (direct resolution not available)",
-                condition_id=condition_id[:16],
-                asset=asset,
-                prediction=prediction,
-                realized_pnl=actual_pnl,
-                correct=correct,
                 resolution_note=resolution.resolution_note,
             )
+            return _RESOLUTION_PENDING
 
-        elif position is not None:
-            # AI said WAIT but position existed — use PnL proxy
-            correct      = (actual_pnl is not None and actual_pnl > 0)
-            outcome_type = "POSITION"
-            outcome_source = OUTCOME_SOURCE_PROXY
+        winning_side: Optional[str] = resolution.winning_side
+        if winning_side not in ("YES", "NO"):
+            logger.warning(
+                "OFFICIAL_OUTCOME_INVALID: winning_side not YES/NO — skipping learning",
+                condition_id=condition_id[:16],
+                asset=asset,
+                winning_side=winning_side,
+            )
+            return _RESOLUTION_PENDING
 
-        elif prediction in ("BUY_YES", "BUY_NO"):
-            # AI predicted but no position taken (blocked by risk, etc.) and no direct resolution
-            outcome_type   = "NO_POSITION"
-            correct        = None
-            outcome_source = OUTCOME_SOURCE_NONE
+        # 5. Determine correctness from official winning_side only.
+        winning_token_id: Optional[str] = resolution.winning_token_id
+        outcome_source: str             = OUTCOME_SOURCE_DIRECT
+        correct: Optional[bool]
 
+        if prediction == "BUY_YES":
+            correct      = (winning_side == "YES")
+            outcome_type = "POSITION" if position is not None else "NO_POSITION"
+        elif prediction == "BUY_NO":
+            correct      = (winning_side == "NO")
+            outcome_type = "POSITION" if position is not None else "NO_POSITION"
         else:
-            # AI said WAIT — no position, no direct resolution
-            outcome_type   = "WAIT_UNKNOWN"
-            correct        = None
-            outcome_source = OUTCOME_SOURCE_NONE
+            # WAIT — direction undefined; correctness cannot be determined from side alone
+            correct      = None
+            outcome_type = "WAIT_UNKNOWN"
+
+        logger.info(
+            "Direct resolution used for correctness",
+            condition_id=condition_id[:16],
+            asset=asset,
+            prediction=prediction,
+            winning_side=winning_side,
+            correct=correct,
+        )
 
         # 5. Priority 5: Feedback Loop — evaluate quality metrics
         confidence_calibration  = self._evaluate_confidence(decision_log.confidence, correct)
