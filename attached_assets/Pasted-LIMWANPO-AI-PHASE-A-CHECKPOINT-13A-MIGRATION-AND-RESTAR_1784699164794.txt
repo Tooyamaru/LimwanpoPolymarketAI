@@ -1,0 +1,156 @@
+LIMWANPO AI — PHASE A CHECKPOINT 13A: MIGRATION AND RESTART VERIFICATION ONLY
+
+Current confirmed state:
+
+- full suite 1234 passed
+- 1 skipped
+- 0 failed
+- 0 errors
+- 0 unawaited-coroutine warnings
+
+JANGAN audit repository.
+JANGAN menjalankan pytest.
+JANGAN menunggu rollover.
+JANGAN mengambil screenshot.
+JANGAN menggunakan subagent.
+JANGAN mengubah production code kecuali startup membuktikan migration error.
+
+Target hanya:
+
+1. verify migration
+2. restart workflow satu kali
+3. verify API lifecycle response setelah restart
+
+==================================================
+1. GIT AND DATABASE PRECHECK
+==================================================
+
+Run:
+
+git status --short
+
+Jangan commit attached_assets atau file upload otomatis.
+
+Inspect migration entries hanya untuk:
+
+decision_event_slug
+decision_prediction_window_start
+decision_prediction_window_end
+
+Pastikan menggunakan:
+
+ADD COLUMN IF NOT EXISTS
+
+Jangan menjalankan migration manual yang destructive.
+
+==================================================
+2. RESTART ONCE
+==================================================
+
+Restart workflow/application satu kali melalui existing project mechanism.
+
+Jangan restart berulang.
+
+Capture startup logs hanya untuk:
+
+- database initialization
+- migration success/failure
+- duplicate-column errors
+- application startup success
+
+Required:
+
+- no duplicate column
+- no migration rollback
+- no table recreation
+- no startup exception
+
+==================================================
+3. VERIFY ACTUAL DATABASE COLUMNS
+==================================================
+
+Gunakan existing database connection/introspection.
+
+Verify TradeDecision memiliki:
+
+- decision_event_slug
+- decision_prediction_window_start
+- decision_prediction_window_end
+
+Laporkan type dan nullable status.
+
+Jangan mengubah historical rows.
+
+Verify existing historical rows dengan NULL masih dapat dibaca.
+
+==================================================
+4. VERIFY ACTIVE UNIVERSE API
+==================================================
+
+Call existing active-universe endpoint satu kali.
+
+Untuk BTC, ETH, SOL, XRP tampilkan ringkas:
+
+- asset
+- event_slug
+- condition_id
+- prediction_window_start
+- prediction_window_end
+- contract_lifecycle_state
+- prediction_lifecycle_state
+- prediction_window_valid
+- execution_allowed
+- server_time
+
+Required untuk current live card:
+
+- prediction window berdurasi 300 detik
+- prediction_window_valid = true
+- prediction_lifecycle_state sesuai current boundary
+- execution_allowed true hanya jika WINDOW_LIVE
+
+Jika window sedang rollover/resolving:
+
+- execution_allowed boleh false
+- jangan memaksa hasil menjadi WINDOW_LIVE
+
+==================================================
+5. VERIFY NO CONTRACT FALLBACK
+==================================================
+
+Untuk response dengan prediction metadata invalid/missing:
+
+- prediction_lifecycle_state = INVALID
+- prediction_window_valid = false
+- execution_allowed = false
+
+Jangan mengubah database untuk membuat skenario ini.
+Gunakan existing test proof jika runtime tidak memiliki invalid record.
+
+==================================================
+6. STOP BEFORE ROLLOVER PROOF
+==================================================
+
+Setelah migration, restart, dan API verification selesai:
+
+- berhenti
+- jangan menunggu window berikutnya
+- jangan menjalankan full suite lagi
+- jangan melakukan trade manual
+
+Laporan maksimal 14 baris:
+
+GIT STATUS:
+RESTART:
+STARTUP ERRORS:
+MIGRATION:
+DB COLUMNS:
+COLUMN TYPES:
+NULLABLE:
+HISTORICAL ROWS:
+API BTC:
+API ETH:
+API SOL:
+API XRP:
+CONTRACT FALLBACK:
+FINAL STATUS:
