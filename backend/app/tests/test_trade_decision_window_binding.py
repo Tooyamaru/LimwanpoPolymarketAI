@@ -459,9 +459,7 @@ async def test_blocked_binding_does_not_increment_open_counter():
 def _load_migration_sql() -> str:
     """Read database.py and return its full text for migration assertions."""
     import pathlib
-    return pathlib.Path(
-        "backend/app/core/database.py"
-    ).read_text()
+    return (pathlib.Path(__file__).parent.parent / "core" / "database.py").read_text()
 
 
 def test_migration_uses_add_column_if_not_exists_for_event_slug():

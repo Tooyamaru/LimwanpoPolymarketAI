@@ -1,0 +1,111 @@
+LIMWANPO AI — PHASE A CHECKPOINT 12C: FULL SUITE ONCE
+
+Lanjutkan dari Checkpoint 12B.
+
+Current confirmed state:
+
+- compile PASS
+- targeted fixture regression 128 passed
+- combined impacted regression 340 passed, 1 skipped
+- lifecycle production gates tidak dilonggarkan
+
+JANGAN audit repository.
+JANGAN menjalankan aplikasi atau restart workflow.
+JANGAN menunggu rollover.
+JANGAN mengambil screenshot.
+JANGAN menggunakan subagent.
+JANGAN menjalankan full suite lebih dari satu kali kecuali ada failure yang
+sudah diperbaiki.
+
+==================================================
+1. PRECHECK
+==================================================
+
+Run:
+
+git status
+python -m compileall -q backend/app
+
+Jika compile gagal:
+
+- baca traceback saja
+- perbaiki hanya file yang disebut
+- jangan menjalankan pytest sebelum compile PASS
+
+==================================================
+2. RUN FULL SUITE ONCE
+==================================================
+
+Run exactly:
+
+pytest backend/app/tests -q
+
+Capture exact:
+
+- passed
+- failed
+- errors
+- skipped
+- warnings
+- unawaited coroutine warnings
+
+Jangan menghentikan test lebih awal.
+
+==================================================
+3. IF FULL SUITE PASSES
+==================================================
+
+Jika:
+
+- 0 failed
+- 0 errors
+- 0 unawaited-coroutine warnings
+
+maka berhenti.
+
+Jangan restart aplikasi.
+Jangan menjalankan runtime proof.
+Jangan menjalankan full suite ulang.
+
+==================================================
+4. IF FULL SUITE FAILS
+==================================================
+
+Jika ada failure:
+
+- kelompokkan berdasarkan root cause
+- buka hanya traceback dan file terkait
+- tentukan apakah production bug atau fixture lama
+- perbaiki hanya root cause tersebut
+- jalankan ulang hanya file yang gagal
+
+Setelah file gagal PASS, jalankan full suite satu kali lagi.
+
+Jangan:
+
+- menambah contract lifecycle fallback
+- melemahkan WINDOW_LIVE gate
+- mengizinkan missing market
+- menghapus event/window binding
+- memakai end_time untuk 5M
+- mengaktifkan PnL proxy outcome
+- menonaktifkan test
+
+==================================================
+5. FINAL REPORT
+==================================================
+
+Laporan maksimal 12 baris:
+
+WORKING TREE:
+COMPILE:
+FULL SUITE:
+PASSED:
+FAILED:
+ERRORS:
+SKIPPED:
+WARNINGS:
+UNAWAITED COROUTINES:
+FILES FIXED:
+NEXT CHECKPOINT:
+FINAL STATUS:
