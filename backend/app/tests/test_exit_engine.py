@@ -443,6 +443,7 @@ async def test_run_profit_target_creates_close_position(monkeypatch):
     pos = _make_pos(id=1, side="LONG_YES", quantity=10.0, entry_price=0.50)
     opp = _make_opp(yes_bid=0.62, minutes_to_expiry=1440.0, signal_count_1h=3)
     session = AsyncMock()
+    session.add = MagicMock()  # session.add is synchronous in SQLAlchemy
     session.execute = AsyncMock(side_effect=[
         _make_exec_result([opp]),
         MagicMock(all=MagicMock(return_value=[])),  # market end_time map
@@ -472,6 +473,7 @@ async def test_run_stop_loss_creates_close_position():
     pos = _make_pos(id=2, side="LONG_YES", quantity=100.0, entry_price=0.50)
     opp = _make_opp(yes_bid=0.484, minutes_to_expiry=1440.0, signal_count_1h=3, spread_yes=0.01)
     session = AsyncMock()
+    session.add = MagicMock()  # session.add is synchronous in SQLAlchemy
     session.execute = AsyncMock(side_effect=[
         _make_exec_result([opp]),
         MagicMock(all=MagicMock(return_value=[])),  # market end_time map

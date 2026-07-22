@@ -1,0 +1,192 @@
+LIMWANPO AI — PHASE A CHECKPOINT 12D: REMOVE UNAWAITED-COROUTINE WARNINGS ONLY
+
+Lanjutkan dari full suite:
+
+- 1233 passed
+- 1 skipped
+- 0 failed
+- 0 errors
+- 22 unawaited-coroutine RuntimeWarning
+- sekitar 18 dari Exit tests
+- sekitar 4 dari Strategy tests
+
+JANGAN audit seluruh repository.
+JANGAN mengubah production semantics.
+JANGAN menyentuh lifecycle gates, Chainlink, TARGET, CLOB, sizing,
+Portfolio Accounting, API, atau database migration.
+JANGAN menjalankan aplikasi atau runtime proof.
+JANGAN menggunakan subagent.
+
+Scope utama hanya:
+
+- Exit test fixtures yang menghasilkan warning
+- Strategy SKIP/WATCH test fixtures yang menghasilkan warning
+- production file hanya jika traceback membuktikan coroutine production
+  memang tidak di-await
+
+==================================================
+1. IDENTIFY EXACT WARNING LOCATIONS
+==================================================
+
+Jalankan targeted tests dengan warning detail:
+
+pytest \
+backend/app/tests/test_exit_engine.py \
+backend/app/tests/test_exit_lifecycle.py \
+backend/app/tests/test_exit_prediction_window.py \
+backend/app/tests/test_strategy_engine.py \
+backend/app/tests/test_strategy_prediction_window.py \
+backend/app/tests/test_price_source_integrity.py \
+-W error::RuntimeWarning \
+-q
+
+Jika output terlalu luas, jalankan masing-masing file secara terpisah.
+
+Catat exact:
+
+- test name
+- coroutine function name
+- source line
+- apakah warning berasal dari AsyncMock fixture atau production code
+
+==================================================
+2. FIX ASYNC MOCK SHAPES
+==================================================
+
+Untuk method async:
+
+- gunakan AsyncMock
+- selalu await pada production path
+- return_value harus berupa hasil akhir, bukan coroutine bertingkat
+
+Untuk method sinkron setelah async database execute:
+
+result = await session.execute(...)
+result.scalars().all()
+
+Mock shape wajib:
+
+session.execute = AsyncMock(return_value=result_mock)
+result_mock.scalars = MagicMock(return_value=scalars_mock)
+scalars_mock.all = MagicMock(return_value=[...])
+
+Jangan gunakan AsyncMock untuk:
+
+- result.scalars()
+- scalars_result.all()
+- synchronous repository helper
+- synchronous property access
+
+==================================================
+3. EXIT TEST WARNINGS
+==================================================
+
+Periksa mock untuk:
+
+- create_close_decision
+- get_exit_price
+- get_signal_counts
+- session.execute
+- session.commit
+- repository methods
+
+Pastikan coroutine yang dibuat test:
+
+- benar-benar di-await oleh production path, atau
+- diganti MagicMock jika method sebenarnya sinkron
+
+Jangan menghapus assertion hanya untuk menghilangkan warning.
+
+==================================================
+4. STRATEGY TEST WARNINGS
+==================================================
+
+Periksa khusus SKIP dan WATCH paths.
+
+Kemungkinan penyebab:
+
+- AsyncMock dibuat untuk insert_decision tetapi SKIP tidak memanggilnya
+- coroutine dibuat lebih awal sebagai return_value
+- session.execute result memakai AsyncMock untuk scalars/all
+- patched helper sebenarnya fungsi sinkron
+
+Jangan membuat coroutine di fixture dengan pola:
+
+return_value=some_async_function()
+
+Gunakan:
+
+AsyncMock(return_value=final_value)
+
+==================================================
+5. VALIDATE TARGETED FILES
+==================================================
+
+Setelah diperbaiki, jalankan:
+
+pytest \
+backend/app/tests/test_exit_engine.py \
+backend/app/tests/test_exit_lifecycle.py \
+backend/app/tests/test_exit_prediction_window.py \
+backend/app/tests/test_strategy_engine.py \
+backend/app/tests/test_strategy_prediction_window.py \
+backend/app/tests/test_price_source_integrity.py \
+-W error::RuntimeWarning \
+-q
+
+Required:
+
+- 0 failed
+- 0 errors
+- 0 RuntimeWarning
+- 0 unawaited coroutine
+
+==================================================
+6. FULL SUITE ONCE
+==================================================
+
+Setelah targeted tests bersih, jalankan satu kali:
+
+pytest backend/app/tests -q
+
+Required:
+
+- 0 failed
+- 0 errors
+- 0 unawaited-coroutine warnings
+
+DeprecationWarning lain boleh dilaporkan terpisah, tetapi jangan disembunyikan.
+
+==================================================
+7. GIT STATUS
+==================================================
+
+Jalankan:
+
+git status --short
+
+Jangan commit attached_assets otomatis.
+
+Jika hanya attached_assets yang untracked:
+
+- laporkan nama/path
+- jangan tambahkan ke Git kecuali memang source proyek
+
+==================================================
+8. FINAL REPORT
+==================================================
+
+Laporan maksimal 12 baris:
+
+EXIT WARNINGS BEFORE:
+STRATEGY WARNINGS BEFORE:
+ROOT CAUSE:
+TEST FIXTURES CHANGED:
+PRODUCTION FILES CHANGED:
+TARGETED RESULT:
+TARGETED WARNINGS:
+FULL SUITE:
+PASSED:
+SKIPPED:
+UNAWAITED COROUTINES:
+FINAL STATUS:

@@ -310,6 +310,7 @@ async def test_run_open_long_no_persisted_with_position_size():
 async def test_run_skip_not_persisted_by_default():
     """SKIP decisions are not inserted when STRATEGY_PERSIST_SKIPS is False (default)."""
     session = AsyncMock()
+    session.execute = AsyncMock(return_value=_make_exec_result([]))  # market-universe prefetch returns no rows
 
     with (
         patch("app.services.strategy_engine.opp_repo.get_all_opportunities", return_value=[_make_opp(opportunity_score=5.0)]),
@@ -327,6 +328,7 @@ async def test_run_skip_not_persisted_by_default():
 async def test_run_position_sizing_none_demotes_to_skip():
     """PositionSizingService returning None prevents insertion and increments skip."""
     session = AsyncMock()
+    session.execute = AsyncMock(return_value=_make_exec_result([]))  # market-universe prefetch returns no rows
 
     with (
         patch("app.services.strategy_engine.opp_repo.get_all_opportunities", return_value=[_make_opp(opportunity_score=80.0)]),
@@ -348,6 +350,7 @@ async def test_run_signal_confidence_gate_blocks_open_long():
     sig.mtf_confirmed = False
 
     session = AsyncMock()
+    session.execute = AsyncMock(return_value=_make_exec_result([]))  # market-universe prefetch returns no rows
 
     with (
         patch("app.services.strategy_engine.opp_repo.get_all_opportunities", return_value=[_make_opp(opportunity_score=80.0)]),
@@ -365,6 +368,7 @@ async def test_run_signal_confidence_gate_blocks_open_long():
 async def test_run_watch_decision_is_always_persisted():
     """WATCH is not a SKIP — it is always inserted regardless of STRATEGY_PERSIST_SKIPS."""
     session = AsyncMock()
+    session.execute = AsyncMock(return_value=_make_exec_result([]))  # market-universe prefetch returns no rows
 
     with (
         patch("app.services.strategy_engine.opp_repo.get_all_opportunities", return_value=[_make_opp(opportunity_score=25.0)]),

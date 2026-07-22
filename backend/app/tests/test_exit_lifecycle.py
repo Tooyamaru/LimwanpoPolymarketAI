@@ -426,6 +426,7 @@ async def test_failed_retryable_close_not_in_pending_ids():
     opp = _make_opp(condition_id=pos.condition_id, yes_bid=0.51)
 
     session = AsyncMock()
+    session.add = MagicMock()  # session.add is synchronous in SQLAlchemy
     session.execute = AsyncMock(side_effect=[
         _scalars_result([opp]),
         MagicMock(all=MagicMock(return_value=[])),       # market_end_map
@@ -891,6 +892,7 @@ async def test_no_fake_0_5_price_in_normal_close_decision():
     opp = _make_opp(condition_id=pos.condition_id, yes_bid=0.63,
                     minutes_to_expiry=1440.0, signal_count_1h=3)
     session = AsyncMock()
+    session.add = MagicMock()  # session.add is synchronous in SQLAlchemy
     session.execute = AsyncMock(side_effect=[
         _scalars_result([opp]),
         MagicMock(all=MagicMock(return_value=[])),   # no expired market

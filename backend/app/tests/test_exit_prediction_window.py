@@ -134,6 +134,7 @@ async def run_engine(
     pending_ids = [(pid,) for pid in (pending_exit_ids or [])]
 
     session = AsyncMock()
+    session.add = MagicMock()  # session.add is synchronous in SQLAlchemy
     session.execute = AsyncMock(side_effect=[
         scalars_result(opps),           # opp_map query
         all_result(pw_end_map),         # prediction_window_end map query
