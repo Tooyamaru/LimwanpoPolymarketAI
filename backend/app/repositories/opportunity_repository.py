@@ -45,6 +45,10 @@ async def upsert_opportunity(
     minutes_to_expiry: Optional[float],
     direction: str,
     evaluated_at: Optional[datetime] = None,
+    # 14A2A: exact NO-side fields — optional for backward compatibility
+    no_bid: Optional[float] = None,
+    no_ask: Optional[float] = None,
+    clob_fetched_at: Optional[datetime] = None,
 ) -> None:
     """
     INSERT or UPDATE the opportunity row for a given condition_id.
@@ -78,6 +82,9 @@ async def upsert_opportunity(
         "minutes_to_expiry": minutes_to_expiry,
         "direction": direction,
         "evaluated_at": evaluated_at,
+        "no_bid": no_bid,
+        "no_ask": no_ask,
+        "clob_fetched_at": clob_fetched_at,
     }
 
     update_values = {k: v for k, v in values.items() if k != "condition_id"}

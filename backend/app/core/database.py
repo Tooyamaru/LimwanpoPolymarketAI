@@ -256,6 +256,22 @@ async def init_db() -> None:
                 ("window_binding", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS decision_event_slug VARCHAR(128) NULL"),
                 ("window_binding", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS decision_prediction_window_start TIMESTAMPTZ NULL"),
                 ("window_binding", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS decision_prediction_window_end TIMESTAMPTZ NULL"),
+                # 14A2A: exact-side CLOB fields on opportunities
+                ("14a2a_opp", "ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS no_bid DOUBLE PRECISION NULL"),
+                ("14a2a_opp", "ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS no_ask DOUBLE PRECISION NULL"),
+                ("14a2a_opp", "ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS clob_fetched_at TIMESTAMPTZ NULL"),
+                # 14A2A: exact-side audit fields on trade_decisions
+                ("14a2a_td", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS no_mid DOUBLE PRECISION NULL"),
+                ("14a2a_td", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS no_bid DOUBLE PRECISION NULL"),
+                ("14a2a_td", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS no_ask DOUBLE PRECISION NULL"),
+                ("14a2a_td", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS spread_no DOUBLE PRECISION NULL"),
+                ("14a2a_td", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS clob_fetched_at TIMESTAMPTZ NULL"),
+                ("14a2a_td", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS selected_token_id VARCHAR(256) NULL"),
+                ("14a2a_td", "ALTER TABLE trade_decisions ADD COLUMN IF NOT EXISTS selected_price_source VARCHAR(32) NULL"),
+                # 14A2A: exact token traceability on orders
+                ("14a2a_ord", "ALTER TABLE orders ADD COLUMN IF NOT EXISTS token_id VARCHAR(256) NULL"),
+                ("14a2a_ord", "ALTER TABLE orders ADD COLUMN IF NOT EXISTS price_source VARCHAR(32) NULL"),
+                ("14a2a_ord", "ALTER TABLE orders ADD COLUMN IF NOT EXISTS clob_fetched_at TIMESTAMPTZ NULL"),
             ]
             for label, stmt in all_migrations:
                 await run_migration(conn, stmt, label)

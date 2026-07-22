@@ -34,6 +34,10 @@ async def create_order(
     filled_at: Optional[datetime] = None,
     entry_fee_usdc: Optional[float] = None,
     exit_fee_usdc: Optional[float] = None,
+    # 14A2A: exact token traceability — optional for backward compatibility
+    token_id: Optional[str] = None,
+    price_source: Optional[str] = None,
+    clob_fetched_at: Optional[datetime] = None,
 ) -> Order:
     """Insert a new order row and return the persisted object."""
     now = datetime.now(timezone.utc)
@@ -52,6 +56,9 @@ async def create_order(
         filled_at=filled_at or (now if status == "FILLED" else None),
         entry_fee_usdc=entry_fee_usdc,
         exit_fee_usdc=exit_fee_usdc,
+        token_id=token_id,
+        price_source=price_source,
+        clob_fetched_at=clob_fetched_at,
     )
     session.add(row)
 

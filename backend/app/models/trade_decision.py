@@ -63,6 +63,22 @@ class TradeDecision(Base):
     yes_bid: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     yes_ask: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     spread_yes: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    no_mid: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    no_bid: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    no_ask: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    spread_no: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    clob_fetched_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+        comment="Timestamp when CLOB snapshot was fetched at decision time (audit only)",
+    )
+    selected_token_id: Mapped[Optional[str]] = mapped_column(
+        String(256), nullable=True,
+        comment="Exact YES or NO token ID selected at decision time (audit only)",
+    )
+    selected_price_source: Mapped[Optional[str]] = mapped_column(
+        String(32), nullable=True,
+        comment="Price source used: yes_ask | no_ask | yes_bid | no_bid (audit only)",
+    )
 
     # ── Skip reason (populated when decision == SKIP) ─────────────────────────
     skip_reason: Mapped[Optional[str]] = mapped_column(

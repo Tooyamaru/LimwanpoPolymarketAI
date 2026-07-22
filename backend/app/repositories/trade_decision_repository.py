@@ -42,6 +42,14 @@ async def insert_decision(
     decision_event_slug: Optional[str] = None,
     decision_prediction_window_start: Optional[datetime] = None,
     decision_prediction_window_end: Optional[datetime] = None,
+    # 14A2A: exact-side audit fields — optional for backward compatibility
+    no_mid: Optional[float] = None,
+    no_bid: Optional[float] = None,
+    no_ask: Optional[float] = None,
+    spread_no: Optional[float] = None,
+    clob_fetched_at: Optional[datetime] = None,
+    selected_token_id: Optional[str] = None,
+    selected_price_source: Optional[str] = None,
 ) -> TradeDecision:
     """Append a new trade decision row and return the persisted object."""
     if decided_at is None:
@@ -59,6 +67,13 @@ async def insert_decision(
         yes_bid=yes_bid,
         yes_ask=yes_ask,
         spread_yes=spread_yes,
+        no_mid=no_mid,
+        no_bid=no_bid,
+        no_ask=no_ask,
+        spread_no=spread_no,
+        clob_fetched_at=clob_fetched_at,
+        selected_token_id=selected_token_id,
+        selected_price_source=selected_price_source,
         skip_reason=skip_reason,
         position_size_usdc=position_size_usdc,
         decided_at=decided_at,

@@ -62,6 +62,24 @@ class Order(Base):
         comment="Number of contracts / tokens",
     )
 
+    # ── Exact token traceability (14A: set at execution time, never complemented) ──
+    token_id: Mapped[Optional[str]] = mapped_column(
+        String(256), nullable=True,
+        comment=(
+            "Exact YES or NO token ID for this order. "
+            "LONG_YES/SELL_YES = YES token; LONG_NO/SELL_NO = NO token. "
+            "Never derived via complement pricing."
+        ),
+    )
+    price_source: Mapped[Optional[str]] = mapped_column(
+        String(32), nullable=True,
+        comment="Price source used to fill: yes_ask | no_ask | yes_bid | no_bid",
+    )
+    clob_fetched_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+        comment="Timestamp when the CLOB snapshot used for this order was fetched",
+    )
+
     # ── Pricing ───────────────────────────────────────────────────────────────
     requested_price: Mapped[Optional[float]] = mapped_column(
         Float, nullable=True,

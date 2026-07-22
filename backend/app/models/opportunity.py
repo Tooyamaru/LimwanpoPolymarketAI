@@ -58,8 +58,14 @@ class Opportunity(Base):
     yes_bid: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     yes_ask: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     no_mid: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    no_bid: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    no_ask: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     spread_yes: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     spread_no: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    clob_fetched_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+        comment="Timestamp when CLOB snapshot was fetched for this opportunity row",
+    )
 
     seed_deviation: Mapped[Optional[float]] = mapped_column(
         Float, nullable=True,

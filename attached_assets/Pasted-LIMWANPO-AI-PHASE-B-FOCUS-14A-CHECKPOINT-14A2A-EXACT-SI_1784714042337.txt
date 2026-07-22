@@ -1,0 +1,371 @@
+LIMWANPO AI — PHASE B FOCUS 14A
+CHECKPOINT 14A2A: EXACT-SIDE DATA MODEL, MIGRATION AND PERSISTENCE PLUMBING
+
+Current state:
+
+- 14A1 PASS
+- clob_price_selector exists
+- canonical snapshot has exact YES/NO bid, ask and midpoint
+- opportunity.py may contain a PARTIAL unverified edit from the interrupted run
+- no 14A2 compile or tests have been run
+
+This checkpoint prepares exact-side fields only.
+
+DO NOT integrate Execution or Exit yet.
+DO NOT change trade decisions, scoring, thresholds, sizing, lifecycle,
+Risk, Capital Management, Outcome Learning, dashboard or deployment.
+DO NOT run full suite.
+DO NOT restart application.
+DO NOT use subagents.
+DO NOT use complement pricing.
+
+==================================================
+1. INSPECT THE PARTIAL DIFF FIRST
+==================================================
+
+Run:
+
+git status --short
+
+git diff -- \
+backend/app/models/opportunity.py \
+backend/app/models/trade_decision.py \
+backend/app/models/order.py \
+backend/app/core/database.py
+
+Report internally exactly what was partially changed.
+
+Do not assume the interrupted edit is correct.
+
+If opportunity.py contains duplicate fields, invalid imports or incomplete
+definitions, normalize it before continuing.
+
+Run an initial compile:
+
+python -m compileall -q \
+backend/app/models/opportunity.py \
+backend/app/models/trade_decision.py \
+backend/app/models/order.py \
+backend/app/core/database.py
+
+If compile fails, fix only these files.
+
+==================================================
+2. AUDIT EXISTING EQUIVALENT FIELDS
+==================================================
+
+Read only:
+
+- backend/app/models/opportunity.py
+- backend/app/models/trade_decision.py
+- backend/app/models/order.py
+- backend/app/models/position.py
+- backend/app/core/database.py
+- repositories that insert/update these three models
+- directly related model and migration tests
+
+Before adding fields, map existing equivalents for:
+
+Opportunity:
+- yes_bid
+- yes_ask
+- yes_mid
+- no_bid
+- no_ask
+- no_mid
+- spread_yes
+- spread_no
+- clob_fetched_at
+
+TradeDecision:
+- yes_bid
+- yes_ask
+- yes_mid
+- no_bid
+- no_ask
+- no_mid
+- spread_yes
+- spread_no
+- clob_fetched_at
+- selected_token_id
+- selected_price_source
+
+Order:
+- token_id or selected_token_id
+- price_source
+- clob_fetched_at
+- condition_id
+- requested_price
+- filled_price
+
+Do not add duplicate aliases when an equivalent already exists.
+
+==================================================
+3. OPPORTUNITY EXACT-SIDE FIELDS
+==================================================
+
+Ensure Opportunity has nullable additive fields:
+
+- no_bid
+- no_ask
+- spread_no
+- clob_fetched_at
+
+Retain existing:
+
+- yes_bid
+- yes_ask
+- yes_mid
+- no_mid
+- spread_yes
+
+Use appropriate types:
+
+- prices/spreads: Float or existing numeric convention
+- clob_fetched_at: timezone-aware DateTime
+
+Do not derive NO values from YES.
+
+Repository writes must accept exact NO data when provided.
+
+Historical callers may omit the new fields and receive NULL.
+
+==================================================
+4. TRADEDECISION AUDIT FIELDS
+==================================================
+
+Ensure TradeDecision has nullable additive fields:
+
+- yes_bid
+- yes_ask
+- yes_mid
+- no_bid
+- no_ask
+- no_mid
+- spread_yes
+- spread_no
+- clob_fetched_at
+- selected_token_id
+- selected_price_source
+
+Reuse existing fields and do not duplicate them.
+
+These fields are audit context only in 14A2A.
+
+Do not change Strategy direction, score, threshold or sizing.
+
+Repository insert/update methods must preserve exact values when supplied and
+remain backward-compatible when omitted.
+
+==================================================
+5. ORDER EXACT TOKEN TRACEABILITY
+==================================================
+
+Inspect Order for an existing exact token field.
+
+If no equivalent exists, add nullable:
+
+- token_id
+- price_source
+- clob_fetched_at
+
+Use the existing naming convention if equivalent fields already exist.
+
+Required future semantics:
+
+YES entry/exit order:
+    token_id = exact YES token
+
+NO entry/exit order:
+    token_id = exact NO token
+
+Do not populate these fields from complement pricing.
+
+Do not change order execution behavior in this checkpoint.
+
+==================================================
+6. ADDITIVE DATABASE MIGRATION
+==================================================
+
+Add only missing columns using:
+
+ADD COLUMN IF NOT EXISTS
+
+Requirements:
+
+- nullable
+- non-destructive
+- no DROP
+- no table recreation
+- no default synthetic price
+- timestamps use TIMESTAMPTZ
+- price/spread types follow existing model/database convention
+- historical rows remain readable
+
+Do not edit or backfill historical price values.
+
+Do not populate NO fields using `1 - YES`.
+
+==================================================
+7. REPOSITORY BACKWARD COMPATIBILITY
+==================================================
+
+Update only repositories directly responsible for:
+
+- Opportunity insert/update
+- TradeDecision insert/update
+- Order creation
+
+New parameters must be optional.
+
+Existing callers without exact-side fields must continue to work.
+
+No repository may derive:
+
+- no_bid from yes_ask
+- no_ask from yes_bid
+- no_mid from yes_mid
+
+No synthetic 0.5.
+
+==================================================
+8. CREATE NARROW TEST FILE
+==================================================
+
+Create:
+
+backend/app/tests/test_exact_clob_persistence_fields.py
+
+Minimum tests:
+
+1. Opportunity accepts exact no_bid
+2. Opportunity accepts exact no_ask
+3. Opportunity accepts exact no_mid
+4. Opportunity accepts spread_no
+5. Opportunity accepts timezone-aware clob_fetched_at
+6. Opportunity exact NO values remain non-complementary
+7. TradeDecision accepts all exact YES fields
+8. TradeDecision accepts all exact NO fields
+9. TradeDecision stores selected YES token
+10. TradeDecision stores selected NO token
+11. TradeDecision stores selected_price_source=yes_ask
+12. TradeDecision stores selected_price_source=no_ask
+13. Order stores exact YES token ID
+14. Order stores exact NO token ID
+15. Order stores exact price source
+16. Order stores timezone-aware clob_fetched_at
+17. historical Opportunity caller may omit new fields
+18. historical TradeDecision caller may omit new fields
+19. historical Order caller may omit new fields
+20. migration contains ADD COLUMN IF NOT EXISTS
+21. migration contains no DROP TABLE
+22. migration contains no DELETE FROM
+23. migration contains no TRUNCATE
+24. migration does not contain complement backfill
+25. exact values survive repository assignment unchanged
+26. YES and NO token IDs remain distinct
+27. no synthetic 0.5 default exists
+
+Use non-complementary values:
+
+yes_bid = 0.61
+yes_ask = 0.64
+no_bid = 0.31
+no_ask = 0.34
+
+Use a real timezone-aware timestamp:
+
+datetime.now(timezone.utc)
+
+Do not use fetched_at=None for successful persistence tests.
+
+==================================================
+9. STATIC COMPLEMENT GUARD FOR PERSISTENCE
+==================================================
+
+Add a narrow assertion that the modified model, migration and repository files
+do not contain executable derivations equivalent to:
+
+- 1 - yes_bid
+- 1 - yes_ask
+- 1 - yes_mid
+- 1.0 - yes_bid
+- 1.0 - yes_ask
+- 1.0 - yes_mid
+
+Comments and test descriptions may mention forbidden patterns, but executable
+code must not contain them.
+
+Do not modify the existing pending runtime allowlist yet:
+
+- execution_engine.py
+- exit_engine.py
+- decision_engine.py
+- position_service.py
+- trade_evaluation_service.py
+
+Execution and Exit will be removed in 14A2B/14A2C.
+
+==================================================
+10. VALIDATE ONLY 14A2A
+==================================================
+
+Run:
+
+python -m compileall -q \
+backend/app/models/opportunity.py \
+backend/app/models/trade_decision.py \
+backend/app/models/order.py \
+backend/app/core/database.py \
+backend/app/repositories
+
+pytest backend/app/tests/test_exact_clob_persistence_fields.py -q
+
+Then run directly affected existing tests only:
+
+pytest \
+backend/app/tests/test_trade_decision_window_binding.py \
+backend/app/tests/test_strategy_engine.py \
+backend/app/tests/test_strategy_prediction_window.py \
+backend/app/tests/test_execution_engine.py \
+-q
+
+If a listed file is absent, omit it.
+
+Do not run full suite.
+Do not restart the application.
+
+If failures occur:
+
+- inspect only targeted traceback
+- fix only model/migration/repository fixtures
+- maximum 3 correction attempts
+- do not integrate Execution or Exit yet
+- do not weaken exact-side requirements
+
+==================================================
+11. REQUIRED REPORT
+==================================================
+
+Report maximum 16 lines:
+
+PARTIAL DIFF FOUND:
+OPPORTUNITY FIELDS:
+TRADEDECISION FIELDS:
+ORDER TOKEN FIELD:
+ORDER PRICE SOURCE:
+TIMESTAMP FIELDS:
+MIGRATION:
+DESTRUCTIVE SQL:
+COMPLEMENT BACKFILL:
+REPOSITORY COMPATIBILITY:
+HISTORICAL ROWS:
+NEW TESTS:
+RELATED REGRESSION:
+PRODUCTION FILES CHANGED:
+FAILED:
+FINAL STATUS:
+
+Stop after 14A2A.
+
+Do not proceed automatically to 14A2B.
