@@ -1,0 +1,135 @@
+LIMWANPO AI — CHECKPOINT 11B: REMOVE CONTRACT FALLBACK FOR 5M EXECUTION_ALLOWED
+
+Lanjutkan dari current codebase.
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full suite.
+JANGAN menyentuh engine lain.
+JANGAN menggunakan subagent.
+
+Scope hanya:
+
+- backend/app/api/v1/universe.py
+- backend/app/schemas/universe.py
+- backend/app/tests/test_universe_prediction_lifecycle_api.py
+- related fixture pada test_market_lifecycle_state.py jika benar-benar perlu
+
+==================================================
+1. REMOVE WRONG FALLBACK
+==================================================
+
+Current incorrect behavior:
+
+Jika prediction_window_start/end tidak ada:
+execution_allowed fallback ke contract lifecycle / is_active.
+
+Hapus fallback tersebut untuk market 5M.
+
+Required:
+
+prediction_result =
+get_prediction_window_lifecycle(
+    prediction_window_start,
+    prediction_window_end,
+)
+
+execution_allowed =
+prediction_result["valid"] is True
+AND prediction_result["state"] == PRED_WINDOW_LIVE
+
+Tidak ada OR contract_active.
+Tidak ada fallback ke lifecycle_state.
+Tidak ada fallback ke start_time/end_time.
+
+==================================================
+2. CONTRACT LIFECYCLE IS OBSERVABILITY ONLY
+==================================================
+
+Tetap expose:
+
+contract_lifecycle_state
+lifecycle_state
+
+lifecycle_state boleh menjadi alias backward-compatible untuk contract state.
+
+Tetapi keduanya tidak boleh memengaruhi:
+
+execution_allowed
+
+==================================================
+3. HANDLE NON-5M LEGACY EXPLICITLY
+==================================================
+
+Project production scope hanya current BTC/ETH/SOL/XRP 5M.
+
+Jangan membuat fallback generic untuk menjaga hypothetical 1H test.
+
+Jika test lama membuat market tanpa prediction window:
+
+- update fixture menjadi realistic 300-second prediction window
+- jangan melemahkan production API semantics
+
+==================================================
+4. FIX TESTS
+==================================================
+
+Correct required assertions:
+
+missing prediction start:
+- prediction_lifecycle_state == INVALID
+- prediction_window_valid is False
+- execution_allowed is False
+
+missing prediction end:
+- prediction_lifecycle_state == INVALID
+- prediction_window_valid is False
+- execution_allowed is False
+
+contract ACTIVE + missing/invalid prediction window:
+- execution_allowed is False
+
+contract ACTIVE + 299-second window:
+- execution_allowed is False
+
+contract ACTIVE + 301-second window:
+- execution_allowed is False
+
+Only valid WINDOW_LIVE:
+- execution_allowed is True
+
+Do not remove assertions merely to accept fallback behavior.
+
+==================================================
+5. VALIDATE ONLY THIS CORRECTION
+==================================================
+
+Run:
+
+python -m compileall -q \
+backend/app/api/v1/universe.py \
+backend/app/schemas/universe.py
+
+pytest backend/app/tests/test_universe_prediction_lifecycle_api.py -q
+pytest backend/app/tests/test_countdown.py -q
+pytest backend/app/tests/test_market_lifecycle_state.py -q
+
+If old lifecycle fixtures lack a prediction window:
+
+- add timezone-aware 300-second window
+- keep contract lifecycle assertions
+- update execution_allowed expectation according to prediction lifecycle
+
+Do not run full suite.
+
+Report maksimal 10 baris:
+
+CONTRACT STATE:
+PREDICTION STATE:
+CONTRACT FALLBACK:
+MISSING WINDOW:
+INVALID WINDOW:
+EXECUTION_ALLOWED:
+NEW TESTS:
+REGRESSION:
+FAILED:
+FINAL STATUS:

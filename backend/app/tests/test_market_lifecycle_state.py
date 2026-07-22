@@ -422,11 +422,14 @@ async def test_annotate_lifecycle_active():
     from datetime import datetime, timezone
 
     now = datetime.now(timezone.utc)
+    # Realistic 300-second prediction window currently live
+    pw_start = now - timedelta(seconds=60)
+    pw_end   = pw_start + timedelta(seconds=300)  # ends in 240s
     market = MagicMock()
     market.id = 2
     market.asset = "ETH"
-    market.timeframe = "1H"
-    market.series_slug = "eth-up-or-down-hourly"
+    market.timeframe = "5m"
+    market.series_slug = "eth-up-or-down-5m"
     market.series_id = "s2"
     market.event_id = "e2"
     market.condition_id = "0xact"
@@ -444,26 +447,33 @@ async def test_annotate_lifecycle_active():
     market.updated_at = now
     # Lifecycle fields: provide str/bool defaults so Pydantic doesn't read MagicMock attrs
     market.lifecycle_state = "ACTIVE"
+    market.contract_lifecycle_state = None
     market.execution_allowed = True
     market.is_pre_market = False
     market.is_active_market = True
     market.is_expired = False
     market.display_status = "ACTIVE"
     market.data_mode = "LIVE"
-    # Timing fields added in sprint-countdown; must be correct type for Pydantic
+    market.prediction_lifecycle_state = None
+    market.prediction_window_valid = False
+    market.prediction_window_validation_error = None
+    market.generated_at = None
+    # Timing fields
     market.server_time = None
     market.countdown_seconds = None
     market.countdown_source = "market_end_time"
     market.countdown_data_stale = False
     market.countdown_mode = None
-    market.prediction_window_start = None
-    market.prediction_window_end = None
+    # Stored prediction window — live 300s window
+    market.prediction_window_start = pw_start
+    market.prediction_window_end   = pw_end
+    market.prediction_window_source = "question_interval"
     market.countdown_target = None
     market.trading_open_time = None
 
     resp = _annotate_lifecycle(market)
     assert resp.lifecycle_state   == "ACTIVE"
-    assert resp.execution_allowed is True
+    assert resp.execution_allowed is True   # WINDOW_LIVE + valid
     assert resp.is_pre_market     is False
     assert resp.is_active_market  is True
     assert resp.is_expired        is False

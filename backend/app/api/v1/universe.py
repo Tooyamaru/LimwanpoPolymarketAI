@@ -323,13 +323,10 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
         mode    = "SEED"
 
     # ── execution_allowed: requires valid live prediction window ──────────────
-    # Spec: only True when prediction_window_valid=True AND state=WINDOW_LIVE.
-    # Exception: when no prediction window data exists (pw_start/pw_end both None),
-    # fall back to contract lifecycle — covers hourly markets without 5m slots.
-    if pw_start is None or pw_end is None:
-        execution_allowed = is_active
-    else:
-        execution_allowed = pred_window_valid and pred_lc_state == PRED_WINDOW_LIVE
+    # Strictly: True ONLY when prediction_window_valid=True AND state=WINDOW_LIVE.
+    # No fallback to contract lifecycle. No fallback to start_time/end_time.
+    # Missing or invalid prediction window always blocks execution.
+    execution_allowed = pred_window_valid and pred_lc_state == PRED_WINDOW_LIVE
 
     # ── event_slug and market_slot_timestamp ─────────────────────────────────
     # Use isinstance guard: getattr on a MagicMock returns a MagicMock (never None),

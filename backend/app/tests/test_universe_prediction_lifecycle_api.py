@@ -173,14 +173,13 @@ def test_case3_exact_end_resolving():
     assert r.execution_allowed is False
 
 
-# ── Test 4: missing pw_start → INVALID ───────────────────────────────────────
+# ── Test 4: missing pw_start → INVALID, execution=False ─────────────────────
 
 def test_case4_missing_start_invalid():
     """
-    pw_start=None, pw_end=None (unparseable question):
-    prediction_lifecycle_state=INVALID, valid=False.
-    execution_allowed falls back to contract lifecycle (is_active) — backward compat
-    for hourly markets without 5m prediction slots; verified separately in test 8.
+    pw_start=None, pw_end=None, unparseable question:
+    prediction_lifecycle_state=INVALID, valid=False, execution_allowed=False.
+    No fallback to contract lifecycle.
     """
     m = _make_row(pw_start=None, pw_end=None, question="No time info here")
     r = _annotate(m)
@@ -188,14 +187,15 @@ def test_case4_missing_start_invalid():
     assert r.prediction_lifecycle_state == "INVALID"
     assert r.prediction_window_valid is False
     assert r.prediction_window_validation_error is not None
+    assert r.execution_allowed is False
 
 
-# ── Test 5: missing pw_end → INVALID ─────────────────────────────────────────
+# ── Test 5: missing pw_end → INVALID, execution=False ────────────────────────
 
 def test_case5_missing_end_invalid():
     """
-    No parseable question and no stored pw data → INVALID.
-    Same fallback semantics as test 4.
+    No parseable question and no stored pw data → INVALID, execution_allowed=False.
+    No fallback to contract lifecycle.
     """
     m = _make_row(pw_start=None, pw_end=None, question="No time data at all")
     r = _annotate(m)
@@ -203,6 +203,7 @@ def test_case5_missing_end_invalid():
     assert r.prediction_lifecycle_state == "INVALID"
     assert r.prediction_window_valid is False
     assert r.prediction_window_validation_error is not None
+    assert r.execution_allowed is False
 
 
 # ── Test 6: 299-second window → INVALID ──────────────────────────────────────
