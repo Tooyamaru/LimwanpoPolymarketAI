@@ -48,7 +48,7 @@ class UniverseMarketResponse(BaseModel):
     target_source_field_path: Optional[str] = None
 
     # ── Lifecycle state fields (computed at API layer, not stored in DB) ─────────
-    # lifecycle_state: canonical state derived from start_time/end_time/now
+    # lifecycle_state: canonical contract state derived from start_time/end_time/now
     #   PRE_MARKET        — now < start_time; seed data visible but no execution
     #   ACTIVE            — start_time <= now < end_time; live trading window
     #   EXPIRED           — now >= end_time; no new entry allowed
@@ -56,7 +56,9 @@ class UniverseMarketResponse(BaseModel):
     #   RESOLVED          — direct resolution confirmed
     #   INVALID_TIME_STATE — start_time or end_time missing/contradictory
     lifecycle_state: str = "ACTIVE"
-    # execution_allowed: true only when lifecycle_state == ACTIVE
+    # contract_lifecycle_state: backward-compatible alias for lifecycle_state
+    contract_lifecycle_state: Optional[str] = None
+    # execution_allowed: true only when prediction window is valid AND WINDOW_LIVE
     execution_allowed: bool = True
     is_pre_market: bool = False
     is_active_market: bool = True
@@ -65,6 +67,16 @@ class UniverseMarketResponse(BaseModel):
     display_status: str = "ACTIVE"
     # data_mode: SEED (pre-market book), LIVE (active window), FINAL (post-expiry)
     data_mode: str = "LIVE"
+
+    # ── Prediction-window lifecycle fields (additive, from get_prediction_window_lifecycle) ──
+    # prediction_lifecycle_state: UPCOMING | WINDOW_LIVE | RESOLVING | RESOLVED | INVALID
+    prediction_lifecycle_state: Optional[str] = None
+    # prediction_window_valid: True when window is structurally valid (300 s, tz-aware, ordered)
+    prediction_window_valid: bool = False
+    # prediction_window_validation_error: reason string when prediction_window_valid=False
+    prediction_window_validation_error: Optional[str] = None
+    # generated_at: explicit ISO UTC timestamp of response generation (same as server_time)
+    generated_at: Optional[str] = None
 
     # ── Timing fields for accurate frontend countdown (spec §17) ────────────────
     # server_time:          ISO UTC string of when this response was generated.
@@ -116,6 +128,10 @@ class UniverseMarketResponse(BaseModel):
     @field_validator(
         "event_slug",
         "prediction_window_source",
+        "contract_lifecycle_state",
+        "prediction_lifecycle_state",
+        "prediction_window_validation_error",
+        "generated_at",
         "target_source",
         "target_raw_source",
         "target_event_slug",
@@ -147,6 +163,7 @@ class UniverseMarketResponse(BaseModel):
     @field_validator(
         "target_verified",
         "target_stale",
+        "prediction_window_valid",
         mode="before",
     )
     @classmethod

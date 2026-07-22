@@ -44,6 +44,10 @@ from app.services.market_universe_service import (
     LIFECYCLE_RESOLVED,
     get_market_lifecycle_state,
 )
+from app.utils.prediction_window import (
+    PRED_WINDOW_LIVE,
+    get_prediction_window_lifecycle,
+)
 
 router = APIRouter(prefix="/universe", tags=["universe"])
 
@@ -287,7 +291,13 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
         countdown_data_stale = False
         countdown_source = pw_source
 
-    # ── Lifecycle state ───────────────────────────────────────────────────────
+    # ── Prediction-window lifecycle (from canonical utility, never from start/end_time) ──
+    pw_lc = get_prediction_window_lifecycle(pw_start, pw_end)
+    pred_lc_state             = pw_lc["state"]
+    pred_window_valid         = pw_lc["valid"]
+    pred_window_validation_error = pw_lc["validation_error"]
+
+    # ── Lifecycle state (contract) ────────────────────────────────────────────
     resp = UniverseMarketResponse.model_validate(m)
     lc = get_market_lifecycle_state(m)
 
@@ -312,6 +322,15 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
         display = "UNKNOWN"
         mode    = "SEED"
 
+    # ── execution_allowed: requires valid live prediction window ──────────────
+    # Spec: only True when prediction_window_valid=True AND state=WINDOW_LIVE.
+    # Exception: when no prediction window data exists (pw_start/pw_end both None),
+    # fall back to contract lifecycle — covers hourly markets without 5m slots.
+    if pw_start is None or pw_end is None:
+        execution_allowed = is_active
+    else:
+        execution_allowed = pred_window_valid and pred_lc_state == PRED_WINDOW_LIVE
+
     # ── event_slug and market_slot_timestamp ─────────────────────────────────
     # Use isinstance guard: getattr on a MagicMock returns a MagicMock (never None),
     # so a plain truthiness check would pass and cause re.search to fail on a mock.
@@ -324,25 +343,36 @@ def _annotate_lifecycle(m) -> UniverseMarketResponse:
             market_slot_ts = int(_slug_match.group(1))
 
     return resp.model_copy(update={
-        "lifecycle_state":           lc,
-        "execution_allowed":         is_active,
-        "is_pre_market":             is_pre,
-        "is_active_market":          is_active,
-        "is_expired":                is_exp,
-        "display_status":            display,
-        "data_mode":                 mode,
-        "server_time":               server_time_iso,
-        "countdown_seconds":         countdown_seconds,
-        "countdown_source":          countdown_source,
-        "countdown_data_stale":      countdown_data_stale,
-        "countdown_mode":            countdown_mode,
-        "prediction_window_start":   prediction_window_start_iso,
-        "prediction_window_end":     prediction_window_end_iso,
-        "prediction_window_source":  pw_source,
-        "countdown_target":          countdown_target,
-        "trading_open_time":         trading_open_time_iso,
-        "event_slug":                event_slug_val,
-        "market_slot_timestamp":     market_slot_ts,
+        # ── contract lifecycle (backward compat) ──────────────────────────────
+        "lifecycle_state":                    lc,
+        "contract_lifecycle_state":           lc,
+        # ── prediction-window lifecycle (new) ─────────────────────────────────
+        "prediction_lifecycle_state":         pred_lc_state,
+        "prediction_window_valid":            pred_window_valid,
+        "prediction_window_validation_error": pred_window_validation_error,
+        # ── execution gate ────────────────────────────────────────────────────
+        "execution_allowed":                  execution_allowed,
+        # ── other lifecycle flags ─────────────────────────────────────────────
+        "is_pre_market":                      is_pre,
+        "is_active_market":                   is_active,
+        "is_expired":                         is_exp,
+        "display_status":                     display,
+        "data_mode":                          mode,
+        # ── timing ───────────────────────────────────────────────────────────
+        "server_time":                        server_time_iso,
+        "generated_at":                       server_time_iso,
+        "countdown_seconds":                  countdown_seconds,
+        "countdown_source":                   countdown_source,
+        "countdown_data_stale":               countdown_data_stale,
+        "countdown_mode":                     countdown_mode,
+        "prediction_window_start":            prediction_window_start_iso,
+        "prediction_window_end":              prediction_window_end_iso,
+        "prediction_window_source":           pw_source,
+        "countdown_target":                   countdown_target,
+        "trading_open_time":                  trading_open_time_iso,
+        # ── identity ─────────────────────────────────────────────────────────
+        "event_slug":                         event_slug_val,
+        "market_slot_timestamp":              market_slot_ts,
     })
 
 
