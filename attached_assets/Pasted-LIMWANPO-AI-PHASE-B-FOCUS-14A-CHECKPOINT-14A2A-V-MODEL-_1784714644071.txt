@@ -1,0 +1,221 @@
+LIMWANPO AI — PHASE B FOCUS 14A
+CHECKPOINT 14A2A-V: MODEL–MIGRATION FIELD PARITY VERIFICATION
+
+Current reported state:
+
+- 69/69 exact persistence tests PASS
+- 81/81 related regression PASS
+- Opportunity received 3 new fields
+- TradeDecision received 7 new fields
+- Order received 3 new fields
+- report claims only 10 ADD COLUMN IF NOT EXISTS statements
+
+This checkpoint only verifies and corrects model/migration parity.
+
+DO NOT integrate Execution.
+DO NOT integrate Exit.
+DO NOT run full suite.
+DO NOT restart application.
+DO NOT apply runtime migration.
+DO NOT change Strategy, Risk, lifecycle, pricing logic or thresholds.
+DO NOT use subagents.
+
+==================================================
+1. INSPECT EXACT DIFF
+==================================================
+
+Run:
+
+git status --short
+
+git diff -- \
+backend/app/models/opportunity.py \
+backend/app/models/trade_decision.py \
+backend/app/models/order.py \
+backend/app/core/database.py \
+backend/app/repositories/opportunity_repository.py \
+backend/app/repositories/trade_decision_repository.py \
+backend/app/repositories/order_repository.py \
+backend/app/tests/test_exact_clob_persistence_fields.py
+
+Do not rely on the previous textual report.
+
+==================================================
+2. BUILD AN EXACT FIELD MATRIX
+==================================================
+
+Create an internal matrix for these expected fields:
+
+OPPORTUNITIES:
+
+1. no_bid
+2. no_ask
+3. clob_fetched_at
+
+TRADE_DECISIONS:
+
+4. no_bid
+5. no_ask
+6. no_mid
+7. spread_no
+8. clob_fetched_at
+9. selected_token_id
+10. selected_price_source
+
+ORDERS:
+
+11. token_id
+12. price_source
+13. clob_fetched_at
+
+For every field verify:
+
+- ORM model field exists
+- correct nullable type exists
+- repository optional parameter exists
+- repository assignment exists
+- ADD COLUMN IF NOT EXISTS exists
+- table name is correct
+- migration SQL type matches ORM type
+
+Do not count existing unrelated columns.
+
+==================================================
+3. VERIFY WHY REPORT SAID TEN
+==================================================
+
+Determine exactly why only ten migration statements were reported.
+
+Acceptable result:
+
+- thirteen expected migrations exist; previous count was a report error
+
+or:
+
+- some columns were already present in an older additive migration, and their
+  exact older migration lines are identified
+
+Unacceptable:
+
+- a model field has no migration
+- migration targets the wrong table
+- repository accepts a value that the database cannot store
+
+If any field lacks a migration, add:
+
+ALTER TABLE <table>
+ADD COLUMN IF NOT EXISTS <column> <type>;
+
+Requirements:
+
+- nullable
+- no default synthetic value
+- TIMESTAMPTZ for clob_fetched_at
+- VARCHAR for IDs/source fields
+- existing Float/DOUBLE PRECISION convention for prices and spreads
+- no backfill
+- no destructive SQL
+
+==================================================
+4. STRENGTHEN THE PARITY TEST
+==================================================
+
+Update:
+
+backend/app/tests/test_exact_clob_persistence_fields.py
+
+Add an exact parameterized parity test covering all thirteen table/column
+pairs.
+
+Required assertions:
+
+- each expected model field exists
+- each expected repository parameter exists
+- each expected migration column appears under the correct table
+- no expected field is missing
+- no duplicate migration for the same table/column is introduced
+- migration uses ADD COLUMN IF NOT EXISTS
+- all three clob_fetched_at columns use TIMESTAMPTZ
+- no complement backfill exists
+- no synthetic 0.5 default exists
+
+Do not merely assert a total count.
+
+Assert the exact table + column names.
+
+==================================================
+5. DO NOT OVERCLAIM RUNTIME PROOF
+==================================================
+
+Tests may prove:
+
+- nullable schema design
+- omitted parameters remain compatible
+- repository assignments preserve exact values
+
+Tests may not claim yet:
+
+- production database columns were applied
+- historical production rows were queried
+- YES orders already store YES token
+- NO orders already store NO token
+
+Those runtime semantics belong to later checkpoints.
+
+==================================================
+6. VALIDATE ONLY THIS VERIFICATION
+==================================================
+
+Run:
+
+python -m compileall -q \
+backend/app/models/opportunity.py \
+backend/app/models/trade_decision.py \
+backend/app/models/order.py \
+backend/app/core/database.py \
+backend/app/repositories
+
+pytest backend/app/tests/test_exact_clob_persistence_fields.py -q
+
+Then run:
+
+pytest \
+backend/app/tests/test_trade_decision_window_binding.py \
+backend/app/tests/test_strategy_engine.py \
+backend/app/tests/test_strategy_prediction_window.py \
+backend/app/tests/test_execution_engine.py \
+-q
+
+Do not run the full suite.
+Do not restart the application.
+
+If failure occurs:
+
+- inspect only the targeted traceback
+- fix only model/migration/repository parity
+- maximum 3 correction attempts
+
+==================================================
+7. REQUIRED REPORT
+==================================================
+
+Report maximum 14 lines:
+
+EXPECTED FIELD COUNT:
+MODEL FIELD COUNT:
+REPOSITORY PARAMETER COUNT:
+MIGRATION FIELD COUNT:
+OPPORTUNITY PARITY:
+TRADEDECISION PARITY:
+ORDER PARITY:
+MISSING MIGRATIONS:
+DUPLICATE MIGRATIONS:
+TIMESTAMPTZ FIELDS:
+DESTRUCTIVE SQL:
+NEW TEST RESULT:
+REGRESSION:
+FINAL STATUS:
+
+Stop after 14A2A-V.
+
+Do not proceed automatically to 14A2B.

@@ -463,6 +463,156 @@ def test_no_synthetic_0_5_default_exists():
                 pytest.fail(f"Synthetic 0.5 default for no_mid in {path}: {line!r}")
 
 
+# ── 14A2A-V: exact parameterized model/migration/repository parity (step 4) ──
+
+# Canonical list of all 13 expected (table, column) pairs from 14A2A
+_EXPECTED_FIELDS: list[tuple[str, str]] = [
+    # opportunities — 3 new fields
+    ("opportunities",   "no_bid"),
+    ("opportunities",   "no_ask"),
+    ("opportunities",   "clob_fetched_at"),
+    # trade_decisions — 7 new fields
+    ("trade_decisions", "no_bid"),
+    ("trade_decisions", "no_ask"),
+    ("trade_decisions", "no_mid"),
+    ("trade_decisions", "spread_no"),
+    ("trade_decisions", "clob_fetched_at"),
+    ("trade_decisions", "selected_token_id"),
+    ("trade_decisions", "selected_price_source"),
+    # orders — 3 new fields
+    ("orders",          "token_id"),
+    ("orders",          "price_source"),
+    ("orders",          "clob_fetched_at"),
+]
+
+# Map table name → ORM model class
+_TABLE_MODEL = {
+    "opportunities":   "app.models.opportunity.Opportunity",
+    "trade_decisions": "app.models.trade_decision.TradeDecision",
+    "orders":          "app.models.order.Order",
+}
+
+# Map table name → repository module + function
+_TABLE_REPO = {
+    "opportunities":   ("app.repositories.opportunity_repository",   "upsert_opportunity"),
+    "trade_decisions": ("app.repositories.trade_decision_repository", "insert_decision"),
+    "orders":          ("app.repositories.order_repository",          "create_order"),
+}
+
+# clob_fetched_at columns must use TIMESTAMPTZ in migration SQL
+_TIMESTAMPTZ_FIELDS = {"clob_fetched_at"}
+
+# VARCHAR / ID columns (not price/spread)
+_VARCHAR_FIELDS = {"selected_token_id", "selected_price_source", "token_id", "price_source"}
+
+
+def _get_all_14a2a_migration_stmts() -> list[str]:
+    """Return only 14A2A migration SQL statements from database.py."""
+    src = (_REPO_ROOT / "backend/app/core/database.py").read_text(encoding="utf-8")
+    # Extract tuples labelled 14a2a_*: ("14a2a_...", "ALTER TABLE ...")
+    return re.findall(r'"14a2a_[^"]*",\s*"(ALTER TABLE[^"]+)"', src)
+
+
+@pytest.mark.parametrize("table,column", _EXPECTED_FIELDS)
+def test_parity_model_field_exists(table: str, column: str):
+    """Every expected (table, column) pair must have a matching ORM model field."""
+    import importlib
+    module_path, class_name = _TABLE_MODEL[table].rsplit(".", 1)
+    mod = importlib.import_module(module_path)
+    model_cls = getattr(mod, class_name)
+    col_names = [c.key for c in model_cls.__table__.columns]
+    assert column in col_names, (
+        f"Model field '{column}' missing from {class_name} (table={table})"
+    )
+
+
+@pytest.mark.parametrize("table,column", _EXPECTED_FIELDS)
+def test_parity_repository_parameter_exists(table: str, column: str):
+    """Every expected column must have a matching optional keyword parameter in its repository function."""
+    import importlib, inspect
+    module_path, func_name = _TABLE_REPO[table]
+    mod = importlib.import_module(module_path)
+    func = getattr(mod, func_name)
+    sig = inspect.signature(func).parameters
+    assert column in sig, (
+        f"Repository parameter '{column}' missing from {func_name} (table={table})"
+    )
+
+
+@pytest.mark.parametrize("table,column", _EXPECTED_FIELDS)
+def test_parity_migration_exists_for_correct_table(table: str, column: str):
+    """Every expected column must have an ADD COLUMN IF NOT EXISTS in the correct table's migration."""
+    stmts = _get_all_14a2a_migration_stmts()
+    # Look for: ALTER TABLE <table> ADD COLUMN IF NOT EXISTS <column> ...
+    pattern = rf"ALTER TABLE {re.escape(table)}\s+ADD COLUMN IF NOT EXISTS\s+{re.escape(column)}\b"
+    matches = [s for s in stmts if re.search(pattern, s, re.IGNORECASE)]
+    assert len(matches) >= 1, (
+        f"No ADD COLUMN IF NOT EXISTS found for column '{column}' on table '{table}'"
+    )
+
+
+@pytest.mark.parametrize("table,column", _EXPECTED_FIELDS)
+def test_parity_no_duplicate_migration(table: str, column: str):
+    """Each (table, column) pair must appear at most once in 14A2A migrations."""
+    stmts = _get_all_14a2a_migration_stmts()
+    pattern = rf"ALTER TABLE {re.escape(table)}\s+ADD COLUMN IF NOT EXISTS\s+{re.escape(column)}\b"
+    matches = [s for s in stmts if re.search(pattern, s, re.IGNORECASE)]
+    assert len(matches) <= 1, (
+        f"Duplicate migration for '{column}' on table '{table}': {matches}"
+    )
+
+
+@pytest.mark.parametrize("table,column", [(t, c) for t, c in _EXPECTED_FIELDS if c in _TIMESTAMPTZ_FIELDS])
+def test_parity_clob_fetched_at_uses_timestamptz(table: str, column: str):
+    """All clob_fetched_at migration columns must use TIMESTAMPTZ, not TIMESTAMP."""
+    stmts = _get_all_14a2a_migration_stmts()
+    pattern = rf"ALTER TABLE {re.escape(table)}\s+ADD COLUMN IF NOT EXISTS\s+{re.escape(column)}\s+(\S+)"
+    for stmt in stmts:
+        m = re.search(pattern, stmt, re.IGNORECASE)
+        if m:
+            col_type = m.group(1).upper()
+            assert "TIMESTAMPTZ" in col_type, (
+                f"clob_fetched_at on {table} uses '{col_type}' instead of TIMESTAMPTZ: {stmt}"
+            )
+
+
+def test_parity_total_field_count():
+    """Exactly 13 (table, column) pairs must be covered — no more, no less."""
+    assert len(_EXPECTED_FIELDS) == 13
+
+
+def test_parity_migration_add_column_uses_if_not_exists():
+    """Every 14A2A ADD COLUMN statement must use IF NOT EXISTS."""
+    stmts = _get_all_14a2a_migration_stmts()
+    for stmt in stmts:
+        if "ADD COLUMN" in stmt.upper():
+            assert "IF NOT EXISTS" in stmt.upper(), (
+                f"ADD COLUMN without IF NOT EXISTS: {stmt}"
+            )
+
+
+def test_parity_no_complement_backfill_in_migration():
+    """14A2A migration SQL must not derive NO values from YES via complement arithmetic."""
+    stmts = _get_all_14a2a_migration_stmts()
+    for stmt in stmts:
+        for pat in _COMPLEMENT_PATTERNS:
+            assert not re.search(pat, stmt, re.IGNORECASE), (
+                f"Complement backfill '{pat}' in migration: {stmt}"
+            )
+
+
+def test_parity_no_synthetic_0_5_in_migration():
+    """14A2A migrations must not set a 0.5 default for any NO-side column."""
+    stmts = _get_all_14a2a_migration_stmts()
+    no_side_cols = {"no_bid", "no_ask", "no_mid"}
+    for stmt in stmts:
+        for col in no_side_cols:
+            if col in stmt.lower():
+                assert "0.5" not in stmt, (
+                    f"Synthetic 0.5 default for {col} in migration: {stmt}"
+                )
+
+
 # ── Static complement guard (section 9) ───────────────────────────────────────
 
 @pytest.mark.parametrize("path", _MODIFIED_FILES)
