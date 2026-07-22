@@ -57,6 +57,12 @@ The dashboard is served at port 5000 (→ external port 80).
 
 Python packages installed via `pip install -r backend/requirements.txt`.
 
+## Setup Verification (2026-07-22 re-import)
+
+- `postgresql-16` module was already present after this import (no fix needed — first time in several re-imports).
+- Workflow restarted cleanly; dashboard renders live at port 5000 — 8 engines active, 2 markets loaded, BTC/ETH/SOL/XRP price feeds operational (confirmed via screenshot).
+- No secrets required; Polymarket CLOB and Binance APIs are public; `DATABASE_URL` injected automatically by Replit managed Postgres.
+
 ## Setup Verification (2026-07-21 re-import)
 
 - `postgresql-16` module was missing from `.replit` `modules` after this re-import (same recurring pattern as prior imports); restored via `installProgrammingLanguage`.
