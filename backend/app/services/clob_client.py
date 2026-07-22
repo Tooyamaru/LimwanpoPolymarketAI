@@ -16,7 +16,8 @@ Rate limit: 0.1 s delay between requests (burst protection).
 """
 
 import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Optional
 
 import httpx
@@ -61,6 +62,14 @@ class ClobMarketData:
 
     active: bool
     closed: bool
+
+    # ── Checkpoint 14A1: canonical snapshot metadata ──────────────────────────
+    # fetched_at: wall-clock time this snapshot was fetched (always UTC).
+    # source_timestamp: timestamp from the API response body, if provided.
+    # event_slug: Polymarket event slug, if passed by the caller.
+    fetched_at: Optional[datetime] = field(default=None)
+    source_timestamp: Optional[datetime] = field(default=None)
+    event_slug: Optional[str] = field(default=None)
 
 
 class ClobClient:
@@ -205,39 +214,17 @@ class ClobClient:
         no_bid = no_book.best_bid
         no_ask = no_book.best_ask
 
+        # 14A1: mid = (bid + ask) / 2 ONLY when both bid and ask are valid.
+        # Single-side and token-price fallbacks are disallowed — mid is None
+        # when the full order book is not available.
         yes_mid: Optional[float] = None
         if yes_bid is not None and yes_ask is not None:
             yes_mid = round((yes_bid + yes_ask) / 2, 6)
-        elif yes_bid is not None:
-            yes_mid = yes_bid
-        elif yes_ask is not None:
-            yes_mid = yes_ask
-        else:
-            for tok in tokens:
-                outcome = str(tok.get("outcome", "")).lower()
-                if outcome in ("up", "yes"):
-                    try:
-                        yes_mid = float(tok["price"])
-                    except (KeyError, ValueError, TypeError):
-                        pass
-                    break
 
+        # 14A1: NO mid computed exclusively from the NO book — never from YES.
         no_mid: Optional[float] = None
         if no_bid is not None and no_ask is not None:
             no_mid = round((no_bid + no_ask) / 2, 6)
-        elif no_bid is not None:
-            no_mid = no_bid
-        elif no_ask is not None:
-            no_mid = no_ask
-        else:
-            for tok in tokens:
-                outcome = str(tok.get("outcome", "")).lower()
-                if outcome in ("down", "no"):
-                    try:
-                        no_mid = float(tok["price"])
-                    except (KeyError, ValueError, TypeError):
-                        pass
-                    break
 
         spread_yes: Optional[float] = None
         if yes_bid is not None and yes_ask is not None:
@@ -272,6 +259,7 @@ class ClobClient:
             liquidity=liquidity,
             active=active,
             closed=closed,
+            fetched_at=datetime.now(timezone.utc),
         )
 
     async def close(self) -> None:

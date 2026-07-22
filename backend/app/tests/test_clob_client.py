@@ -286,8 +286,8 @@ async def test_get_market_volume_none_when_api_returns_null():
 
 
 @pytest.mark.anyio
-async def test_get_market_uses_token_price_as_mid_fallback():
-    """When book bids/asks are empty, fall back to tokens[].price as mid."""
+async def test_get_market_mid_is_none_when_book_empty():
+    """14A1: mid = (bid+ask)/2 only. When book is empty, mid must be None — no fallback."""
     market_resp = _make_market_response(yes_price=0.62, no_price=0.38)
     empty_book = {"bids": [], "asks": []}
 
@@ -296,8 +296,9 @@ async def test_get_market_uses_token_price_as_mid_fallback():
 
     data = await client.get_market("0xabc", "yes-token-123", "no-token-456")
     assert data is not None
-    assert data.yes_mid == pytest.approx(0.62, abs=1e-4)
-    assert data.no_mid == pytest.approx(0.38, abs=1e-4)
+    # With an empty order book there is no valid bid or ask, so mid must be None.
+    assert data.yes_mid is None
+    assert data.no_mid is None
     await client.close()
 
 

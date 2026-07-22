@@ -1,0 +1,392 @@
+LIMWANPO AI — PHASE B FOCUS 14A — CHECKPOINT 14A1
+EXACT YES/NO CLOB PRICE PIPELINE AUDIT AND CORE NORMALIZATION
+
+Project state:
+
+- Phase A prediction-window lifecycle COMPLETE
+- full suite previously passed
+- natural BTC/ETH/SOL/XRP rollover passed
+- only rolling Polymarket 5M markets are supported
+- official condition_id, event_slug, token IDs and prediction windows already exist
+
+Audit finding:
+
+The CLOB client obtains separate YES and NO order books, but downstream
+execution may still calculate NO prices using complements such as:
+
+1.0 - yes_bid
+1.0 - yes_ask
+
+This must be removed.
+
+This checkpoint is limited to mapping and normalizing the exact CLOB
+side-specific pricing pipeline.
+
+DO NOT audit the full repository.
+DO NOT run the full test suite.
+DO NOT restart the application.
+DO NOT run runtime rollover proof.
+DO NOT modify strategy scoring, thresholds, sizing, capital rules,
+prediction lifecycle, outcome learning, dashboard or deployment.
+DO NOT add depth, VWAP, fees or slippage yet.
+DO NOT use subagents.
+DO NOT use synthetic prices.
+
+==================================================
+0. NON-NEGOTIABLE PRICE SEMANTICS
+==================================================
+
+Exact executable pricing must eventually follow:
+
+BUY YES:
+    exact YES ask
+
+SELL / EXIT YES:
+    exact YES bid
+
+BUY NO:
+    exact NO ask
+
+SELL / EXIT NO:
+    exact NO bid
+
+YES mark:
+    exact YES mid if the existing mark convention uses midpoint
+
+NO mark:
+    exact NO mid if the existing mark convention uses midpoint
+
+Never use:
+
+- 1 - yes_bid
+- 1 - yes_ask
+- 1 - yes_mid
+- 1 - no price
+- synthetic 0.5
+- previous-window token prices
+- other-asset token prices
+
+If the required exact token-side price is missing, invalid or stale:
+
+- fail closed for new entries
+- do not fabricate a fill
+- do not silently switch to the opposite token
+- preserve existing position for retry when exiting
+- do not alter PnL with a synthetic mark
+
+==================================================
+1. READ ONLY THE EXACT-SIDE PIPELINE
+==================================================
+
+Read only files directly involved in CLOB pricing, such as:
+
+- backend/app/services/clob_client.py
+- backend/app/services/execution_engine.py
+- backend/app/services/exit_engine.py
+- backend/app/services/portfolio_service.py if it calculates open-position marks
+- backend/app/models/trade_decision.py
+- backend/app/models/position.py
+- backend/app/models/order.py
+- backend/app/models/market_universe.py
+- related CLOB snapshot/schema/repository files
+- directly related CLOB/execution/exit tests
+
+Do not inspect unrelated engines.
+
+Before editing, report internally:
+
+1. where YES bid/ask are fetched
+2. where NO bid/ask are fetched
+3. where token IDs are bound
+4. every remaining `1.0 - ...` or `1 - ...` pricing calculation
+5. entry price source for LONG_YES
+6. entry price source for LONG_NO
+7. exit price source for LONG_YES
+8. exit price source for LONG_NO
+9. mark-to-market source for each side
+10. which exact-side fields already exist and which are missing
+
+Search narrowly using:
+
+grep -RInE \
+"1\.0[[:space:]]*-[[:space:]]*(yes|no)|1[[:space:]]*-[[:space:]]*(yes|no)|yes_bid|yes_ask|no_bid|no_ask|yes_mid|no_mid" \
+backend/app/services backend/app/models backend/app/repositories backend/app/schemas backend/app/tests
+
+Do not change anything until this mapping is complete.
+
+==================================================
+2. DEFINE ONE CANONICAL CLOB SNAPSHOT
+==================================================
+
+Use or extend the existing CLOB snapshot structure so it provides explicit
+side-specific values:
+
+- yes_token_id
+- no_token_id
+- yes_bid
+- yes_ask
+- yes_mid
+- yes_spread
+- no_bid
+- no_ask
+- no_mid
+- no_spread
+- source_timestamp
+- fetched_at
+- condition_id
+- event_slug if already available
+
+Do not add duplicate parallel snapshot structures.
+
+Only add fields that are currently missing.
+
+Midpoint rule:
+
+mid = (bid + ask) / 2
+
+only when both bid and ask are valid.
+
+Do not derive NO midpoint from YES midpoint.
+
+Validation requirements:
+
+- price must be numeric
+- 0 < price < 1
+- ask >= bid
+- token ID must match the exact condition
+- timestamps must be timezone-aware
+- stale snapshots must retain existing stale-data behavior
+
+If NO book data is missing:
+
+- no_bid/no_ask/no_mid remain unavailable
+- do not derive them from YES
+- expose a clear validation reason
+
+==================================================
+3. ADD A PURE EXACT-SIDE PRICE SELECTOR
+==================================================
+
+Create or reuse one small pure helper for selecting exact prices.
+
+Suggested behavior:
+
+select_exact_clob_price(
+    side,
+    action,
+    snapshot,
+)
+
+Supported side:
+
+- YES
+- NO
+
+Supported action:
+
+- BUY
+- SELL
+- MARK
+
+Required mapping:
+
+YES + BUY  -> yes_ask
+YES + SELL -> yes_bid
+YES + MARK -> yes_mid
+
+NO + BUY   -> no_ask
+NO + SELL  -> no_bid
+NO + MARK  -> no_mid
+
+The helper must return a structured result such as:
+
+{
+    "valid": bool,
+    "price": float | None,
+    "token_id": str | None,
+    "source_field": str | None,
+    "validation_error": str | None,
+}
+
+Use existing project conventions if a similar result object already exists.
+
+Required validation errors should be explicit, for example:
+
+- INVALID_SIDE
+- INVALID_ACTION
+- YES_TOKEN_ID_MISSING
+- NO_TOKEN_ID_MISSING
+- YES_ASK_UNAVAILABLE
+- YES_BID_UNAVAILABLE
+- YES_MID_UNAVAILABLE
+- NO_ASK_UNAVAILABLE
+- NO_BID_UNAVAILABLE
+- NO_MID_UNAVAILABLE
+- INVALID_CLOB_PRICE
+- CLOB_SNAPSHOT_STALE
+- CONDITION_BINDING_MISMATCH
+
+Do not include a complement fallback.
+
+==================================================
+4. DO NOT CHANGE EXECUTION OR EXIT YET
+==================================================
+
+Checkpoint 14A1 must not yet rewrite all execution and exit behavior.
+
+It should only:
+
+- normalize the canonical snapshot
+- add the exact-side selector
+- remove complement calculations inside the CLOB normalization layer itself
+  if they currently exist there
+- prepare exact fields for the next checkpoint
+
+Do not change:
+
+- fill creation
+- position quantity
+- realized PnL
+- exit reasons
+- strategy decisions
+- risk approvals
+
+Execution and Exit integration will be Checkpoint 14A2.
+
+==================================================
+5. CREATE NARROW UNIT TESTS
+==================================================
+
+Create:
+
+backend/app/tests/test_exact_clob_side_pricing.py
+
+Minimum tests:
+
+1. YES BUY returns yes_ask
+2. YES SELL returns yes_bid
+3. YES MARK returns yes_mid
+4. NO BUY returns no_ask
+5. NO SELL returns no_bid
+6. NO MARK returns no_mid
+7. NO BUY does not return 1 - yes_bid
+8. NO SELL does not return 1 - yes_ask
+9. NO MARK does not return 1 - yes_mid
+10. missing no_ask fails closed
+11. missing no_bid fails closed
+12. missing no_mid fails closed
+13. missing YES token blocks YES selection
+14. missing NO token blocks NO selection
+15. invalid side is rejected
+16. invalid action is rejected
+17. price <= 0 rejected
+18. price >= 1 rejected
+19. ask below bid invalidates snapshot
+20. condition mismatch rejected
+21. stale snapshot rejected
+22. YES and NO token IDs remain distinct
+23. snapshot condition_id preserved
+24. no synthetic 0.5 exists
+25. selector does not mutate snapshot
+
+Use realistic exact values where complement pricing would visibly differ.
+
+Example:
+
+yes_bid = 0.61
+yes_ask = 0.64
+no_bid = 0.31
+no_ask = 0.34
+
+This proves NO is not automatically calculated as:
+
+1 - 0.61 = 0.39
+1 - 0.64 = 0.36
+
+==================================================
+6. STATIC SYNTHETIC-PRICE GUARD
+==================================================
+
+Add a narrow static test or assertion covering the exact pricing modules.
+
+It must fail if any new execution-side logic contains patterns equivalent to:
+
+- 1 - yes_bid
+- 1 - yes_ask
+- 1 - yes_mid
+- 1.0 - yes_bid
+- 1.0 - yes_ask
+- 1.0 - yes_mid
+
+Do not scan unrelated mathematical code.
+
+Scope the guard only to:
+
+- clob_client.py
+- exact-side selector module
+- execution_engine.py
+- exit_engine.py
+
+Existing complement lines in execution/exit may remain temporarily during
+14A1 only if integration has not yet occurred.
+
+If they remain, report them explicitly as pending for 14A2 rather than
+weakening the static test.
+
+==================================================
+7. VALIDATE ONLY CHECKPOINT 14A1
+==================================================
+
+Run:
+
+python -m compileall -q \
+backend/app/services/clob_client.py \
+backend/app/services
+
+pytest backend/app/tests/test_exact_clob_side_pricing.py -q
+
+Run directly related existing CLOB tests only if present:
+
+ls backend/app/tests/*clob* backend/app/tests/*price_source* 2>/dev/null
+
+Then run only relevant files.
+
+Do not run:
+
+pytest backend/app/tests -q
+
+Do not restart the application.
+
+If failure occurs:
+
+- inspect only the targeted traceback
+- modify only exact CLOB pricing files and their tests
+- maximum 3 correction attempts
+- do not change lifecycle or strategy semantics
+
+==================================================
+8. REQUIRED REPORT
+==================================================
+
+Report maximum 16 lines:
+
+YES BOOK SOURCE:
+NO BOOK SOURCE:
+YES TOKEN BINDING:
+NO TOKEN BINDING:
+CANONICAL SNAPSHOT:
+EXACT PRICE SELECTOR:
+YES BUY/SELL/MARK:
+NO BUY/SELL/MARK:
+COMPLEMENT FALLBACK IN SELECTOR:
+REMAINING COMPLEMENT LOCATIONS:
+FAIL-CLOSED:
+NEW TESTS:
+RELATED REGRESSION:
+PRODUCTION FILES CHANGED:
+FAILED:
+FINAL STATUS:
+
+Stop after Checkpoint 14A1 passes.
+
+Do not proceed automatically to 14A2.
