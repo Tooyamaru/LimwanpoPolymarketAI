@@ -119,7 +119,7 @@ async def test_no_15m_opportunity_created():
 @pytest.mark.anyio
 async def test_no_1h_opportunity_created():
     """Similar to test 4 — 1H markets must not appear in the active universe."""
-    with patch("app.services.opportunity_engine.get_active_universe") as mock_univ:
+    with patch("app.services.opportunity_engine.get_window_live_universe") as mock_univ:
         mock_univ.return_value = [
             _make_market("cid-eth-5m", "ETH", "5m"),
             _make_market("cid-sol-5m", "SOL", "5m"),

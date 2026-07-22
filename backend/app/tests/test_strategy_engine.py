@@ -6,6 +6,8 @@ Covers:
   - StrategyEngine.run() with mocked repositories (9 integration cases)
 """
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -18,6 +20,42 @@ from app.services.strategy_engine import (
     MIN_SIGNAL_CONFIDENCE,
     MIN_SIGNAL_CONFIDENCE_MTF,
 )
+
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+
+def _make_exec_result(rows: list) -> MagicMock:
+    """Fake SQLAlchemy execute() result that supports .scalars().all()."""
+    result = MagicMock()
+    result.scalars.return_value.all.return_value = rows
+    return result
+
+
+def _make_live_market(condition_id: str = "0xabc") -> MagicMock:
+    """Market fixture with timezone-aware WINDOW_LIVE prediction window and
+    verified target so the Chainlink integrity gate can pass."""
+    now = datetime.now(timezone.utc)
+    start = now - timedelta(seconds=60)
+    end = start + timedelta(seconds=300)
+    m = MagicMock()
+    m.condition_id = condition_id
+    m.event_slug = "crypto-5m-test"
+    m.prediction_window_start = start
+    m.prediction_window_end = end
+    m.target_price = 65000.0
+    m.target_verified = True
+    m.target_stale = False
+    return m
+
+
+def _make_chainlink_ok() -> MagicMock:
+    """Fresh Chainlink client mock that passes the integrity gate."""
+    client = MagicMock()
+    price = MagicMock()
+    price.stale = False
+    client.get_price.return_value = price
+    return client
 
 
 # ── _make_decision — pure unit tests ─────────────────────────────────────────
@@ -227,12 +265,14 @@ async def test_run_no_opportunities_returns_zero_summary():
 @pytest.mark.anyio
 async def test_run_open_long_yes_persisted_with_position_size():
     session = AsyncMock()
+    session.execute = AsyncMock(return_value=_make_exec_result([_make_live_market()]))
 
     with (
         patch("app.services.strategy_engine.opp_repo.get_all_opportunities", return_value=[_make_opp()]),
         patch("app.services.strategy_engine.sig_repo.get_last_signal_for_market", new_callable=AsyncMock, return_value=None),
         patch("app.services.strategy_engine.td_repo.insert_decision", new_callable=AsyncMock) as mock_insert,
         patch("app.services.strategy_engine._sizing_service.calculate", return_value=25.0),
+        patch("app.services.strategy_engine.get_chainlink_client", return_value=_make_chainlink_ok()),
     ):
         result = await StrategyEngine().run(session)
 
@@ -249,12 +289,14 @@ async def test_run_open_long_yes_persisted_with_position_size():
 @pytest.mark.anyio
 async def test_run_open_long_no_persisted_with_position_size():
     session = AsyncMock()
+    session.execute = AsyncMock(return_value=_make_exec_result([_make_live_market()]))
 
     with (
         patch("app.services.strategy_engine.opp_repo.get_all_opportunities", return_value=[_make_opp(direction="BUY_NO")]),
         patch("app.services.strategy_engine.sig_repo.get_last_signal_for_market", new_callable=AsyncMock, return_value=None),
         patch("app.services.strategy_engine.td_repo.insert_decision", new_callable=AsyncMock) as mock_insert,
         patch("app.services.strategy_engine._sizing_service.calculate", return_value=10.0),
+        patch("app.services.strategy_engine.get_chainlink_client", return_value=_make_chainlink_ok()),
     ):
         result = await StrategyEngine().run(session)
 
@@ -340,12 +382,14 @@ async def test_run_watch_decision_is_always_persisted():
 async def test_run_insert_exception_counted_as_error():
     """An exception during insert_decision is caught and counted as an error."""
     session = AsyncMock()
+    session.execute = AsyncMock(return_value=_make_exec_result([_make_live_market()]))
 
     with (
         patch("app.services.strategy_engine.opp_repo.get_all_opportunities", return_value=[_make_opp(opportunity_score=80.0)]),
         patch("app.services.strategy_engine.sig_repo.get_last_signal_for_market", new_callable=AsyncMock, return_value=None),
         patch("app.services.strategy_engine.td_repo.insert_decision", new_callable=AsyncMock, side_effect=RuntimeError("db down")),
         patch("app.services.strategy_engine._sizing_service.calculate", return_value=25.0),
+        patch("app.services.strategy_engine.get_chainlink_client", return_value=_make_chainlink_ok()),
     ):
         result = await StrategyEngine().run(session)
 
@@ -363,12 +407,17 @@ async def test_run_multiple_opportunities_mixed_results():
         _make_opp("0x4", opportunity_score=5.0,  direction="BUY_YES"),  # SKIP
     ]
     session = AsyncMock()
+    session.execute = AsyncMock(return_value=_make_exec_result([
+        _make_live_market("0x1"),
+        _make_live_market("0x2"),
+    ]))
 
     with (
         patch("app.services.strategy_engine.opp_repo.get_all_opportunities", return_value=opps),
         patch("app.services.strategy_engine.sig_repo.get_last_signal_for_market", new_callable=AsyncMock, return_value=None),
         patch("app.services.strategy_engine.td_repo.insert_decision", new_callable=AsyncMock),
         patch("app.services.strategy_engine._sizing_service.calculate", return_value=25.0),
+        patch("app.services.strategy_engine.get_chainlink_client", return_value=_make_chainlink_ok()),
     ):
         result = await StrategyEngine().run(session)
 

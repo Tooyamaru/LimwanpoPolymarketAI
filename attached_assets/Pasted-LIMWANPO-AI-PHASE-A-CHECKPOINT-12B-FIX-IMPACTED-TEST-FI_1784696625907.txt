@@ -1,0 +1,203 @@
+LIMWANPO AI — PHASE A CHECKPOINT 12B: FIX IMPACTED TEST FIXTURES ONLY
+
+Lanjutkan dari Checkpoint 12A.
+
+Current confirmed state:
+
+- working tree clean
+- compileall PASS
+- new Phase A tests PASS
+- impacted regression masih 15 FAILED
+
+Failure groups:
+
+- test_strategy_engine.py: 4
+- test_risk_engine.py: 5
+- test_dashboard_value_integrity.py: 3
+- test_5m_only_migration.py: 1
+- test_price_source_integrity.py: 2
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full suite.
+JANGAN mengubah production logic kecuali traceback membuktikan production bug.
+JANGAN melemahkan canonical lifecycle gates.
+JANGAN menggunakan subagent.
+
+Scope utama hanya test fixtures:
+
+- backend/app/tests/test_strategy_engine.py
+- backend/app/tests/test_risk_engine.py
+- backend/app/tests/test_dashboard_value_integrity.py
+- backend/app/tests/test_5m_only_migration.py
+- backend/app/tests/test_price_source_integrity.py
+
+==================================================
+1. STRATEGY TEST FIXTURES
+==================================================
+
+Strategy sekarang melakukan satu batched query:
+
+SELECT MarketUniverse
+WHERE condition_id IN (...)
+
+Perbaiki test mocks agar session.execute mengembalikan result object sinkron
+dengan interface:
+
+result.scalars().all()
+
+Jangan gunakan AsyncMock untuk scalars() atau all().
+
+Untuk OPEN_LONG tests, berikan market row dengan:
+
+- exact condition_id
+- realistic event_slug
+- prediction_window_start timezone-aware
+- prediction_window_end timezone-aware
+- duration tepat 300 detik
+- current time berada dalam WINDOW_LIVE
+- Chainlink/target fields sesuai kebutuhan existing test
+
+Contoh:
+
+now = datetime.now(timezone.utc)
+start = now - timedelta(seconds=60)
+end = start + timedelta(seconds=300)
+
+market.condition_id harus cocok dengan opportunity.condition_id.
+
+Jangan membuat Strategy melewati MARKET_NOT_IN_UNIVERSE ketika market memang
+tidak tersedia.
+
+==================================================
+2. RISK TEST FIXTURES
+==================================================
+
+Risk sekarang memiliki execute sequence untuk pending ENTRY:
+
+1. fetch pending entry decisions
+2. batch fetch MarketUniverse
+3. existing subsequent queries / exit pass
+
+Update side_effect sequence agar query MarketUniverse mempunyai result
+tersendiri.
+
+Berikan live market fixture dengan:
+
+- exact condition_id
+- prediction_window_start
+- prediction_window_end
+- 300-second duration
+- WINDOW_LIVE at test time
+
+Gunakan result object dengan:
+
+result.scalars().all()
+
+bukan coroutine.
+
+Jangan mengubah lifecycle gate agar missing market diperbolehkan.
+
+==================================================
+3. OPPORTUNITY PATCH TARGETS
+==================================================
+
+Pada:
+
+- test_dashboard_value_integrity.py
+- test_5m_only_migration.py
+
+Ganti patch lama:
+
+app.services.opportunity_engine.get_active_universe
+
+menjadi:
+
+app.services.opportunity_engine.get_window_live_universe
+
+Sesuaikan assertion bahwa repository source sekarang adalah
+get_window_live_universe.
+
+Jangan menambahkan kembali get_active_universe alias ke production code.
+
+==================================================
+4. PRICE SOURCE TEST FIXTURES
+==================================================
+
+Pada test_price_source_integrity.py:
+
+Untuk OPEN decision tests, market fixture harus memiliki:
+
+- condition_id cocok
+- event_slug nyata
+- prediction_window_start UTC
+- prediction_window_end UTC
+- exact duration 300 detik
+- target verification fields sesuai existing integrity gate
+- Chainlink freshness fields sesuai existing test intent
+
+Configure session.execute untuk mengembalikan market batch result yang benar.
+
+Jangan menonaktifkan prediction-window gate untuk membuat test lolos.
+
+==================================================
+5. RUN ONLY FAILING FILES
+==================================================
+
+Jalankan:
+
+pytest \
+backend/app/tests/test_strategy_engine.py \
+backend/app/tests/test_risk_engine.py \
+backend/app/tests/test_dashboard_value_integrity.py \
+backend/app/tests/test_5m_only_migration.py \
+backend/app/tests/test_price_source_integrity.py \
+-q
+
+Jika gagal:
+
+- baca hanya traceback file tersebut
+- perbaiki fixture/mock terkait
+- maksimal 3 percobaan
+- jangan menjalankan test Phase A baru setelah setiap edit
+
+==================================================
+6. RE-RUN COMBINED REGRESSION ONCE
+==================================================
+
+Setelah lima file di atas PASS, jalankan sekali:
+
+pytest \
+backend/app/tests/test_strategy_engine.py \
+backend/app/tests/test_risk_engine.py \
+backend/app/tests/test_execution_engine.py \
+backend/app/tests/test_market_lifecycle_state.py \
+backend/app/tests/test_exit_engine.py \
+backend/app/tests/test_exit_lifecycle.py \
+backend/app/tests/test_outcome_learning_service.py \
+backend/app/tests/test_countdown.py \
+backend/app/tests/test_universe_api.py \
+backend/app/tests/test_dashboard_value_integrity.py \
+backend/app/tests/test_5m_only_migration.py \
+backend/app/tests/test_price_source_integrity.py \
+-q
+
+Jangan menjalankan full suite.
+
+==================================================
+7. REQUIRED FINAL REPORT
+==================================================
+
+Laporan maksimal 12 baris:
+
+STRATEGY FIX:
+RISK FIX:
+OPPORTUNITY PATCH FIX:
+PRICE SOURCE FIX:
+PRODUCTION FILES CHANGED:
+TARGETED TESTS:
+TARGETED PASSED:
+TARGETED FAILED:
+COMBINED REGRESSION:
+WARNINGS:
+UNAWAITED COROUTINES:
+FINAL STATUS:

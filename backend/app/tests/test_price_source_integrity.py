@@ -21,8 +21,37 @@ Test inventory (12 tests):
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+
+def _make_exec_result(rows: list) -> MagicMock:
+    """Fake SQLAlchemy execute() result that supports .scalars().all()."""
+    result = MagicMock()
+    result.scalars.return_value.all.return_value = rows
+    return result
+
+
+def _make_live_market_for_strategy(condition_id: str = "0xabc", asset: str = "BTC",
+                                   target_price: float | None = None,
+                                   target_verified: bool = False) -> MagicMock:
+    """Market with WINDOW_LIVE prediction window fields for strategy engine prefetch."""
+    now = datetime.now(timezone.utc)
+    start = now - timedelta(seconds=60)
+    end = start + timedelta(seconds=300)
+    m = MagicMock()
+    m.condition_id = condition_id
+    m.asset = asset
+    m.timeframe = "5m"
+    m.event_slug = "crypto-5m-test"
+    m.prediction_window_start = start
+    m.prediction_window_end = end
+    m.target_price = target_price
+    m.target_verified = target_verified
+    m.target_stale = not target_verified
+    return m
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -197,6 +226,8 @@ async def test_9_gate_disabled_allows_open_long():
     from app.services.strategy_engine import StrategyEngine
     session = AsyncMock()
     opp = _make_opp(opportunity_score=80.0)
+    live_market = _make_live_market_for_strategy(condition_id=opp.condition_id, asset=opp.asset)
+    session.execute = AsyncMock(return_value=_make_exec_result([live_market]))
 
     with (
         patch("app.services.strategy_engine.settings") as mock_settings,
@@ -307,21 +338,16 @@ async def test_12_gate_passes_for_verified_target_and_fresh_chainlink():
     from app.services.strategy_engine import StrategyEngine
     session = AsyncMock()
     opp = _make_opp(opportunity_score=80.0)
-    market = _make_market(
+    market = _make_live_market_for_strategy(
         condition_id=opp.condition_id,
         asset="BTC",
         target_price=65000.0,
         target_verified=True,
-        target_stale=False,
     )
     market.status = "active"
     client = _make_fresh_chainlink_client()
 
-    mock_scalars = MagicMock()
-    mock_scalars.all.return_value = [market]
-    mock_result = MagicMock()
-    mock_result.scalars.return_value = mock_scalars
-    session.execute = AsyncMock(return_value=mock_result)
+    session.execute = AsyncMock(return_value=_make_exec_result([market]))
 
     with (
         patch("app.services.strategy_engine.settings") as mock_settings,

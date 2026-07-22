@@ -14,6 +14,8 @@ Validates that:
 10. Risk score formula: (1 - consumed) * 100 where consumed = max(positions/max, trades/max, loss/max).
 """
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -36,11 +38,16 @@ def _make_snap(yes_bid, yes_ask, yes_mid=None, no_mid=None, spread_yes=None, spr
 
 
 def _make_market(condition_id, asset, timeframe, end_time=None):
+    now = datetime.now(timezone.utc)
+    start = now - timedelta(seconds=60)
+    end = start + timedelta(seconds=300)
     m = MagicMock()
     m.condition_id = condition_id
     m.asset = asset
     m.timeframe = timeframe
     m.end_time = end_time
+    m.prediction_window_start = start
+    m.prediction_window_end = end
     return m
 
 
@@ -76,7 +83,7 @@ async def test_opportunity_engine_uses_unique_condition_ids():
         _make_market("cid-sol-15m", "SOL", "15m"),
     ]
 
-    with patch("app.services.opportunity_engine.get_active_universe", new=AsyncMock(return_value=markets)), \
+    with patch("app.services.opportunity_engine.get_window_live_universe", new=AsyncMock(return_value=markets)), \
          patch("app.services.opportunity_engine.get_latest_by_condition", side_effect=fake_get_latest), \
          patch("app.repositories.opportunity_repository.upsert_opportunity", new=AsyncMock(side_effect=fake_upsert)):
         engine = OpportunityEngine()
@@ -113,7 +120,7 @@ async def test_opportunity_score_stored_with_correct_asset_timeframe():
 
     markets = [_make_market("cid-sol-1h", "SOL", "1H")]
 
-    with patch("app.services.opportunity_engine.get_active_universe", new=AsyncMock(return_value=markets)), \
+    with patch("app.services.opportunity_engine.get_window_live_universe", new=AsyncMock(return_value=markets)), \
          patch("app.services.opportunity_engine.get_latest_by_condition", new=AsyncMock(return_value=[snap])), \
          patch("app.repositories.opportunity_repository.upsert_opportunity", side_effect=capture_upsert):
         engine = OpportunityEngine()
@@ -144,7 +151,7 @@ async def test_no_price_snapshot_skips_evaluation_not_defaults():
 
     markets = [_make_market("cid-no-price", "XRP", "15m")]
 
-    with patch("app.services.opportunity_engine.get_active_universe", new=AsyncMock(return_value=markets)), \
+    with patch("app.services.opportunity_engine.get_window_live_universe", new=AsyncMock(return_value=markets)), \
          patch("app.services.opportunity_engine.get_latest_by_condition", new=AsyncMock(return_value=[])), \
          patch("app.repositories.opportunity_repository.upsert_opportunity", side_effect=capture_upsert):
         engine = OpportunityEngine()

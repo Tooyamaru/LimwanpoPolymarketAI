@@ -74,6 +74,18 @@ def _make_exec_result(rows: list) -> MagicMock:
     return result
 
 
+def _make_live_market(condition_id: str = "0xabc") -> MagicMock:
+    """Market fixture with timezone-aware WINDOW_LIVE prediction window."""
+    now = datetime.now(timezone.utc)
+    start = now - timedelta(seconds=60)
+    end = start + timedelta(seconds=300)
+    m = MagicMock()
+    m.condition_id = condition_id
+    m.prediction_window_start = start
+    m.prediction_window_end = end
+    return m
+
+
 def _make_capital_status(allowed: bool = True, reason: str | None = None) -> MagicMock:
     status = MagicMock()
     status.allowed = allowed
@@ -241,8 +253,9 @@ async def test_evaluate_entry_decision_approved():
     td = _make_td(decision="OPEN_LONG_YES", status="PENDING")
     session = AsyncMock()
     session.execute = AsyncMock(side_effect=[
-        _make_exec_result([td]),  # entry decisions
-        _make_exec_result([]),    # no exits
+        _make_exec_result([td]),                         # entry decisions
+        _make_exec_result([_make_live_market("0xabc")]), # MarketUniverse batch
+        _make_exec_result([]),                           # no exits
     ])
     capital_ok = _make_capital_status(allowed=True)
 
@@ -272,8 +285,9 @@ async def test_evaluate_entry_decision_blocked_by_rule():
     existing = _make_pos(condition_id="0xabc", side="LONG_NO")
     session = AsyncMock()
     session.execute = AsyncMock(side_effect=[
-        _make_exec_result([td]),
-        _make_exec_result([]),
+        _make_exec_result([td]),                         # entry decisions
+        _make_exec_result([_make_live_market("0xabc")]), # MarketUniverse batch
+        _make_exec_result([]),                           # no exits
     ])
     capital_ok = _make_capital_status(allowed=True)
 
@@ -301,8 +315,9 @@ async def test_evaluate_capital_gate_blocks_all_entries():
     td2 = _make_td(id=2, decision="OPEN_LONG_NO", status="PENDING")
     session = AsyncMock()
     session.execute = AsyncMock(side_effect=[
-        _make_exec_result([td1, td2]),
-        _make_exec_result([]),
+        _make_exec_result([td1, td2]),                              # entry decisions
+        _make_exec_result([_make_live_market("0xabc")]),            # MarketUniverse batch
+        _make_exec_result([]),                                      # no exits
     ])
     capital_blocked = _make_capital_status(allowed=False, reason="DAILY_LOSS_LIMIT")
 
@@ -350,8 +365,9 @@ async def test_evaluate_mixed_entry_and_exit():
     exit_td = _make_td(id=2, decision="CLOSE_POSITION", status="PENDING", exit_reason="TIMEOUT")
     session = AsyncMock()
     session.execute = AsyncMock(side_effect=[
-        _make_exec_result([entry]),
-        _make_exec_result([exit_td]),
+        _make_exec_result([entry]),                       # entry decisions
+        _make_exec_result([_make_live_market("0xabc")]), # MarketUniverse batch
+        _make_exec_result([exit_td]),                    # exit decisions
     ])
     capital_ok = _make_capital_status(allowed=True)
 
@@ -380,8 +396,9 @@ async def test_evaluate_entry_exception_counted_as_error():
     td = _make_td(decision="OPEN_LONG_YES", status="PENDING")
     session = AsyncMock()
     session.execute = AsyncMock(side_effect=[
-        _make_exec_result([td]),
-        _make_exec_result([]),
+        _make_exec_result([td]),                         # entry decisions
+        _make_exec_result([_make_live_market("0xabc")]), # MarketUniverse batch
+        _make_exec_result([]),                           # no exits
     ])
     capital_ok = _make_capital_status(allowed=True)
 
