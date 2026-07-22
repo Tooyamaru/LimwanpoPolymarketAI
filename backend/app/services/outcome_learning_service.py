@@ -104,19 +104,13 @@ class OutcomeLearningService:
         # Find all expired markets not yet fully evaluated
         now = datetime.now(timezone.utc)
 
-        # Phase 9C fix: Universe Sync's expire_stale_markets() runs every
-        # UNIVERSE_SYNC_INTERVAL_SECONDS (60s) and flips status "active" →
-        # "expired" as soon as end_time passes. Outcome Learning only runs
-        # every OUTCOME_LEARNING_INTERVAL_SECONDS (300s), so by the time this
-        # query executes, virtually every just-expired market has already
-        # been relabelled "expired" — filtering on status == "active" alone
-        # would miss nearly all of them. Match on end_time < now regardless
-        # of whether status is still "active" or has already become
-        # "expired"; already_evaluated() below still prevents double-counting
-        # once a market's outcome has been recorded.
+        # Checkpoint 10: eligibility is determined solely by prediction_window_end.
+        # end_time is NOT used.  Markets whose prediction_window_end is NULL are
+        # excluded from the SQL result; any that slip through the mock boundary
+        # in tests are caught by the defensive check inside the loop.
         expired_markets_result = await session.execute(
             select(MarketUniverse).where(
-                MarketUniverse.end_time < now,
+                MarketUniverse.prediction_window_end <= now,
                 MarketUniverse.status.in_(["active", "expired"]),
             )
         )
@@ -131,6 +125,21 @@ class OutcomeLearningService:
         async with GammaSeriesClient() as gamma_client:
             for market in expired_markets:
                 try:
+                    # Defensive guard — SQL WHERE excludes NULL pw_end, but protect
+                    # against any edge case (e.g. test injection or metadata race).
+                    if market.prediction_window_end is None:
+                        logger.warning(
+                            "INVALID_PREDICTION_WINDOW: missing prediction_window_end, skipping",
+                            condition_id=market.condition_id,
+                            asset=market.asset,
+                        )
+                        skipped += 1
+                        continue
+                    if market.prediction_window_end > now:
+                        # Not yet eligible; SQL should have excluded this market.
+                        skipped += 1
+                        continue
+
                     already = await ol_repo.already_evaluated(session, market.condition_id)
                     if already:
                         skipped += 1
@@ -204,14 +213,14 @@ class OutcomeLearningService:
         asset        = market.asset
         timeframe    = getattr(market, "timeframe", "unknown")
 
-        # 1. Get the last AI decision_log for this market AT OR BEFORE market expiry.
-        #    This is critical for correctness: we must not use a decision_log that
-        #    was created after the market ended (which would be a look-ahead error).
+        # 1. Get the last AI decision_log for this market AT OR BEFORE prediction_window_end.
+        #    Using prediction_window_end (not end_time) prevents look-ahead errors for
+        #    5M markets whose contract end_time may be days later.
         dl_result = await session.execute(
             select(DecisionLog)
             .where(
                 DecisionLog.condition_id == condition_id,
-                DecisionLog.created_at <= market.end_time,
+                DecisionLog.created_at <= market.prediction_window_end,
             )
             .order_by(desc(DecisionLog.created_at))
             .limit(1)
@@ -223,6 +232,37 @@ class OutcomeLearningService:
             return None
 
         prediction = decision_log.decision  # BUY_YES | BUY_NO | WAIT
+
+        # 1b. Optional binding validation — only applied when the decision log carries
+        #     binding fields (e.g. from TradeDecision-linked records). Standard
+        #     DecisionLog rows do not carry these fields, so getattr returns None and
+        #     validation is skipped.  Window-A decision must not be learned against
+        #     Window-B market.
+        dl_event_slug = getattr(decision_log, "decision_event_slug", None)
+        if dl_event_slug is not None and dl_event_slug != market.event_slug:
+            logger.warning(
+                "Decision event_slug mismatch — skipping outcome learning",
+                condition_id=condition_id[:16],
+                dl_event_slug=dl_event_slug,
+                market_event_slug=market.event_slug,
+            )
+            return None
+
+        dl_pw_start = getattr(decision_log, "decision_prediction_window_start", None)
+        if dl_pw_start is not None and dl_pw_start != market.prediction_window_start:
+            logger.warning(
+                "Decision prediction_window_start mismatch — skipping outcome learning",
+                condition_id=condition_id[:16],
+            )
+            return None
+
+        dl_pw_end = getattr(decision_log, "decision_prediction_window_end", None)
+        if dl_pw_end is not None and dl_pw_end != market.prediction_window_end:
+            logger.warning(
+                "Decision prediction_window_end mismatch — skipping outcome learning",
+                condition_id=condition_id[:16],
+            )
+            return None
 
         # 2. Find any CLOSED position for this market
         pos_result = await session.execute(
@@ -336,7 +376,7 @@ class OutcomeLearningService:
         entry_timestamp = position.opened_at if position is not None else None
         close_timestamp = (
             position.closed_at if position is not None and position.closed_at is not None
-            else market.end_time
+            else market.prediction_window_end
         )
         ai_score = _compute_ai_score(
             decision_log.confidence,

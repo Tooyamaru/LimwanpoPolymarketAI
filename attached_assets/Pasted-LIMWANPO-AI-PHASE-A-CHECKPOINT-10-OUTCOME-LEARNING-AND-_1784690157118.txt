@@ -1,0 +1,238 @@
+LIMWANPO AI — PHASE A CHECKPOINT 10: OUTCOME LEARNING AND RESOLUTION TIMING ONLY
+
+Lanjutkan dari Checkpoint 9 yang sudah:
+
+- Exit prediction-window tests 20/20 PASS
+- Exit regression 68/68 PASS
+- compile PASS
+
+JANGAN audit seluruh repository.
+JANGAN menjalankan full test suite.
+JANGAN menjalankan aplikasi atau restart workflow.
+JANGAN menyentuh Strategy, Risk, Execution, Exit, database migration, API,
+frontend, Chainlink, TARGET, CLOB pricing, Portfolio Accounting, atau sizing.
+JANGAN menggunakan subagent.
+
+Target tahap ini hanya:
+
+1. backend/app/services/outcome_learning_service.py
+2. worker/service resolution terkait jika dipanggil langsung oleh file tersebut
+3. backend/app/tests/test_outcome_prediction_window.py
+4. existing Outcome Learning regression tests yang relevan
+
+==================================================
+1. INSPECT CURRENT OUTCOME FLOW
+==================================================
+
+Baca hanya:
+
+- backend/app/services/outcome_learning_service.py
+- model MarketUniverse
+- model TradeDecision
+- model Trade/Position yang dipakai service
+- existing outcome/resolution test files
+
+Laporkan singkat:
+
+- bagaimana market yang perlu resolution dipilih
+- apakah query memakai end_time
+- bagaimana TradeDecision dipilih untuk learning
+- bagaimana official outcome dibaca
+- bagaimana duplicate learning dicegah
+- apakah settlement/PnL dijalankan oleh service ini atau service lain
+
+==================================================
+2. USE PREDICTION WINDOW END
+==================================================
+
+Untuk market BTC/ETH/SOL/XRP 5M, market eligible untuk resolution ketika:
+
+prediction_window_end <= now
+
+Jangan menggunakan:
+
+market.end_time
+market.start_time
+prediction_window_end or end_time
+contract lifecycle
+
+Jika prediction_window_end hilang:
+
+- jangan fallback ke end_time
+- jangan resolve market
+- log INVALID_PREDICTION_WINDOW
+- biarkan worker retry setelah metadata pulih
+- jangan crash seluruh cycle
+
+==================================================
+3. EXACT MARKET BINDING
+==================================================
+
+Outcome learning harus terikat pada exact:
+
+- condition_id
+- event_slug
+- prediction_window_start
+- prediction_window_end
+
+TradeDecision yang dipelajari harus cocok dengan market:
+
+decision.condition_id == market.condition_id
+
+Jika decision binding fields tersedia, validasi juga:
+
+decision.decision_event_slug == market.event_slug
+decision.decision_prediction_window_start == market.prediction_window_start
+decision.decision_prediction_window_end == market.prediction_window_end
+
+Decision Window A tidak boleh dipelajari memakai outcome Window B.
+
+Jangan mencari market hanya berdasarkan asset.
+
+==================================================
+4. OFFICIAL OUTCOME ONLY
+==================================================
+
+Gunakan hanya official resolved outcome yang sudah tersedia melalui existing
+Polymarket resolution pathway.
+
+Jangan:
+
+- menebak hasil dari GAP
+- memakai current Chainlink price sebagai settlement outcome
+- memakai CLOB midpoint sebagai hasil
+- membuat fallback UP/DOWN
+- melakukan manual DB status update
+- memakai synthetic 0.5
+
+Jika official outcome belum tersedia:
+
+- status tetap RESOLVING/pending sesuai existing design
+- jangan membuat learning record
+- jangan settle PnL
+- retry pada cycle berikutnya
+
+==================================================
+5. DUPLICATE PROTECTION
+==================================================
+
+Pastikan satu decision/market tidak dipelajari dua kali.
+
+Gunakan existing idempotency mechanism jika sudah ada.
+
+Required:
+
+- satu condition + decision menghasilkan maksimal satu learning record
+- repeated worker cycle tidak menggandakan learning
+- repeated official resolution tidak menggandakan settlement
+- jangan mengubah realized PnL dua kali
+
+Jangan membuat mekanisme paralel baru jika constraint/idempotency existing
+sudah tersedia.
+
+==================================================
+6. RESOLUTION TIMING
+==================================================
+
+Before prediction_window_end:
+
+- jangan mencoba outcome learning
+- jangan menandai resolved berdasarkan contract metadata saja
+
+At exact prediction_window_end:
+
+- market boleh masuk resolution polling
+- tetapi learning hanya dibuat jika official outcome sudah tersedia
+
+After prediction_window_end:
+
+- terus polling official outcome
+- jangan menunggu generic contract end_time
+
+==================================================
+7. CREATE NARROW TEST FILE
+==================================================
+
+Buat:
+
+backend/app/tests/test_outcome_prediction_window.py
+
+Test minimal:
+
+1. market sebelum prediction end tidak diproses
+2. exact prediction end eligible untuk resolution polling
+3. market setelah prediction end diproses
+4. future contract end_time tidak menunda resolution 5M
+5. expired contract end_time tidak mengizinkan early resolution
+6. missing prediction_window_end dilewati
+7. missing window tidak fallback ke end_time
+8. exact condition_id digunakan
+9. asset sama tetapi condition berbeda tidak tercampur
+10. event_slug mismatch dilewati
+11. decision start mismatch dilewati
+12. decision end mismatch dilewati
+13. official outcome belum tersedia tidak membuat learning
+14. official outcome belum tersedia tidak settle PnL
+15. official outcome tersedia membuat learning sekali
+16. repeated cycle tidak duplicate learning
+17. repeated cycle tidak duplicate settlement
+18. no GAP-based outcome
+19. no Chainlink-based settlement outcome
+20. satu invalid market tidak menghentikan market valid lain
+
+Gunakan fixed timezone-aware UTC datetimes.
+
+Mock official outcome source melalui existing service/repository boundary.
+
+Jangan menguji Exit atau Execution di file ini.
+
+==================================================
+8. VALIDATE ONLY THIS CHECKPOINT
+==================================================
+
+Run:
+
+python -m compileall -q \
+backend/app/services/outcome_learning_service.py
+
+pytest backend/app/tests/test_outcome_prediction_window.py -q
+
+Setelah test baru PASS, cari existing outcome tests:
+
+ls backend/app/tests/*outcome* backend/app/tests/*resolution* 2>/dev/null
+
+Jalankan hanya file existing yang benar-benar berkaitan dengan service ini.
+
+Jika fixture lama menggunakan end_time:
+
+- tambahkan prediction_window_end yang realistis
+- jangan melemahkan production implementation
+- jangan menambahkan fallback end_time
+
+Jika gagal:
+
+- baca hanya targeted traceback
+- edit hanya Outcome Learning dan related test fixtures
+- maksimal 3 percobaan
+
+Jangan menjalankan test lain.
+Jangan menjalankan full suite.
+
+Setelah PASS, berhenti.
+
+Laporan maksimal 14 baris:
+
+MARKET SELECTION:
+RESOLUTION TIME SOURCE:
+EXACT END HANDLING:
+CONDITION BINDING:
+EVENT/WINDOW BINDING:
+OFFICIAL OUTCOME SOURCE:
+OUTCOME NOT READY:
+END_TIME FALLBACK:
+DUPLICATE LEARNING:
+DUPLICATE SETTLEMENT:
+NEW TESTS:
+REGRESSION:
+FAILED:
+FINAL STATUS:
