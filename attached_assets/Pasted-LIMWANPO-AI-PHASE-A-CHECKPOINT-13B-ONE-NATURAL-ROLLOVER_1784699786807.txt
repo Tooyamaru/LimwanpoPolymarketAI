@@ -1,0 +1,298 @@
+LIMWANPO AI — PHASE A CHECKPOINT 13B: ONE NATURAL ROLLOVER RUNTIME PROOF
+
+Lanjutkan dari Checkpoint 13A.
+
+Current confirmed state:
+
+- migration PASS
+- restart PASS
+- startup clean
+- TradeDecision binding columns verified
+- BTC/ETH/SOL/XRP current window valid 300 seconds
+- full suite 1234 passed, 1 skipped
+- 0 unawaited-coroutine warnings
+
+Checkpoint ini READ-ONLY.
+
+JANGAN mengedit code.
+JANGAN menjalankan pytest.
+JANGAN restart aplikasi.
+JANGAN mengubah database.
+JANGAN membuat decision/order/position manual.
+JANGAN menurunkan threshold.
+JANGAN memaksa trade.
+JANGAN mengubah system clock.
+JANGAN menggunakan fake price atau fake resolution.
+JANGAN menggunakan subagent.
+JANGAN mengambil screenshot.
+
+Target hanya mengamati SATU rollover 5M alami:
+
+Window A → Window B
+
+==================================================
+1. SELECT ONE UPCOMING BOUNDARY
+==================================================
+
+Gunakan active-universe endpoint yang sama seperti Checkpoint 13A.
+
+Capture satu snapshot BEFORE rollover untuk BTC, ETH, SOL, XRP:
+
+- server_time
+- asset
+- event_slug
+- condition_id
+- prediction_window_start
+- prediction_window_end
+- prediction_lifecycle_state
+- prediction_window_valid
+- execution_allowed
+- contract_lifecycle_state
+
+Simpan:
+
+window_a_start
+window_a_end
+window_a_event_slug per asset
+window_a_condition_id per asset
+
+Pastikan semua window A:
+
+- duration tepat 300 detik
+- valid=true
+- WINDOW_LIVE pada saat snapshot
+- execution_allowed=true
+
+Jika snapshot dilakukan setelah window selesai, pilih current live window
+berikutnya. Jangan mengubah data.
+
+==================================================
+2. READ-ONLY PRE-ROLLOVER DATABASE SNAPSHOT
+==================================================
+
+Dalam 60 detik sebelum window_a_end, capture read-only:
+
+A. OPEN/PARTIAL positions yang condition_id-nya termasuk Window A
+
+B. Pending/approved OPEN decisions untuk Window A dengan:
+
+- decision id
+- condition_id
+- event_slug binding
+- decision_prediction_window_start
+- decision_prediction_window_end
+- status
+- created_at
+
+C. Trade/order count untuk Window A
+
+Jika tidak ada position atau pending decision:
+
+- laporkan NONE
+- jangan membuat data untuk pengujian
+
+==================================================
+3. OBSERVE NATURAL BOUNDARY
+==================================================
+
+Mulai sekitar 20 detik sebelum window_a_end.
+
+Poll active-universe endpoint setiap 2–3 detik selama maksimal 90 detik.
+
+Jangan poll lebih cepat.
+
+Capture observasi pertama ketika:
+
+server_time >= window_a_end
+
+Required behavior:
+
+- Window A tidak lagi memiliki execution authority
+- Window B ditemukan secara alami
+- event_slug B berbeda dari A
+- condition_id B berbeda dari A
+- window_b_start == window_a_end
+- window_b_end == window_b_start + 300 seconds
+- prediction_window_valid=true
+- prediction_lifecycle_state untuk B menjadi WINDOW_LIVE setelah start
+- execution_allowed=true hanya untuk B yang valid dan WINDOW_LIVE
+
+Temporary ROLLOVER_SYNCING atau UPCOMING boleh terjadi sesaat.
+
+Jika terjadi:
+
+- capture state tersebut
+- terus poll sampai WINDOW_LIVE
+- jangan menganggapnya failure kecuali tidak pulih dalam 90 detik
+
+==================================================
+4. VERIFY ALL FOUR ASSETS ROLLED
+==================================================
+
+Untuk BTC, ETH, SOL, XRP bandingkan A dan B:
+
+- event_slug changed
+- condition_id changed
+- A end equals B start
+- B duration exactly 300 seconds
+- B valid=true
+- B execution_allowed=true ketika WINDOW_LIVE
+
+Jangan menerima campuran:
+
+- BTC Window B tetapi ETH/SOL/XRP masih Window A lebih dari sync tolerance
+- old condition ID dipakai untuk card baru
+- generic contract end_time dipakai untuk mempertahankan authority A
+
+Catat rollover latency per asset:
+
+first_b_seen_at - window_a_end
+
+==================================================
+5. VERIFY NO LATE WINDOW-A ENTRY
+==================================================
+
+Setelah Window B sudah live, lakukan read-only DB query untuk interval:
+
+created_at >= window_a_end
+AND created_at <= window_a_end + 90 seconds
+
+Periksa seluruh OPEN_LONG_YES dan OPEN_LONG_NO decisions.
+
+Required:
+
+Tidak boleh ada OPEN decision Window A yang dibuat atau diteruskan setelah:
+
+created_at >= window_a_end
+
+Untuk setiap OPEN decision setelah boundary:
+
+- condition_id harus milik Window B
+- decision_event_slug harus cocok dengan Window B
+- decision_prediction_window_start harus cocok dengan Window B
+- decision_prediction_window_end harus cocok dengan Window B
+
+SKIP/BLOCKED record untuk stale Window A diperbolehkan dan merupakan bukti
+gate bekerja.
+
+Jika stale rejection muncul, capture block code.
+
+==================================================
+6. VERIFY EXIT REMAINS GLOBAL
+==================================================
+
+Jika sebelum rollover ada OPEN/PARTIAL position Window A:
+
+- pastikan position tetap ada setelah dashboard berpindah ke Window B
+- Exit Engine tetap memproses berdasarkan position.condition_id Window A
+- jangan mengganti condition_id dengan Window B
+- jika close decision tercipta, condition_id harus Window A
+- jangan memerlukan WINDOW_LIVE
+- jangan menggunakan synthetic 0.5
+
+Jika harga resmi/executable belum tersedia:
+
+- position boleh tetap OPEN
+- PnL tidak boleh difabrikasi
+- laporkan PRICE/RESOLUTION PENDING
+
+Jika tidak ada posisi Window A:
+
+- laporkan NOT OBSERVED NATURALLY
+- gunakan existing 88/88 Exit checkpoint sebagai test proof
+- jangan membuat posisi manual
+
+==================================================
+7. VERIFY OUTCOME RESOLUTION BEHAVIOR
+==================================================
+
+Setelah Window A berakhir, periksa Outcome Learning logs/records.
+
+Required:
+
+- polling eligibility memakai prediction_window_end
+- official resolution belum tersedia → resolution_pending/no write
+- tidak ada REALIZED_PNL_PROXY learning
+- tidak ada synthetic UP/DOWN
+- official resolved outcome valid → maksimal satu learning record
+
+Dalam observation window pendek, official outcome mungkin belum tersedia.
+
+Itu bukan failure.
+
+Laporkan salah satu:
+
+- OFFICIAL RESOLUTION PENDING — NO WRITE
+- DIRECT OFFICIAL RESOLUTION — ONE WRITE
+- NOT OBSERVED WITHIN WINDOW
+
+==================================================
+8. CHECK RUNTIME LOGS
+==================================================
+
+Periksa hanya log interval:
+
+window_a_end - 60 seconds
+hingga
+window_a_end + 120 seconds
+
+Cari:
+
+- universe rollover/sync
+- lifecycle transition
+- opportunity cycle
+- strategy cycle
+- risk cycle
+- execution cycle
+- exit cycle
+- outcome learning cycle
+- traceback/error
+- duplicate-column/migration messages
+
+Required:
+
+- no worker crash
+- no uncaught exception
+- no repeated restart
+- no coroutine warning
+- no duplicate migration
+- workers continue cycling after rollover
+
+==================================================
+9. STOP AFTER ONE ROLLOVER
+==================================================
+
+Setelah Window B valid dan live serta post-boundary checks selesai:
+
+- berhenti
+- jangan menunggu rollover kedua
+- jangan menjalankan full suite
+- jangan mengubah code
+- jangan commit attached_assets
+
+==================================================
+10. FINAL REPORT
+==================================================
+
+Laporan maksimal 20 baris:
+
+BOUNDARY:
+WINDOW A:
+WINDOW B:
+BTC ROLLOVER:
+ETH ROLLOVER:
+SOL ROLLOVER:
+XRP ROLLOVER:
+MAX ROLLOVER LATENCY:
+TEMP SYNC STATE:
+WINDOW A AUTHORITY AFTER END:
+LATE WINDOW-A OPEN DECISIONS:
+WINDOW-B DECISION BINDING:
+STALE REJECTIONS:
+WINDOW-A POSITIONS BEFORE:
+WINDOW-A POSITIONS AFTER:
+EXIT GLOBAL PROOF:
+OUTCOME RESOLUTION:
+RUNTIME ERRORS:
+WORKERS AFTER ROLLOVER:
+FINAL STATUS:
